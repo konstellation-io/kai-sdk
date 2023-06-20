@@ -1,0 +1,17 @@
+
+# Process metadata
+KRT_PROCESS_NAME: Exit process
+KRT_WORKFLOW_NAME: Exit workflow
+KRT_PRODUCT_NAME: Exit product
+KRT_VERSION: Exit version v1.0.0
+KRT_BASE_PATH: "/Some/Path"
+
+# Communication with NATS
+KRT_NATS_URL: "nats://localhost:4222"
+KRT_NATS_STREAM: exit
+KRT_NATS_INPUTS: task-output
+KRT_NATS_OUTPUT: exit-output
+KRT_NATS_OBJECT_STORE: object-store
+KRT_NATS_KEY_VALUE_STORE_PRODUCT: product
+KRT_NATS_KEY_VALUE_STORE_WORKFLOW: workflow
+KRT_NATS_KEY_VALUE_STORE_PROCESS: process

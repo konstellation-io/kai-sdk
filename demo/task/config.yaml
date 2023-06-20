@@ -1,0 +1,17 @@
+
+# Process metadata
+KRT_PROCESS_NAME: Task process
+KRT_WORKFLOW_NAME: Task workflow
+KRT_PRODUCT_NAME: Task product
+KRT_VERSION: Task version v1.0.0
+KRT_BASE_PATH: "/Some/Path"
+
+# Communication with NATS
+KRT_NATS_URL: "nats://localhost:4222"
+KRT_NATS_STREAM: task
+KRT_NATS_INPUTS: trigger-output
+KRT_NATS_OUTPUT: task-output
+KRT_NATS_OBJECT_STORE: object-store
+KRT_NATS_KEY_VALUE_STORE_PRODUCT: product
+KRT_NATS_KEY_VALUE_STORE_WORKFLOW: workflow
+KRT_NATS_KEY_VALUE_STORE_PROCESS: process
