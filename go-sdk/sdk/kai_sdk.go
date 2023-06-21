@@ -18,7 +18,7 @@ import (
 //go:generate mockery --name pathUtils --output ../mocks --filename path_utils_mock.go --structname PathUtilsMock
 type pathUtils interface {
 	GetBasePath() string
-	ComposeBasePath(relativePath string) string
+	ComposePath(relativePath string) string
 }
 
 //go:generate mockery --name messaging --output ../mocks --filename messaging_mock.go --structname MessagingMock

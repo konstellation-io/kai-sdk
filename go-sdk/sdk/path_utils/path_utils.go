@@ -3,7 +3,7 @@ package path_utils
 import (
 	"github.com/go-logr/logr"
 	"github.com/spf13/viper"
-	"path"
+	path2 "path"
 )
 
 type PathUtils struct {
@@ -19,6 +19,14 @@ func NewPathUtils(logger logr.Logger) *PathUtils {
 func (pu PathUtils) GetBasePath() string {
 	return viper.GetString("metadata.base_path")
 }
-func (pu PathUtils) ComposeBasePath(relativePath string) string {
-	return path.Join(pu.GetBasePath(), relativePath)
+func (pu PathUtils) ComposePath(relativePath ...string) string {
+	path := pu.GetBasePath()
+	if len(relativePath) == 0 {
+		return path
+	}
+
+	for _, elem := range relativePath {
+		path = path2.Join(path, elem)
+	}
+	return path
 }
