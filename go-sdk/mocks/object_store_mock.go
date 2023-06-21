@@ -113,6 +113,128 @@ func (_c *ObjectStoreMock_Get_Call) RunAndReturn(run func(string) ([]byte, error
 	return _c
 }
 
+// List provides a mock function with given fields: regexp
+func (_m *ObjectStoreMock) List(regexp ...string) ([]string, error) {
+	_va := make([]interface{}, len(regexp))
+	for _i := range regexp {
+		_va[_i] = regexp[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 []string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(...string) ([]string, error)); ok {
+		return rf(regexp...)
+	}
+	if rf, ok := ret.Get(0).(func(...string) []string); ok {
+		r0 = rf(regexp...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(...string) error); ok {
+		r1 = rf(regexp...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ObjectStoreMock_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type ObjectStoreMock_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - regexp ...string
+func (_e *ObjectStoreMock_Expecter) List(regexp ...interface{}) *ObjectStoreMock_List_Call {
+	return &ObjectStoreMock_List_Call{Call: _e.mock.On("List",
+		append([]interface{}{}, regexp...)...)}
+}
+
+func (_c *ObjectStoreMock_List_Call) Run(run func(regexp ...string)) *ObjectStoreMock_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]string, len(args)-0)
+		for i, a := range args[0:] {
+			if a != nil {
+				variadicArgs[i] = a.(string)
+			}
+		}
+		run(variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *ObjectStoreMock_List_Call) Return(_a0 []string, _a1 error) *ObjectStoreMock_List_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *ObjectStoreMock_List_Call) RunAndReturn(run func(...string) ([]string, error)) *ObjectStoreMock_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Purge provides a mock function with given fields: regexp
+func (_m *ObjectStoreMock) Purge(regexp ...string) error {
+	_va := make([]interface{}, len(regexp))
+	for _i := range regexp {
+		_va[_i] = regexp[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(...string) error); ok {
+		r0 = rf(regexp...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// ObjectStoreMock_Purge_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Purge'
+type ObjectStoreMock_Purge_Call struct {
+	*mock.Call
+}
+
+// Purge is a helper method to define mock.On call
+//   - regexp ...string
+func (_e *ObjectStoreMock_Expecter) Purge(regexp ...interface{}) *ObjectStoreMock_Purge_Call {
+	return &ObjectStoreMock_Purge_Call{Call: _e.mock.On("Purge",
+		append([]interface{}{}, regexp...)...)}
+}
+
+func (_c *ObjectStoreMock_Purge_Call) Run(run func(regexp ...string)) *ObjectStoreMock_Purge_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]string, len(args)-0)
+		for i, a := range args[0:] {
+			if a != nil {
+				variadicArgs[i] = a.(string)
+			}
+		}
+		run(variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *ObjectStoreMock_Purge_Call) Return(_a0 error) *ObjectStoreMock_Purge_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *ObjectStoreMock_Purge_Call) RunAndReturn(run func(...string) error) *ObjectStoreMock_Purge_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Save provides a mock function with given fields: key, value
 func (_m *ObjectStoreMock) Save(key string, value []byte) error {
 	ret := _m.Called(key, value)

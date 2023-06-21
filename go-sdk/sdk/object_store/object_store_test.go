@@ -7,6 +7,7 @@ import (
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/object_store"
+	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -50,7 +51,7 @@ func (suite *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_Expe
 	suite.NotNil(objectStore)
 }
 
-func (suite *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_EmptyOsName_ExpectOK() {
+func (suite *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_EmptyOsName_ExpectError() {
 	// Given
 	viper.SetDefault("nats.object_store", "")
 
@@ -80,6 +81,18 @@ func (suite *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_Erro
 	suite.Nil(objectStore)
 }
 
-func TestSdkCentralizedConfigurationTestSuite(t *testing.T) {
+func TestSdkObjectStoreTestSuite(t *testing.T) {
 	suite.Run(t, new(SdkObjectStoreTestSuite))
+}
+
+func generateObjectInfoResponse(keys []string) []*nats.ObjectInfo {
+	var objects []*nats.ObjectInfo
+	for _, key := range keys {
+		objects = append(objects, &nats.ObjectInfo{
+			ObjectMeta: nats.ObjectMeta{
+				Name: key,
+			},
+		})
+	}
+	return objects
 }
