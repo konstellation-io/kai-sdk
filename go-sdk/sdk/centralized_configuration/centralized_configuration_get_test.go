@@ -51,7 +51,7 @@ func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_
 	suite.Equal("value3", key3Value)
 }
 
-func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetNonExistingConfigOnAllScopes_ExpectOK() {
+func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetNonExistingConfigOnAllScopes_ExpectError() {
 	// Given
 	suite.productKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 	suite.workflowKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
@@ -76,7 +76,7 @@ func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_
 	suite.processKv.AssertNumberOfCalls(suite.T(), "Get", 1)
 }
 
-func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetNonExistingConfigOnAllScopes_UnexpectedError_ExpectOK() {
+func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetNonExistingConfigOnAllScopes_UnexpectedError_ExpectError() {
 	// Given
 	suite.productKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 	suite.workflowKv.On("Get", "key1").Return(nil, errors.New("unexpected error"))
@@ -162,7 +162,7 @@ func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_
 	suite.Equal("value1", key1Value)
 }
 
-func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetNonExistingConfigOnProductScope_ExpectOK() {
+func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetNonExistingConfigOnProductScope_ExpectError() {
 	// Given
 	suite.productKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 
@@ -207,7 +207,7 @@ func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_
 	suite.Equal("value2", key1Value)
 }
 
-func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetNonExistingConfigOnWorkflowScope_ExpectOK() {
+func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetNonExistingConfigOnWorkflowScope_ExpectError() {
 	// Given
 	suite.workflowKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 
@@ -252,7 +252,7 @@ func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_
 	suite.Equal("value3", key1Value)
 }
 
-func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetNonExistingConfigOnProcessScope_ExpectOK() {
+func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetNonExistingConfigOnProcessScope_ExpectError() {
 	// Given
 	suite.processKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 

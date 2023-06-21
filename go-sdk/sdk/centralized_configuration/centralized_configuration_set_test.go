@@ -104,7 +104,7 @@ func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_
 	suite.processKv.AssertCalled(suite.T(), "PutString", "key1", "value1")
 }
 
-func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetConfigOnDefaultScope_UnexpectedError_ExpectOK() {
+func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetConfigOnDefaultScope_UnexpectedError_ExpectError() {
 	// Given
 	suite.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
 	suite.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))

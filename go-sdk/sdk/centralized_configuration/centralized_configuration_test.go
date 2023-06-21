@@ -61,7 +61,7 @@ func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_
 	suite.NotNil(conf)
 }
 
-func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ExpectProductConfigNotExist() {
+func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ProductConfigNotExist_ExpectError() {
 	// Given
 	viper.SetDefault("centralized_configuration.product.bucket", "some-product-bucket")
 	viper.SetDefault("centralized_configuration.workflow.bucket", "some-workflow-bucket")
@@ -78,7 +78,7 @@ func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_
 	suite.Nil(config)
 }
 
-func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ExpectWorkflowConfigNotExist() {
+func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_WorkflowConfigNotExist_ExpectError() {
 	// Given
 	viper.SetDefault("centralized_configuration.product.bucket", "some-product-bucket")
 	viper.SetDefault("centralized_configuration.workflow.bucket", "some-workflow-bucket")
@@ -96,7 +96,7 @@ func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_
 	suite.Nil(config)
 }
 
-func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ExpectProcessConfigNotExist() {
+func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ProcessConfigNotExist_ExpectError() {
 	// Given
 	viper.SetDefault("centralized_configuration.product.bucket", "some-product-bucket")
 	viper.SetDefault("centralized_configuration.workflow.bucket", "some-workflow-bucket")

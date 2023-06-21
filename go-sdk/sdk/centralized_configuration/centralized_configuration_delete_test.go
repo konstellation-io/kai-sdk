@@ -46,7 +46,7 @@ func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_
 	suite.processKv.AssertNumberOfCalls(suite.T(), "Delete", 1)
 }
 
-func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_DeleteNonExistingConfigOnAllScope_ExpectOK() {
+func (suite *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_DeleteNonExistingConfigOnAllScope_ExpectError() {
 	// Given
 	suite.productKv.On("Delete", "key1").Return(nats.ErrKeyNotFound)
 	suite.workflowKv.On("Delete", "key1").Return(nats.ErrKeyNotFound)
