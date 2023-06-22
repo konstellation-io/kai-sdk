@@ -3,7 +3,7 @@ package common
 import (
 	"bytes"
 	"compress/gzip"
-	"io/ioutil"
+	"io"
 )
 
 const (
@@ -45,5 +45,5 @@ func UncompressData(data []byte) ([]byte, error) {
 	}
 
 	defer gr.Close()
-	return ioutil.ReadAll(gr)
+	return io.ReadAll(gr)
 }
