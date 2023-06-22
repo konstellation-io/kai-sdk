@@ -39,6 +39,9 @@ func (ms Messaging) publishMsg(msg proto.Message, requestID string, msgType kai.
 }
 
 func (ms Messaging) publishAny(payload *anypb.Any, requestID string, msgType kai.MessageType, channel string) {
+	if requestID == "" {
+		requestID = uuid.New().String()
+	}
 	responseMsg := ms.newResponseMsg(payload, requestID, msgType)
 	ms.publishResponse(responseMsg, channel)
 }
@@ -100,7 +103,7 @@ func (ms Messaging) getOutputSubject(channel string) string {
 }
 
 func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
-	maxSize, err := ms.getMaxMessageSize()
+	maxSize, err := ms.messageUtils.GetMaxMessageSize()
 	if err != nil {
 		return nil, fmt.Errorf("error getting max message size: %s", err)
 	}
@@ -110,6 +113,7 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 		return msg, nil
 	}
 
+	ms.logger.V(1).Info("message exceeds maximum size allowed, compressing data")
 	outMsg, err := common.CompressData(msg)
 	if err != nil {
 		return nil, err
@@ -126,28 +130,4 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 		"Compressed size", sizeInMB(lenOutMsg))
 
 	return outMsg, nil
-}
-
-func (ms Messaging) getMaxMessageSize() (int64, error) {
-	streamInfo, err := ms.jetstream.StreamInfo(viper.GetString("nats.stream"))
-	if err != nil {
-		return 0, fmt.Errorf("error getting stream's max message size: %w", err)
-	}
-
-	streamMaxSize := int64(streamInfo.Config.MaxMsgSize)
-	serverMaxSize := ms.nats.MaxPayload()
-
-	if streamMaxSize == -1 {
-		return serverMaxSize, nil
-	}
-
-	if streamMaxSize < serverMaxSize {
-		return streamMaxSize, nil
-	}
-
-	return serverMaxSize, nil
-}
-
-func sizeInMB(size int64) string {
-	return fmt.Sprintf("%.1f MB", float32(size)/1024/1024)
 }

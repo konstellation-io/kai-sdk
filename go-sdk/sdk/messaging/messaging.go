@@ -21,11 +21,18 @@ type Messaging struct {
 	nats           *nats.Conn
 	jetstream      nats.JetStreamContext
 	requestMessage *kai.KaiNatsMessage
+	messageUtils   messageUtils
 }
 
 func NewMessaging(logger logr.Logger, nats *nats.Conn, jetstream nats.JetStreamContext,
 	requestMessage *kai.KaiNatsMessage) *Messaging {
-	return &Messaging{logger.WithName("[MESSAGING]"), nats, jetstream, requestMessage}
+	return &Messaging{
+		logger.WithName("[MESSAGING]"),
+		nats,
+		jetstream,
+		requestMessage,
+		NewMessageUtils(nats, jetstream),
+	}
 }
 
 func (ms Messaging) SendOutput(response proto.Message, channelOpt ...string) error {
@@ -55,7 +62,10 @@ func (ms Messaging) SendEarlyExit(response proto.Message, channelOpt ...string) 
 }
 
 func (ms Messaging) GetErrorMessage() string {
-	return ms.requestMessage.GetError()
+	if ms.IsMessageError() {
+		return ms.requestMessage.GetError()
+	}
+	return ""
 }
 
 func (ms Messaging) IsMessageOK() bool {

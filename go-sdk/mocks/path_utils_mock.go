@@ -17,13 +17,19 @@ func (_m *PathUtilsMock) EXPECT() *PathUtilsMock_Expecter {
 	return &PathUtilsMock_Expecter{mock: &_m.Mock}
 }
 
-// ComposeBasePath provides a mock function with given fields: relativePath
-func (_m *PathUtilsMock) ComposeBasePath(relativePath string) string {
-	ret := _m.Called(relativePath)
+// ComposePath provides a mock function with given fields: relativePath
+func (_m *PathUtilsMock) ComposePath(relativePath ...string) string {
+	_va := make([]interface{}, len(relativePath))
+	for _i := range relativePath {
+		_va[_i] = relativePath[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func(string) string); ok {
-		r0 = rf(relativePath)
+	if rf, ok := ret.Get(0).(func(...string) string); ok {
+		r0 = rf(relativePath...)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
@@ -31,30 +37,37 @@ func (_m *PathUtilsMock) ComposeBasePath(relativePath string) string {
 	return r0
 }
 
-// PathUtilsMock_ComposeBasePath_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ComposeBasePath'
-type PathUtilsMock_ComposeBasePath_Call struct {
+// PathUtilsMock_ComposePath_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ComposePath'
+type PathUtilsMock_ComposePath_Call struct {
 	*mock.Call
 }
 
-// ComposeBasePath is a helper method to define mock.On call
-//   - relativePath string
-func (_e *PathUtilsMock_Expecter) ComposeBasePath(relativePath interface{}) *PathUtilsMock_ComposeBasePath_Call {
-	return &PathUtilsMock_ComposeBasePath_Call{Call: _e.mock.On("ComposeBasePath", relativePath)}
+// ComposePath is a helper method to define mock.On call
+//   - relativePath ...string
+func (_e *PathUtilsMock_Expecter) ComposePath(relativePath ...interface{}) *PathUtilsMock_ComposePath_Call {
+	return &PathUtilsMock_ComposePath_Call{Call: _e.mock.On("ComposePath",
+		append([]interface{}{}, relativePath...)...)}
 }
 
-func (_c *PathUtilsMock_ComposeBasePath_Call) Run(run func(relativePath string)) *PathUtilsMock_ComposeBasePath_Call {
+func (_c *PathUtilsMock_ComposePath_Call) Run(run func(relativePath ...string)) *PathUtilsMock_ComposePath_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string))
+		variadicArgs := make([]string, len(args)-0)
+		for i, a := range args[0:] {
+			if a != nil {
+				variadicArgs[i] = a.(string)
+			}
+		}
+		run(variadicArgs...)
 	})
 	return _c
 }
 
-func (_c *PathUtilsMock_ComposeBasePath_Call) Return(_a0 string) *PathUtilsMock_ComposeBasePath_Call {
+func (_c *PathUtilsMock_ComposePath_Call) Return(_a0 string) *PathUtilsMock_ComposePath_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *PathUtilsMock_ComposeBasePath_Call) RunAndReturn(run func(string) string) *PathUtilsMock_ComposeBasePath_Call {
+func (_c *PathUtilsMock_ComposePath_Call) RunAndReturn(run func(...string) string) *PathUtilsMock_ComposePath_Call {
 	_c.Call.Return(run)
 	return _c
 }
