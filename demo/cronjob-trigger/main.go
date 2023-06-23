@@ -39,7 +39,7 @@ func initializer(sdk sdk.KaiSDK) {
 
 	sdk.Logger.V(1).Info("PathUtils",
 		"getBasePath", sdk.PathUtils.GetBasePath(),
-		"composeBasePath", sdk.PathUtils.ComposeBasePath("test"))
+		"composeBasePath", sdk.PathUtils.ComposePath("test"))
 
 	value1, _ := sdk.CentralizedConfig.GetConfig("test1")
 	value2, _ := sdk.CentralizedConfig.GetConfig("test2")

@@ -52,7 +52,7 @@ func initializer(sdk sdk.KaiSDK) {
 
 	sdk.Logger.V(1).Info("PathUtils",
 		"getBasePath", sdk.PathUtils.GetBasePath(),
-		"composeBasePath", sdk.PathUtils.ComposeBasePath("test"))
+		"composeBasePath", sdk.PathUtils.ComposePath("test"))
 }
 
 func natsSubscriberRunner(tr *trigger.TriggerRunner, sdk sdk.KaiSDK) {

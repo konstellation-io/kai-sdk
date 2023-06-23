@@ -14,11 +14,13 @@ type SdkMetadataTestSuite struct {
 	logger logr.Logger
 }
 
+func (suite *SdkMetadataTestSuite) SetupSuite() {
+	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
+}
+
 func (suite *SdkMetadataTestSuite) SetupTest() {
 	// Reset viper values before each test
 	viper.Reset()
-
-	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
 }
 
 func (suite *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {

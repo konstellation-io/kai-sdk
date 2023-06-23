@@ -25,11 +25,14 @@ type SdkCentralizedConfigurationTestSuite struct {
 	processKv  mocks.KeyValueMock
 }
 
+func (suite *SdkCentralizedConfigurationTestSuite) SetupSuite() {
+	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
+}
+
 func (suite *SdkCentralizedConfigurationTestSuite) SetupTest() {
 	// Reset viper values before each test
 	viper.Reset()
 
-	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
 	suite.jetstream = *mocks.NewJetStreamContextMock(suite.T())
 	suite.productKv = *mocks.NewKeyValueMock(suite.T())
 	suite.workflowKv = *mocks.NewKeyValueMock(suite.T())

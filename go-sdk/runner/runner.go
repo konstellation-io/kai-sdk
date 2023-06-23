@@ -47,17 +47,15 @@ func initializeConfiguration() {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
-	if err != nil {
-		panic(fmt.Errorf("fatal error config file: %w", err))
-	}
 
 	//Load app configuration
 	viper.SetConfigName("app")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 	err = viper.MergeInConfig()
-	if err != nil {
-		panic(fmt.Errorf("fatal error config file: %w", err))
+
+	if len(viper.AllKeys()) == 0 {
+		panic(fmt.Errorf("configuration could not be loaded: %w", err))
 	}
 
 	// Load environment variables

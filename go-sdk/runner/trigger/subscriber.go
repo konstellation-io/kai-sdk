@@ -214,7 +214,6 @@ func (tr *TriggerRunner) prepareOutputMessage(msg []byte) ([]byte, error) {
 	return outMsg, nil
 }
 
-// TODO this code is duplicated in the messaging package, refactor it
 func (tr *TriggerRunner) getMaxMessageSize() (int64, error) {
 	streamInfo, err := tr.jetstream.StreamInfo(viper.GetString("nats.stream"))
 	if err != nil {
