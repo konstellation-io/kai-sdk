@@ -22,7 +22,7 @@ func (suite *SdkMessagingTestSuite) TestMessaging_GetErrorMessage_ExpectOk() {
 	suite.Equal("Error message", errorMessage)
 }
 
-func (suite *SdkMessagingTestSuite) TestMessaging_GetErrorMessage_NoErrorMessageExist_ExpectError() {
+func (suite *SdkMessagingTestSuite) TestMessaging_GetErrorMessage_NoErrorMessageExistWhenTypeOK_ExpectError() {
 	// Given
 	kaiMessage := &kai.KaiNatsMessage{
 		RequestId:   "some-request-id",

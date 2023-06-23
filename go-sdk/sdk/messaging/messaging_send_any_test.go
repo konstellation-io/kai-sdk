@@ -14,6 +14,7 @@ import (
 func (suite *SdkMessagingTestSuite) TestMessaging_SendAny_ExpectOk() {
 	// Given
 	viper.SetDefault("nats.output", "test-parent")
+	viper.SetDefault("metadata.process_id", "parent-node")
 	suite.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
 	suite.messageUtils.On("GetMaxMessageSize").Return(int64(1024*1024*1024), nil)

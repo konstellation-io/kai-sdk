@@ -1,9 +1,8 @@
 package messaging_test
 
 import (
-	"fmt"
 	"github.com/go-logr/logr"
-	"github.com/go-logr/zapr"
+	"github.com/go-logr/logr/testr"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
 	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
@@ -11,14 +10,12 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 	"math/rand"
 	"testing"
 )
 
-// TODO finish tests
 type SdkMessagingTestSuite struct {
 	suite.Suite
 	logger       logr.Logger
@@ -28,15 +25,10 @@ type SdkMessagingTestSuite struct {
 }
 
 func (suite *SdkMessagingTestSuite) SetupTest() {
-	zapLog, err := zap.NewDevelopment()
-	if err != nil {
-		panic(fmt.Sprintf("who watches the watchmen (%v)?", err))
-	}
-
 	// Reset viper values before each test
 	viper.Reset()
 
-	suite.logger = zapr.NewLogger(zapLog)
+	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
 	suite.jetstream = *mocks.NewJetStreamContextMock(suite.T())
 	suite.messageUtils = *mocks.NewMessageUtilsMock(suite.T())
 }

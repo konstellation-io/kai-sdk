@@ -2,17 +2,15 @@ package centralized_configuration_test
 
 import (
 	"errors"
-	"fmt"
+	"github.com/go-logr/logr/testr"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
 	"testing"
 
 	"github.com/go-logr/logr"
-	"github.com/go-logr/zapr"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/centralized_configuration"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
-	"go.uber.org/zap"
 )
 
 //go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.26.0 --output ../../mocks --name KeyValue --structname KeyValueMock --filename key_value_mock.go
@@ -28,15 +26,10 @@ type SdkCentralizedConfigurationTestSuite struct {
 }
 
 func (suite *SdkCentralizedConfigurationTestSuite) SetupTest() {
-	zapLog, err := zap.NewDevelopment()
-	if err != nil {
-		panic(fmt.Sprintf("who watches the watchmen (%v)?", err))
-	}
-
 	// Reset viper values before each test
 	viper.Reset()
 
-	suite.logger = zapr.NewLogger(zapLog)
+	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
 	suite.jetstream = *mocks.NewJetStreamContextMock(suite.T())
 	suite.productKv = *mocks.NewKeyValueMock(suite.T())
 	suite.workflowKv = *mocks.NewKeyValueMock(suite.T())
