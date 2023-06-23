@@ -3,14 +3,13 @@ package object_store_test
 import (
 	"fmt"
 	"github.com/go-logr/logr"
-	"github.com/go-logr/zapr"
+	"github.com/go-logr/logr/testr"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/object_store"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
-	"go.uber.org/zap"
 	"testing"
 )
 
@@ -24,15 +23,10 @@ type SdkObjectStoreTestSuite struct {
 }
 
 func (suite *SdkObjectStoreTestSuite) SetupTest() {
-	zapLog, err := zap.NewDevelopment()
-	if err != nil {
-		panic(fmt.Sprintf("who watches the watchmen (%v)?", err))
-	}
-
 	// Reset viper values before each test
 	viper.Reset()
 
-	suite.logger = zapr.NewLogger(zapLog)
+	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
 	suite.jetstream = *mocks.NewJetStreamContextMock(suite.T())
 	suite.objectStore = *mocks.NewNatsObjectStoreMock(suite.T())
 }
