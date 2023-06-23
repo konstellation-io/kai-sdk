@@ -22,11 +22,14 @@ type SdkObjectStoreTestSuite struct {
 	objectStore mocks.NatsObjectStoreMock
 }
 
+func (suite *SdkObjectStoreTestSuite) SetupSuite() {
+	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
+}
+
 func (suite *SdkObjectStoreTestSuite) SetupTest() {
 	// Reset viper values before each test
 	viper.Reset()
 
-	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
 	suite.jetstream = *mocks.NewJetStreamContextMock(suite.T())
 	suite.objectStore = *mocks.NewNatsObjectStoreMock(suite.T())
 }

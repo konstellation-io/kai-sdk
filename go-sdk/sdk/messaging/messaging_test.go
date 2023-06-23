@@ -24,11 +24,14 @@ type SdkMessagingTestSuite struct {
 	messageUtils mocks.MessageUtilsMock
 }
 
+func (suite *SdkMessagingTestSuite) SetupSuite() {
+	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
+}
+
 func (suite *SdkMessagingTestSuite) SetupTest() {
 	// Reset viper values before each test
 	viper.Reset()
 
-	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
 	suite.jetstream = *mocks.NewJetStreamContextMock(suite.T())
 	suite.messageUtils = *mocks.NewMessageUtilsMock(suite.T())
 }

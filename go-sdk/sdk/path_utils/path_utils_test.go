@@ -14,11 +14,13 @@ type SdkPathUtilsTestSuite struct {
 	logger logr.Logger
 }
 
+func (suite *SdkPathUtilsTestSuite) SetupSuite() {
+	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
+}
+
 func (suite *SdkPathUtilsTestSuite) SetupTest() {
 	// Reset viper values before each test
 	viper.Reset()
-
-	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
 
 	viper.SetDefault("metadata.base_path", "/base/path")
 }

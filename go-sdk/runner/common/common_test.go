@@ -1,15 +1,13 @@
 package common_test
 
 import (
-	"fmt"
 	"github.com/go-logr/logr"
-	"github.com/go-logr/zapr"
+	"github.com/go-logr/logr/testr"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/common"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
-	"go.uber.org/zap"
 	"testing"
 )
 
@@ -19,16 +17,14 @@ type RunnerCommonTestSuite struct {
 	sdk    sdk.KaiSDK
 }
 
-func (suite *RunnerCommonTestSuite) SetupTest() {
-	zapLog, err := zap.NewDevelopment()
-	if err != nil {
-		panic(fmt.Sprintf("who watches the watchmen (%v)?", err))
-	}
+func (suite *RunnerCommonTestSuite) SetupSuite() {
+	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
+}
 
+func (suite *RunnerCommonTestSuite) SetupTest() {
 	// Reset viper values before each test
 	viper.Reset()
 
-	suite.logger = zapr.NewLogger(zapLog)
 	suite.sdk = sdk.KaiSDK{
 		Logger:            suite.logger,
 		PathUtils:         mocks.NewPathUtilsMock(suite.T()),

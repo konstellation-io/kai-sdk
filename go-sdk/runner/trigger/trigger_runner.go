@@ -60,7 +60,7 @@ func (tr *TriggerRunner) GetResponseChannel(requestID string) <-chan *anypb.Any 
 func (tr *TriggerRunner) Run() {
 	// Check required fields are initialized
 	if tr.runner == nil {
-		panic("Runner function is required")
+		panic("No runner function defined")
 	}
 	if tr.initializer == nil {
 		tr.initializer = composeInitializer(nil)
