@@ -1,17 +1,8 @@
-
-# Process metadata
-KRT_PROCESS_NAME: Trigger process
-KRT_WORKFLOW_NAME: Trigger workflow
-KRT_PRODUCT_NAME: Trigger product
-KRT_VERSION: Trigger version v1.0.0
-KRT_BASE_PATH: "/Some/Path"
-
-# Communication with NATS
-KRT_NATS_URL: "nats://localhost:4222"
-KRT_NATS_STREAM: trigger
-KRT_NATS_INPUTS: exit-output
-KRT_NATS_OUTPUT: trigger-output
-KRT_NATS_OBJECT_STORE: object-store
-KRT_NATS_KEY_VALUE_STORE_PRODUCT: product
-KRT_NATS_KEY_VALUE_STORE_WORKFLOW: workflow
-KRT_NATS_KEY_VALUE_STORE_PROCESS: process
+runner:
+  logger:
+    level: Debug # Info, Debug, Warn, Error, Fatal, Panic
+    encoding: console # console, json
+    output_paths:
+      - stdout
+    error_output_paths:
+      - stderr
