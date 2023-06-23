@@ -42,24 +42,31 @@ func NewRunner() *Runner {
 }
 
 func initializeConfiguration() {
+	// Load environment variables
+	viper.SetEnvPrefix("KAI")
+	viper.AutomaticEnv()
+
 	//Load base configuration
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	if viper.IsSet("KAI_APP_CONFIG_PATH") {
+		viper.AddConfigPath(viper.GetString("KAI_APP_CONFIG_PATH"))
+	}
 	err := viper.ReadInConfig()
 
 	//Load app configuration
 	viper.SetConfigName("app")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	if viper.IsSet("KAI_APP_CONFIG_PATH") {
+		viper.AddConfigPath(viper.GetString("KAI_APP_CONFIG_PATH"))
+	}
 	err = viper.MergeInConfig()
 
 	if len(viper.AllKeys()) == 0 {
 		panic(fmt.Errorf("configuration could not be loaded: %w", err))
 	}
-
-	// Load environment variables
-	viper.AutomaticEnv()
 
 	// Set viper default values
 	viper.SetDefault("metadata.base_path", "/")
