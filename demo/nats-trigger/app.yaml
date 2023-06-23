@@ -1,13 +1,15 @@
 metadata:
-  product_id: Trigger product
-  workflow_id: Trigger workflow
-  process_id: Trigger proces
-  version_id: Trigger version v1.0.0
+  product_id: Nats trigger process
+  workflow_id: Nats trigger workflow
+  process_id: Nats trigger proces
+  version_id: Nats trigger version v1.0.0
   base_path: "/Some/Path"
 
 nats:
   url: "nats://localhost:4222"
   stream: trigger
+  inputs:
+    - exit-output
   output: trigger-output
   object_store: object-store
 
