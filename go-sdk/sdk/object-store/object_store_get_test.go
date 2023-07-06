@@ -2,15 +2,17 @@ package objectstore_test
 
 import (
 	"fmt"
+
 	objectstore "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/object-store"
 
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 	"github.com/spf13/viper"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 )
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_GetObjectStoreNotInitialized_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "")
+	viper.SetDefault(natsObjectStoreField, "")
 	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	// When
@@ -24,8 +26,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_GetObjectStoreNotInitialized_E
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorRetrievingObject_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("GetBytes", "key").Return(nil, fmt.Errorf("error saving object"))
@@ -42,8 +44,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorRetrievingObject_ExpectEr
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_GetObject_ExpectOK() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("GetBytes", "key").Return([]byte("value"), nil)

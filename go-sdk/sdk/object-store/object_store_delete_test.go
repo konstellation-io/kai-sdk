@@ -5,13 +5,19 @@ import (
 
 	objectstore "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/object-store"
 
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 	"github.com/spf13/viper"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
+)
+
+const (
+	natsObjectStoreField = "nats.object-store"
+	natsObjectStoreValue = "object-store"
 )
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_DeleteObjectStoreNotInitialized_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "")
+	viper.SetDefault(natsObjectStoreField, "")
 	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	// When
@@ -24,8 +30,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_DeleteObjectStoreNotInitialize
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorDeletingObject_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("Delete", "key").Return(fmt.Errorf("error saving object"))
@@ -41,8 +47,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorDeletingObject_ExpectErro
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_DeleteObject_ExpectOK() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("Delete", "key").Return(nil)

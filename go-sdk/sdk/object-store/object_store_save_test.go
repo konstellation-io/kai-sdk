@@ -2,16 +2,18 @@ package objectstore_test
 
 import (
 	"fmt"
+
 	objectstore "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/object-store"
 
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 )
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObjectStoreNotInitialized_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "")
+	viper.SetDefault(natsObjectStoreField, "")
 	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	// When
@@ -24,8 +26,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObjectStoreNotInitialized_
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveEmptyPayload_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("PutBytes", "key", []byte("value")).Return(&nats.ObjectInfo{}, nil)
@@ -40,8 +42,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveEmptyPayload_ExpectError()
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorSavingPayload_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("PutBytes", "key", []byte("value")).Return(nil, fmt.Errorf("error saving payload"))
@@ -56,8 +58,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorSavingPayload_ExpectError
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObject_ExpectOK() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("PutBytes", "key", []byte("value")).Return(&nats.ObjectInfo{}, nil)

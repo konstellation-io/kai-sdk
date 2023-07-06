@@ -39,9 +39,9 @@ func (s *SdkObjectStoreTestSuite) SetupTest() {
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_ExpectOK() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
 	// When
 	objectStore, err := objectStore2.NewObjectStore(s.logger, &s.jetstream)
@@ -53,9 +53,9 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_ExpectOK
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_EmptyOsName_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "")
+	viper.SetDefault(natsObjectStoreField, "")
 
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
 	// When
 	objectStore, osErr := objectStore2.NewObjectStore(s.logger, &s.jetstream)
@@ -69,9 +69,9 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_EmptyOsN
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_ErrorOnOsReturn_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 
-	s.jetstream.On("ObjectStore", "object-store").Return(nil, fmt.Errorf("not found"))
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(nil, fmt.Errorf("not found"))
 
 	// When
 	objectStore, err := objectStore2.NewObjectStore(s.logger, &s.jetstream)

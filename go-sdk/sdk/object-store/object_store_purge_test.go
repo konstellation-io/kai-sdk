@@ -2,16 +2,18 @@ package objectstore_test
 
 import (
 	"fmt"
+
 	objectStore2 "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/object-store"
 
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 )
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectStoreNotInitialized_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "")
+	viper.SetDefault(natsObjectStoreField, "")
 	objectStore, err := objectStore2.NewObjectStore(s.logger, &s.jetstream)
 
 	// When
@@ -24,8 +26,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectStoreNotInitialized
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorPurgingObject_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectStore2.NewObjectStore(s.logger, &s.jetstream)
 
 	keys := []string{"key1", "key2"}
@@ -46,8 +48,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorPurgingObject_ExpectError
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObject_ExpectOK() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectStore2.NewObjectStore(s.logger, &s.jetstream)
 
 	keys := []string{"key1", "key2"}
@@ -68,8 +70,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObject_ExpectOK() {
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectWithFilter_ExpectOK() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectStore2.NewObjectStore(s.logger, &s.jetstream)
 
 	keys := []string{"key1", "key2", "anotherKey3", "anotherKey4"}
@@ -92,8 +94,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectWithFilter_ExpectOK
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectWithFilter_InvalidRegexp_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectStore2.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("Delete", mock.AnythingOfType("string")).Return(nil)
@@ -110,8 +112,8 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectWithFilter_InvalidR
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectWithFilter_ErrorListingKeys_ExpectError() {
 	// Given
-	viper.SetDefault("nats.object-store", "object-store")
-	s.jetstream.On("ObjectStore", "object-store").Return(&s.objectStore, nil)
+	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, err := objectStore2.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("List").Return(nil, fmt.Errorf("error listing keys"))
