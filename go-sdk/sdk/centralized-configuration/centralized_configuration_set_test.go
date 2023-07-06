@@ -7,10 +7,13 @@ import (
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
 )
 
+const notExist = "not exist"
+
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetConfigOnDefaultScope_ExpectOK() {
 	// Given
-	s.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
-	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
+
+	s.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
+	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(1), nil)
 
 	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
@@ -34,8 +37,8 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetConfigOnProductScope_ExpectOK() {
 	// Given
 	s.productKv.On("PutString", "key1", "value1").Return(uint64(1), nil)
-	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
-	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
+	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
+	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 
 	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
 		s.logger,
@@ -58,9 +61,9 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetConfigOnWorkflowScope_ExpectOK() {
 	// Given
-	s.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
+	s.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(1), nil)
-	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
+	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 
 	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
 		s.logger,
@@ -83,8 +86,8 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetConfigOnProcessScope_ExpectOK() {
 	// Given
-	s.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
-	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
+	s.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
+	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(1), nil)
 	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
 		s.logger,
@@ -107,9 +110,9 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetConfigOnDefaultScope_UnexpectedError_ExpectError() {
 	// Given
-	s.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
-	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
-	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New("not exist"))
+	s.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
+	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
+	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 
 	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
 		s.logger,

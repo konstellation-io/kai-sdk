@@ -8,10 +8,25 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
+)
+
+const (
+	productBucketProp      = "centralized-configuration.product.bucket"
+	productBucketVal       = "product-bucket"
+	wrongProductBucketVal  = "some-product-bucket"
+	workflowBucketProp     = "centralized-configuration.workflow.bucket"
+	workflowBucketVal      = "workflow-bucket"
+	wrongWorkflowBucketVal = "some-workflow-bucket"
+	processBucketProp      = "centralized-configuration.process.bucket"
+	processBucketVal       = "process-bucket"
+	wrongProcessBucketVal  = "some-process-bucket"
+	keyValue               = "KeyValue"
+	notExistMessage        = "not exist"
 )
 
 //go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.26.0 --output ../../mocks --name KeyValue --structname KeyValueMock --filename key_value_mock.go
@@ -42,13 +57,13 @@ func (s *SdkCentralizedConfigurationTestSuite) SetupTest() {
 
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ExpectOK() {
 	// Given
-	viper.SetDefault("centralized-configuration.product.bucket", "product-bucket")
-	viper.SetDefault("centralized-configuration.workflow.bucket", "workflow-bucket")
-	viper.SetDefault("centralized-configuration.process.bucket", "process-bucket")
+	viper.SetDefault(productBucketProp, productBucketVal)
+	viper.SetDefault(workflowBucketProp, workflowBucketVal)
+	viper.SetDefault(processBucketProp, processBucketVal)
 
-	s.jetstream.On("KeyValue", "product-bucket").Return(&s.productKv, nil)
-	s.jetstream.On("KeyValue", "workflow-bucket").Return(&s.workflowKv, nil)
-	s.jetstream.On("KeyValue", "process-bucket").Return(&s.processKv, nil)
+	s.jetstream.On(keyValue, productBucketVal).Return(&s.productKv, nil)
+	s.jetstream.On(keyValue, workflowBucketVal).Return(&s.workflowKv, nil)
+	s.jetstream.On(keyValue, processBucketVal).Return(&s.processKv, nil)
 
 	// When
 	conf, err := centralizedConfiguration.NewCentralizedConfiguration(s.logger, &s.jetstream)
@@ -60,13 +75,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Init
 
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ProductConfigNotExist_ExpectError() {
 	// Given
-	viper.SetDefault("centralized-configuration.product.bucket", "some-product-bucket")
-	viper.SetDefault("centralized-configuration.workflow.bucket", "some-workflow-bucket")
-	viper.SetDefault("centralized-configuration.process.bucket", "some-process-bucket")
+	viper.SetDefault(productBucketProp, wrongProductBucketVal)
+	viper.SetDefault(workflowBucketProp, wrongWorkflowBucketVal)
+	viper.SetDefault(processBucketProp, wrongProcessBucketVal)
 
-	s.jetstream.On("KeyValue", "some-product-bucket").Return(nil, errors.New("not exist"))
-	s.jetstream.On("KeyValue", "some-workflow-bucket").Return(&s.workflowKv, nil)
-	s.jetstream.On("KeyValue", "some-process-bucket").Return(&s.processKv, nil)
+	s.jetstream.On(keyValue, wrongProductBucketVal).Return(nil, errors.New(notExistMessage))
+	s.jetstream.On(keyValue, wrongWorkflowBucketVal).Return(&s.workflowKv, nil)
+	s.jetstream.On(keyValue, wrongProcessBucketVal).Return(&s.processKv, nil)
 	// When
 	config, err := centralizedConfiguration.NewCentralizedConfiguration(s.logger, &s.jetstream)
 
@@ -77,13 +92,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Init
 
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_WorkflowConfigNotExist_ExpectError() {
 	// Given
-	viper.SetDefault("centralized-configuration.product.bucket", "some-product-bucket")
-	viper.SetDefault("centralized-configuration.workflow.bucket", "some-workflow-bucket")
-	viper.SetDefault("centralized-configuration.process.bucket", "some-process-bucket")
+	viper.SetDefault(productBucketProp, wrongProductBucketVal)
+	viper.SetDefault(workflowBucketProp, wrongWorkflowBucketVal)
+	viper.SetDefault(processBucketProp, wrongProcessBucketVal)
 
-	s.jetstream.On("KeyValue", "some-product-bucket").Return(&s.productKv, nil)
-	s.jetstream.On("KeyValue", "some-workflow-bucket").Return(nil, errors.New("not exist"))
-	s.jetstream.On("KeyValue", "some-process-bucket").Return(&s.processKv, nil)
+	s.jetstream.On(keyValue, wrongProductBucketVal).Return(&s.productKv, nil)
+	s.jetstream.On(keyValue, wrongWorkflowBucketVal).Return(nil, errors.New(notExistMessage))
+	s.jetstream.On(keyValue, wrongProcessBucketVal).Return(&s.processKv, nil)
 
 	// When
 	config, err := centralizedConfiguration.NewCentralizedConfiguration(s.logger, &s.jetstream)
@@ -95,13 +110,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Init
 
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ProcessConfigNotExist_ExpectError() {
 	// Given
-	viper.SetDefault("centralized-configuration.product.bucket", "some-product-bucket")
-	viper.SetDefault("centralized-configuration.workflow.bucket", "some-workflow-bucket")
-	viper.SetDefault("centralized-configuration.process.bucket", "some-process-bucket")
+	viper.SetDefault(productBucketProp, wrongProductBucketVal)
+	viper.SetDefault(workflowBucketProp, wrongWorkflowBucketVal)
+	viper.SetDefault(processBucketProp, wrongProcessBucketVal)
 
-	s.jetstream.On("KeyValue", "some-product-bucket").Return(&s.productKv, nil)
-	s.jetstream.On("KeyValue", "some-workflow-bucket").Return(&s.workflowKv, nil)
-	s.jetstream.On("KeyValue", "some-process-bucket").Return(nil, errors.New("not exist"))
+	s.jetstream.On(keyValue, wrongProductBucketVal).Return(&s.productKv, nil)
+	s.jetstream.On(keyValue, wrongWorkflowBucketVal).Return(&s.workflowKv, nil)
+	s.jetstream.On(keyValue, wrongProcessBucketVal).Return(nil, errors.New(notExistMessage))
 
 	// When
 	config, err := centralizedConfiguration.NewCentralizedConfiguration(s.logger, &s.jetstream)
