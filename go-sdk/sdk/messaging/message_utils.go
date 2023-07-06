@@ -2,6 +2,7 @@ package messaging
 
 import (
 	"fmt"
+
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 )
@@ -16,10 +17,10 @@ type MessageUtilsImpl struct {
 	nats      *nats.Conn
 }
 
-func NewMessageUtils(nats *nats.Conn, jetstream nats.JetStreamContext) MessageUtilsImpl {
+func NewMessageUtils(ns *nats.Conn, js nats.JetStreamContext) MessageUtilsImpl {
 	return MessageUtilsImpl{
-		nats:      nats,
-		jetstream: jetstream,
+		nats:      ns,
+		jetstream: js,
 	}
 }
 

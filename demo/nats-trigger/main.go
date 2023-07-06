@@ -1,16 +1,17 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/trigger"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 	"github.com/nats-io/nats.go"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func main() {
@@ -47,7 +48,7 @@ func initializer(sdk sdk.KaiSDK) {
 		"kv_product", sdk.Metadata.GetKeyValueStoreProductName(),
 		"kv_workflow", sdk.Metadata.GetKeyValueStoreWorkflowName(),
 		"kv_process", sdk.Metadata.GetKeyValueStoreProcessName(),
-		"object_store", sdk.Metadata.GetObjectStoreName(),
+		"object-store", sdk.Metadata.GetObjectStoreName(),
 	)
 
 	sdk.Logger.V(1).Info("PathUtils",
@@ -55,7 +56,7 @@ func initializer(sdk sdk.KaiSDK) {
 		"composeBasePath", sdk.PathUtils.ComposePath("test"))
 }
 
-func natsSubscriberRunner(tr *trigger.TriggerRunner, sdk sdk.KaiSDK) {
+func natsSubscriberRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
 	sdk.Logger.Info("Starting nats subscriber")
 
 	nc, _ := nats.Connect("nats://localhost:4222")

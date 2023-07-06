@@ -24,14 +24,15 @@ type Messaging struct {
 	messageUtils   messageUtils
 }
 
-func NewMessaging(logger logr.Logger, nats *nats.Conn, jetstream nats.JetStreamContext,
-	requestMessage *kai.KaiNatsMessage) *Messaging {
+func NewMessaging(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext,
+	requestMessage *kai.KaiNatsMessage,
+) *Messaging {
 	return &Messaging{
 		logger.WithName("[MESSAGING]"),
-		nats,
-		jetstream,
+		ns,
+		js,
 		requestMessage,
-		NewMessageUtils(nats, jetstream),
+		NewMessageUtils(ns, js),
 	}
 }
 
@@ -51,12 +52,12 @@ func (ms Messaging) SendAnyWithRequestID(response *anypb.Any, requestID string, 
 	ms.publishAny(response, requestID, kai.MessageType_OK, ms.getOptionalString(channelOpt))
 }
 
-// TODO remove this
+// TODO remove this.
 func (ms Messaging) SendEarlyReply(response proto.Message, channelOpt ...string) error {
 	return ms.publishMsg(response, ms.requestMessage.GetRequestId(), kai.MessageType_EARLY_REPLY, ms.getOptionalString(channelOpt))
 }
 
-// TODO remove this
+// TODO remove this.
 func (ms Messaging) SendEarlyExit(response proto.Message, channelOpt ...string) error {
 	return ms.publishMsg(response, ms.requestMessage.GetRequestId(), kai.MessageType_EARLY_EXIT, ms.getOptionalString(channelOpt))
 }
@@ -76,12 +77,12 @@ func (ms Messaging) IsMessageError() bool {
 	return ms.requestMessage.MessageType == kai.MessageType_ERROR
 }
 
-// TODO remove this
+// TODO remove this.
 func (ms Messaging) IsMessageEarlyReply() bool {
 	return ms.requestMessage.MessageType == kai.MessageType_EARLY_REPLY
 }
 
-// TODO remove this
+// TODO remove this.
 func (ms Messaging) IsMessageEarlyExit() bool {
 	return ms.requestMessage.MessageType == kai.MessageType_EARLY_EXIT
 }

@@ -54,7 +54,7 @@ func initializer(sdk sdk.KaiSDK) {
 		"kv_product", sdk.Metadata.GetKeyValueStoreProductName(),
 		"kv_workflow", sdk.Metadata.GetKeyValueStoreWorkflowName(),
 		"kv_process", sdk.Metadata.GetKeyValueStoreProcessName(),
-		"object_store", sdk.Metadata.GetObjectStoreName(),
+		"object-store", sdk.Metadata.GetObjectStoreName(),
 	)
 
 	sdk.Logger.V(1).Info("PathUtils",
@@ -62,7 +62,7 @@ func initializer(sdk sdk.KaiSDK) {
 		"composeBasePath", sdk.PathUtils.ComposePath("test"))
 }
 
-func restServerRunner(tr *trigger.TriggerRunner, sdk sdk.KaiSDK) {
+func restServerRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
 	sdk.Logger.Info("Starting http server", "port", 8080)
 
 	bgCtx, stop := signal.NotifyContext(context2.Background(), syscall.SIGINT, syscall.SIGTERM)

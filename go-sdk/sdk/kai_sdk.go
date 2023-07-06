@@ -1,15 +1,17 @@
 package sdk
 
 import (
-	"github.com/go-logr/logr"
-	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/centralized_configuration"
-	msg "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
-	meta "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/metadata"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/object_store"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/path_utils"
 	"os"
 
+	centralizedConfiguration "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/centralized-configuration"
+	pathutils "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/path-utils"
+
+	objectstore "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/object-store"
+
+	"github.com/go-logr/logr"
+	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
+	msg "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
+	meta "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/metadata"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -66,14 +68,12 @@ type centralizedConfig interface {
 // TODO add metrics interface
 //
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock
-type measurements interface {
-}
+type measurements interface{}
 
 // TODO add storage interface
 //
 //go:generate mockery --name storage --output ../mocks --filename storage_mock.go --structname StorageMock
-type storage interface {
-}
+type storage interface{}
 
 type KaiSDK struct {
 	// Needed deps
@@ -95,13 +95,13 @@ type KaiSDK struct {
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
 	logger = logger.WithName("[KAI SDK]")
 
-	centralizedConfigInst, err := centralized_configuration.NewCentralizedConfiguration(logger, jetstreamCli)
+	centralizedConfigInst, err := centralizedConfiguration.NewCentralizedConfiguration(logger, jetstreamCli)
 	if err != nil {
 		logger.Error(err, "Error initializing Centralized Configuration")
 		os.Exit(1)
 	}
 
-	objectStoreInst, err := object_store.NewObjectStore(logger, jetstreamCli)
+	objectStoreInst, err := objectstore.NewObjectStore(logger, jetstreamCli)
 	if err != nil {
 		logger.Error(err, "Error initializing Object Store")
 		os.Exit(1)
@@ -113,7 +113,7 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		nats:              natsCli,
 		jetstream:         jetstreamCli,
 		Logger:            logger,
-		PathUtils:         path_utils.NewPathUtils(logger),
+		PathUtils:         pathutils.NewPathUtils(logger),
 		Metadata:          meta.NewMetadata(logger),
 		Messaging:         messagingInst,
 		ObjectStore:       objectStoreInst,
@@ -125,12 +125,12 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 	return sdk
 }
 
-func (sdk KaiSDK) GetRequestID() string {
+func (sdk *KaiSDK) GetRequestID() string {
 	return sdk.requestMessage.RequestId
 }
 
-func ShallowCopyWithRequest(sdk KaiSDK, requestMsg *kai.KaiNatsMessage) KaiSDK {
-	hSdk := sdk
+func ShallowCopyWithRequest(sdk *KaiSDK, requestMsg *kai.KaiNatsMessage) KaiSDK {
+	hSdk := *sdk
 	hSdk.requestMessage = requestMsg
 	hSdk.Messaging = msg.NewMessaging(sdk.Logger, sdk.nats, sdk.jetstream, requestMsg)
 

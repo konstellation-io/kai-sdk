@@ -2,13 +2,13 @@ package runner
 
 import (
 	"fmt"
-	"github.com/nats-io/nats.go"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/exit"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/task"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/trigger"
+	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
@@ -46,7 +46,6 @@ func initializeConfiguration() {
 	viper.SetEnvPrefix("KAI")
 	viper.AutomaticEnv()
 
-	//Load base configuration
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
@@ -55,7 +54,6 @@ func initializeConfiguration() {
 	}
 	err := viper.ReadInConfig()
 
-	//Load app configuration
 	viper.SetConfigName("app")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
@@ -114,7 +112,7 @@ func getLogger() logr.Logger {
 		panic("The logger could not be initialized")
 	}
 
-	defer logger.Sync()
+	defer logger.Sync() //nolint: errcheck
 
 	log = zapr.NewLogger(logger)
 
@@ -124,14 +122,14 @@ func getLogger() logr.Logger {
 	return log
 }
 
-func (rn Runner) TriggerRunner() *trigger.TriggerRunner {
+func (rn Runner) TriggerRunner() *trigger.Runner {
 	return trigger.NewTriggerRunner(rn.logger, rn.nats, rn.jetstream)
 }
 
-func (rn Runner) TaskRunner() *task.TaskRunner {
+func (rn Runner) TaskRunner() *task.Runner {
 	return task.NewTaskRunner(rn.logger, rn.nats, rn.jetstream)
 }
 
-func (rn Runner) ExitRunner() *exit.ExitRunner {
+func (rn Runner) ExitRunner() *exit.Runner {
 	return exit.NewExitRunner(rn.logger, rn.nats, rn.jetstream)
 }

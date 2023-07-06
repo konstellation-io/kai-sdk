@@ -32,17 +32,17 @@ func (md Metadata) GetVersion() string {
 }
 
 func (md Metadata) GetObjectStoreName() string {
-	return viper.GetString("nats.object_store")
+	return viper.GetString("nats.object-store")
 }
 
 func (md Metadata) GetKeyValueStoreProductName() string {
-	return viper.GetString("centralized_configuration.product.bucket")
+	return viper.GetString("centralized-configuration.product.bucket")
 }
 
 func (md Metadata) GetKeyValueStoreWorkflowName() string {
-	return viper.GetString("centralized_configuration.workflow.bucket")
+	return viper.GetString("centralized-configuration.workflow.bucket")
 }
 
 func (md Metadata) GetKeyValueStoreProcessName() string {
-	return viper.GetString("centralized_configuration.process.bucket")
+	return viper.GetString("centralized-configuration.process.bucket")
 }

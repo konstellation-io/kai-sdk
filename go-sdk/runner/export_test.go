@@ -4,12 +4,12 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func NewTestRunner(nats *nats.Conn, jetstream nats.JetStreamContext) *Runner {
+func NewTestRunner(ns *nats.Conn, js nats.JetStreamContext) *Runner {
 	initializeConfiguration()
 
 	return &Runner{
 		logger:    getLogger(),
-		nats:      nats,
-		jetstream: jetstream,
+		nats:      ns,
+		jetstream: js,
 	}
 }

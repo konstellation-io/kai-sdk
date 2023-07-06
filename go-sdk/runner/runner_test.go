@@ -2,13 +2,13 @@ package runner_test
 
 import (
 	"fmt"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
-	"github.com/stretchr/testify/mock"
 	"testing"
 
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner"
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -17,93 +17,92 @@ type SdkRunnerTestSuite struct {
 	js mocks.JetStreamContextMock
 }
 
-func (suite *SdkRunnerTestSuite) SetupSuite() {
+func (s *SdkRunnerTestSuite) SetupSuite() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("../../testdata")
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("fatal error initializing configuration: %w", err))
-
 	}
 }
 
-func (suite *SdkRunnerTestSuite) SetupTest() {
-	suite.js = *mocks.NewJetStreamContextMock(suite.T())
+func (s *SdkRunnerTestSuite) SetupTest() {
+	s.js = *mocks.NewJetStreamContextMock(s.T())
 }
 
-func (suite *SdkRunnerTestSuite) TestNewTriggerRunnerInitialization_ExpectOK() {
+func (s *SdkRunnerTestSuite) TestNewTriggerRunnerInitialization_ExpectOK() {
 	// Given
-	suite.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(suite.T()), nil)
-	suite.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(suite.T()), nil)
+	s.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(s.T()), nil)
+	s.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(s.T()), nil)
 
 	// When
-	triggerRunner := runner.NewTestRunner(nil, &suite.js).TriggerRunner()
+	triggerRunner := runner.NewTestRunner(nil, &s.js).TriggerRunner()
 	// Then
-	suite.NotNil(triggerRunner)
+	s.NotNil(triggerRunner)
 }
 
-func (suite *SdkRunnerTestSuite) TestNewTriggerRunner_WithInitializer_ExpectPanic() {
+func (s *SdkRunnerTestSuite) TestNewTriggerRunner_WithInitializer_ExpectPanic() {
 	// Given
-	suite.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(suite.T()), nil)
-	suite.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(suite.T()), nil)
+	s.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(s.T()), nil)
+	s.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(s.T()), nil)
 
 	// Then
-	suite.Panicsf(func() {
+	s.Panicsf(func() {
 		// When
-		runner.NewTestRunner(nil, &suite.js).
+		runner.NewTestRunner(nil, &s.js).
 			TriggerRunner().
 			WithInitializer(func(sdk sdk.KaiSDK) {}).
 			Run()
 	}, "No runner function defined")
 }
 
-func (suite *SdkRunnerTestSuite) TestNewTaskRunnerInitialization_ExpectOK() {
+func (s *SdkRunnerTestSuite) TestNewTaskRunnerInitialization_ExpectOK() {
 	// Given
-	suite.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(suite.T()), nil)
-	suite.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(suite.T()), nil)
+	s.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(s.T()), nil)
+	s.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(s.T()), nil)
 
 	// When
-	triggerRunner := runner.NewTestRunner(nil, &suite.js).TaskRunner()
+	triggerRunner := runner.NewTestRunner(nil, &s.js).TaskRunner()
 	// Then
-	suite.NotNil(triggerRunner)
+	s.NotNil(triggerRunner)
 }
 
-func (suite *SdkRunnerTestSuite) TestNewTaskRunner_WithInitializer_ExpectPanic() {
+func (s *SdkRunnerTestSuite) TestNewTaskRunner_WithInitializer_ExpectPanic() {
 	// Given
-	suite.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(suite.T()), nil)
-	suite.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(suite.T()), nil)
+	s.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(s.T()), nil)
+	s.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(s.T()), nil)
 
 	// Then
-	suite.Panicsf(func() {
+	s.Panicsf(func() {
 		// When
-		runner.NewTestRunner(nil, &suite.js).
+		runner.NewTestRunner(nil, &s.js).
 			TaskRunner().
 			WithInitializer(func(sdk sdk.KaiSDK) {}).
 			Run()
 	}, "No default handler defined")
 }
 
-func (suite *SdkRunnerTestSuite) TestNewExitRunnerInitialization_ExpectOK() {
+func (s *SdkRunnerTestSuite) TestNewExitRunnerInitialization_ExpectOK() {
 	// Given
-	suite.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(suite.T()), nil)
-	suite.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(suite.T()), nil)
+	s.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(s.T()), nil)
+	s.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(s.T()), nil)
 
 	// When
-	triggerRunner := runner.NewTestRunner(nil, &suite.js).ExitRunner()
+	triggerRunner := runner.NewTestRunner(nil, &s.js).ExitRunner()
 	// Then
-	suite.NotNil(triggerRunner)
+	s.NotNil(triggerRunner)
 }
 
-func (suite *SdkRunnerTestSuite) TestNewExitRunner_WithInitializer_ExpectPanic() {
+func (s *SdkRunnerTestSuite) TestNewExitRunner_WithInitializer_ExpectPanic() {
 	// Given
-	suite.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(suite.T()), nil)
-	suite.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(suite.T()), nil)
+	s.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(s.T()), nil)
+	s.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(s.T()), nil)
 
 	// Then
-	suite.Panicsf(func() {
+	s.Panicsf(func() {
 		// When
-		runner.NewTestRunner(nil, &suite.js).
+		runner.NewTestRunner(nil, &s.js).
 			ExitRunner().
 			WithInitializer(func(sdk sdk.KaiSDK) {}).
 			Run()

@@ -2,6 +2,7 @@ package messaging_test
 
 import (
 	"fmt"
+
 	"github.com/golang/protobuf/ptypes/wrappers"
 	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
@@ -11,14 +12,14 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-func (suite *SdkMessagingTestSuite) TestMessaging_SendAny_ExpectOk() {
+func (s *SdkMessagingTestSuite) TestMessaging_SendAny_ExpectOk() {
 	// Given
 	viper.SetDefault("nats.output", "test-parent")
 	viper.SetDefault("metadata.process_id", "parent-node")
-	suite.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
+	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
-	suite.messageUtils.On("GetMaxMessageSize").Return(int64(1024*1024*1024), nil)
-	objectStore := messaging.NewTestMessaging(suite.logger, nil, &suite.jetstream, &kai.KaiNatsMessage{}, &suite.messageUtils)
+	s.messageUtils.On("GetMaxMessageSize").Return(int64(1024*1024*1024), nil)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, &kai.KaiNatsMessage{}, &s.messageUtils)
 
 	// When
 	msg, err := anypb.New(&wrappers.StringValue{
@@ -27,22 +28,22 @@ func (suite *SdkMessagingTestSuite) TestMessaging_SendAny_ExpectOk() {
 	objectStore.SendAny(msg)
 
 	// Then
-	suite.NoError(err)
-	suite.NotNil(objectStore)
-	suite.messageUtils.AssertNumberOfCalls(suite.T(), "GetMaxMessageSize", 1)
-	suite.jetstream.AssertCalled(suite.T(),
+	s.NoError(err)
+	s.NotNil(objectStore)
+	s.messageUtils.AssertNumberOfCalls(s.T(), "GetMaxMessageSize", 1)
+	s.jetstream.AssertCalled(s.T(),
 		"Publish", "test-parent", mock.AnythingOfType("[]uint8"))
 }
 
-func (suite *SdkMessagingTestSuite) TestMessaging_SendAnyWithExistingRequestMessage_ExpectOk() {
+func (s *SdkMessagingTestSuite) TestMessaging_SendAnyWithExistingRequestMessage_ExpectOk() {
 	// Given
 	viper.SetDefault("nats.output", "test-parent")
 	viper.SetDefault("metadata.process_id", "parent-node")
-	suite.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
+	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
-	suite.messageUtils.On("GetMaxMessageSize").Return(int64(1024*1024*1024), nil)
+	s.messageUtils.On("GetMaxMessageSize").Return(int64(1024*1024*1024), nil)
 	request := kai.KaiNatsMessage{RequestId: "123"}
-	objectStore := messaging.NewTestMessaging(suite.logger, nil, &suite.jetstream, &request, &suite.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, &request, &s.messageUtils)
 
 	// When
 	msg, err := anypb.New(&wrappers.StringValue{
@@ -51,22 +52,22 @@ func (suite *SdkMessagingTestSuite) TestMessaging_SendAnyWithExistingRequestMess
 	objectStore.SendAny(msg)
 
 	// Then
-	suite.NoError(err)
-	suite.NotNil(objectStore)
-	suite.messageUtils.AssertNumberOfCalls(suite.T(), "GetMaxMessageSize", 1)
-	suite.jetstream.AssertCalled(suite.T(),
+	s.NoError(err)
+	s.NotNil(objectStore)
+	s.messageUtils.AssertNumberOfCalls(s.T(), "GetMaxMessageSize", 1)
+	s.jetstream.AssertCalled(s.T(),
 		"Publish", "test-parent",
 		getOutputMessage("123", msg, "", "parent-node", kai.MessageType_OK))
 }
 
-func (suite *SdkMessagingTestSuite) TestMessaging_SendAnyWithCustomRequestId_ExpectOk() {
+func (s *SdkMessagingTestSuite) TestMessaging_SendAnyWithCustomRequestId_ExpectOk() {
 	// Given
 	viper.SetDefault("nats.output", "test-parent")
 	viper.SetDefault("metadata.process_id", "parent-node")
-	suite.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
+	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
-	suite.messageUtils.On("GetMaxMessageSize").Return(int64(1024*1024*1024), nil)
-	objectStore := messaging.NewTestMessaging(suite.logger, nil, &suite.jetstream, &kai.KaiNatsMessage{}, &suite.messageUtils)
+	s.messageUtils.On("GetMaxMessageSize").Return(int64(1024*1024*1024), nil)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, &kai.KaiNatsMessage{}, &s.messageUtils)
 
 	// When
 	msg, err := anypb.New(&wrappers.StringValue{
@@ -75,23 +76,23 @@ func (suite *SdkMessagingTestSuite) TestMessaging_SendAnyWithCustomRequestId_Exp
 	objectStore.SendAnyWithRequestID(msg, "myRequestId")
 
 	// Then
-	suite.NoError(err)
-	suite.NotNil(objectStore)
-	suite.messageUtils.AssertNumberOfCalls(suite.T(), "GetMaxMessageSize", 1)
-	suite.jetstream.AssertCalled(suite.T(),
+	s.NoError(err)
+	s.NotNil(objectStore)
+	s.messageUtils.AssertNumberOfCalls(s.T(), "GetMaxMessageSize", 1)
+	s.jetstream.AssertCalled(s.T(),
 		"Publish", "test-parent",
 		getOutputMessage("myRequestId", msg, "", "parent-node", kai.MessageType_OK))
 }
 
-func (suite *SdkMessagingTestSuite) TestMessaging_SendAny_WithCompression_ExpectOk() {
+func (s *SdkMessagingTestSuite) TestMessaging_SendAny_WithCompression_ExpectOk() {
 	// Given
 	viper.SetDefault("nats.output", "test-parent")
 	viper.SetDefault("metadata.process_id", "parent-node")
-	suite.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
+	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
-	suite.messageUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
-	objectStore := messaging.NewTestMessaging(suite.logger, nil, &suite.jetstream,
-		&kai.KaiNatsMessage{}, &suite.messageUtils)
+	s.messageUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream,
+		&kai.KaiNatsMessage{}, &s.messageUtils)
 
 	// When
 	msg, err := anypb.New(&wrappers.StringValue{
@@ -100,22 +101,22 @@ func (suite *SdkMessagingTestSuite) TestMessaging_SendAny_WithCompression_Expect
 	objectStore.SendAny(msg)
 
 	// Then
-	suite.NoError(err)
-	suite.NotNil(objectStore)
-	suite.messageUtils.AssertNumberOfCalls(suite.T(), "GetMaxMessageSize", 1)
-	suite.jetstream.AssertCalled(suite.T(),
+	s.NoError(err)
+	s.NotNil(objectStore)
+	s.messageUtils.AssertNumberOfCalls(s.T(), "GetMaxMessageSize", 1)
+	s.jetstream.AssertCalled(s.T(),
 		"Publish", "test-parent", mock.AnythingOfType("[]uint8"))
 }
 
-func (suite *SdkMessagingTestSuite) TestMessaging_SendAny_WithCompression_MessageToBig_ExpectError() {
+func (s *SdkMessagingTestSuite) TestMessaging_SendAny_WithCompression_MessageToBig_ExpectError() {
 	// Given
 	viper.SetDefault("nats.output", "test-parent")
 	viper.SetDefault("metadata.process_id", "parent-node")
-	suite.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
+	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
-	suite.messageUtils.On("GetMaxMessageSize").Return(int64(128), nil)
-	objectStore := messaging.NewTestMessaging(suite.logger, nil, &suite.jetstream,
-		&kai.KaiNatsMessage{}, &suite.messageUtils)
+	s.messageUtils.On("GetMaxMessageSize").Return(int64(128), nil)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream,
+		&kai.KaiNatsMessage{}, &s.messageUtils)
 
 	// When
 	msg, err := anypb.New(&wrappers.StringValue{
@@ -124,21 +125,21 @@ func (suite *SdkMessagingTestSuite) TestMessaging_SendAny_WithCompression_Messag
 	objectStore.SendAny(msg)
 
 	// Then
-	suite.NoError(err)
-	suite.NotNil(objectStore)
-	suite.messageUtils.AssertNumberOfCalls(suite.T(), "GetMaxMessageSize", 1)
-	suite.jetstream.AssertNotCalled(suite.T(),
+	s.NoError(err)
+	s.NotNil(objectStore)
+	s.messageUtils.AssertNumberOfCalls(s.T(), "GetMaxMessageSize", 1)
+	s.jetstream.AssertNotCalled(s.T(),
 		"Publish", "test-parent")
 }
 
-func (suite *SdkMessagingTestSuite) TestMessaging_SendAnyToSubtopic_ExpectOk() {
+func (s *SdkMessagingTestSuite) TestMessaging_SendAnyToSubtopic_ExpectOk() {
 	// Given
 	viper.SetDefault("nats.output", "test-parent")
 	viper.SetDefault("metadata.process_id", "parent-node")
-	suite.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
+	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
-	suite.messageUtils.On("GetMaxMessageSize").Return(int64(1024*1024*1024), nil)
-	objectStore := messaging.NewTestMessaging(suite.logger, nil, &suite.jetstream, &kai.KaiNatsMessage{}, &suite.messageUtils)
+	s.messageUtils.On("GetMaxMessageSize").Return(int64(1024*1024*1024), nil)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, &kai.KaiNatsMessage{}, &s.messageUtils)
 
 	// When
 	msg, err := anypb.New(&wrappers.StringValue{
@@ -147,22 +148,22 @@ func (suite *SdkMessagingTestSuite) TestMessaging_SendAnyToSubtopic_ExpectOk() {
 	objectStore.SendAny(msg, "subtopic")
 
 	// Then
-	suite.NoError(err)
-	suite.NotNil(objectStore)
-	suite.messageUtils.AssertNumberOfCalls(suite.T(), "GetMaxMessageSize", 1)
-	suite.jetstream.AssertCalled(suite.T(),
+	s.NoError(err)
+	s.NotNil(objectStore)
+	s.messageUtils.AssertNumberOfCalls(s.T(), "GetMaxMessageSize", 1)
+	s.jetstream.AssertCalled(s.T(),
 		"Publish", "test-parent.subtopic", mock.AnythingOfType("[]uint8"))
 }
 
-func (suite *SdkMessagingTestSuite) TestMessaging_SendAny_ErrorOnMaxMessageSize_ExpectError() {
+func (s *SdkMessagingTestSuite) TestMessaging_SendAny_ErrorOnMaxMessageSize_ExpectError() {
 	// Given
 	viper.SetDefault("nats.output", "test-parent")
 	viper.SetDefault("metadata.process_id", "parent-node")
-	suite.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
+	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
-	suite.messageUtils.On("GetMaxMessageSize").Return(int64(0), fmt.Errorf("error getting size"))
+	s.messageUtils.On("GetMaxMessageSize").Return(int64(0), fmt.Errorf("error getting size"))
 	request := kai.KaiNatsMessage{RequestId: "123"}
-	objectStore := messaging.NewTestMessaging(suite.logger, nil, &suite.jetstream, &request, &suite.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, &request, &s.messageUtils)
 
 	// When
 	msg, err := anypb.New(&wrappers.StringValue{
@@ -171,21 +172,21 @@ func (suite *SdkMessagingTestSuite) TestMessaging_SendAny_ErrorOnMaxMessageSize_
 	objectStore.SendAny(msg)
 
 	// Then
-	suite.NoError(err)
-	suite.NotNil(objectStore)
-	suite.messageUtils.AssertNumberOfCalls(suite.T(), "GetMaxMessageSize", 1)
-	suite.jetstream.AssertNotCalled(suite.T(), "Publish")
+	s.NoError(err)
+	s.NotNil(objectStore)
+	s.messageUtils.AssertNumberOfCalls(s.T(), "GetMaxMessageSize", 1)
+	s.jetstream.AssertNotCalled(s.T(), "Publish")
 }
 
-func (suite *SdkMessagingTestSuite) TestMessaging_SendAny_ErrorOnPublish_ExpectError() {
+func (s *SdkMessagingTestSuite) TestMessaging_SendAny_ErrorOnPublish_ExpectError() {
 	// Given
 	viper.SetDefault("nats.output", "test-parent")
 	viper.SetDefault("metadata.process_id", "parent-node")
-	suite.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
+	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(nil, fmt.Errorf("error publishing"))
-	suite.messageUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
+	s.messageUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
 	request := kai.KaiNatsMessage{RequestId: "123"}
-	objectStore := messaging.NewTestMessaging(suite.logger, nil, &suite.jetstream, &request, &suite.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, &request, &s.messageUtils)
 
 	// When
 	msg, err := anypb.New(&wrappers.StringValue{
@@ -194,8 +195,8 @@ func (suite *SdkMessagingTestSuite) TestMessaging_SendAny_ErrorOnPublish_ExpectE
 	objectStore.SendAny(msg)
 
 	// Then
-	suite.NoError(err)
-	suite.NotNil(objectStore)
-	suite.messageUtils.AssertNumberOfCalls(suite.T(), "GetMaxMessageSize", 1)
-	suite.jetstream.AssertNotCalled(suite.T(), "Publish")
+	s.NoError(err)
+	s.NotNil(objectStore)
+	s.messageUtils.AssertNumberOfCalls(s.T(), "GetMaxMessageSize", 1)
+	s.jetstream.AssertNotCalled(s.T(), "Publish")
 }
