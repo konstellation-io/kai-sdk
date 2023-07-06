@@ -5,10 +5,15 @@ import (
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
 )
 
+const (
+	requestIDValue = "some-request-id"
+	errorMessage   = "Some error message"
+)
+
 func (s *SdkMessagingTestSuite) TestMessaging_GetErrorMessage_ExpectOk() {
 	// Given
 	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   "some-request-id",
+		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_ERROR,
 		Error:       "Error message",
 	}
@@ -25,9 +30,9 @@ func (s *SdkMessagingTestSuite) TestMessaging_GetErrorMessage_ExpectOk() {
 func (s *SdkMessagingTestSuite) TestMessaging_GetErrorMessage_NoErrorMessageExistWhenTypeOK_ExpectError() {
 	// Given
 	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   "some-request-id",
+		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_OK,
-		Error:       "Some error message",
+		Error:       errorMessage,
 	}
 	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
 
@@ -42,7 +47,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_GetErrorMessage_NoErrorMessageExis
 func (s *SdkMessagingTestSuite) TestMessaging_IsMessageOk_MessageOk_ExpectTrue() {
 	// Given
 	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   "some-request-id",
+		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_OK,
 	}
 	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
@@ -58,9 +63,9 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageOk_MessageOk_ExpectTrue()
 func (s *SdkMessagingTestSuite) TestMessaging_IsMessageOk_MessageNotOk_ExpectFalse() {
 	// Given
 	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   "some-request-id",
+		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_ERROR,
-		Error:       "Some error message",
+		Error:       errorMessage,
 	}
 	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
 
@@ -75,9 +80,9 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageOk_MessageNotOk_ExpectFal
 func (s *SdkMessagingTestSuite) TestMessaging_IsMessageError_MessageError_ExpectTrue() {
 	// Given
 	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   "some-request-id",
+		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_ERROR,
-		Error:       "Some error message",
+		Error:       errorMessage,
 	}
 	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
 
@@ -92,7 +97,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageError_MessageError_Expect
 func (s *SdkMessagingTestSuite) TestMessaging_IsMessageError_MessageNotError_ExpectFalse() {
 	// Given
 	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   "some-request-id",
+		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_OK,
 	}
 	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
@@ -108,7 +113,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageError_MessageNotError_Exp
 func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyReply_MessageEarlyReply_ExpectTrue() {
 	// Given
 	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   "some-request-id",
+		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_EARLY_REPLY,
 	}
 	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
@@ -124,7 +129,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyReply_MessageEarlyRe
 func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyReply_MessageNotEarlyReply_ExpectFalse() {
 	// Given
 	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   "some-request-id",
+		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_OK,
 	}
 	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
@@ -140,7 +145,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyReply_MessageNotEarl
 func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyExit_MessageEarlyExit_ExpectTrue() {
 	// Given
 	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   "some-request-id",
+		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_EARLY_EXIT,
 	}
 	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
@@ -156,7 +161,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyExit_MessageEarlyExi
 func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyExit_MessageNotEarlyExit_ExpectFalse() {
 	// Given
 	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   "some-request-id",
+		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_OK,
 	}
 	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)

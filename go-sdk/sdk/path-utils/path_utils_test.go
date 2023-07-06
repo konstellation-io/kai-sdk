@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+const basePathValue = "/base/path"
+
 type SdkPathUtilsTestSuite struct {
 	suite.Suite
 	logger logr.Logger
@@ -24,7 +26,7 @@ func (s *SdkPathUtilsTestSuite) SetupTest() {
 	// Reset viper values before each test
 	viper.Reset()
 
-	viper.SetDefault("metadata.base_path", "/base/path")
+	viper.SetDefault("metadata.base_path", basePathValue)
 }
 
 func (s *SdkPathUtilsTestSuite) TestPathUtils_GetBasePath_ExpectOK() {
@@ -35,7 +37,7 @@ func (s *SdkPathUtilsTestSuite) TestPathUtils_GetBasePath_ExpectOK() {
 	basePath := pathUtils.GetBasePath()
 
 	// Then
-	s.Equal("/base/path", basePath)
+	s.Equal(basePathValue, basePath)
 }
 
 func (s *SdkPathUtilsTestSuite) TestPathUtils_ComposePath_NoElements_ExpectOK() {
@@ -46,7 +48,7 @@ func (s *SdkPathUtilsTestSuite) TestPathUtils_ComposePath_NoElements_ExpectOK() 
 	basePath := pathUtils.ComposePath()
 
 	// Then
-	s.Equal("/base/path", basePath)
+	s.Equal(basePathValue, basePath)
 }
 
 func (s *SdkPathUtilsTestSuite) TestPathUtils_ComposePath_OneElements_ExpectOK() {
