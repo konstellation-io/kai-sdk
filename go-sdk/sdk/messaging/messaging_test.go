@@ -1,64 +1,65 @@
 package messaging_test
 
 import (
+	"math/rand"
+	"testing"
+
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
-	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
-	"math/rand"
-	"testing"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
+	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
 )
 
 type SdkMessagingTestSuite struct {
 	suite.Suite
 	logger       logr.Logger
-	nats         *nats.Conn
 	jetstream    mocks.JetStreamContextMock
 	messageUtils mocks.MessageUtilsMock
 }
 
-func (suite *SdkMessagingTestSuite) SetupSuite() {
-	suite.logger = testr.NewWithOptions(suite.T(), testr.Options{Verbosity: 1})
+func (s *SdkMessagingTestSuite) SetupSuite() {
+	s.logger = testr.NewWithOptions(s.T(), testr.Options{Verbosity: 1})
 }
 
-func (suite *SdkMessagingTestSuite) SetupTest() {
+func (s *SdkMessagingTestSuite) SetupTest() {
 	// Reset viper values before each test
 	viper.Reset()
 
-	suite.jetstream = *mocks.NewJetStreamContextMock(suite.T())
-	suite.messageUtils = *mocks.NewMessageUtilsMock(suite.T())
+	s.jetstream = *mocks.NewJetStreamContextMock(s.T())
+	s.messageUtils = *mocks.NewMessageUtilsMock(s.T())
 }
 
-func (suite *SdkMessagingTestSuite) TestMessaging_InstantiateNewMessaging_ExpectOk() {
+func (s *SdkMessagingTestSuite) TestMessaging_InstantiateNewMessaging_ExpectOk() {
 	// When
-	objectStore := messaging.NewMessaging(suite.logger, nil, &suite.jetstream, nil)
+	objectStore := messaging.NewMessaging(s.logger, nil, &s.jetstream, nil)
 
 	// Then
-	suite.NotNil(objectStore)
+	s.NotNil(objectStore)
 }
 
-func (suite *SdkMessagingTestSuite) TestMessaging_PublishError_ExpectOk() {
+func (s *SdkMessagingTestSuite) TestMessaging_PublishError_ExpectOk() {
 	// Given
 	viper.SetDefault("nats.output", "test-parent")
 	viper.SetDefault("metadata.process_id", "parent-node")
-	suite.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
+	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
-	suite.messageUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
-	objectStore := messaging.NewTestMessaging(suite.logger, nil, &suite.jetstream, nil, &suite.messageUtils)
+	s.messageUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messageUtils)
 
 	// When
 	objectStore.SendError("some-request", "some-error")
 
 	// Then
-	suite.NotNil(objectStore)
-	suite.jetstream.AssertCalled(suite.T(),
+	s.NotNil(objectStore)
+	s.jetstream.AssertCalled(s.T(),
 		"Publish", "test-parent",
 		getOutputMessage("some-request", nil, "some-error", "parent-node", kai.MessageType_ERROR))
 }
@@ -79,7 +80,8 @@ func generateRandomString(sizeInBytes int) string {
 	return string(randomBytes)
 }
 
-func getOutputMessage(requestId string, msg interface{}, error string, fromNode string, messageType kai.MessageType) []byte {
+func getOutputMessage(requestID string, msg interface{},
+	errorMessage, fromNode string, messageType kai.MessageType) []byte {
 	var payload *anypb.Any
 	if msg != nil {
 		value, ok := msg.(*anypb.Any)
@@ -90,10 +92,10 @@ func getOutputMessage(requestId string, msg interface{}, error string, fromNode 
 		}
 	}
 	responseMsg := &kai.KaiNatsMessage{
-		RequestId:   requestId,
+		RequestId:   requestID,
 		Payload:     payload,
 		FromNode:    fromNode,
-		Error:       error,
+		Error:       errorMessage,
 		MessageType: messageType,
 	}
 	outputMsg, _ := proto.Marshal(responseMsg)

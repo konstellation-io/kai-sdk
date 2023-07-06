@@ -1,11 +1,13 @@
 package exit
 
 import (
-	"github.com/go-logr/logr"
+	"sync"
+
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/common"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
+
+	"github.com/go-logr/logr"
 	"github.com/nats-io/nats.go"
-	"sync"
 )
 
 type Preprocessor common.Handler
@@ -14,55 +16,54 @@ type Handler common.Handler
 
 type Postprocessor common.Handler
 
-type ExitRunner struct {
+type Runner struct {
 	sdk              sdk.KaiSDK
 	nats             *nats.Conn
 	jetstream        nats.JetStreamContext
 	responseHandlers map[string]Handler
 	initializer      common.Initializer
 	preprocessor     Preprocessor
-	handler          Handler
 	postprocessor    Postprocessor
 	finalizer        common.Finalizer
 }
 
 var wg sync.WaitGroup
 
-func NewExitRunner(logger logr.Logger, nats *nats.Conn, jetstream nats.JetStreamContext) *ExitRunner {
-	return &ExitRunner{
-		sdk:              sdk.NewKaiSDK(logger.WithName("[Exit]"), nats, jetstream),
-		nats:             nats,
-		jetstream:        jetstream,
+func NewExitRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
+	return &Runner{
+		sdk:              sdk.NewKaiSDK(logger.WithName("[Exit]"), ns, js),
+		nats:             ns,
+		jetstream:        js,
 		responseHandlers: make(map[string]Handler),
 	}
 }
 
-func (er *ExitRunner) WithInitializer(initializer common.Initializer) *ExitRunner {
+func (er *Runner) WithInitializer(initializer common.Initializer) *Runner {
 	er.initializer = composeInitializer(initializer)
 	return er
 }
 
-func (er *ExitRunner) WithPreprocessor(preprocessor Preprocessor) *ExitRunner {
+func (er *Runner) WithPreprocessor(preprocessor Preprocessor) *Runner {
 	er.preprocessor = composePreprocessor(preprocessor)
 	return er
 }
 
-func (er *ExitRunner) WithHandler(handler Handler) *ExitRunner {
+func (er *Runner) WithHandler(handler Handler) *Runner {
 	er.responseHandlers["default"] = composeHandler(handler)
 	return er
 }
 
-func (er *ExitRunner) WithPostprocessor(postprocessor Postprocessor) *ExitRunner {
+func (er *Runner) WithPostprocessor(postprocessor Postprocessor) *Runner {
 	er.postprocessor = composePostprocessor(postprocessor)
 	return er
 }
 
-func (er *ExitRunner) WithFinalizer(finalizer common.Finalizer) *ExitRunner {
+func (er *Runner) WithFinalizer(finalizer common.Finalizer) *Runner {
 	er.finalizer = composeFinalizer(finalizer)
 	return er
 }
 
-func (er *ExitRunner) Run() {
+func (er *Runner) Run() {
 	if er.responseHandlers["default"] == nil {
 		panic("No default handler defined")
 	}

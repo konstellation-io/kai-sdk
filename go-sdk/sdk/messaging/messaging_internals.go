@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/common"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
-	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/common"
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
+	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
 )
 
 const (
@@ -57,8 +58,8 @@ func (ms Messaging) publishError(requestID, errMsg string) {
 }
 
 func (ms Messaging) newResponseMsg(payload *anypb.Any, requestID string,
-	msgType kai.MessageType) *kai.KaiNatsMessage {
-
+	msgType kai.MessageType,
+) *kai.KaiNatsMessage {
 	ms.logger.V(1).Info("Preparing response message",
 		"requestID", requestID, "msgType", msgType)
 

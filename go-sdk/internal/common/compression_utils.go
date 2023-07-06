@@ -20,14 +20,17 @@ func IsCompressed(data []byte) bool {
 // CompressData creates compressed []byte.
 func CompressData(data []byte) ([]byte, error) {
 	var b bytes.Buffer
+
 	gz, err := gzip.NewWriterLevel(&b, CompressLevel)
 	if err != nil {
 		return nil, err
 	}
+
 	_, err = gz.Write(data)
 	if err != nil {
 		return nil, err
 	}
+
 	err = gz.Close()
 	if err != nil {
 		return nil, err
@@ -40,10 +43,12 @@ func CompressData(data []byte) ([]byte, error) {
 func UncompressData(data []byte) ([]byte, error) {
 	rd := bytes.NewReader(data)
 	gr, err := gzip.NewReader(rd)
+
 	if err != nil {
 		return nil, err
 	}
 
 	defer gr.Close()
+
 	return io.ReadAll(gr)
 }

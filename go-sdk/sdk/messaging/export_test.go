@@ -6,12 +6,14 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func NewTestMessaging(logger logr.Logger, nats *nats.Conn, jetstream nats.JetStreamContext,
-	requestMessage *kai.KaiNatsMessage, messageUtils messageUtils) *Messaging {
+func NewTestMessaging(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext,
+	requestMessage *kai.KaiNatsMessage, messageUtils messageUtils,
+) *Messaging {
+	//nolint: gocritic
 	return &Messaging{
 		logger.WithName("[MESSAGING]"),
-		nats,
-		jetstream,
+		ns,
+		js,
 		requestMessage,
 		messageUtils,
 	}

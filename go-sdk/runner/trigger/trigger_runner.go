@@ -1,63 +1,64 @@
 package trigger
 
 import (
+	"sync"
+
 	"github.com/go-logr/logr"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/common"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/types/known/anypb"
-	"sync"
 )
 
-type Runner func(tr *TriggerRunner, sdk sdk.KaiSDK)
+type RunnerFunc func(tr *Runner, sdk sdk.KaiSDK)
 
 type ResponseHandler func(sdk sdk.KaiSDK, response *anypb.Any) error
 
-type TriggerRunner struct {
+type Runner struct {
 	sdk              sdk.KaiSDK
 	nats             *nats.Conn
 	jetstream        nats.JetStreamContext
 	responseHandler  ResponseHandler
 	responseChannels sync.Map
 	initializer      common.Initializer
-	runner           Runner
+	runner           RunnerFunc
 	finalizer        common.Finalizer
 }
 
 var wg sync.WaitGroup
 
-func NewTriggerRunner(logger logr.Logger, nats *nats.Conn, jetstream nats.JetStreamContext) *TriggerRunner {
-	return &TriggerRunner{
-		sdk:              sdk.NewKaiSDK(logger.WithName("[TRIGGER]"), nats, jetstream),
-		nats:             nats,
-		jetstream:        jetstream,
+func NewTriggerRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
+	return &Runner{
+		sdk:              sdk.NewKaiSDK(logger.WithName("[TRIGGER]"), ns, js),
+		nats:             ns,
+		jetstream:        js,
 		responseChannels: sync.Map{},
 	}
 }
 
-func (tr *TriggerRunner) WithInitializer(initializer common.Initializer) *TriggerRunner {
+func (tr *Runner) WithInitializer(initializer common.Initializer) *Runner {
 	tr.initializer = composeInitializer(initializer)
 	return tr
 }
 
-func (tr *TriggerRunner) WithRunner(runner Runner) *TriggerRunner {
+func (tr *Runner) WithRunner(runner RunnerFunc) *Runner {
 	tr.runner = composeRunner(tr, runner)
 	return tr
 }
 
-func (tr *TriggerRunner) WithFinalizer(finalizer common.Finalizer) *TriggerRunner {
+func (tr *Runner) WithFinalizer(finalizer common.Finalizer) *Runner {
 	tr.finalizer = composeFinalizer(finalizer)
 	return tr
 }
 
-func (tr *TriggerRunner) GetResponseChannel(requestID string) <-chan *anypb.Any {
+func (tr *Runner) GetResponseChannel(requestID string) <-chan *anypb.Any {
 	tr.responseChannels.Store(requestID, make(chan *anypb.Any))
 	channel, _ := tr.responseChannels.Load(requestID)
 
 	return channel.(chan *anypb.Any)
 }
 
-func (tr *TriggerRunner) Run() {
+func (tr *Runner) Run() {
 	// Check required fields are initialized
 	if tr.runner == nil {
 		panic("No runner function defined")

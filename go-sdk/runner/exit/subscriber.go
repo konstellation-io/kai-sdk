@@ -2,26 +2,27 @@ package exit
 
 import (
 	"fmt"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/common"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
-	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
-	"github.com/nats-io/nats.go"
-	"github.com/spf13/viper"
-	"google.golang.org/protobuf/proto"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/nats-io/nats.go"
+	"github.com/spf13/viper"
+	"google.golang.org/protobuf/proto"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/common"
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
+	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 )
 
-func (er *ExitRunner) startSubscriber() {
-	var subscriptions []*nats.Subscription
+func (er *Runner) startSubscriber() {
+	inputSubjects := viper.GetStringSlice("nats.inputs")
+	subscriptions := make([]*nats.Subscription, len(inputSubjects))
 
-	defer wg.Done()
-
-	for _, subject := range viper.GetStringSlice("nats.inputs") {
+	for _, subject := range inputSubjects {
 		consumerName := fmt.Sprintf("%s-%s", strings.ReplaceAll(subject, ".", "-"),
 			strings.ReplaceAll(strings.ReplaceAll(er.sdk.Metadata.GetProcess(), ".", "-"), " ", "-"))
 
@@ -40,12 +41,15 @@ func (er *ExitRunner) startSubscriber() {
 		if err != nil {
 			er.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error subscribing to NATS subject",
 				"Subject", subject)
+			wg.Done()
 			os.Exit(1)
 		}
 		subscriptions = append(subscriptions, s)
 		er.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Listening to subject",
 			"Subject", subject, "Queue group", consumerName)
 	}
+
+	defer wg.Done()
 
 	// Handle sigterm and await termChan signal
 	termChan := make(chan os.Signal, 1)
@@ -64,10 +68,8 @@ func (er *ExitRunner) startSubscriber() {
 	}
 }
 
-func (er *ExitRunner) processMessage(msg *nats.Msg) {
-	var (
-		start = time.Now().UTC()
-	)
+func (er *Runner) processMessage(msg *nats.Msg) {
+	start := time.Now().UTC()
 
 	requestMsg, err := er.newRequestMessage(msg.Data)
 	if err != nil {
@@ -80,15 +82,15 @@ func (er *ExitRunner) processMessage(msg *nats.Msg) {
 	er.sdk.Logger.WithName("[SUBSCRIBER]").Info("New message received",
 		"Subject", msg.Subject, "Request ID", requestMsg.RequestId)
 
-	// Make a shallow copy of the sdk object to set inside the request msg.
-	hSdk := sdk.ShallowCopyWithRequest(er.sdk, requestMsg)
-
 	handler := er.getResponseHandler(strings.ToLower(requestMsg.FromNode))
 	if handler == nil {
 		errMsg := fmt.Sprintf("Error missing handler for node %q", requestMsg.FromNode)
 		er.processRunnerError(msg, errMsg, requestMsg.RequestId, start, requestMsg.FromNode)
 		return
 	}
+
+	// Make a shallow copy of the sdk object to set inside the request msg.
+	hSdk := sdk.ShallowCopyWithRequest(&er.sdk, requestMsg)
 
 	if er.preprocessor != nil {
 		err := er.preprocessor(hSdk, requestMsg.Payload)
@@ -128,7 +130,7 @@ func (er *ExitRunner) processMessage(msg *nats.Msg) {
 	// er.saveElapsedTime(start, end, requestMsg.FromNode, true) //TODO add metrics
 }
 
-func (er *ExitRunner) processRunnerError(msg *nats.Msg, errMsg string, requestID string, start time.Time, fromNode string) {
+func (er *Runner) processRunnerError(msg *nats.Msg, errMsg, requestID string, start time.Time, fromNode string) {
 	ackErr := msg.Ack()
 	if ackErr != nil {
 		er.sdk.Logger.WithName("[SUBSCRIBER]").Error(ackErr, errors.ErrMsgAck)
@@ -138,10 +140,10 @@ func (er *ExitRunner) processRunnerError(msg *nats.Msg, errMsg string, requestID
 	er.publishError(requestID, errMsg)
 
 	// end := time.Now().UTC() // TODO add metrics
-	//er.saveElapsedTime(start, end, fromNode, false) //TODO add metrics
+
 }
 
-func (er *ExitRunner) newRequestMessage(data []byte) (*kai.KaiNatsMessage, error) {
+func (er *Runner) newRequestMessage(data []byte) (*kai.KaiNatsMessage, error) {
 	requestMsg := &kai.KaiNatsMessage{}
 
 	var err error
@@ -158,7 +160,7 @@ func (er *ExitRunner) newRequestMessage(data []byte) (*kai.KaiNatsMessage, error
 	return requestMsg, err
 }
 
-func (er *ExitRunner) publishError(requestID, errMsg string) {
+func (er *Runner) publishError(requestID, errMsg string) {
 	responseMsg := &kai.KaiNatsMessage{
 		RequestId:   requestID,
 		Error:       errMsg,
@@ -168,7 +170,7 @@ func (er *ExitRunner) publishError(requestID, errMsg string) {
 	er.publishResponse(responseMsg, "")
 }
 
-func (er *ExitRunner) publishResponse(responseMsg *kai.KaiNatsMessage, channel string) {
+func (er *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel string) {
 	outputSubject := er.getOutputSubject(channel)
 
 	outputMsg, err := proto.Marshal(responseMsg)
@@ -193,7 +195,7 @@ func (er *ExitRunner) publishResponse(responseMsg *kai.KaiNatsMessage, channel s
 	}
 }
 
-func (er *ExitRunner) getOutputSubject(channel string) string {
+func (er *Runner) getOutputSubject(channel string) string {
 	outputSubject := viper.GetString("nats.output")
 	if channel != "" {
 		return fmt.Sprintf("%s.%s", outputSubject, channel)
@@ -203,7 +205,7 @@ func (er *ExitRunner) getOutputSubject(channel string) string {
 
 // prepareOutputMessage will check the length of the message and compress it if necessary.
 // Fails on compressed messages bigger than the threshold.
-func (er *ExitRunner) prepareOutputMessage(msg []byte) ([]byte, error) {
+func (er *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 	maxSize, err := er.getMaxMessageSize()
 	if err != nil {
 		return nil, fmt.Errorf("error getting max message size: %s", err)
@@ -235,7 +237,7 @@ func (er *ExitRunner) prepareOutputMessage(msg []byte) ([]byte, error) {
 	return outMsg, nil
 }
 
-func (er *ExitRunner) getResponseHandler(subject string) Handler {
+func (er *Runner) getResponseHandler(subject string) Handler {
 	if responseHandler, ok := er.responseHandlers[subject]; ok {
 		return responseHandler
 	}
@@ -244,8 +246,7 @@ func (er *ExitRunner) getResponseHandler(subject string) Handler {
 	return er.responseHandlers["default"]
 }
 
-// TODO this code is duplicated in the messaging package, refactor it
-func (er *ExitRunner) getMaxMessageSize() (int64, error) {
+func (er *Runner) getMaxMessageSize() (int64, error) {
 	streamInfo, err := er.jetstream.StreamInfo(viper.GetString("nats.stream"))
 	if err != nil {
 		return 0, fmt.Errorf("error getting stream's max message size: %w", err)
