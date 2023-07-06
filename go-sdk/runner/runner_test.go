@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner"
 )
 
 type SdkRunnerTestSuite struct {
@@ -42,7 +42,7 @@ func (s *SdkRunnerTestSuite) TestNewTriggerRunnerInitialization_ExpectOK() {
 	s.NotNil(triggerRunner)
 }
 
-func (s *SdkRunnerTestSuite) TestNewTriggerRunner_WithInitializer_ExpectPanic() {
+func (s *SdkRunnerTestSuite) TestNewTriggerRunner_WithoutRunner_ExpectPanic() {
 	// Given
 	s.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(s.T()), nil)
 	s.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(s.T()), nil)
@@ -52,7 +52,6 @@ func (s *SdkRunnerTestSuite) TestNewTriggerRunner_WithInitializer_ExpectPanic() 
 		// When
 		runner.NewTestRunner(nil, &s.js).
 			TriggerRunner().
-			WithInitializer(func(sdk sdk.KaiSDK) {}).
 			Run()
 	}, "No runner function defined")
 }
@@ -68,7 +67,7 @@ func (s *SdkRunnerTestSuite) TestNewTaskRunnerInitialization_ExpectOK() {
 	s.NotNil(triggerRunner)
 }
 
-func (s *SdkRunnerTestSuite) TestNewTaskRunner_WithInitializer_ExpectPanic() {
+func (s *SdkRunnerTestSuite) TestNewTaskRunner_WithoutDefaultHandler_ExpectPanic() {
 	// Given
 	s.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(s.T()), nil)
 	s.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(s.T()), nil)
@@ -78,7 +77,6 @@ func (s *SdkRunnerTestSuite) TestNewTaskRunner_WithInitializer_ExpectPanic() {
 		// When
 		runner.NewTestRunner(nil, &s.js).
 			TaskRunner().
-			WithInitializer(func(sdk sdk.KaiSDK) {}).
 			Run()
 	}, "No default handler defined")
 }
@@ -94,7 +92,7 @@ func (s *SdkRunnerTestSuite) TestNewExitRunnerInitialization_ExpectOK() {
 	s.NotNil(triggerRunner)
 }
 
-func (s *SdkRunnerTestSuite) TestNewExitRunner_WithInitializer_ExpectPanic() {
+func (s *SdkRunnerTestSuite) TestNewExitRunner_WithoutDefaultHandler_ExpectPanic() {
 	// Given
 	s.js.On("KeyValue", mock.AnythingOfType("string")).Return(mocks.NewKeyValueMock(s.T()), nil)
 	s.js.On("ObjectStore", mock.AnythingOfType("string")).Return(mocks.NewNatsObjectStoreMock(s.T()), nil)
@@ -104,7 +102,6 @@ func (s *SdkRunnerTestSuite) TestNewExitRunner_WithInitializer_ExpectPanic() {
 		// When
 		runner.NewTestRunner(nil, &s.js).
 			ExitRunner().
-			WithInitializer(func(sdk sdk.KaiSDK) {}).
 			Run()
 	}, "No default handler defined")
 }

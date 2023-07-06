@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	utilErrors "github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
+
+	utilErrors "github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
 )
 
 type CentralizedConfiguration struct {
@@ -18,12 +19,12 @@ type CentralizedConfiguration struct {
 	processKv  nats.KeyValue
 }
 
-func NewCentralizedConfiguration(logger logr.Logger, jetstream nats.JetStreamContext) (*CentralizedConfiguration, error) {
+func NewCentralizedConfiguration(logger logr.Logger, js nats.JetStreamContext) (*CentralizedConfiguration, error) {
 	wrapErr := utilErrors.Wrapper("configuration init: %w")
 
 	logger = logger.WithName("[CENTRALIZED CONFIGURATION]")
 
-	productKv, workflowKv, processKv, err := initKVStores(logger, jetstream)
+	productKv, workflowKv, processKv, err := initKVStores(logger, js)
 	if err != nil {
 		return nil, wrapErr(err)
 	}
