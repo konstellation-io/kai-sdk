@@ -49,6 +49,11 @@ func (er *Runner) WithHandler(handler Handler) *Runner {
 	return er
 }
 
+func (er *Runner) WithCustomHandler(subject string, handler Handler) *Runner {
+	er.responseHandlers[subject] = composeHandler(handler)
+	return er
+}
+
 func (er *Runner) WithPostprocessor(postprocessor Postprocessor) *Runner {
 	er.postprocessor = composePostprocessor(postprocessor)
 	return er
