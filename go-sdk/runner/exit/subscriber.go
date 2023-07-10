@@ -41,15 +41,12 @@ func (er *Runner) startSubscriber() {
 		if err != nil {
 			er.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error subscribing to NATS subject",
 				"Subject", subject)
-			wg.Done()
 			os.Exit(1)
 		}
 		subscriptions = append(subscriptions, s)
 		er.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Listening to subject",
 			"Subject", subject, "Queue group", consumerName)
 	}
-
-	defer wg.Done()
 
 	// Handle sigterm and await termChan signal
 	termChan := make(chan os.Signal, 1)

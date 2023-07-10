@@ -1,8 +1,6 @@
 package task
 
 import (
-	"sync"
-
 	"github.com/go-logr/logr"
 	"github.com/nats-io/nats.go"
 
@@ -26,8 +24,6 @@ type Runner struct {
 	postprocessor    Postprocessor
 	finalizer        common.Finalizer
 }
-
-var wg sync.WaitGroup
 
 func NewTaskRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
 	return &Runner{
@@ -81,10 +77,7 @@ func (tr *Runner) Run() {
 
 	tr.initializer(tr.sdk)
 
-	go tr.startSubscriber()
-
-	wg.Add(1)
-	wg.Wait()
+	tr.startSubscriber()
 
 	tr.finalizer(tr.sdk)
 }
