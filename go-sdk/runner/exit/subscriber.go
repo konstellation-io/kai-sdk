@@ -69,13 +69,11 @@ func (er *Runner) startSubscriber() {
 }
 
 func (er *Runner) processMessage(msg *nats.Msg) {
-	start := time.Now().UTC()
-
 	requestMsg, err := er.newRequestMessage(msg.Data)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error parsing msg.data coming from subject %s because is not a valid protobuf: %s",
 			msg.Subject, err)
-		er.processRunnerError(msg, errMsg, requestMsg.RequestId, start, requestMsg.FromNode)
+		er.processRunnerError(msg, errMsg, requestMsg.RequestId)
 		return
 	}
 
@@ -85,7 +83,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 	handler := er.getResponseHandler(strings.ToLower(requestMsg.FromNode))
 	if handler == nil {
 		errMsg := fmt.Sprintf("Error missing handler for node %q", requestMsg.FromNode)
-		er.processRunnerError(msg, errMsg, requestMsg.RequestId, start, requestMsg.FromNode)
+		er.processRunnerError(msg, errMsg, requestMsg.RequestId)
 		return
 	}
 
@@ -97,7 +95,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 		if err != nil {
 			errMsg := fmt.Sprintf("Error in node %q executing handler preprocessor for node %q: %s",
 				er.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
-			er.processRunnerError(msg, errMsg, requestMsg.RequestId, start, requestMsg.FromNode)
+			er.processRunnerError(msg, errMsg, requestMsg.RequestId)
 			return
 		}
 	}
@@ -106,7 +104,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 	if err != nil {
 		errMsg := fmt.Sprintf("Error in node %q executing handler for node %q: %s",
 			er.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
-		er.processRunnerError(msg, errMsg, requestMsg.RequestId, start, requestMsg.FromNode)
+		er.processRunnerError(msg, errMsg, requestMsg.RequestId)
 		return
 	}
 
@@ -115,7 +113,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 		if err != nil {
 			errMsg := fmt.Sprintf("Error in node %q executing handler postprocessor for node %q: %s",
 				er.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
-			er.processRunnerError(msg, errMsg, requestMsg.RequestId, start, requestMsg.FromNode)
+			er.processRunnerError(msg, errMsg, requestMsg.RequestId)
 			return
 		}
 	}
@@ -125,12 +123,9 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 	if ackErr != nil {
 		er.sdk.Logger.WithName("[SUBSCRIBER]").Error(ackErr, errors.ErrMsgAck)
 	}
-
-	// end := time.Now().UTC() // TODO add metrics
-	// er.saveElapsedTime(start, end, requestMsg.FromNode, true) //TODO add metrics
 }
 
-func (er *Runner) processRunnerError(msg *nats.Msg, errMsg, requestID string, start time.Time, fromNode string) {
+func (er *Runner) processRunnerError(msg *nats.Msg, errMsg, requestID string) {
 	ackErr := msg.Ack()
 	if ackErr != nil {
 		er.sdk.Logger.WithName("[SUBSCRIBER]").Error(ackErr, errors.ErrMsgAck)
@@ -138,9 +133,6 @@ func (er *Runner) processRunnerError(msg *nats.Msg, errMsg, requestID string, st
 
 	er.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info(errMsg)
 	er.publishError(requestID, errMsg)
-
-	// end := time.Now().UTC() // TODO add metrics
-
 }
 
 func (er *Runner) newRequestMessage(data []byte) (*kai.KaiNatsMessage, error) {

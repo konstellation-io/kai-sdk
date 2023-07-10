@@ -38,7 +38,7 @@ func (s *RunnerCommonTestSuite) SetupTest() {
 }
 
 func (s *RunnerCommonTestSuite) TestInitializeProcessConfiguration_WhenCalledWithValidaData_ExpectOk() {
-	viper.SetDefault("centralized-configuration.process.config",
+	viper.SetDefault("centralized_configuration.process.config",
 		map[string]string{"key1": "value1", "key2": "value2"})
 	s.sdk.CentralizedConfig.(*mocks.CentralizedConfigMock).
 		On("SetConfig", "key1", "value1").Return(nil)

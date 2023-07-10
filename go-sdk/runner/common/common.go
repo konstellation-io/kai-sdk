@@ -1,9 +1,10 @@
 package common
 
 import (
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/types/known/anypb"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 )
 
 type Task func(sdk sdk.KaiSDK)
@@ -15,7 +16,7 @@ type Finalizer Task
 type Handler func(sdk sdk.KaiSDK, response *anypb.Any) error
 
 func InitializeProcessConfiguration(sdk sdk.KaiSDK) {
-	values := viper.GetStringMapString("centralized-configuration.process.config")
+	values := viper.GetStringMapString("centralized_configuration.process.config")
 
 	sdk.Logger.WithName("[CONFIG INITIALIZER]").V(1).Info("Initializing process configuration")
 	if values != nil {

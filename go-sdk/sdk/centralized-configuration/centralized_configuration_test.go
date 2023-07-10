@@ -16,13 +16,13 @@ import (
 )
 
 const (
-	productBucketProp      = "centralized-configuration.product.bucket"
+	productBucketProp      = "centralized_configuration.product.bucket"
 	productBucketVal       = "product-bucket"
 	wrongProductBucketVal  = "some-product-bucket"
-	workflowBucketProp     = "centralized-configuration.workflow.bucket"
+	workflowBucketProp     = "centralized_configuration.workflow.bucket"
 	workflowBucketVal      = "workflow-bucket"
 	wrongWorkflowBucketVal = "some-workflow-bucket"
-	processBucketProp      = "centralized-configuration.process.bucket"
+	processBucketProp      = "centralized_configuration.process.bucket"
 	processBucketVal       = "process-bucket"
 	wrongProcessBucketVal  = "some-process-bucket"
 	keyValue               = "KeyValue"
