@@ -5,9 +5,10 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/metadata"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/metadata"
 )
 
 type SdkMetadataTestSuite struct {
@@ -30,10 +31,10 @@ func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	viper.SetDefault("metadata.workflow_id", "workflow-name")
 	viper.SetDefault("metadata.process_id", "process-name")
 	viper.SetDefault("metadata.version_id", "version-name")
-	viper.SetDefault("nats.object-store", "my-object-store")
-	viper.SetDefault("centralized-configuration.product.bucket", "product-bucket")
-	viper.SetDefault("centralized-configuration.workflow.bucket", "workflow-bucket")
-	viper.SetDefault("centralized-configuration.process.bucket", "process-bucket")
+	viper.SetDefault("nats.object_store", "my-object-store")
+	viper.SetDefault("centralized_configuration.product.bucket", "product-bucket")
+	viper.SetDefault("centralized_configuration.workflow.bucket", "workflow-bucket")
+	viper.SetDefault("centralized_configuration.process.bucket", "process-bucket")
 
 	// When
 	sdkMetadata := metadata.NewMetadata(s.logger)

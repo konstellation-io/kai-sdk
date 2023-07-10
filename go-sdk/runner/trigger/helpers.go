@@ -6,9 +6,10 @@ import (
 	"sync"
 	"syscall"
 
+	"google.golang.org/protobuf/types/known/anypb"
+
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/common"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
-	"google.golang.org/protobuf/types/known/anypb"
 )
 
 func composeInitializer(initializer common.Initializer) common.Initializer {

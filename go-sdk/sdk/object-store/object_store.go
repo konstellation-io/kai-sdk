@@ -5,9 +5,10 @@ import (
 	regexp2 "regexp"
 
 	"github.com/go-logr/logr"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 )
 
 type ObjectStore struct {
@@ -17,7 +18,7 @@ type ObjectStore struct {
 }
 
 func NewObjectStore(logger logr.Logger, jetstream nats.JetStreamContext) (*ObjectStore, error) {
-	objectStoreName := viper.GetString("nats.object-store")
+	objectStoreName := viper.GetString("nats.object_store")
 
 	logger = logger.WithName("[OBJECT STORE]")
 

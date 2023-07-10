@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	natsObjectStoreField = "nats.object-store"
+	natsObjectStoreField = "nats.object_store"
 	natsObjectStoreValue = "object-store"
 )
 
