@@ -1,13 +1,14 @@
-package object_store
+package objectstore
 
 import (
 	"fmt"
 	regexp2 "regexp"
 
 	"github.com/go-logr/logr"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
 )
 
 type ObjectStore struct {
@@ -33,7 +34,8 @@ func NewObjectStore(logger logr.Logger, jetstream nats.JetStreamContext) (*Objec
 	}, nil
 }
 
-func initObjectStoreDeps(logger logr.Logger, jetstream nats.JetStreamContext, objectStoreName string) (nats.ObjectStore, error) {
+func initObjectStoreDeps(logger logr.Logger, jetstream nats.JetStreamContext,
+	objectStoreName string) (nats.ObjectStore, error) {
 	if objectStoreName != "" {
 		objStore, err := jetstream.ObjectStore(objectStoreName)
 		if err != nil {
@@ -41,11 +43,10 @@ func initObjectStoreDeps(logger logr.Logger, jetstream nats.JetStreamContext, ob
 		}
 
 		return objStore, nil
-
-	} else {
-		logger.Info("Object store not defined. Skipping object store initialization.")
-		return nil, nil
 	}
+
+	logger.Info("Object store not defined. Skipping object store initialization.")
+	return nil, nil
 }
 
 func (ob ObjectStore) List(regexp ...string) ([]string, error) {
@@ -77,6 +78,7 @@ func (ob ObjectStore) List(regexp ...string) ([]string, error) {
 		}
 	}
 
+	//nolint: gomnd
 	ob.logger.V(2).Info("Files successfully listed", "Object store", ob.objectStoreName)
 
 	return response, nil
@@ -92,6 +94,7 @@ func (ob ObjectStore) Get(key string) ([]byte, error) {
 		return nil, fmt.Errorf("error retrieving object with key %s from the object store: %w", key, err)
 	}
 
+	//nolint: gomnd
 	ob.logger.V(1).Info("File successfully retrieved from object store", key, ob.objectStoreName)
 
 	return response, nil
@@ -101,6 +104,7 @@ func (ob ObjectStore) Save(key string, payload []byte) error {
 	if ob.objStore == nil {
 		return errors.ErrUndefinedObjectStore
 	}
+
 	if payload == nil {
 		return errors.ErrEmptyPayload
 	}
@@ -110,6 +114,7 @@ func (ob ObjectStore) Save(key string, payload []byte) error {
 		return fmt.Errorf("error storing object to the object store: %w", err)
 	}
 
+	//nolint: gomnd
 	ob.logger.V(1).Info("File successfully stored in object store", key, ob.objectStoreName)
 
 	return nil
@@ -125,6 +130,7 @@ func (ob ObjectStore) Delete(key string) error {
 		return fmt.Errorf("error retrieving object with key %s from the object store: %w", key, err)
 	}
 
+	//nolint: gomnd
 	ob.logger.V(1).Info("File successfully deleted in object store", key, ob.objectStoreName)
 
 	return nil
@@ -153,15 +159,16 @@ func (ob ObjectStore) Purge(regexp ...string) error {
 
 	for _, objectName := range objects {
 		if pattern == nil || pattern.MatchString(objectName) {
-			err := ob.objStore.Delete(objectName)
+			ob.logger.V(1).Info("Deleting object", "Object key", objectName) //nolint: gomnd
 
-			ob.logger.V(1).Info("Deleting object", "Object key", objectName)
+			err := ob.objStore.Delete(objectName)
 			if err != nil {
 				return fmt.Errorf("error purging objects from the object store: %w", err)
 			}
 		}
 	}
 
+	//nolint: gomnd
 	ob.logger.V(2).Info("Files successfully purged", "Object Store", ob.objectStoreName)
 
 	return nil

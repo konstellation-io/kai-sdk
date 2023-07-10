@@ -34,19 +34,19 @@ func initializer(sdk sdk.KaiSDK) {
 		"kv_product", sdk.Metadata.GetKeyValueStoreProductName(),
 		"kv_workflow", sdk.Metadata.GetKeyValueStoreWorkflowName(),
 		"kv_process", sdk.Metadata.GetKeyValueStoreProcessName(),
-		"object_store", sdk.Metadata.GetObjectStoreName(),
+		"object-store", sdk.Metadata.GetObjectStoreName(),
 	)
 
 	sdk.Logger.V(1).Info("PathUtils",
 		"getBasePath", sdk.PathUtils.GetBasePath(),
-		"composeBasePath", sdk.PathUtils.ComposeBasePath("test"))
+		"composeBasePath", sdk.PathUtils.ComposePath("test"))
 
 	value1, _ := sdk.CentralizedConfig.GetConfig("test1")
 	value2, _ := sdk.CentralizedConfig.GetConfig("test2")
 	sdk.Logger.Info("Config values from config.yaml", "test1", value1, "test2", value2)
 }
 
-func cronjobRunner(tr *trigger.TriggerRunner, sdk sdk.KaiSDK) {
+func cronjobRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
 	sdk.Logger.Info("Starting cronjob runner")
 
 	c := cron.New(

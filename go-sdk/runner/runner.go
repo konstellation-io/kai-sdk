@@ -2,13 +2,13 @@ package runner
 
 import (
 	"fmt"
-	"github.com/nats-io/nats.go"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/exit"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/task"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/trigger"
+	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
@@ -42,26 +42,32 @@ func NewRunner() *Runner {
 }
 
 func initializeConfiguration() {
-	//Load base configuration
+	// Load environment variables
+	viper.SetEnvPrefix("KAI")
+	viper.AutomaticEnv()
+
+	if viper.IsSet("APP_CONFIG_PATH") {
+		viper.AddConfigPath(viper.GetString("APP_CONFIG_PATH"))
+	}
+
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(fmt.Errorf("fatal error config file: %w", err))
-	}
 
-	//Load app configuration
+	err := viper.ReadInConfig()
+
 	viper.SetConfigName("app")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
-	err = viper.MergeInConfig()
-	if err != nil {
-		panic(fmt.Errorf("fatal error config file: %w", err))
-	}
 
-	// Load environment variables
-	viper.AutomaticEnv()
+	if viper.IsSet("APP_CONFIG_PATH") {
+		viper.AddConfigPath(viper.GetString("APP_CONFIG_PATH"))
+	}
+	err = viper.MergeInConfig()
+
+	if len(viper.AllKeys()) == 0 {
+		panic(fmt.Errorf("configuration could not be loaded: %w", err))
+	}
 
 	// Set viper default values
 	viper.SetDefault("metadata.base_path", "/")
@@ -109,7 +115,7 @@ func getLogger() logr.Logger {
 		panic("The logger could not be initialized")
 	}
 
-	defer logger.Sync()
+	defer logger.Sync() //nolint: errcheck
 
 	log = zapr.NewLogger(logger)
 
@@ -119,14 +125,14 @@ func getLogger() logr.Logger {
 	return log
 }
 
-func (rn Runner) TriggerRunner() *trigger.TriggerRunner {
+func (rn Runner) TriggerRunner() *trigger.Runner {
 	return trigger.NewTriggerRunner(rn.logger, rn.nats, rn.jetstream)
 }
 
-func (rn Runner) TaskRunner() *task.TaskRunner {
+func (rn Runner) TaskRunner() *task.Runner {
 	return task.NewTaskRunner(rn.logger, rn.nats, rn.jetstream)
 }
 
-func (rn Runner) ExitRunner() *exit.ExitRunner {
+func (rn Runner) ExitRunner() *exit.Runner {
 	return exit.NewExitRunner(rn.logger, rn.nats, rn.jetstream)
 }

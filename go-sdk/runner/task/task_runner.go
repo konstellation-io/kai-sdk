@@ -3,7 +3,6 @@ package task
 import (
 	"github.com/go-logr/logr"
 	"github.com/nats-io/nats.go"
-	"sync"
 
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/common"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
@@ -15,60 +14,57 @@ type Handler common.Handler
 
 type Postprocessor common.Handler
 
-type TaskRunner struct {
+type Runner struct {
 	sdk              sdk.KaiSDK
 	nats             *nats.Conn
 	jetstream        nats.JetStreamContext
 	responseHandlers map[string]Handler
 	initializer      common.Initializer
 	preprocessor     Preprocessor
-	handler          Handler
 	postprocessor    Postprocessor
 	finalizer        common.Finalizer
 }
 
-var wg sync.WaitGroup
-
-func NewTaskRunner(logger logr.Logger, nats *nats.Conn, jetstream nats.JetStreamContext) *TaskRunner {
-	return &TaskRunner{
-		sdk:              sdk.NewKaiSDK(logger.WithName("[TASK]"), nats, jetstream),
-		nats:             nats,
-		jetstream:        jetstream,
+func NewTaskRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
+	return &Runner{
+		sdk:              sdk.NewKaiSDK(logger.WithName("[TASK]"), ns, js),
+		nats:             ns,
+		jetstream:        js,
 		responseHandlers: make(map[string]Handler),
 	}
 }
 
-func (tr *TaskRunner) WithInitializer(initializer common.Initializer) *TaskRunner {
+func (tr *Runner) WithInitializer(initializer common.Initializer) *Runner {
 	tr.initializer = composeInitializer(initializer)
 	return tr
 }
 
-func (tr *TaskRunner) WithPreprocessor(preprocessor Preprocessor) *TaskRunner {
+func (tr *Runner) WithPreprocessor(preprocessor Preprocessor) *Runner {
 	tr.preprocessor = composePreprocessor(preprocessor)
 	return tr
 }
 
-func (tr *TaskRunner) WithHandler(handler Handler) *TaskRunner {
+func (tr *Runner) WithHandler(handler Handler) *Runner {
 	tr.responseHandlers["default"] = composeHandler(handler)
 	return tr
 }
 
-func (tr *TaskRunner) WithCustomHandler(subject string, handler Handler) *TaskRunner {
+func (tr *Runner) WithCustomHandler(subject string, handler Handler) *Runner {
 	tr.responseHandlers[subject] = composeHandler(handler)
 	return tr
 }
 
-func (tr *TaskRunner) WithPostprocessor(postprocessor Postprocessor) *TaskRunner {
+func (tr *Runner) WithPostprocessor(postprocessor Postprocessor) *Runner {
 	tr.postprocessor = composePostprocessor(postprocessor)
 	return tr
 }
 
-func (tr *TaskRunner) WithFinalizer(finalizer common.Finalizer) *TaskRunner {
+func (tr *Runner) WithFinalizer(finalizer common.Finalizer) *Runner {
 	tr.finalizer = composeFinalizer(finalizer)
 	return tr
 }
 
-func (tr *TaskRunner) Run() {
+func (tr *Runner) Run() {
 	if tr.responseHandlers["default"] == nil {
 		panic("No default handler defined")
 	}
@@ -81,10 +77,7 @@ func (tr *TaskRunner) Run() {
 
 	tr.initializer(tr.sdk)
 
-	go tr.startSubscriber()
-
-	wg.Add(1)
-	wg.Wait()
+	tr.startSubscriber()
 
 	tr.finalizer(tr.sdk)
 }

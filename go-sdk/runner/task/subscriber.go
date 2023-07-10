@@ -2,26 +2,27 @@ package task
 
 import (
 	"fmt"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/common"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
-	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
-	"github.com/nats-io/nats.go"
-	"github.com/spf13/viper"
-	"google.golang.org/protobuf/proto"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/nats-io/nats.go"
+	"github.com/spf13/viper"
+	"google.golang.org/protobuf/proto"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/common"
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
+	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 )
 
-func (tr *TaskRunner) startSubscriber() {
-	var subscriptions []*nats.Subscription
+func (tr *Runner) startSubscriber() {
+	inputSubjects := viper.GetStringSlice("nats.inputs")
+	subscriptions := make([]*nats.Subscription, len(inputSubjects))
 
-	defer wg.Done()
-
-	for _, subject := range viper.GetStringSlice("nats.inputs") {
+	for _, subject := range inputSubjects {
 		consumerName := fmt.Sprintf("%s-%s", strings.ReplaceAll(subject, ".", "-"),
 			strings.ReplaceAll(strings.ReplaceAll(tr.sdk.Metadata.GetProcess(), ".", "-"), " ", "-"))
 
@@ -64,37 +65,33 @@ func (tr *TaskRunner) startSubscriber() {
 	}
 }
 
-func (tr *TaskRunner) processMessage(msg *nats.Msg) {
-	var (
-		start = time.Now().UTC()
-	)
-
+func (tr *Runner) processMessage(msg *nats.Msg) {
 	requestMsg, err := tr.newRequestMessage(msg.Data)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error parsing msg.data coming from subject %s because is not a valid protobuf: %s", msg.Subject, err)
-		tr.processRunnerError(msg, errMsg, requestMsg.RequestId, start, requestMsg.FromNode)
+		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
 		return
 	}
 
 	tr.sdk.Logger.WithName("[SUBSCRIBER]").Info("New message received",
 		"Subject", msg.Subject, "Request ID", requestMsg.RequestId)
 
-	// Make a shallow copy of the sdk object to set inside the request msg.
-	hSdk := sdk.ShallowCopyWithRequest(tr.sdk, requestMsg)
-
 	handler := tr.getResponseHandler(strings.ToLower(requestMsg.FromNode))
 	if handler == nil {
 		errMsg := fmt.Sprintf("Error missing handler for node %q", requestMsg.FromNode)
-		tr.processRunnerError(msg, errMsg, requestMsg.RequestId, start, requestMsg.FromNode)
+		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
 		return
 	}
+
+	// Make a shallow copy of the sdk object to set inside the request msg.
+	hSdk := sdk.ShallowCopyWithRequest(&tr.sdk, requestMsg)
 
 	if tr.preprocessor != nil {
 		err := tr.preprocessor(hSdk, requestMsg.Payload)
 		if err != nil {
 			errMsg := fmt.Sprintf("Error in node %q executing handler preprocessor for node %q: %s",
 				tr.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
-			tr.processRunnerError(msg, errMsg, requestMsg.RequestId, start, requestMsg.FromNode)
+			tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
 			return
 		}
 	}
@@ -103,7 +100,7 @@ func (tr *TaskRunner) processMessage(msg *nats.Msg) {
 	if err != nil {
 		errMsg := fmt.Sprintf("Error in node %q executing handler for node %q: %s",
 			tr.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
-		tr.processRunnerError(msg, errMsg, requestMsg.RequestId, start, requestMsg.FromNode)
+		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
 		return
 	}
 
@@ -112,7 +109,7 @@ func (tr *TaskRunner) processMessage(msg *nats.Msg) {
 		if err != nil {
 			errMsg := fmt.Sprintf("Error in node %q executing handler postprocessor for node %q: %s",
 				tr.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
-			tr.processRunnerError(msg, errMsg, requestMsg.RequestId, start, requestMsg.FromNode)
+			tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
 			return
 		}
 	}
@@ -122,12 +119,9 @@ func (tr *TaskRunner) processMessage(msg *nats.Msg) {
 	if ackErr != nil {
 		tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(ackErr, errors.ErrMsgAck)
 	}
-
-	// end := time.Now().UTC() // TODO add metrics
-	// tr.saveElapsedTime(start, end, requestMsg.FromNode, true) //TODO add metrics
 }
 
-func (tr *TaskRunner) processRunnerError(msg *nats.Msg, errMsg string, requestID string, start time.Time, fromNode string) {
+func (tr *Runner) processRunnerError(msg *nats.Msg, errMsg, requestID string) {
 	ackErr := msg.Ack()
 	if ackErr != nil {
 		tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(ackErr, errors.ErrMsgAck)
@@ -135,12 +129,9 @@ func (tr *TaskRunner) processRunnerError(msg *nats.Msg, errMsg string, requestID
 
 	tr.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info(errMsg)
 	tr.publishError(requestID, errMsg)
-
-	// end := time.Now().UTC() // TODO add metrics
-	//tr.saveElapsedTime(start, end, fromNode, false) //TODO add metrics
 }
 
-func (tr *TaskRunner) newRequestMessage(data []byte) (*kai.KaiNatsMessage, error) {
+func (tr *Runner) newRequestMessage(data []byte) (*kai.KaiNatsMessage, error) {
 	requestMsg := &kai.KaiNatsMessage{}
 
 	var err error
@@ -157,7 +148,7 @@ func (tr *TaskRunner) newRequestMessage(data []byte) (*kai.KaiNatsMessage, error
 	return requestMsg, err
 }
 
-func (tr *TaskRunner) publishError(requestID, errMsg string) {
+func (tr *Runner) publishError(requestID, errMsg string) {
 	responseMsg := &kai.KaiNatsMessage{
 		RequestId:   requestID,
 		Error:       errMsg,
@@ -167,7 +158,7 @@ func (tr *TaskRunner) publishError(requestID, errMsg string) {
 	tr.publishResponse(responseMsg, "")
 }
 
-func (tr *TaskRunner) publishResponse(responseMsg *kai.KaiNatsMessage, channel string) {
+func (tr *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel string) {
 	outputSubject := tr.getOutputSubject(channel)
 
 	outputMsg, err := proto.Marshal(responseMsg)
@@ -192,7 +183,7 @@ func (tr *TaskRunner) publishResponse(responseMsg *kai.KaiNatsMessage, channel s
 	}
 }
 
-func (tr *TaskRunner) getOutputSubject(channel string) string {
+func (tr *Runner) getOutputSubject(channel string) string {
 	outputSubject := viper.GetString("nats.output")
 	if channel != "" {
 		return fmt.Sprintf("%s.%s", outputSubject, channel)
@@ -202,7 +193,7 @@ func (tr *TaskRunner) getOutputSubject(channel string) string {
 
 // prepareOutputMessage will check the length of the message and compress it if necessary.
 // Fails on compressed messages bigger than the threshold.
-func (tr *TaskRunner) prepareOutputMessage(msg []byte) ([]byte, error) {
+func (tr *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 	maxSize, err := tr.getMaxMessageSize()
 	if err != nil {
 		return nil, fmt.Errorf("error getting max message size: %s", err)
@@ -234,7 +225,7 @@ func (tr *TaskRunner) prepareOutputMessage(msg []byte) ([]byte, error) {
 	return outMsg, nil
 }
 
-func (tr *TaskRunner) getResponseHandler(subject string) Handler {
+func (tr *Runner) getResponseHandler(subject string) Handler {
 	if responseHandler, ok := tr.responseHandlers[subject]; ok {
 		return responseHandler
 	}
@@ -243,8 +234,7 @@ func (tr *TaskRunner) getResponseHandler(subject string) Handler {
 	return tr.responseHandlers["default"]
 }
 
-// TODO this code is duplicated in the messaging package, refactor it
-func (tr *TaskRunner) getMaxMessageSize() (int64, error) {
+func (tr *Runner) getMaxMessageSize() (int64, error) {
 	streamInfo, err := tr.jetstream.StreamInfo(viper.GetString("nats.stream"))
 	if err != nil {
 		return 0, fmt.Errorf("error getting stream's max message size: %w", err)

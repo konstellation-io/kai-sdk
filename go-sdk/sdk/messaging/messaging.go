@@ -21,11 +21,19 @@ type Messaging struct {
 	nats           *nats.Conn
 	jetstream      nats.JetStreamContext
 	requestMessage *kai.KaiNatsMessage
+	messageUtils   messageUtils
 }
 
-func NewMessaging(logger logr.Logger, nats *nats.Conn, jetstream nats.JetStreamContext,
-	requestMessage *kai.KaiNatsMessage) *Messaging {
-	return &Messaging{logger.WithName("[MESSAGING]"), nats, jetstream, requestMessage}
+func NewMessaging(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext,
+	requestMessage *kai.KaiNatsMessage,
+) *Messaging {
+	return &Messaging{
+		logger.WithName("[MESSAGING]"),
+		ns,
+		js,
+		requestMessage,
+		NewMessageUtils(ns, js),
+	}
 }
 
 func (ms Messaging) SendOutput(response proto.Message, channelOpt ...string) error {
@@ -44,18 +52,21 @@ func (ms Messaging) SendAnyWithRequestID(response *anypb.Any, requestID string, 
 	ms.publishAny(response, requestID, kai.MessageType_OK, ms.getOptionalString(channelOpt))
 }
 
-// TODO remove this
+// TODO remove this.
 func (ms Messaging) SendEarlyReply(response proto.Message, channelOpt ...string) error {
 	return ms.publishMsg(response, ms.requestMessage.GetRequestId(), kai.MessageType_EARLY_REPLY, ms.getOptionalString(channelOpt))
 }
 
-// TODO remove this
+// TODO remove this.
 func (ms Messaging) SendEarlyExit(response proto.Message, channelOpt ...string) error {
 	return ms.publishMsg(response, ms.requestMessage.GetRequestId(), kai.MessageType_EARLY_EXIT, ms.getOptionalString(channelOpt))
 }
 
 func (ms Messaging) GetErrorMessage() string {
-	return ms.requestMessage.GetError()
+	if ms.IsMessageError() {
+		return ms.requestMessage.GetError()
+	}
+	return ""
 }
 
 func (ms Messaging) IsMessageOK() bool {
@@ -66,12 +77,12 @@ func (ms Messaging) IsMessageError() bool {
 	return ms.requestMessage.MessageType == kai.MessageType_ERROR
 }
 
-// TODO remove this
+// TODO remove this.
 func (ms Messaging) IsMessageEarlyReply() bool {
 	return ms.requestMessage.MessageType == kai.MessageType_EARLY_REPLY
 }
 
-// TODO remove this
+// TODO remove this.
 func (ms Messaging) IsMessageEarlyExit() bool {
 	return ms.requestMessage.MessageType == kai.MessageType_EARLY_EXIT
 }

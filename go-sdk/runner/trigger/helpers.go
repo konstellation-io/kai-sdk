@@ -1,13 +1,15 @@
 package trigger
 
 import (
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/common"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
-	"google.golang.org/protobuf/types/known/anypb"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+
+	"google.golang.org/protobuf/types/known/anypb"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/common"
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 )
 
 func composeInitializer(initializer common.Initializer) common.Initializer {
@@ -24,8 +26,8 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 	}
 }
 
-func composeRunner(triggerRunner *TriggerRunner, userRunner Runner) Runner {
-	return func(runner *TriggerRunner, sdk sdk.KaiSDK) {
+func composeRunner(triggerRunner *Runner, userRunner RunnerFunc) RunnerFunc {
+	return func(runner *Runner, sdk sdk.KaiSDK) {
 		sdk.Logger.WithName("[RUNNER]").V(1).Info("Running TriggerRunner...")
 
 		if userRunner != nil {
@@ -50,7 +52,7 @@ func composeRunner(triggerRunner *TriggerRunner, userRunner Runner) Runner {
 		})
 
 		wg.Done()
-		sdk.Logger.WithName("[RUNNER]").Info("Runner shutdown")
+		sdk.Logger.WithName("[RUNNER]").Info("RunnerFunc shutdown")
 	}
 }
 

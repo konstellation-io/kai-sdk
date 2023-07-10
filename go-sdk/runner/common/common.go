@@ -1,9 +1,10 @@
 package common
 
 import (
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/types/known/anypb"
+
+	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 )
 
 type Task func(sdk sdk.KaiSDK)

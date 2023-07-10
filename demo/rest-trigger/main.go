@@ -14,10 +14,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/anypb"
+
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/trigger"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
-	"google.golang.org/protobuf/types/known/anypb"
 )
 
 func main() {
@@ -59,10 +60,10 @@ func initializer(sdk sdk.KaiSDK) {
 
 	sdk.Logger.V(1).Info("PathUtils",
 		"getBasePath", sdk.PathUtils.GetBasePath(),
-		"composeBasePath", sdk.PathUtils.ComposeBasePath("test"))
+		"composeBasePath", sdk.PathUtils.ComposePath("test"))
 }
 
-func restServerRunner(tr *trigger.TriggerRunner, sdk sdk.KaiSDK) {
+func restServerRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
 	sdk.Logger.Info("Starting http server", "port", 8080)
 
 	bgCtx, stop := signal.NotifyContext(context2.Background(), syscall.SIGINT, syscall.SIGTERM)
