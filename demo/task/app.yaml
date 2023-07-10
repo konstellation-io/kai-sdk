@@ -1,7 +1,7 @@
 metadata:
   product_id: Task process
   workflow_id: Task workflow
-  process_id: Task proces
+  process_id: Task process
   version_id: Task version v1.0.0
   base_path: "/Some/Path"
 

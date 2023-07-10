@@ -1,7 +1,7 @@
 metadata:
   product_id: Exit process
   workflow_id: Exit workflow
-  process_id: Exit proces
+  process_id: Exit process
   version_id: Exit version v1.0.0
   base_path: "/Some/Path"
 
