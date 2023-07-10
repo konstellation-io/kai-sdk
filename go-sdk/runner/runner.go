@@ -46,19 +46,22 @@ func initializeConfiguration() {
 	viper.SetEnvPrefix("KAI")
 	viper.AutomaticEnv()
 
+	if viper.IsSet("APP_CONFIG_PATH") {
+		viper.AddConfigPath(viper.GetString("APP_CONFIG_PATH"))
+	}
+
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
-	if viper.IsSet("KAI_APP_CONFIG_PATH") {
-		viper.AddConfigPath(viper.GetString("KAI_APP_CONFIG_PATH"))
-	}
+
 	err := viper.ReadInConfig()
 
 	viper.SetConfigName("app")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
-	if viper.IsSet("KAI_APP_CONFIG_PATH") {
-		viper.AddConfigPath(viper.GetString("KAI_APP_CONFIG_PATH"))
+
+	if viper.IsSet("APP_CONFIG_PATH") {
+		viper.AddConfigPath(viper.GetString("APP_CONFIG_PATH"))
 	}
 	err = viper.MergeInConfig()
 

@@ -1,0 +1,35 @@
+version: "v1.0.0"
+description: "Demo"
+name: "demo"
+workflows:
+  - name: "workflow-id"
+    type: data
+    processes:
+      - name: "cronjob-trigger"
+        image: "konstellation/demo-cronjob-trigger:latest"
+        type: "trigger"
+        subscriptions:
+          - "exit-process"
+      - name: "rest-trigger"
+        image: "konstellation/demo-rest-trigger:latest"
+        type: "trigger"
+        subscriptions:
+          - "exit-process"
+        networking:
+          targetPort: 8080
+          destinationPort: 8080
+          protocol: "TCP"
+      - name: "task-process"
+        image: "konstellation/demo-task:latest"
+        type: "task"
+        objectStore:
+          scope: "workflow"
+          name: "task-obj"
+        subscriptions:
+          - "rest-trigger"
+          - "cronjob-trigger"
+      - name: "exit-process"
+        image: "konstellation/demo-exit:latest"
+        type: "exit"
+        subscriptions:
+          - "task-process"
