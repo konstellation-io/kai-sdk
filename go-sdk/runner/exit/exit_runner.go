@@ -1,8 +1,6 @@
 package exit
 
 import (
-	"sync"
-
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/common"
 	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
 
@@ -26,8 +24,6 @@ type Runner struct {
 	postprocessor    Postprocessor
 	finalizer        common.Finalizer
 }
-
-var wg sync.WaitGroup
 
 func NewExitRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
 	return &Runner{
@@ -76,10 +72,7 @@ func (er *Runner) Run() {
 
 	er.initializer(er.sdk)
 
-	go er.startSubscriber()
-
-	wg.Add(1)
-	wg.Wait()
+	er.startSubscriber()
 
 	er.finalizer(er.sdk)
 }
