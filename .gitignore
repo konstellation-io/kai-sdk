@@ -7,8 +7,7 @@
 !.vscode/extensions.json
 *.code-workspace
 
-# e2e
-e2e/test_assets/nodeC-vol/bin/
+build
 
 # Local History for Visual Studio Code
 .history/
