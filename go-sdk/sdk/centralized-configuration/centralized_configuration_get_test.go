@@ -3,9 +3,9 @@ package centralizedconfiguration_test
 import (
 	"errors"
 
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/mocks"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/centralized-configuration"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v1/mocks"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/centralized-configuration"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
 	"github.com/nats-io/nats.go"
 )
 

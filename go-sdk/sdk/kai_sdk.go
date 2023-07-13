@@ -3,15 +3,15 @@ package sdk
 import (
 	"os"
 
-	centralizedConfiguration "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/centralized-configuration"
-	pathutils "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/path-utils"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/centralized-configuration"
+	pathutils "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/path-utils"
 
-	objectstore "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/object-store"
+	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/object-store"
 
 	"github.com/go-logr/logr"
-	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
-	msg "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
-	meta "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/metadata"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/v1/protos"
+	msg "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
+	meta "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/metadata"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
