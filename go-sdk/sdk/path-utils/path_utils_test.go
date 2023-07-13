@@ -3,7 +3,7 @@ package pathutils_test
 import (
 	"testing"
 
-	pathUtils2 "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/path-utils"
+	pathUtils2 "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/path-utils"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"

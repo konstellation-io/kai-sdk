@@ -4,8 +4,8 @@ import (
 	"sync"
 
 	"github.com/go-logr/logr"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner/common"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v1/runner/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/types/known/anypb"
 )

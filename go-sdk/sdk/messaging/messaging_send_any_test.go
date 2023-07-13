@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	kai "github.com/konstellation-io/kre-runners/go-sdk/v1/protos"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/v1/protos"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
 )
 
 const (
