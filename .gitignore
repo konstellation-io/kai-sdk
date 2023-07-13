@@ -1,4 +1,6 @@
 .idea
+go.work
+go.work.sum
 
 .vscode/
 !.vscode/settings.json
