@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/golang/protobuf/ptypes/wrappers"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/runner"
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v1/runner"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 )

@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	messaging "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/messaging"
+	messaging "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
 	mock "github.com/stretchr/testify/mock"
 )
 

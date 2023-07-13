@@ -3,12 +3,12 @@ package objectstore_test
 import (
 	"fmt"
 
-	objectStore2 "github.com/konstellation-io/kre-runners/go-sdk/v1/sdk/object-store"
+	objectStore2 "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/object-store"
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/konstellation-io/kre-runners/go-sdk/v1/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v1/internal/errors"
 )
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectStoreNotInitialized_ExpectError() {
