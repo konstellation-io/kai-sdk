@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	objectStore2 "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/object-store"
+	objectStore2 "github.com/konstellation-io/kai-sdk/go-sdk/sdk/object-store"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/internal/errors"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/mocks"
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
 )
 
 //go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.26.0 --output ../../mocks --name JetStreamContext --structname JetStreamContextMock --filename jetstream_context_mock.go

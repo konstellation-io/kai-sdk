@@ -12,10 +12,10 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/internal/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/internal/errors"
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/v1/protos"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 )
 
 func (tr *Runner) startSubscriber() {

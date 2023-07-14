@@ -2,7 +2,7 @@ package messaging
 
 import (
 	"github.com/go-logr/logr"
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/v1/protos"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
