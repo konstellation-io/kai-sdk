@@ -1,8 +1,8 @@
 package centralizedconfiguration_test
 
 import (
-	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/centralized-configuration"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 	"github.com/nats-io/nats.go"
 )
 

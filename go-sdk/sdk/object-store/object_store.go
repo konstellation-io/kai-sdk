@@ -8,7 +8,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
 )
 
 type ObjectStore struct {

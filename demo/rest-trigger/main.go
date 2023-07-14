@@ -16,9 +16,9 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/runner"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/runner/trigger"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/runner"
+	"github.com/konstellation-io/kai-sdk/go-sdk/runner/trigger"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 )
 
 func main() {

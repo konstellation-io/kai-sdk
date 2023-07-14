@@ -8,9 +8,9 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/internal/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/internal/errors"
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/v1/protos"
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
 )
 
 const (
