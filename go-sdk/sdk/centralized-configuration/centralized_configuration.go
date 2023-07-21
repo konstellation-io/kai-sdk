@@ -79,7 +79,9 @@ func (cc CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.S
 
 	if len(scopeOpt) > 0 {
 		config, err := cc.getConfigFromScope(key, scopeOpt[0])
-		if err != nil {
+		if errors.Is(err, nats.ErrKeyNotFound) {
+			return "", wrapErr(fmt.Errorf("%w: %q", ErrKeyNotFound, key))
+		} else if err != nil {
 			return "", wrapErr(err)
 		}
 		return config, nil

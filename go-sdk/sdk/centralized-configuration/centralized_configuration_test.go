@@ -136,13 +136,14 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 		&s.workflowKv,
 		&s.processKv,
 	)
+	s.Require().NoError(err)
 
 	// When
 	err = config.DeleteConfig("key1", messaging.ProductScope)
+	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
-	s.NoError(err)
 	s.productKv.AssertNumberOfCalls(s.T(), "Delete", 1)
 }
 
