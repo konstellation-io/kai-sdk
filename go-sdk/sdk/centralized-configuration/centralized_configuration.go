@@ -12,6 +12,8 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
 )
 
+var ErrKeyNotFound = errors.New("config not found in any key-value store for key")
+
 type CentralizedConfiguration struct {
 	logger     logr.Logger
 	productKv  nats.KeyValue
@@ -96,7 +98,7 @@ func (cc CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.S
 		}
 	}
 
-	return "", wrapErr(fmt.Errorf("error retrieving config with key %q, not found in any key-value store", key))
+	return "", wrapErr(fmt.Errorf("%w: %q", ErrKeyNotFound, key))
 }
 
 func (cc CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...messaging.Scope) error {
