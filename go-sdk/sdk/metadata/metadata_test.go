@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/metadata"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 )
 
 type SdkMetadataTestSuite struct {

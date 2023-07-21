@@ -8,8 +8,8 @@ import (
 
 	"google.golang.org/protobuf/types/known/anypb"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/runner/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 )
 
 func composeInitializer(initializer common.Initializer) common.Initializer {

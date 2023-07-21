@@ -8,8 +8,8 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 
-	utilErrors "github.com/konstellation-io/kai-sdk/go-sdk/v1/internal/errors"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
+	utilErrors "github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 )
 
 var ErrKeyNotFound = errors.New("config not found in any key-value store for key")

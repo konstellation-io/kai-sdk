@@ -1,8 +1,8 @@
 package exit
 
 import (
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/runner/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 
 	"github.com/go-logr/logr"
 	"github.com/nats-io/nats.go"
