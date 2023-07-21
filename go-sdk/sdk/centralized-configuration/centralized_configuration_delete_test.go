@@ -16,13 +16,14 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 		&s.workflowKv,
 		&s.processKv,
 	)
+	s.Require().NoError(err)
 
 	// When
 	err = config.DeleteConfig("key1", messaging.WorkflowScope)
+	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
-	s.NoError(err)
 	s.workflowKv.AssertNumberOfCalls(s.T(), "Delete", 1)
 }
 
@@ -36,13 +37,14 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 		&s.workflowKv,
 		&s.processKv,
 	)
+	s.Require().NoError(err)
 
 	// When
 	err = config.DeleteConfig("key1", messaging.ProcessScope)
+	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
-	s.NoError(err)
 	s.processKv.AssertNumberOfCalls(s.T(), "Delete", 1)
 }
 
@@ -58,15 +60,18 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 		&s.workflowKv,
 		&s.processKv,
 	)
+	s.Require().NoError(err)
 
 	// When
 	err = config.DeleteConfig("key1", messaging.ProductScope)
+	s.Error(err)
 	err = config.DeleteConfig("key1", messaging.WorkflowScope)
+	s.Error(err)
 	err = config.DeleteConfig("key1", messaging.ProcessScope)
+	s.Error(err)
 
 	// Then
 	s.NotNil(config)
-	s.Error(err)
 	s.productKv.AssertNumberOfCalls(s.T(), "Delete", 1)
 	s.workflowKv.AssertNumberOfCalls(s.T(), "Delete", 1)
 	s.processKv.AssertNumberOfCalls(s.T(), "Delete", 1)
