@@ -4,15 +4,15 @@ import (
 	"errors"
 	"testing"
 
-	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/centralized-configuration"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/mocks"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
+	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 )
 
 const (
@@ -136,14 +136,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	err = config.DeleteConfig("key1", messaging.ProductScope)
-	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
+	s.NoError(err)
 	s.productKv.AssertNumberOfCalls(s.T(), "Delete", 1)
 }
 

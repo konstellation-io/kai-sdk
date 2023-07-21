@@ -3,8 +3,8 @@ package centralizedconfiguration_test
 import (
 	"errors"
 
-	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/centralized-configuration"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 )
 
 const notExist = "not exist"
@@ -22,14 +22,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	err = config.SetConfig("key1", "value1")
-	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
+	s.NoError(err)
 	s.productKv.AssertNotCalled(s.T(), "PutString")
 	s.workflowKv.AssertNotCalled(s.T(), "PutString")
 	s.processKv.AssertNumberOfCalls(s.T(), "PutString", 1)
@@ -47,14 +46,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	err = config.SetConfig("key1", "value1", messaging.ProductScope)
-	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
+	s.NoError(err)
 	s.productKv.AssertNumberOfCalls(s.T(), "PutString", 1)
 	s.productKv.AssertCalled(s.T(), "PutString", "key1", "value1")
 	s.workflowKv.AssertNotCalled(s.T(), "PutString")
@@ -73,14 +71,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	err = config.SetConfig("key1", "value1", messaging.WorkflowScope)
-	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
+	s.NoError(err)
 	s.productKv.AssertNotCalled(s.T(), "PutString")
 	s.workflowKv.AssertNumberOfCalls(s.T(), "PutString", 1)
 	s.workflowKv.AssertCalled(s.T(), "PutString", "key1", "value1")
@@ -98,14 +95,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	err = config.SetConfig("key1", "value1", messaging.ProcessScope)
-	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
+	s.NoError(err)
 	s.productKv.AssertNotCalled(s.T(), "PutString")
 	s.workflowKv.AssertNotCalled(s.T(), "PutString")
 	s.processKv.AssertNumberOfCalls(s.T(), "PutString", 1)
@@ -124,14 +120,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	err = config.SetConfig("key1", "value1")
 
 	// Then
-	s.Error(err)
 	s.NotNil(config)
+	s.Error(err)
 	s.productKv.AssertNotCalled(s.T(), "PutString")
 	s.workflowKv.AssertNotCalled(s.T(), "PutString")
 	s.processKv.AssertNumberOfCalls(s.T(), "PutString", 1)

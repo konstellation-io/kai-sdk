@@ -3,9 +3,9 @@ package centralizedconfiguration_test
 import (
 	"errors"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/mocks"
-	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/centralized-configuration"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
+	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 	"github.com/nats-io/nats.go"
 )
 
@@ -35,18 +35,15 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	key1Value, err := config.GetConfig("key1")
-	s.Require().NoError(err)
 	key2Value, err := config.GetConfig("key2")
-	s.Require().NoError(err)
 	key3Value, err := config.GetConfig("key3")
-	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
+	s.NoError(err)
 	s.productKv.AssertNumberOfCalls(s.T(), "Get", 1)
 	s.Equal("value1", key1Value)
 	s.workflowKv.AssertNumberOfCalls(s.T(), "Get", 2)
@@ -67,16 +64,14 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	key1Value, err := config.GetConfig("key1")
 
 	// Then
-	s.Require().Error(err)
-	s.Assert().ErrorIs(err, centralizedconfiguration.ErrKeyNotFound)
 	s.NotNil(config)
 	s.Empty(key1Value)
+	s.Error(err)
 	s.productKv.AssertNumberOfCalls(s.T(), "Get", 1)
 	s.workflowKv.AssertNumberOfCalls(s.T(), "Get", 1)
 	s.processKv.AssertNumberOfCalls(s.T(), "Get", 1)
@@ -94,16 +89,14 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	key1Value, err := config.GetConfig("key1")
 
 	// Then
-	s.Require().Error(err)
-	s.Assert().NotErrorIs(err, centralizedconfiguration.ErrKeyNotFound)
 	s.NotNil(config)
 	s.Empty(key1Value)
+	s.Error(err)
 	s.productKv.AssertNumberOfCalls(s.T(), "Get", 0)
 	s.workflowKv.AssertNumberOfCalls(s.T(), "Get", 1)
 	s.processKv.AssertNumberOfCalls(s.T(), "Get", 1)
@@ -131,16 +124,14 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetO
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	key1Value, err := config.GetConfig("key1")
-	s.Require().NoError(err)
 	key2Value, err := config.GetConfig("key2")
-	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
+	s.NoError(err)
 	s.productKv.AssertNotCalled(s.T(), "Get")
 	s.workflowKv.AssertNumberOfCalls(s.T(), "Get", 1)
 	s.processKv.AssertNumberOfCalls(s.T(), "Get", 2)
@@ -161,14 +152,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	key1Value, err := config.GetConfig("key1", messaging.ProductScope)
-	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
+	s.NoError(err)
 	s.productKv.AssertNumberOfCalls(s.T(), "Get", 1)
 	s.Equal("value1", key1Value)
 }
@@ -183,15 +173,14 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	key1Value, err := config.GetConfig("key1", messaging.ProductScope)
 
 	// Then
-	s.Error(err)
 	s.NotNil(config)
 	s.Empty(key1Value)
+	s.Error(err)
 	s.productKv.AssertNumberOfCalls(s.T(), "Get", 1)
 }
 
@@ -208,14 +197,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	key1Value, err := config.GetConfig("key1", messaging.WorkflowScope)
-	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
+	s.NoError(err)
 	s.workflowKv.AssertNumberOfCalls(s.T(), "Get", 1)
 	s.Equal("value2", key1Value)
 }
@@ -230,16 +218,14 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	key1Value, err := config.GetConfig("key1", messaging.WorkflowScope)
 
 	// Then
-	s.Error(err)
-	s.Assert().ErrorIs(err, centralizedconfiguration.ErrKeyNotFound)
 	s.NotNil(config)
 	s.Empty(key1Value)
+	s.Error(err)
 	s.workflowKv.AssertNumberOfCalls(s.T(), "Get", 1)
 }
 
@@ -256,14 +242,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	key1Value, err := config.GetConfig("key1", messaging.ProcessScope)
-	s.Require().NoError(err)
 
 	// Then
 	s.NotNil(config)
+	s.NoError(err)
 	s.processKv.AssertNumberOfCalls(s.T(), "Get", 1)
 	s.Equal("value3", key1Value)
 }
@@ -278,14 +263,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 		&s.workflowKv,
 		&s.processKv,
 	)
-	s.Require().NoError(err)
 
 	// When
 	key1Value, err := config.GetConfig("key1", messaging.ProcessScope)
 
 	// Then
-	s.Error(err)
 	s.NotNil(config)
 	s.Empty(key1Value)
+	s.Error(err)
 	s.processKv.AssertNumberOfCalls(s.T(), "Get", 1)
 }

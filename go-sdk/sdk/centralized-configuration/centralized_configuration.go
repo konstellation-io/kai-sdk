@@ -8,11 +8,9 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 
-	utilErrors "github.com/konstellation-io/kai-sdk/go-sdk/v1/internal/errors"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
+	utilErrors "github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 )
-
-var ErrKeyNotFound = errors.New("config not found in any key-value store for key")
 
 type CentralizedConfiguration struct {
 	logger     logr.Logger
@@ -79,9 +77,7 @@ func (cc CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.S
 
 	if len(scopeOpt) > 0 {
 		config, err := cc.getConfigFromScope(key, scopeOpt[0])
-		if errors.Is(err, nats.ErrKeyNotFound) {
-			return "", wrapErr(fmt.Errorf("%w: %q", ErrKeyNotFound, key))
-		} else if err != nil {
+		if err != nil {
 			return "", wrapErr(err)
 		}
 		return config, nil
@@ -100,7 +96,7 @@ func (cc CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.S
 		}
 	}
 
-	return "", wrapErr(fmt.Errorf("%w: %q", ErrKeyNotFound, key))
+	return "", wrapErr(fmt.Errorf("error retrieving config with key %q, not found in any key-value store", key))
 }
 
 func (cc CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...messaging.Scope) error {

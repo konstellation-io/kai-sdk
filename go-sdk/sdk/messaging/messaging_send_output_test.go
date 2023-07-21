@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
 
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/v1/protos"
-	"github.com/konstellation-io/kai-sdk/go-sdk/v1/sdk/messaging"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 )
 
 func (s *SdkMessagingTestSuite) TestMessaging_SendOutput_ExpectOk() {
