@@ -1,12 +1,13 @@
-# KRE Runners
+# KAI SDK
 
-This repo contains all language runners for [KRE](https://github.com/konstellation-io/kre).
+This repo contains all language SDKs for [KAI](https://github.com/konstellation-io/kai).
 
 ## Runners coverage
 
 |      Component       |                       Coverage                       |                       Bugs                       |               Maintainability Rating               |                      Go report                     |
 |:--------------------:|:----------------------------------------------------:|:------------------------------------------------:| :------------------------------------------------: | :------------------------------------------------: |
 |        GO SDK        | [![coverage][go-sdk-coverage]][go-sdk-coverage-link] | [![bugs][go-sdk-bugs]][go-sdk-bugs-link] | [-![mr][go-sdk-mr]][go-sdk-mr-link] | - |
+|        Py SDK        | [![coverage][py-sdk-coverage]][py-sdk-coverage-link] | [![bugs][py-sdk-bugs]][py-sdk-bugs-link] | [-![mr][py-sdk-mr]][py-sdk-mr-link] | - |
 | KRT Files Downloader | [![coverage][krt-fd-coverage]][krt-fd-coverage-link] |     [![bugs][krt-fd-bugs]][krt-fd-bugs-link]     |         [![mr][krt-fd-mr]][krt-fd-mr-link]         | - |
 
 
@@ -18,6 +19,14 @@ This repo contains all language runners for [KRE](https://github.com/konstellati
 [go-sdk-loc-link]: https://sonarcloud.io/dashboard?id=konstellation-io_go-sdk
 [go-sdk-mr]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_go-sdk&metric=sqale_rating
 [go-sdk-mr-link]: https://sonarcloud.io/dashboard?id=konstellation-io_go-sdk
+[py-sdk-coverage]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_py-sdk&metric=coverage
+[py-sdk-coverage-link]: https://sonarcloud.io/dashboard?id=konstellation-io_py-sdk
+[py-sdk-bugs]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_kre_py&metric=bugs
+[py-sdk-bugs-link]: https://sonarcloud.io/dashboard?id=konstellation-io_py-sdk
+[py-sdk-loc]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_py-sdk&metric=ncloc
+[py-sdk-loc-link]: https://sonarcloud.io/dashboard?id=konstellation-io_py-sdk
+[py-sdk-mr]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_py-sdk&metric=sqale_rating
+[py-sdk-mr-link]: https://sonarcloud.io/dashboard?id=konstellation-io_py-sdk
 [krt-fd-coverage]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_krt_files_downloader&metric=coverage
 [krt-fd-coverage-link]: https://sonarcloud.io/dashboard?id=konstellation-io_krt_files_downloader
 [krt-fd-bugs]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_krt_files_downloader&metric=bugs
