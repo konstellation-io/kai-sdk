@@ -52,8 +52,6 @@ await ctx.prediction.save(
 
 ## Requirements
 
-## Requirements
-
 It is necessary to set the following environment variables in order to use the runner:
 
 | Name                  | Description                                                         |
