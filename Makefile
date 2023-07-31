@@ -9,9 +9,9 @@ help: ## This help
 
 .PHONY: tidy
 tidy: ## Run black, isort and codespell
-	poetry run black src \
-	&& poetry run isort src \
-	&& poetry run codespell src -I dictionary.txt \
+	poetry --directory py-sdk run black py-sdk/src \
+	&& poetry --directory py-sdk run isort py-sdk/src \
+	&& poetry --directory py-sdk run codespell py-sdk/src -I py-sdk/dictionary.txt \
 	--skip="*.git,*.json,public_input_pb2.py,public_input_pb2_grpc.py,.venv,*.lock" \
 
 .PHONY: protos
@@ -31,7 +31,7 @@ golint: ## Run golint
 
 .PHONY: test
 test: ## Run tests
-	poetry --directory backend run pytest src/tests/src/ --cov --cov-report term-missing --cov-config=pyproject.toml
+	poetry --directory py-sdk run pytest src/tests/src/ --cov --cov-report term-missing --cov-config=pyproject.toml
 
 .PHONY: docker
 docker: ## Build and Run py-sdk docker

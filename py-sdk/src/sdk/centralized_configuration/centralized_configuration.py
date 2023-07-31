@@ -1,0 +1,2 @@
+class CentralizedConfiguration:
+    pass

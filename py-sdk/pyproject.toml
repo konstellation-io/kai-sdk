@@ -8,11 +8,13 @@ packages = [{include = "py_sdk"}]
 
 [tool.poetry.dependencies]
 python = "3.11.4"
-nats-py = "2.3.1"
+nats-py = "2.3.0"
 influxdb-client = "1.37.0"
 protobuf = "4.23.4"
 pymongo = "4.4.1"
 loguru = "0.7.0"
+vyper-config = "1.1.1"
+grpcio-tools = "^1.56.2"
 
 
 [tool.poetry.group.dev.dependencies]
