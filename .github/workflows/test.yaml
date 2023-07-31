@@ -1,0 +1,137 @@
+name: Test
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'release/**'
+      - 'hotfix/**'
+  pull_request:
+    paths:
+      - 'go-sdk/**/*'
+      - 'py-sdk/**/*'
+      - '.github/workflows/test.yaml'
+    branches:
+      # Destination branches
+      - 'develop'
+
+jobs:
+  check-folder-changes:
+    runs-on: ubuntu-latest
+    name: Check folder changes
+    outputs:
+      go-sdk: ${{ steps.filter.outputs.go-sdk }}
+      py-sdk: ${{ steps.filter.outputs.py-sdk }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          go-sdk:
+            - 'go-sdk/**/*'
+            - '.github/workflows/test.yaml'
+          py-sdk:
+            - 'py-sdk/**/*'
+            - '.github/workflows/test.yaml'
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Linting and Unit tests
+    needs: check-folder-changes
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - component: go-sdk
+            changes: ${{ needs.check-folder-changes.outputs.go-sdk }}
+          - component: py-sdk
+            changes: ${{ needs.check-folder-changes.outputs.py-sdk }}
+          
+    steps:
+      - name: Checkout code
+        if: matrix.changes == 'true'
+        uses: actions/checkout@v3
+      - name: Install Go
+        if: matrix.changes == 'true' && matrix.component == 'go-sdk'
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.20.x
+      - name: Run golangci-lint
+        if: matrix.changes == 'true' && matrix.component == 'go-sdk'
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          working-directory: ./${{ matrix.component }}
+          args: --timeout=5m
+      - name: Install Python
+        if: matrix.changes == 'true' && matrix.component == 'py-sdk'
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+          working-directory: ./${{ matrix.component }}
+      - name: Install poetry and dependencies
+        if: matrix.changes == 'true' && matrix.component == 'py-sdk'
+        run: |
+          python -m pip install poetry=="1.5.1"
+          python -m poetry install --with dev
+        working-directory: ./${{ matrix.component }}
+      - name: Run unit tests Go
+        if: matrix.changes == 'true' && matrix.component == 'go-sdk'
+        run: go test ./... -cover -v -coverpkg=./... -coverprofile=coverage-unit.out --tags=unit
+        working-directory: ./${{ matrix.component }}
+      - name: Run unit tests Python
+        if: matrix.changes == 'true' && matrix.component == 'py-sdk'
+        run: make test
+        working-directory: ./${{ matrix.component }}
+      - name: Run integration tests
+        if: matrix.changes == 'true' && matrix.component == 'go-sdk'
+        run: go test ./... -cover -v -coverpkg=./... -coverprofile=coverage-integration.out --tags=integration
+        working-directory: ./${{ matrix.component }}
+      - name: Archive code coverage results
+        if: matrix.changes == 'true' && matrix.component == 'go-sdk'
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report-${{ matrix.component }}
+          path: |
+            ${{ matrix.component }}/coverage-unit.out
+            ${{ matrix.component }}/coverage-integration.out
+
+  sonarcloud:
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    needs:
+      - check-folder-changes
+      - unit-tests
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - component: go-sdk
+            changes: ${{ needs.check-folder-changes.outputs.go-sdk }}
+            sonar_token_secret: SONAR_TOKEN_GO_SDK
+          - component: py-sdk
+            changes: ${{ needs.check-folder-changes.outputs.py-sdk }}
+            sonar_token_secret: SONAR_TOKEN_PYTHON_SDK
+    steps:
+      - uses: actions/checkout@v3
+        if: matrix.changes == 'true'
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Download code coverage results
+        if: matrix.changes == 'true'
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-report-${{ matrix.component }}
+          path: |
+            ${{ matrix.component }}
+      - name: SonarCloud Scan
+        if: matrix.changes == 'true'
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          projectBaseDir: ${{ matrix.component }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets[matrix.sonar_token_secret] }}
