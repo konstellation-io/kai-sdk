@@ -1,20 +1,33 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import os
+import sys
 
 from centralized_configuration.centralized_configuration import CentralizedConfiguration
 from google.protobuf.message import Message
 from loguru._logger import Logger
+from loguru import logger
 from messaging.messaging import Messaging
 from metadata.metadata import Metadata
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from object_store.object_store import ObjectStore
 from path_utils.path_utils import PathUtils
+from typing import Optional
 
 from kai_nats_msg_pb2 import KaiNatsMessage
 
 
+logger.remove()
+logger.add(
+    sys.stdout,
+    colorize=True,
+    format="<green>{time}</green> <level>{extra[context]} {message}</level>",
+    backtrace=True,
+    diagnose=True,
+)
+
+@dataclass
 class Messaging(ABC):
     @abstractmethod
     def send_output(self, response: Message, *channel_opt: str) -> None:
@@ -52,7 +65,7 @@ class Messaging(ABC):
     def is_message_early_exit(self) -> bool:
         pass
 
-
+@dataclass
 class Metadata(ABC):
     @abstractmethod
     def get_process(self) -> str:
@@ -86,7 +99,7 @@ class Metadata(ABC):
     def get_key_value_store_process_name(self) -> str:
         pass
 
-
+@dataclass
 class ObjectStore(ABC):
     @abstractmethod
     def list(self, regexp: str) -> list:
@@ -108,7 +121,7 @@ class ObjectStore(ABC):
     def purge(self, regexp: str) -> None:
         pass
 
-
+@dataclass
 class CentralizedConfig(ABC):
     @abstractmethod
     def get_config(self, key: str, scope: str) -> str:
@@ -122,7 +135,7 @@ class CentralizedConfig(ABC):
     def delete_config(self, key: str, scope: str) -> None:
         pass
 
-
+@dataclass
 class PathUtils(ABC):
     @abstractmethod
     def get_base_path(self) -> str:
@@ -132,55 +145,49 @@ class PathUtils(ABC):
     def compose_path(self, *relative_path: str) -> str:
         pass
 
-
+@dataclass
 class Measurements(ABC):
     pass
 
-
+@dataclass
 class Storage(ABC):
     pass
 
 
 @dataclass
 class KaiSDK:
-    _nats: NatsClient
-    _jetstream: JetStreamContext
+    nats: NatsClient
+    jetstream: JetStreamContext
     _request_message: KaiNatsMessage
 
-    logger: Logger
-    metadata: Metadata
-    messaging: Messaging
-    object_store: ObjectStore
-    centralized_config: CentralizedConfiguration
-    path_utils: PathUtils
-    measurements: Measurements
-    storage: Storage
+    logger: Logger = logger.bind(context="[KAI SDK]")
+    metadata: Metadata = Metadata()
+    messaging: Messaging = None
+    object_store: Optional[ObjectStore] = None
+    centralized_config: CentralizedConfiguration = None
+    path_utils: PathUtils = PathUtils()
+    measurements: Measurements = None
+    storage: Storage = None
 
     def __post_init__(self):
-        self.logger = self.logger if self.logger else None
-        self.path_utils = self.path_utils if self.path_utils else None
-        self.metadata = self.metadata if self.metadata else None
-        self.messaging = self.messaging if self.messaging else None
-        self.object_store = self.object_store if self.object_store else None
-        self.centralized_config = self.centralized_config if self.centralized_config else None
-        self.measurements = self.measurements if self.measurements else None
-        self.storage = self.storage if self.storage else None
+        self.centralized_config = CentralizedConfiguration(self.jetstream)
+        self.object_store = ObjectStore(self.jetstream)
 
-        # try:
-        #     from centralized_configuration.centralized_configuration import NewCentralizedConfiguration
+    async def initialize(self):
+        try:
+            await self.object_store.initialize()
+        except Exception as e:
+            self.logger.error(f"error initializing object store: {e}")
+            os.exit(1)
 
-        #     self.centralized_config = NewCentralizedConfiguration(self.logger, self.jetstream)
-        # except Exception as err:
-        #     self.logger.error(f"Error initializing Centralized Configuration: {err}")
-        #     os.exit(1)
+        try:
+            await self.centralized_config.initialize()
+        except Exception as e:
+            self.logger.error(f"error initializing centralized configuration: {e}")
+            os.exit(1)
 
-        # try:
-        #     from object_store.object_store import NewObjectStore
+        self.messaging = Messaging(self.nats, self.jetstream)
 
-        #     self.object_store = NewObjectStore(self.logger, self.jetstream)
-        # except Exception as err:
-        #     self.logger.error(f"Error initializing Object Store: {err}")
-        #     os.exit(1)
 
     def get_request_id(self):
         return self.request_message.RequestId if self.request_message else None
