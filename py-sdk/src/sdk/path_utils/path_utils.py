@@ -1,8 +1,10 @@
+import os
 from dataclasses import dataclass
+
 from loguru import logger
 from loguru._logger import Logger
 from vyper import v
-import os
+
 
 @dataclass
 class PathUtils:

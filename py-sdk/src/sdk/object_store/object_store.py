@@ -1,12 +1,24 @@
 import re
 from dataclasses import dataclass
+from typing import Optional
+
+from exceptions import (
+    EmptyPayloadError,
+    FailedCompilingRegexpError,
+    FailedDeletingFileError,
+    FailedGettingFileError,
+    FailedListingFilesError,
+    FailedObjectStoreInitializationError,
+    FailedPurgingFilesError,
+    FailedSavingFileError,
+    UndefinedObjectStoreError,
+)
 from loguru import logger
 from nats.aio.client import Client as NatsClient
-from nats.js.object_store import NatsObjectStore
 from nats.js.client import JetStreamContext
-from typing import Optional
+from nats.js.object_store import NatsObjectStore
 from vyper import v
-from exceptions import UndefinedObjectStoreError, FailedObjectStoreInitializationError, EmptyPayloadError, FailedCompilingRegexpError, FailedListingFilesError, FailedGettingFileError, FailedSavingFileError, FailedDeletingFileError, FailedPurgingFilesError
+
 
 @dataclass
 class ObjectStore:
@@ -31,7 +43,7 @@ class ObjectStore:
                 return object_store
             except Exception as e:
                 raise FailedObjectStoreInitializationError(error=e)
-        
+
         self.logger.info("object store not defined. Skipping object store initialization")
 
     async def list(self, regexp: str = None) -> list:
@@ -98,7 +110,7 @@ class ObjectStore:
 
         self.logger.info(f"file {key} successfully deleted from object store {self.object_store_name}")
 
-    async def purge(self, regexp: str= None):
+    async def purge(self, regexp: str = None):
         if not self.object_store:
             raise UndefinedObjectStoreError
 

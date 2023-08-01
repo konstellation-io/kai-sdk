@@ -1,7 +1,9 @@
 from dataclasses import dataclass
+
 from loguru import logger
 from loguru._logger import Logger
 from vyper import v
+
 
 @dataclass
 class Metadata:

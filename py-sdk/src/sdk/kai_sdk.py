@@ -1,22 +1,21 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
 import os
 import sys
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Optional
 
 from centralized_configuration.centralized_configuration import CentralizedConfiguration
 from google.protobuf.message import Message
-from loguru._logger import Logger
 from loguru import logger
+from loguru._logger import Logger
 from messaging.messaging import Messaging
 from metadata.metadata import Metadata
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from object_store.object_store import ObjectStore
 from path_utils.path_utils import PathUtils
-from typing import Optional
 
 from kai_nats_msg_pb2 import KaiNatsMessage
-
 
 logger.remove()
 logger.add(
@@ -26,6 +25,7 @@ logger.add(
     backtrace=True,
     diagnose=True,
 )
+
 
 @dataclass
 class Messaging(ABC):
@@ -65,6 +65,7 @@ class Messaging(ABC):
     def is_message_early_exit(self) -> bool:
         pass
 
+
 @dataclass
 class Metadata(ABC):
     @abstractmethod
@@ -99,6 +100,7 @@ class Metadata(ABC):
     def get_key_value_store_process_name(self) -> str:
         pass
 
+
 @dataclass
 class ObjectStore(ABC):
     @abstractmethod
@@ -121,6 +123,7 @@ class ObjectStore(ABC):
     def purge(self, regexp: str) -> None:
         pass
 
+
 @dataclass
 class CentralizedConfig(ABC):
     @abstractmethod
@@ -135,6 +138,7 @@ class CentralizedConfig(ABC):
     def delete_config(self, key: str, scope: str) -> None:
         pass
 
+
 @dataclass
 class PathUtils(ABC):
     @abstractmethod
@@ -145,9 +149,11 @@ class PathUtils(ABC):
     def compose_path(self, *relative_path: str) -> str:
         pass
 
+
 @dataclass
 class Measurements(ABC):
     pass
+
 
 @dataclass
 class Storage(ABC):
@@ -187,7 +193,6 @@ class KaiSDK:
             os.exit(1)
 
         self.messaging = Messaging(self.nats, self.jetstream)
-
 
     def get_request_id(self):
         return self.request_message.RequestId if self.request_message else None
