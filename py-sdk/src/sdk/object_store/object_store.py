@@ -14,19 +14,18 @@ from exceptions import (
     UndefinedObjectStoreError,
 )
 from loguru import logger
-from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from nats.js.object_store import NatsObjectStore
 from vyper import v
+from loguru._logger import Logger
 
 
 @dataclass
 class ObjectStore:
-    jetstream: JetStreamContext
+    js: JetStreamContext
     object_store_name: Optional[str] = ""
     object_store: Optional[NatsObjectStore] = None
-
-    logger = logger.bind(context="[OBJECT STORE]")
+    logger: Logger = logger.bind(context="[OBJECT STORE]")
 
     def __post_init__(self):
         if setattr(self, self.object_store_name, v.get("nats.object_store")):
@@ -39,7 +38,7 @@ class ObjectStore:
     async def init_object_store_deps(self) -> Optional[NatsObjectStore]:
         if self.object_store_name:
             try:
-                object_store = await self.jetstream.object_store(self.object_store_name)
+                object_store = await self.js.object_store(self.object_store_name)
                 return object_store
             except Exception as e:
                 raise FailedObjectStoreInitializationError(error=e)

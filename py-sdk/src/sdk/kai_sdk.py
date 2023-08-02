@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
-from centralized_configuration.centralized_configuration import CentralizedConfiguration
+from centralized_config.centralized_config import CentralizedConfig
 from google.protobuf.message import Message
 from loguru import logger
 from loguru._logger import Logger
@@ -162,22 +162,22 @@ class Storage(ABC):
 
 @dataclass
 class KaiSDK:
-    nats: NatsClient
-    jetstream: JetStreamContext
-    _request_message: KaiNatsMessage
+    nc: NatsClient
+    js: JetStreamContext
+    req_msg: KaiNatsMessage
 
     logger: Logger = logger.bind(context="[KAI SDK]")
     metadata: Metadata = Metadata()
     messaging: Messaging = None
     object_store: Optional[ObjectStore] = None
-    centralized_config: CentralizedConfiguration = None
+    centralized_config: CentralizedConfig = None
     path_utils: PathUtils = PathUtils()
     measurements: Measurements = None
     storage: Storage = None
 
     def __post_init__(self):
-        self.centralized_config = CentralizedConfiguration(self.jetstream)
-        self.object_store = ObjectStore(self.jetstream)
+        self.centralized_config = CentralizedConfig(js=self.js)
+        self.object_store = ObjectStore(js=self.js)
 
     async def initialize(self):
         try:
@@ -192,15 +192,7 @@ class KaiSDK:
             self.logger.error(f"error initializing centralized configuration: {e}")
             os.exit(1)
 
-        self.messaging = Messaging(self.nats, self.jetstream)
+        self.messaging = Messaging(nc = self.nc, js = self.js, req_msg = self.req_msg)
 
     def get_request_id(self):
-        return self.request_message.RequestId if self.request_message else None
-
-    # @staticmethod
-    # def shallow_copy_with_request(sdk, request_msg):
-    #     h_sdk = KaiSDK(sdk.nats, sdk.jetstream, request_msg, sdk.logger)
-    #     h_sdk.messaging = sdk.messaging if sdk.messaging else None
-    #     # Other assignments can be added for path_utils, metadata, measurements, and storage.
-
-    #     return h_sdk
+        return self.req_msg.RequestId if self.req_msg else None

@@ -1,2 +1,156 @@
+from nats.aio.client import Client as NatsClient
+from nats.js.client import JetStreamContext
+from loguru import logger
+from dataclasses import dataclass
+from loguru._logger import Logger
+from messaging_utils import MessagingUtils
+import uuid
+from typing import List
+from google.protobuf.any_pb2 import Any
+from vyper import v
+
+from kai_nats_msg_pb2 import KaiNatsMessage
+from kai_nats_msg_pb2 import Message
+from kai_nats_msg_pb2 import MessageType_OK, MessageType_ERROR, MessageType_EARLY_REPLY, MessageType_EARLY_EXIT
+from typing import List
+
+from exceptions import MessageTooLargeError, FailedPublishingResponseError, FailedGettingMaxMessageSizeError, NotAValidProtobufError, NotASerializableProtobufError, FailedPreparingOutputError
+import zlib
+
+@dataclass
 class Messaging:
-    pass
+    js: JetStreamContext
+    nc: NatsClient
+    req_msg: KaiNatsMessage
+    messaging_utils: MessagingUtils = None
+    logger: Logger = logger.bind(context="[MESSAGING]")
+
+    def __post__init__(self):
+        self.message_utils = MessagingUtils(js=self.js, nc=self.nc)
+
+    def get_optional_string(self, channel_opt: List[str]) -> str:
+        return channel_opt[0] if channel_opt else ""
+
+    def send_output(self, response: Message, channel_opt: List[str] = None):
+        self._publish_msg(response, self.req_msg.request_id, MessageType_OK, channel_opt)
+
+    def send_output_with_request_id(self, response: Message, request_id: str, channel_opt: List[str] = None):
+        self._publish_msg(response, request_id, MessageType_OK, self.get_optional_string(channel_opt))
+
+    def send_any(self, response: Any, channel_opt: List[str] = None):
+        self._publish_any(response, self.req_msg.request_id, MessageType_OK, self.get_optional_string(channel_opt))
+
+    def send_any_with_request_id(self, response: Any, request_id: str, channel_opt: List[str] = None):
+        self._publish_any(response, request_id, MessageType_OK, self.get_optional_string(channel_opt))
+
+    # TODO: remove this method
+    def send_early_reply(self, response: Message, channel_opt: List[str] = None):
+        self._publish_msg(response, self.req_msg.request_id, MessageType_EARLY_REPLY, self.get_optional_string(channel_opt))
+
+    # TODO: remove this method
+    def send_early_exit(self, response: Message, channel_opt: List[str] = None):
+        self._publish_msg(response, self.req_msg.request_id, MessageType_EARLY_EXIT, self.get_optional_string(channel_opt))
+
+    def get_error_message(self) -> str:
+        return self.req_msg.error if self.is_message_error() else ""
+
+    def is_message_ok(self) -> bool:
+        return self.req_msg.message_type == MessageType_OK
+
+    def is_message_error(self) -> bool:
+        return self.req_msg.message_type == MessageType_ERROR
+
+    def is_message_early_reply(self) -> bool:
+        return self.req_msg.message_type == MessageType_EARLY_REPLY
+
+    def is_message_early_exit(self) -> bool:
+        return self.req_msg.message_type == MessageType_EARLY_EXIT
+
+
+    def _publish_msg(self, msg: Message, request_id: str, msg_type: int, chan: str):
+        try:
+            payload = Any()
+            payload.Pack(msg)
+        except Exception as e:
+            raise NotAValidProtobufError(error=e)
+
+        if not request_id:
+            request_id = str(uuid.uuid4())
+
+        response_msg = self._new_response_msg(payload, request_id, msg_type)
+
+        self._publish_response(response_msg, chan)
+
+    def _publish_any(self, payload: Any, request_id: str, msg_type: int, chan: str):
+        if not request_id:
+            request_id = str(uuid.uuid4())
+
+        response_msg = self._new_response_msg(payload, request_id, msg_type)
+        self._publish_response(response_msg, chan)
+
+    def _publish_error(self, request_id: str, err_msg: str):
+        response_msg = KaiNatsMessage(
+            RequestId=request_id,
+            Error=err_msg,
+            FromNode=v.get("metadata.process_id"),
+            MessageType=MessageType_ERROR,
+        )
+        self._publish_response(response_msg)
+
+    def _new_response_msg(self, payload: Any, request_id: str, msg_type: int) -> KaiNatsMessage:
+        self.logger.info(f"preparing response message of type {msg_type} and request_id {request_id}")
+        return KaiNatsMessage(
+            RequestId=request_id,
+            Payload=payload,
+            FromNode=v.get("metadata.process_id"),
+            MessageType=msg_type,
+        )
+
+    async def _publish_response(self, response_msg: KaiNatsMessage, chan: str=""):
+        output_subject = self._get_output_subject(chan)
+
+        try:
+            output_msg = response_msg.SerializeToString()
+        except Exception as e:
+            raise NotASerializableProtobufError(error=e)
+        
+        try:
+            output_msg = self._prepare_output_message(output_msg)
+        except (FailedGettingMaxMessageSizeError, MessageTooLargeError) as e:
+            raise FailedPreparingOutputError(error=e)
+
+        self.logger.info(f"publishing response to subject {output_subject}")
+
+        try:
+            await self.js.publish(output_subject, output_msg)
+        except Exception as e:
+            self.logger.error(f"failed publishing response: {e}")
+            raise FailedPublishingResponseError # TODO: should we raise this error?
+        
+
+    def _get_output_subject(self, chan: str="") -> str:
+        output_subject = v.get("nats.output")
+        if chan:
+            return f"{output_subject}.{chan}"
+        return output_subject
+
+    def _prepare_output_message(self, msg: bytes) -> bytes:
+        try:
+            max_size = self.message_utils.get_max_message_size()
+        except Exception as e:
+            raise FailedGettingMaxMessageSizeError(error=e)
+
+        if len(msg) <= max_size:
+            return msg
+
+        self.logger.info("message exceeds maximum size allowed! compressing data...")
+        out_msg = zlib.compress(msg)
+
+        len_out_msg = len(out_msg)
+        if len_out_msg > max_size:
+            self.logger.info(f"compressed message size: {len_out_msg} exceeds maximum allowed size: {max_size}")
+            raise MessageTooLargeError(len_out_msg, max_size)
+
+        self.logger.info(f"message compressed! original message size: {len(msg)} - compressed message size: {len_out_msg}")
+
+        return out_msg
