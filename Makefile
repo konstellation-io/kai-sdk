@@ -35,11 +35,11 @@ test: ## Run tests
 
 .PHONY: docker
 docker: ## Build and Run py-sdk docker
-	docker build . -t py-sdk:latest && docker run --name py-sdk -ti py-sdk:latest 
+	docker build ./py-sdk -t py-sdk:latest && docker run --name py-sdk -ti py-sdk:latest 
 
 .PHONY: attach-docker
 attach-docker: ## Attach ssh to py-sdk docker
-	docker exec -it dni-extractor sh
+	docker exec -it py-sdk sh
 
 .PHONY: clean-all-docker
 clean-all-docker: ## Clean all docker

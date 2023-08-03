@@ -3,8 +3,10 @@ name = "py-sdk"
 version = "0.1.0"
 description = "KAI SDK's implementation in Python"
 authors = ["Intelygenz - Konstellation Team"]
+maintainers = ["Intelygenz - Konstellation Team"]
 readme = "README.md"
-packages = [{include = "py_sdk"}]
+repository = "https://github.com/konstellation-io/kai-sdk/py-sdk"
+keywords = ["python", "sdk", "kai", "konstellation"]
 
 [tool.poetry.dependencies]
 python = "3.11.4"
@@ -14,7 +16,7 @@ protobuf = "4.23.4"
 pymongo = "4.4.1"
 loguru = "0.7.0"
 vyper-config = "1.1.1"
-grpcio-tools = "^1.56.2"
+grpcio-tools = "1.56.2"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -16,7 +16,7 @@ RUN apt update &&\
 
 COPY ["pyproject.toml", "poetry.lock", "./"] 
 
-RUN poetry install --only main
+RUN poetry install --only main --no-interaction --no-ansi
 
 COPY --chown=1000 src /sdk/src
 
