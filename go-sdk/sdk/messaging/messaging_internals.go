@@ -114,7 +114,7 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 		return msg, nil
 	}
 
-	ms.logger.V(1).Info("message exceeds maximum size allowed, compressing data")
+	ms.logger.V(1).Info("Message exceeds maximum size allowed, compressing data")
 	outMsg, err := common.CompressData(msg)
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 
 	lenOutMsg := int64(len(outMsg))
 	if lenOutMsg > maxSize {
-		ms.logger.V(1).Info("compressed message exceeds maximum size allowed",
+		ms.logger.V(1).Info("Compressed message exceeds maximum size allowed",
 			"Current Message Size", sizeInMB(lenOutMsg), "Max. Allowed Size", sizeInMB(maxSize))
 		return nil, errors.ErrMessageToBig
 	}
