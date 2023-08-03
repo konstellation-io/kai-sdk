@@ -30,23 +30,23 @@ logger.add(
 @dataclass
 class Messaging(ABC):
     @abstractmethod
-    def send_output(self, response: Message, *channel_opt: str) -> None:
+    def send_output(self, response: Message, chan: Optional[str]):
         pass
 
     @abstractmethod
-    def send_output_with_request_id(self, response: Message, request_id: str, *channel_opt: str) -> None:
+    def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str]):
         pass
 
     @abstractmethod
-    def send_any(self, response: Message, *channel_opt: str) -> None:
+    def send_any(self, response: Message, chan: Optional[str]):
         pass
 
     @abstractmethod
-    def send_early_reply(self, response: Message, *channel_opt: str) -> None:
+    def send_early_reply(self, response: Message, chan: Optional[str]):
         pass
 
     @abstractmethod
-    def send_early_exit(self, response: Message, *channel_opt: str) -> None:
+    def send_early_exit(self, response: Message, chan: Optional[str]):
         pass
 
     @abstractmethod
@@ -68,34 +68,42 @@ class Messaging(ABC):
 
 @dataclass
 class Metadata(ABC):
-    @abstractmethod
-    def get_process(self) -> str:
-        pass
-
-    @abstractmethod
-    def get_workflow(self) -> str:
-        pass
-
+    @staticmethod
     @abstractmethod
     def get_product(self) -> str:
         pass
 
+    @staticmethod
+    @abstractmethod
+    def get_workflow(self) -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_process(self) -> str:
+        pass
+
+    @staticmethod
     @abstractmethod
     def get_version(self) -> str:
         pass
 
+    @staticmethod
     @abstractmethod
     def get_object_store_name(self) -> str:
         pass
 
+    @staticmethod
     @abstractmethod
     def get_key_value_store_product_name(self) -> str:
         pass
 
+    @staticmethod
     @abstractmethod
     def get_key_value_store_workflow_name(self) -> str:
         pass
 
+    @staticmethod
     @abstractmethod
     def get_key_value_store_process_name(self) -> str:
         pass
@@ -104,7 +112,11 @@ class Metadata(ABC):
 @dataclass
 class ObjectStore(ABC):
     @abstractmethod
-    def list(self, regexp: str) -> list:
+    def initialize(self):
+        pass
+
+    @abstractmethod
+    def list(self, regexp: Optional[str]) -> list[str]:
         pass
 
     @abstractmethod
@@ -112,41 +124,47 @@ class ObjectStore(ABC):
         pass
 
     @abstractmethod
-    def save(self, key: str, value: bytes) -> None:
+    def save(self, key: str, value: bytes):
         pass
 
     @abstractmethod
-    def delete(self, key: str) -> None:
+    def delete(self, key: str):
         pass
 
     @abstractmethod
-    def purge(self, regexp: str) -> None:
+    def purge(self, regexp: Optional[str]):
         pass
 
 
 @dataclass
 class CentralizedConfig(ABC):
     @abstractmethod
+    def initialize(self):
+        pass
+
+    @abstractmethod
     def get_config(self, key: str, scope: str) -> str:
         pass
 
     @abstractmethod
-    def set_config(self, key: str, value: str, scope: str) -> None:
+    def set_config(self, key: str, value: str, scope: str):
         pass
 
     @abstractmethod
-    def delete_config(self, key: str, scope: str) -> None:
+    def delete_config(self, key: str, scope: str):
         pass
 
 
 @dataclass
 class PathUtils(ABC):
+    @staticmethod
     @abstractmethod
     def get_base_path(self) -> str:
         pass
 
+    @staticmethod
     @abstractmethod
-    def compose_path(self, *relative_path: str) -> str:
+    def compose_path(self, *relative_path: tuple[str]) -> str:
         pass
 
 
@@ -192,7 +210,7 @@ class KaiSDK:
             self.logger.error(f"error initializing centralized configuration: {e}")
             os.exit(1)
 
-        self.messaging = Messaging(nc = self.nc, js = self.js, req_msg = self.req_msg)
+        self.messaging = Messaging(nc=self.nc, js=self.js, req_msg=self.req_msg)
 
     def get_request_id(self):
         return self.req_msg.RequestId if self.req_msg else None

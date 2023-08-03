@@ -1,21 +1,33 @@
-from nats.aio.client import Client as NatsClient
-from nats.js.client import JetStreamContext
-from loguru import logger
+import uuid
+import zlib
 from dataclasses import dataclass
+from typing import Optional
+
+from exceptions import (
+    FailedGettingMaxMessageSizeError,
+    FailedPreparingOutputError,
+    FailedPublishingResponseError,
+    MessageTooLargeError,
+    NotASerializableProtobufError,
+    NotAValidProtobufError,
+)
+from google.protobuf.any_pb2 import Any
+from google.protobuf.message import Message
+from loguru import logger
 from loguru._logger import Logger
 from messaging_utils import MessagingUtils
-import uuid
-from typing import List
-from google.protobuf.any_pb2 import Any
+from nats.aio.client import Client as NatsClient
+from nats.js.client import JetStreamContext
 from vyper import v
 
-from kai_nats_msg_pb2 import KaiNatsMessage
-from kai_nats_msg_pb2 import Message
-from kai_nats_msg_pb2 import MessageType_OK, MessageType_ERROR, MessageType_EARLY_REPLY, MessageType_EARLY_EXIT
-from typing import List
+from kai_nats_msg_pb2 import (
+    KaiNatsMessage,
+    MessageType_EARLY_EXIT,
+    MessageType_EARLY_REPLY,
+    MessageType_ERROR,
+    MessageType_OK,
+)
 
-from exceptions import MessageTooLargeError, FailedPublishingResponseError, FailedGettingMaxMessageSizeError, NotAValidProtobufError, NotASerializableProtobufError, FailedPreparingOutputError
-import zlib
 
 @dataclass
 class Messaging:
@@ -28,28 +40,25 @@ class Messaging:
     def __post__init__(self):
         self.message_utils = MessagingUtils(js=self.js, nc=self.nc)
 
-    def get_optional_string(self, channel_opt: List[str]) -> str:
-        return channel_opt[0] if channel_opt else ""
+    def send_output(self, response: Message, chan: str = ""):
+        self._publish_msg(response, self.req_msg.request_id, MessageType_OK, chan)
 
-    def send_output(self, response: Message, channel_opt: List[str] = None):
-        self._publish_msg(response, self.req_msg.request_id, MessageType_OK, channel_opt)
+    def send_output_with_request_id(self, response: Message, request_id: str, chan: str = ""):
+        self._publish_msg(response, request_id, MessageType_OK, chan)
 
-    def send_output_with_request_id(self, response: Message, request_id: str, channel_opt: List[str] = None):
-        self._publish_msg(response, request_id, MessageType_OK, self.get_optional_string(channel_opt))
+    def send_any(self, response: Any, chan: str = ""):
+        self._publish_any(response, self.req_msg.request_id, MessageType_OK, chan)
 
-    def send_any(self, response: Any, channel_opt: List[str] = None):
-        self._publish_any(response, self.req_msg.request_id, MessageType_OK, self.get_optional_string(channel_opt))
-
-    def send_any_with_request_id(self, response: Any, request_id: str, channel_opt: List[str] = None):
-        self._publish_any(response, request_id, MessageType_OK, self.get_optional_string(channel_opt))
+    def send_any_with_request_id(self, response: Any, request_id: str, chan: str = ""):
+        self._publish_any(response, request_id, MessageType_OK, chan)
 
     # TODO: remove this method
-    def send_early_reply(self, response: Message, channel_opt: List[str] = None):
-        self._publish_msg(response, self.req_msg.request_id, MessageType_EARLY_REPLY, self.get_optional_string(channel_opt))
+    def send_early_reply(self, response: Message, chan: str = ""):
+        self._publish_msg(response, self.req_msg.request_id, MessageType_EARLY_REPLY, chan)
 
     # TODO: remove this method
-    def send_early_exit(self, response: Message, channel_opt: List[str] = None):
-        self._publish_msg(response, self.req_msg.request_id, MessageType_EARLY_EXIT, self.get_optional_string(channel_opt))
+    def send_early_exit(self, response: Message, chan: str = ""):
+        self._publish_msg(response, self.req_msg.request_id, MessageType_EARLY_EXIT, chan)
 
     def get_error_message(self) -> str:
         return self.req_msg.error if self.is_message_error() else ""
@@ -65,7 +74,6 @@ class Messaging:
 
     def is_message_early_exit(self) -> bool:
         return self.req_msg.message_type == MessageType_EARLY_EXIT
-
 
     def _publish_msg(self, msg: Message, request_id: str, msg_type: int, chan: str):
         try:
@@ -106,14 +114,14 @@ class Messaging:
             MessageType=msg_type,
         )
 
-    async def _publish_response(self, response_msg: KaiNatsMessage, chan: str=""):
+    async def _publish_response(self, response_msg: KaiNatsMessage, chan: Optional[str] = ""):
         output_subject = self._get_output_subject(chan)
 
         try:
             output_msg = response_msg.SerializeToString()
         except Exception as e:
             raise NotASerializableProtobufError(error=e)
-        
+
         try:
             output_msg = self._prepare_output_message(output_msg)
         except (FailedGettingMaxMessageSizeError, MessageTooLargeError) as e:
@@ -125,14 +133,11 @@ class Messaging:
             await self.js.publish(output_subject, output_msg)
         except Exception as e:
             self.logger.error(f"failed publishing response: {e}")
-            raise FailedPublishingResponseError # TODO: should we raise this error?
-        
+            raise FailedPublishingResponseError  # TODO: should we raise this error?
 
-    def _get_output_subject(self, chan: str="") -> str:
+    def _get_output_subject(self, chan: Optional[str] = "") -> str:
         output_subject = v.get("nats.output")
-        if chan:
-            return f"{output_subject}.{chan}"
-        return output_subject
+        return f"{output_subject}.{chan}" if chan else output_subject
 
     def _prepare_output_message(self, msg: bytes) -> bytes:
         try:
@@ -151,6 +156,8 @@ class Messaging:
             self.logger.info(f"compressed message size: {len_out_msg} exceeds maximum allowed size: {max_size}")
             raise MessageTooLargeError(len_out_msg, max_size)
 
-        self.logger.info(f"message compressed! original message size: {len(msg)} - compressed message size: {len_out_msg}")
+        self.logger.info(
+            f"message compressed! original message size: {len(msg)} - compressed message size: {len_out_msg}"
+        )
 
         return out_msg

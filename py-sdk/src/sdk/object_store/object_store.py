@@ -14,10 +14,10 @@ from exceptions import (
     UndefinedObjectStoreError,
 )
 from loguru import logger
+from loguru._logger import Logger
 from nats.js.client import JetStreamContext
 from nats.js.object_store import NatsObjectStore
 from vyper import v
-from loguru._logger import Logger
 
 
 @dataclass
@@ -33,9 +33,9 @@ class ObjectStore:
 
     async def initialize(self):
         if self.object_store_name:
-            self.object_store = await self.init_object_store_deps()
+            self.object_store = await self._init_object_store()
 
-    async def init_object_store_deps(self) -> Optional[NatsObjectStore]:
+    async def _init_object_store(self) -> Optional[NatsObjectStore]:
         if self.object_store_name:
             try:
                 object_store = await self.js.object_store(self.object_store_name)
@@ -45,16 +45,16 @@ class ObjectStore:
 
         self.logger.info("object store not defined. Skipping object store initialization")
 
-    async def list(self, regexp: str = None) -> list:
+    async def list(self, regexp: Optional[str] = "") -> list[str]:
         if not self.object_store:
             raise UndefinedObjectStoreError
 
         try:
-            obj_store_list = await self.object_store.list()
+            objects = await self.object_store.list()
         except Exception as e:
             raise FailedListingFilesError(error=e)
 
-        pattern = None
+        pattern = ""
         if regexp:
             try:
                 pattern = re.compile(regexp)
@@ -62,10 +62,9 @@ class ObjectStore:
                 raise FailedCompilingRegexpError(error=e)
 
         response = []
-
-        for obj_name in obj_store_list:
-            if not pattern or pattern.match(obj_name.name):
-                response.append(obj_name.name)
+        for _, obj_name in objects:
+            if not pattern or pattern.match(obj_name):
+                response.append(obj_name)
 
         self.logger.info(f"files successfully listed from object store {self.object_store_name}")
 
@@ -109,11 +108,11 @@ class ObjectStore:
 
         self.logger.info(f"file {key} successfully deleted from object store {self.object_store_name}")
 
-    async def purge(self, regexp: str = None):
+    async def purge(self, regexp: str = ""):
         if not self.object_store:
             raise UndefinedObjectStoreError
 
-        pattern = None
+        pattern = ""
         if regexp:
             try:
                 pattern = re.compile(regexp)
@@ -121,13 +120,12 @@ class ObjectStore:
                 raise FailedCompilingRegexpError(error=e)
 
         objects = await self.list()
-
-        for object_name in objects:
-            if not pattern or pattern.match(object_name):
-                self.logger.info(f"deleting file {object_name} from object store {self.object_store_name}")
+        for _, obj_name in objects:
+            if not pattern or pattern.match(obj_name):
+                self.logger.info(f"deleting file {obj_name} from object store {self.object_store_name}")
 
                 try:
-                    await self.object_store.delete(object_name)
+                    await self.object_store.delete(obj_name)
                 except Exception as e:
                     raise FailedPurgingFilesError(error=e)
 

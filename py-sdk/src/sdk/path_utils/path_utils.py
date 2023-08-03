@@ -15,9 +15,6 @@ class PathUtils:
         return v.get("metadata.base_path")
 
     @staticmethod
-    def compose_path(*relative_path)-> str:
+    def compose_path(*relative_path: tuple[str]) -> str:
         base_path = PathUtils.get_base_path()
-        if not relative_path:
-            return base_path
-
-        return os.path.join(base_path, *relative_path)
+        return os.path.join(base_path, *relative_path) if relative_path else base_path
