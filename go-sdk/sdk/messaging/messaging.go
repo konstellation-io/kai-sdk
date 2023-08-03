@@ -21,7 +21,7 @@ type Messaging struct {
 	nats           *nats.Conn
 	jetstream      nats.JetStreamContext
 	requestMessage *kai.KaiNatsMessage
-	messageUtils   messageUtils
+	messagingUtils messagingUtils
 }
 
 func NewMessaging(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext,
@@ -32,7 +32,7 @@ func NewMessaging(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext,
 		ns,
 		js,
 		requestMessage,
-		NewMessageUtils(ns, js),
+		NewMessagingUtils(ns, js),
 	}
 }
 

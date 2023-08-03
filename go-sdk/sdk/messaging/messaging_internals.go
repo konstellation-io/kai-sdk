@@ -104,7 +104,7 @@ func (ms Messaging) getOutputSubject(channel string) string {
 }
 
 func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
-	maxSize, err := ms.messageUtils.GetMaxMessageSize()
+	maxSize, err := ms.messagingUtils.GetMaxMessageSize()
 	if err != nil {
 		return nil, fmt.Errorf("error getting max message size: %s", err)
 	}
