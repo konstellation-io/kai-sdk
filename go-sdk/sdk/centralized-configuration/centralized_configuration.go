@@ -44,27 +44,30 @@ func initKVStores(logger logr.Logger, jetstream nats.JetStreamContext) (
 ) {
 	wrapErr := utilErrors.Wrapper("configuration init: %w")
 
+	name := viper.GetString("centralized_configuration.product.bucket")
 	logger.V(1).Info("Initializing product key-value store",
-		"name", viper.GetString("centralized_configuration.product.bucket"))
-	productKv, err = jetstream.KeyValue(viper.GetString("centralized_configuration.product.bucket"))
+		"name", name)
+	productKv, err = jetstream.KeyValue(name)
 	if err != nil {
 		logger.Error(err, "Error initializing product key-value store")
 		return nil, nil, nil, wrapErr(err)
 	}
 	logger.V(1).Info("Product key-value store initialized")
 
+	name = viper.GetString("centralized_configuration.workflow.bucket")
 	logger.V(1).Info("Initializing workflow key-value store",
-		"name", viper.GetString("centralized_configuration.workflow.bucket"))
-	workflowKv, err = jetstream.KeyValue(viper.GetString("centralized_configuration.workflow.bucket"))
+		"name", name)
+	workflowKv, err = jetstream.KeyValue(name)
 	if err != nil {
 		logger.Error(err, "Error initializing workflow key-value store")
 		return nil, nil, nil, wrapErr(err)
 	}
 	logger.V(1).Info("Workflow key-value store initialized")
 
+	name = viper.GetString("centralized_configuration.process.bucket")
 	logger.V(1).Info("Initializing process key-value store",
-		"name", viper.GetString("centralized_configuration.process.bucket"))
-	processKv, err = jetstream.KeyValue(viper.GetString("centralized_configuration.process.bucket"))
+		"name", name)
+	processKv, err = jetstream.KeyValue(name)
 	if err != nil {
 		logger.Error(err, "Error initializing process key-value store")
 		return nil, nil, nil, wrapErr(err)
