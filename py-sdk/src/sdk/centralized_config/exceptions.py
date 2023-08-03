@@ -1,9 +1,3 @@
-class FailedGettingConfigGivenKey(Exception):
-    def __init__(self, key: str):
-        message = f"config not found in any key-value store for key {key}"
-        super().__init__(message)
-
-
 class FailedInitializingConfig(Exception):
     def __init__(self, error: Exception):
         message = f"failed initializing configuration: {error}"

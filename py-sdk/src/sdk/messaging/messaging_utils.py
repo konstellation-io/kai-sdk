@@ -6,6 +6,8 @@ from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
 
+GZIP_HEADER = b"\x1f\x8b"
+
 
 @dataclass
 class MessagingUtils(ABC):
@@ -38,4 +40,12 @@ class MessagingUtils:
 
 
 def size_in_mb(size: int) -> str:
-    return f"{size / 1024 / 1024:.1f} MB"
+    return f"{size / 1024 / 1024:.2f} MB"
+
+
+def size_in_kb(size: int) -> str:
+    return f"{size / 1024:.2f} KB"
+
+
+def is_compressed(payload: bytes) -> bool:
+    return payload.startswith(GZIP_HEADER)

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from centralized_config.centralized_config import CentralizedConfig
+from centralized_config.constants import Scope
 from google.protobuf.message import Message
 from loguru import logger
 from loguru._logger import Logger
@@ -112,46 +113,46 @@ class Metadata(ABC):
 @dataclass
 class ObjectStore(ABC):
     @abstractmethod
-    def initialize(self):
+    def initialize(self) -> Optional[Exception]:
         pass
 
     @abstractmethod
-    def list(self, regexp: Optional[str]) -> list[str]:
+    def list(self, regexp: Optional[str]) -> list[str] | Exception:
         pass
 
     @abstractmethod
-    def get(self, key: str) -> bytes:
+    def get(self, key: str) -> (bytes, bool) | Exception:
         pass
 
     @abstractmethod
-    def save(self, key: str, value: bytes):
+    def save(self, key: str, payload: bytes) -> Optional[Exception]:
         pass
 
     @abstractmethod
-    def delete(self, key: str):
+    def delete(self, key: str) -> bool | Exception:
         pass
 
     @abstractmethod
-    def purge(self, regexp: Optional[str]):
+    def purge(self, regexp: Optional[str]) -> Optional[Exception]:
         pass
 
 
 @dataclass
 class CentralizedConfig(ABC):
     @abstractmethod
-    def initialize(self):
+    def initialize(self) -> Optional[Exception]:
         pass
 
     @abstractmethod
-    def get_config(self, key: str, scope: str) -> str:
+    def get_config(self, key: str, scope: Optional[Scope]) -> (str, bool) | Exception:
         pass
 
     @abstractmethod
-    def set_config(self, key: str, value: str, scope: str):
+    def set_config(self, key: str, value: str, scope: Optional[Scope]) -> Optional[Exception]:
         pass
 
     @abstractmethod
-    def delete_config(self, key: str, scope: str):
+    def delete_config(self, key: str, scope: Optional[Scope]) -> bool | Exception:
         pass
 
 

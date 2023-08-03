@@ -3,14 +3,7 @@ import zlib
 from dataclasses import dataclass
 from typing import Optional
 
-from exceptions import (
-    FailedGettingMaxMessageSizeError,
-    FailedPreparingOutputError,
-    FailedPublishingResponseError,
-    MessageTooLargeError,
-    NotASerializableProtobufError,
-    NotAValidProtobufError,
-)
+from exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
 from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
 from loguru import logger
@@ -40,25 +33,25 @@ class Messaging:
     def __post__init__(self):
         self.message_utils = MessagingUtils(js=self.js, nc=self.nc)
 
-    def send_output(self, response: Message, chan: str = ""):
-        self._publish_msg(response, self.req_msg.request_id, MessageType_OK, chan)
+    def send_output(self, response: Message, chan: Optional[str] = None):
+        self._publish_msg(msg=response, msg_type=MessageType_OK, chan=chan)
 
-    def send_output_with_request_id(self, response: Message, request_id: str, chan: str = ""):
-        self._publish_msg(response, request_id, MessageType_OK, chan)
+    def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str] = None):
+        self._publish_msg(msg=response, msg_type=MessageType_OK, request_id=request_id, chan=chan)
 
-    def send_any(self, response: Any, chan: str = ""):
-        self._publish_any(response, self.req_msg.request_id, MessageType_OK, chan)
+    def send_any(self, response: Any, chan: Optional[str] = None):
+        self._publish_any(payload=response, msg_type=MessageType_OK, chan=chan)
 
-    def send_any_with_request_id(self, response: Any, request_id: str, chan: str = ""):
-        self._publish_any(response, request_id, MessageType_OK, chan)
-
-    # TODO: remove this method
-    def send_early_reply(self, response: Message, chan: str = ""):
-        self._publish_msg(response, self.req_msg.request_id, MessageType_EARLY_REPLY, chan)
+    def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str] = None):
+        self._publish_any(payload=response, msg_type=MessageType_OK, request_id=request_id, chan=chan)
 
     # TODO: remove this method
-    def send_early_exit(self, response: Message, chan: str = ""):
-        self._publish_msg(response, self.req_msg.request_id, MessageType_EARLY_EXIT, chan)
+    def send_early_reply(self, response: Message, chan: Optional[str] = None):
+        self._publish_msg(msg=response, msg_type=MessageType_EARLY_REPLY, chan=chan)
+
+    # TODO: remove this method
+    def send_early_exit(self, response: Message, chan: Optional[str] = None):
+        self._publish_msg(msg=response, msg_type=MessageType_EARLY_EXIT, chan=chan)
 
     def get_error_message(self) -> str:
         return self.req_msg.error if self.is_message_error() else ""
@@ -75,12 +68,13 @@ class Messaging:
     def is_message_early_exit(self) -> bool:
         return self.req_msg.message_type == MessageType_EARLY_EXIT
 
-    def _publish_msg(self, msg: Message, request_id: str, msg_type: int, chan: str):
+    def _publish_msg(self, msg: Message, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None):
         try:
             payload = Any()
             payload.Pack(msg)
         except Exception as e:
-            raise NotAValidProtobufError(error=e)
+            logger.error(f"failed packing message: {e}")
+            return
 
         if not request_id:
             request_id = str(uuid.uuid4())
@@ -89,7 +83,7 @@ class Messaging:
 
         self._publish_response(response_msg, chan)
 
-    def _publish_any(self, payload: Any, request_id: str, msg_type: int, chan: str):
+    def _publish_any(self, payload: Any, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None):
         if not request_id:
             request_id = str(uuid.uuid4())
 
@@ -106,7 +100,7 @@ class Messaging:
         self._publish_response(response_msg)
 
     def _new_response_msg(self, payload: Any, request_id: str, msg_type: int) -> KaiNatsMessage:
-        self.logger.info(f"preparing response message of type {msg_type} and request_id {request_id}")
+        self.logger.info(f"preparing response message of type {msg_type} and request_id {request_id}...")
         return KaiNatsMessage(
             RequestId=request_id,
             Payload=payload,
@@ -114,42 +108,41 @@ class Messaging:
             MessageType=msg_type,
         )
 
-    async def _publish_response(self, response_msg: KaiNatsMessage, chan: Optional[str] = ""):
+    async def _publish_response(self, response_msg: KaiNatsMessage, chan: Optional[str] = None):
         output_subject = self._get_output_subject(chan)
 
         try:
             output_msg = response_msg.SerializeToString()
         except Exception as e:
-            raise NotASerializableProtobufError(error=e)
+            logger.error(f"failed serializing response message: {e}")
+            return
 
         try:
             output_msg = self._prepare_output_message(output_msg)
         except (FailedGettingMaxMessageSizeError, MessageTooLargeError) as e:
-            raise FailedPreparingOutputError(error=e)
+            logger.error(f"failed preparing output message: {e}")
+            return
 
-        self.logger.info(f"publishing response to subject {output_subject}")
+        self.logger.info(f"publishing response to subject {output_subject}...")
 
         try:
             await self.js.publish(output_subject, output_msg)
         except Exception as e:
             self.logger.error(f"failed publishing response: {e}")
-            raise FailedPublishingResponseError  # TODO: should we raise this error?
+            return
 
-    def _get_output_subject(self, chan: Optional[str] = "") -> str:
+    def _get_output_subject(self, chan: Optional[str] = None) -> str:
         output_subject = v.get("nats.output")
         return f"{output_subject}.{chan}" if chan else output_subject
 
-    def _prepare_output_message(self, msg: bytes) -> bytes:
-        try:
-            max_size = self.message_utils.get_max_message_size()
-        except Exception as e:
-            raise FailedGettingMaxMessageSizeError(error=e)
+    def _prepare_output_message(self, msg: bytes) -> bytes | Exception:
+        max_size = self.message_utils.get_max_message_size()
 
         if len(msg) <= max_size:
             return msg
 
         self.logger.info("message exceeds maximum size allowed! compressing data...")
-        out_msg = zlib.compress(msg)
+        out_msg = zlib.compress(msg, level=zlib.Z_BEST_COMPRESSION)
 
         len_out_msg = len(out_msg)
         if len_out_msg > max_size:
