@@ -17,7 +17,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_GetErrorMessage_ExpectOk() {
 		MessageType: kai.MessageType_ERROR,
 		Error:       "Error message",
 	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
 
 	// When
 	errorMessage := objectStore.GetErrorMessage()
@@ -34,7 +34,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_GetErrorMessage_NoErrorMessageExis
 		MessageType: kai.MessageType_OK,
 		Error:       errorMessage,
 	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
 
 	// When
 	errorMessage := objectStore.GetErrorMessage()
@@ -50,7 +50,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageOk_MessageOk_ExpectTrue()
 		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_OK,
 	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
 
 	// When
 	ok := objectStore.IsMessageOK()
@@ -67,7 +67,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageOk_MessageNotOk_ExpectFal
 		MessageType: kai.MessageType_ERROR,
 		Error:       errorMessage,
 	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
 
 	// When
 	ok := objectStore.IsMessageOK()
@@ -84,7 +84,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageError_MessageError_Expect
 		MessageType: kai.MessageType_ERROR,
 		Error:       errorMessage,
 	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
 
 	// When
 	isError := objectStore.IsMessageError()
@@ -100,7 +100,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageError_MessageNotError_Exp
 		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_OK,
 	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
 
 	// When
 	isError := objectStore.IsMessageError()
@@ -116,7 +116,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyReply_MessageEarlyRe
 		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_EARLY_REPLY,
 	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
 
 	// When
 	isEarlyReply := objectStore.IsMessageEarlyReply()
@@ -132,7 +132,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyReply_MessageNotEarl
 		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_OK,
 	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
 
 	// When
 	isEarlyReply := objectStore.IsMessageEarlyReply()
@@ -148,7 +148,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyExit_MessageEarlyExi
 		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_EARLY_EXIT,
 	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
 
 	// When
 	isEarlyExit := objectStore.IsMessageEarlyExit()
@@ -164,7 +164,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyExit_MessageNotEarly
 		RequestId:   requestIDValue,
 		MessageType: kai.MessageType_OK,
 	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messageUtils)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
 
 	// When
 	isEarlyExit := objectStore.IsMessageEarlyExit()

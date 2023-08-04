@@ -20,9 +20,9 @@ import (
 
 type SdkMessagingTestSuite struct {
 	suite.Suite
-	logger       logr.Logger
-	jetstream    mocks.JetStreamContextMock
-	messageUtils mocks.MessageUtilsMock
+	logger         logr.Logger
+	jetstream      mocks.JetStreamContextMock
+	messagingUtils mocks.MessagingUtilsMock
 }
 
 func (s *SdkMessagingTestSuite) SetupSuite() {
@@ -34,7 +34,7 @@ func (s *SdkMessagingTestSuite) SetupTest() {
 	viper.Reset()
 
 	s.jetstream = *mocks.NewJetStreamContextMock(s.T())
-	s.messageUtils = *mocks.NewMessageUtilsMock(s.T())
+	s.messagingUtils = *mocks.NewMessagingUtilsMock(s.T())
 }
 
 func (s *SdkMessagingTestSuite) TestMessaging_InstantiateNewMessaging_ExpectOk() {
@@ -51,8 +51,8 @@ func (s *SdkMessagingTestSuite) TestMessaging_PublishError_ExpectOk() {
 	viper.SetDefault("metadata.process_id", "parent-node")
 	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
-	s.messageUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messageUtils)
+	s.messagingUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
+	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
 
 	// When
 	objectStore.SendError("some-request", "some-error")
