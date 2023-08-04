@@ -7,24 +7,24 @@ import (
 	"github.com/spf13/viper"
 )
 
-//go:generate mockery --name messageUtils --output ../../mocks --structname MessageUtilsMock --filename message_utils_mock.go
-type messageUtils interface {
+//go:generate mockery --name messagingUtils --output ../../mocks --structname MessagingUtilsMock --filename messaging_utils_mock.go
+type messagingUtils interface {
 	GetMaxMessageSize() (int64, error)
 }
 
-type MessageUtilsImpl struct {
+type MessagingUtilsImpl struct {
 	jetstream nats.JetStreamContext
 	nats      *nats.Conn
 }
 
-func NewMessageUtils(ns *nats.Conn, js nats.JetStreamContext) MessageUtilsImpl {
-	return MessageUtilsImpl{
+func NewMessagingUtils(ns *nats.Conn, js nats.JetStreamContext) MessagingUtilsImpl {
+	return MessagingUtilsImpl{
 		nats:      ns,
 		jetstream: js,
 	}
 }
 
-func (mu MessageUtilsImpl) GetMaxMessageSize() (int64, error) {
+func (mu MessagingUtilsImpl) GetMaxMessageSize() (int64, error) {
 	streamInfo, err := mu.jetstream.StreamInfo(viper.GetString("nats.stream"))
 	if err != nil {
 		return 0, fmt.Errorf("error getting stream's max message size: %w", err)

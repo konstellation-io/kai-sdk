@@ -7,7 +7,7 @@ import (
 )
 
 func NewTestMessaging(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext,
-	requestMessage *kai.KaiNatsMessage, messageUtils messageUtils,
+	requestMessage *kai.KaiNatsMessage, messagingUtils messagingUtils,
 ) *Messaging {
 	//nolint: gocritic
 	return &Messaging{
@@ -15,7 +15,7 @@ func NewTestMessaging(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContex
 		ns,
 		js,
 		requestMessage,
-		messageUtils,
+		messagingUtils,
 	}
 }
 
