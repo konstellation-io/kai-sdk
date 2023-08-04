@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from typing import Optional
 
-from exceptions import (
+from object_store.exceptions import (
     EmptyPayloadError,
     FailedCompilingRegexpError,
     FailedDeletingFileError,

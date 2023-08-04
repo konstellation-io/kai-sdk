@@ -27,19 +27,19 @@ class FailedListingFilesError(Exception):
 
 
 class FailedGettingFileError(Exception):
-    def __init__(self, key, error=None):
+    def __init__(self, key: str, error=None):
         message = f"failed getting file {key} from the object store"
         super().__init__(f"{message}: {error}" if error else message)
 
 
 class FailedSavingFileError(Exception):
-    def __init__(self, key, error=None):
+    def __init__(self, key: str, error=None):
         message = f"failed saving file {key} to the object store"
         super().__init__(f"{message}: {error}" if error else message)
 
 
 class FailedDeletingFileError(Exception):
-    def __init__(self, key, error=None):
+    def __init__(self, key:str, error=None):
         message = f"failed deleting file {key} from the object store"
         super().__init__(f"{message}: {error}" if error else message)
 

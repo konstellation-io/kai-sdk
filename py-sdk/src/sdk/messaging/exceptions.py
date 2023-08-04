@@ -1,6 +1,3 @@
-from messaging_utils import size_in_mb
-
-
 class FailedGettingMaxMessageSizeError(Exception):
     def __init__(self, error=None):
         message = "failed getting max message size"
@@ -8,7 +5,7 @@ class FailedGettingMaxMessageSizeError(Exception):
 
 
 class MessageTooLargeError(Exception):
-    def __init__(self, message_size, max_message_size):
+    def __init__(self, message_size: int, max_message_size: int):
         super().__init__(
-            f"message size {size_in_mb(message_size)} is larger than max message size {size_in_mb(max_message_size)}"
+            f"message size {message_size} is larger than max message size {max_message_size}"
         )

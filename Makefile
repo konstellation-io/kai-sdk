@@ -17,7 +17,7 @@ tidy: ## Run black, isort and codespell
 .PHONY: protos
 protos: ## Generate proto files
 	poetry --directory py-sdk -- run python -m grpc_tools.protoc -I="proto" \
-	--python_out="py-sdk/src" \
+	--python_out="py-sdk/src/sdk" \
 	proto/kai_nats_msg.proto && \
 	protoc -I proto --go_out=go-sdk/protos --go_opt=paths=source_relative proto/kai_nats_msg.proto
 
@@ -29,18 +29,10 @@ generate_mocks: ## Generate mocks
 golint: ## Run golint
 	cd go-sdk && golangci-lint run ./... && cd -
 
-.PHONY: test
-test: ## Run tests
-	poetry --directory py-sdk run pytest src/tests/src/ --cov --cov-report term-missing --cov-config=pyproject.toml
+.PHONY: gotest
+gotest: ## Run tests
+	cd go-sdk && go test ./... -coverprofile=coverage.out && cd -
 
-.PHONY: docker
-docker: ## Build and Run py-sdk docker
-	docker build ./py-sdk -t py-sdk:latest && docker run --name py-sdk -ti py-sdk:latest 
-
-.PHONY: attach-docker
-attach-docker: ## Attach ssh to py-sdk docker
-	docker exec -it py-sdk sh
-
-.PHONY: clean-all-docker
-clean-all-docker: ## Clean all docker
-	docker rm $$(docker ps -a -q) -f && docker rmi $$(docker images -a -q) -f
+.PHONY: pytest
+pytest: ## Run tests
+	poetry --directory py-sdk run pytest py-sdk/src --cov --cov-report term-missing --cov-config=py-sdk/pyproject.toml

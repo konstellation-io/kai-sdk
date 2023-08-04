@@ -1,14 +1,13 @@
 import uuid
-import zlib
 from dataclasses import dataclass
 from typing import Optional
 
-from exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
+from messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
 from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
 from loguru import logger
 from loguru._logger import Logger
-from messaging_utils import MessagingUtils
+from messaging.messaging_utils import MessagingUtils, size_in_mb, compress
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
@@ -142,12 +141,12 @@ class Messaging:
             return msg
 
         self.logger.info("message exceeds maximum size allowed! compressing data...")
-        out_msg = zlib.compress(msg, level=zlib.Z_BEST_COMPRESSION)
+        out_msg = compress(msg)
 
         len_out_msg = len(out_msg)
         if len_out_msg > max_size:
             self.logger.info(f"compressed message size: {len_out_msg} exceeds maximum allowed size: {max_size}")
-            raise MessageTooLargeError(len_out_msg, max_size)
+            raise MessageTooLargeError(size_in_mb(len_out_msg), size_in_mb(max_size))
 
         self.logger.info(
             f"message compressed! original message size: {len(msg)} - compressed message size: {len_out_msg}"

@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from constants import Scope
-from exceptions import FailedDeletingConfig, FailedGettingConfig, FailedInitializingConfig, FailedSettingConfig
+from centralized_config.constants import Scope
+from centralized_config.exceptions import FailedDeletingConfig, FailedGettingConfig, FailedInitializingConfig, FailedSettingConfig
 from loguru import logger
 from loguru._logger import Logger
 from nats.js.client import JetStreamContext
@@ -43,7 +43,7 @@ class CentralizedConfig:
         except Exception as e:
             raise FailedInitializingConfig(error=e)
 
-    def get_config(self, key: str, scope: Optional[Scope] = None) -> (str, bool) | Exception:
+    def get_config(self, key: str, scope: Optional[Scope] = None) -> tuple[str, bool] | Exception:
         if scope:
             try:
                 config = self._get_config_from_scope(key, scope)

@@ -28,6 +28,8 @@ isort = "5.12.0"
 coverage = "7.2.7"
 codespell = "2.2.5"
 ipdb = "0.13.13"
+pytest-mock = "3.11.1"
+mock = "5.1.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -47,18 +49,17 @@ use_parentheses = true
 ensure_newline_before_comments = true
 line_length = 120
 extend_skip = [
-    "public_input_pb2.py",
-    "public_input_pb2_grpc.py",
+    "kai_nats_msg_pb2.py",
     ".venv",
 ]
 
 [tool.pytest.ini_options]
 addopts = [
-    "-vv",
+    "-vvv",
     "-s",
 ]
 testpaths = [
-    "src/tests/src",
+    "src",
 ]
 python_files = "*_test.py"
 python_classes = "Test*"
@@ -68,10 +69,8 @@ asyncio_mode = "auto"
 [tool.coverage.run]
 branch = true
 omit = [
-    "src/tests/*",
-    "src/config.py",
-    "src/public_input_pb2.py",
-    "src/public_input_pb2_grpc.py",
+    "*_test.py",
+    "kai_nats_msg_pb2.py",
     ".venv",
 ]
 
