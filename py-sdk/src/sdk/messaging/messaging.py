@@ -2,23 +2,16 @@ import uuid
 from dataclasses import dataclass
 from typing import Optional
 
-from messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
 from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
+from kai_nats_msg import KaiNatsMessage, MessageType
 from loguru import logger
 from loguru._logger import Logger
-from messaging.messaging_utils import MessagingUtils, size_in_mb, compress
+from messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
+from messaging.messaging_utils import MessagingUtils, compress, size_in_mb
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
-
-from kai_nats_msg_pb2 import (
-    KaiNatsMessage,
-    MessageType_EARLY_EXIT,
-    MessageType_EARLY_REPLY,
-    MessageType_ERROR,
-    MessageType_OK,
-)
 
 
 @dataclass
@@ -33,39 +26,39 @@ class Messaging:
         self.message_utils = MessagingUtils(js=self.js, nc=self.nc)
 
     def send_output(self, response: Message, chan: Optional[str] = None):
-        self._publish_msg(msg=response, msg_type=MessageType_OK, chan=chan)
+        self._publish_msg(msg=response, msg_type=MessageType.OK, chan=chan)
 
     def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str] = None):
-        self._publish_msg(msg=response, msg_type=MessageType_OK, request_id=request_id, chan=chan)
+        self._publish_msg(msg=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
 
     def send_any(self, response: Any, chan: Optional[str] = None):
-        self._publish_any(payload=response, msg_type=MessageType_OK, chan=chan)
+        self._publish_any(payload=response, msg_type=MessageType.OK, chan=chan)
 
     def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str] = None):
-        self._publish_any(payload=response, msg_type=MessageType_OK, request_id=request_id, chan=chan)
+        self._publish_any(payload=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
 
     # TODO: remove this method
     def send_early_reply(self, response: Message, chan: Optional[str] = None):
-        self._publish_msg(msg=response, msg_type=MessageType_EARLY_REPLY, chan=chan)
+        self._publish_msg(msg=response, msg_type=MessageType.EARLY_REPLY, chan=chan)
 
     # TODO: remove this method
     def send_early_exit(self, response: Message, chan: Optional[str] = None):
-        self._publish_msg(msg=response, msg_type=MessageType_EARLY_EXIT, chan=chan)
+        self._publish_msg(msg=response, msg_type=MessageType.EARLY_EXIT, chan=chan)
 
     def get_error_message(self) -> str:
         return self.req_msg.error if self.is_message_error() else ""
 
     def is_message_ok(self) -> bool:
-        return self.req_msg.message_type == MessageType_OK
+        return self.req_msg.message_type == MessageType.OK
 
     def is_message_error(self) -> bool:
-        return self.req_msg.message_type == MessageType_ERROR
+        return self.req_msg.message_type == MessageType.ERROR
 
     def is_message_early_reply(self) -> bool:
-        return self.req_msg.message_type == MessageType_EARLY_REPLY
+        return self.req_msg.message_type == MessageType.EARLY_REPLY
 
     def is_message_early_exit(self) -> bool:
-        return self.req_msg.message_type == MessageType_EARLY_EXIT
+        return self.req_msg.message_type == MessageType.EARLY_EXIT
 
     def _publish_msg(self, msg: Message, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None):
         try:
@@ -94,7 +87,7 @@ class Messaging:
             RequestId=request_id,
             Error=err_msg,
             FromNode=v.get("metadata.process_id"),
-            MessageType=MessageType_ERROR,
+            MessageType=MessageType.ERROR,
         )
         self._publish_response(response_msg)
 

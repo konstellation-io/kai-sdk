@@ -39,7 +39,7 @@ class FailedSavingFileError(Exception):
 
 
 class FailedDeletingFileError(Exception):
-    def __init__(self, key:str, error=None):
+    def __init__(self, key: str, error=None):
         message = f"failed deleting file {key} from the object store"
         super().__init__(f"{message}: {error}" if error else message)
 

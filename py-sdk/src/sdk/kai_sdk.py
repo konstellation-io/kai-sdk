@@ -7,6 +7,7 @@ from typing import Optional
 from centralized_config.centralized_config import CentralizedConfig
 from centralized_config.constants import Scope
 from google.protobuf.message import Message
+from kai_nats_msg import KaiNatsMessage
 from loguru import logger
 from loguru._logger import Logger
 from messaging.messaging import Messaging
@@ -15,8 +16,6 @@ from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from object_store.object_store import ObjectStore
 from path_utils.path_utils import PathUtils
-
-from kai_nats_msg_pb2 import KaiNatsMessage
 
 logger.remove()
 logger.add(
@@ -121,7 +120,7 @@ class ObjectStore(ABC):
         pass
 
     @abstractmethod
-    def get(self, key: str) -> (bytes, bool) | Exception:
+    def get(self, key: str) -> tuple[bytes, bool] | Exception:
         pass
 
     @abstractmethod
@@ -144,7 +143,7 @@ class CentralizedConfig(ABC):
         pass
 
     @abstractmethod
-    def get_config(self, key: str, scope: Optional[Scope]) -> (str, bool) | Exception:
+    def get_config(self, key: str, scope: Optional[Scope]) -> tuple[str, bool] | Exception:
         pass
 
     @abstractmethod
@@ -186,17 +185,26 @@ class KaiSDK:
     req_msg: KaiNatsMessage
 
     logger: Logger = logger.bind(context="[KAI SDK]")
-    metadata: Metadata = Metadata()
+    metadata: Metadata = None
     messaging: Messaging = None
     object_store: Optional[ObjectStore] = None
     centralized_config: CentralizedConfig = None
-    path_utils: PathUtils = PathUtils()
+    path_utils: PathUtils = None
     measurements: Measurements = None
     storage: Storage = None
 
     def __post_init__(self):
+        from centralized_config.centralized_config import CentralizedConfig
+        from messaging.messaging import Messaging
+        from metadata.metadata import Metadata
+        from object_store.object_store import ObjectStore
+        from path_utils.path_utils import PathUtils
+
         self.centralized_config = CentralizedConfig(js=self.js)
+        self.metadata = Metadata()
+        self.messaging = Messaging(nc=self.nc, js=self.js, req_msg=self.req_msg)
         self.object_store = ObjectStore(js=self.js)
+        self.path_utils = PathUtils()
 
     async def initialize(self):
         try:
@@ -211,7 +219,5 @@ class KaiSDK:
             self.logger.error(f"error initializing centralized configuration: {e}")
             os.exit(1)
 
-        self.messaging = Messaging(nc=self.nc, js=self.js, req_msg=self.req_msg)
-
     def get_request_id(self):
-        return self.req_msg.RequestId if self.req_msg else None
+        return self.req_msg.request_id if self.req_msg else None

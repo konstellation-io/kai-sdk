@@ -2,6 +2,11 @@ import re
 from dataclasses import dataclass
 from typing import Optional
 
+from loguru import logger
+from loguru._logger import Logger
+from nats.js.client import JetStreamContext
+from nats.js.errors import NotFoundError, ObjectNotFoundError
+from nats.js.object_store import ObjectStore as NatsObjectStore
 from object_store.exceptions import (
     EmptyPayloadError,
     FailedCompilingRegexpError,
@@ -13,11 +18,6 @@ from object_store.exceptions import (
     FailedSavingFileError,
     UndefinedObjectStoreError,
 )
-from loguru import logger
-from loguru._logger import Logger
-from nats.js.client import JetStreamContext
-from nats.js.errors import NotFoundError, ObjectNotFoundError
-from nats.js.object_store import ObjectStore as NatsObjectStore
 from vyper import v
 
 
@@ -29,7 +29,8 @@ class ObjectStore:
     logger: Logger = logger.bind(context="[OBJECT STORE]")
 
     def __post_init__(self):
-        if setattr(self, self.object_store_name, v.get("nats.object_store")):
+        self.object_store_name = v.get("nats.object_store")
+        if self.object_store_name:
             self.logger = logger.bind(context=f"[OBJECT STORE: {self.object_store_name}]")
 
     async def initialize(self) -> Optional[Exception]:
@@ -73,7 +74,7 @@ class ObjectStore:
 
         return response
 
-    async def get(self, key: str) -> (bytes, bool) | Exception:
+    async def get(self, key: str) -> tuple[bytes, bool] | Exception:
         if not self.object_store:
             raise UndefinedObjectStoreError
 

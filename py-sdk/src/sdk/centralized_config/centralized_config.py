@@ -2,7 +2,12 @@ from dataclasses import dataclass
 from typing import Optional
 
 from centralized_config.constants import Scope
-from centralized_config.exceptions import FailedDeletingConfig, FailedGettingConfig, FailedInitializingConfig, FailedSettingConfig
+from centralized_config.exceptions import (
+    FailedDeletingConfig,
+    FailedGettingConfig,
+    FailedInitializingConfig,
+    FailedSettingConfig,
+)
 from loguru import logger
 from loguru._logger import Logger
 from nats.js.client import JetStreamContext
@@ -13,10 +18,10 @@ from vyper import v
 
 @dataclass
 class CentralizedConfig:
-    product_kv: KeyValue
-    workflow_kv: KeyValue
-    process_kv: KeyValue
     js: JetStreamContext
+    product_kv: KeyValue = None
+    workflow_kv: KeyValue = None
+    process_kv: KeyValue = None
     logger: Logger = logger.bind(component="[CENTRALIZED CONFIGURATION]")
 
     async def initialize(self) -> Optional[Exception]:
@@ -73,7 +78,7 @@ class CentralizedConfig:
         kv_store = self._get_scoped_config(scope)
 
         try:
-            kv_store.Put(key, value)
+            kv_store.put(key, value)
         except Exception as e:
             raise FailedSettingConfig(key=key, scope=scope, error=e)
 

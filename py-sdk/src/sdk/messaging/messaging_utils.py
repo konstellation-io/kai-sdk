@@ -1,3 +1,4 @@
+import zlib
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -5,8 +6,6 @@ from messaging.exceptions import FailedGettingMaxMessageSizeError
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
-import zlib
-
 
 GZIP_HEADER = b"\x1f\x8b"
 
@@ -48,11 +47,14 @@ def size_in_mb(size: int) -> str:
 def size_in_kb(size: int) -> str:
     return f"{size / 1024:.2f} KB"
 
+
 def compress(payload: bytes) -> bytes:
     return zlib.compress(payload, level=zlib.Z_BEST_COMPRESSION)
 
+
 def decompress(payload: bytes) -> bytes:
     return zlib.decompress(payload)
+
 
 def is_compressed(payload: bytes) -> bool:
     return payload.startswith(GZIP_HEADER)
