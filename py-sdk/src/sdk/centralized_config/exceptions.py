@@ -1,22 +1,22 @@
-class FailedInitializingConfig(Exception):
+class FailedInitializingConfigError(Exception):
     def __init__(self, error: Exception):
         message = f"failed initializing configuration: {error}"
         super().__init__(message)
 
 
-class FailedGettingConfig(Exception):
+class FailedGettingConfigError(Exception):
     def __init__(self, key: str, scope: str, error: Exception):
         message = f"failed getting configuration given key {key} and scope {scope}: {error}"
         super().__init__(message)
 
 
-class FailedSettingConfig(Exception):
+class FailedSettingConfigError(Exception):
     def __init__(self, key: str, scope: str, error: Exception):
         message = f"failed setting configuration given key {key} and scope {scope}: {error}"
         super().__init__(message)
 
 
-class FailedDeletingConfig(Exception):
+class FailedDeletingConfigError(Exception):
     def __init__(self, key: str, scope: str, error: Exception):
         message = f"failed deleting configuration given key {key} and scope {scope}: {error}"
         super().__init__(message)

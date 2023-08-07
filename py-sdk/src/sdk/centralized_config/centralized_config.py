@@ -3,10 +3,10 @@ from typing import Optional
 
 from centralized_config.constants import Scope
 from centralized_config.exceptions import (
-    FailedDeletingConfig,
-    FailedGettingConfig,
-    FailedInitializingConfig,
-    FailedSettingConfig,
+    FailedDeletingConfigError,
+    FailedGettingConfigError,
+    FailedInitializingConfigError,
+    FailedSettingConfigError,
 )
 from loguru import logger
 from loguru._logger import Logger
@@ -46,7 +46,7 @@ class CentralizedConfig:
 
             return product_kv, workflow_kv, process_kv
         except Exception as e:
-            raise FailedInitializingConfig(error=e)
+            raise FailedInitializingConfigError(error=e)
 
     def get_config(self, key: str, scope: Optional[Scope] = None) -> tuple[str, bool] | Exception:
         if scope:
@@ -56,7 +56,7 @@ class CentralizedConfig:
                 logger.warning(f"key {key} not found in scope {scope}")
                 return None, False
             except Exception as e:
-                raise FailedGettingConfig(key=key, scope=scope, error=e)
+                raise FailedGettingConfigError(key=key, scope=scope, error=e)
 
             return config, True
 
@@ -67,7 +67,7 @@ class CentralizedConfig:
                 logger.debug(f"key {key} not found in scope {_scope}")
                 continue
             except Exception as e:
-                raise FailedGettingConfig(key=key, scope=_scope, error=e)
+                raise FailedGettingConfigError(key=key, scope=_scope, error=e)
 
             return config, True
 
@@ -80,13 +80,13 @@ class CentralizedConfig:
         try:
             kv_store.put(key, value)
         except Exception as e:
-            raise FailedSettingConfig(key=key, scope=scope, error=e)
+            raise FailedSettingConfigError(key=key, scope=scope, error=e)
 
     def delete_config(self, key: str, scope: Optional[Scope] = None) -> bool | Exception:
         try:
             return self._get_scoped_config(scope).delete(key)
         except Exception as e:
-            raise FailedDeletingConfig(key=key, scope=scope, error=e)
+            raise FailedDeletingConfigError(key=key, scope=scope, error=e)
 
     def _get_config_from_scope(self, key: str, scope: str) -> str:
         return self._get_scoped_config(scope).get(key).value().decode("utf-8")

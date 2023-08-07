@@ -1,4 +1,4 @@
-import zlib
+import gzip
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -8,6 +8,7 @@ from nats.js.client import JetStreamContext
 from vyper import v
 
 GZIP_HEADER = b"\x1f\x8b"
+GZIP_BEST_COMPRESSION = 9
 
 
 @dataclass
@@ -49,11 +50,11 @@ def size_in_kb(size: int) -> str:
 
 
 def compress(payload: bytes) -> bytes:
-    return zlib.compress(payload, level=zlib.Z_BEST_COMPRESSION)
+    return gzip.compress(payload, compresslevel=GZIP_BEST_COMPRESSION)
 
 
 def decompress(payload: bytes) -> bytes:
-    return zlib.decompress(payload)
+    return gzip.decompress(payload)
 
 
 def is_compressed(payload: bytes) -> bool:

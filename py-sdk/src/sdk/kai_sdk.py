@@ -1,4 +1,3 @@
-import os
 import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -211,13 +210,13 @@ class KaiSDK:
             await self.object_store.initialize()
         except Exception as e:
             self.logger.error(f"error initializing object store: {e}")
-            os.exit(1)
+            sys.exit(1)
 
         try:
             await self.centralized_config.initialize()
         except Exception as e:
             self.logger.error(f"error initializing centralized configuration: {e}")
-            os.exit(1)
+            sys.exit(1)
 
     def get_request_id(self):
         return self.req_msg.request_id if self.req_msg else None
