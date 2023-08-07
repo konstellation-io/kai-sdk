@@ -17,6 +17,8 @@ pymongo = "4.4.1"
 loguru = "0.7.0"
 vyper-config = "1.1.1"
 grpcio-tools = "1.56.2"
+betterproto = {extras = ["compiler"], version = "1.2.5"}
+google = "3.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -38,7 +40,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 target-version = ["py311"]
 line-length = 120
-exclude = '/(.*_pb2.*\.py)|(.venv)/'
+exclude = '/(.*_pb2.*\.py)|(.venv)|(.kai_nats_msg.py)/'
 
 [tool.isort]
 py_version=311
@@ -49,7 +51,7 @@ use_parentheses = true
 ensure_newline_before_comments = true
 line_length = 120
 extend_skip = [
-    "kai_nats_msg_pb2.py",
+    "kai_nats_msg.py",
     ".venv",
 ]
 
@@ -59,18 +61,18 @@ addopts = [
     "-s",
 ]
 testpaths = [
-    "src",
+    "src/sdk/*_test.py",
 ]
 python_files = "*_test.py"
 python_classes = "Test*"
-python_functions = "*_test"
+python_functions = "test_*"
 asyncio_mode = "auto"
 
 [tool.coverage.run]
 branch = true
 omit = [
     "*_test.py",
-    "kai_nats_msg_pb2.py",
+    "kai_nats_msg.py",
     ".venv",
 ]
 
