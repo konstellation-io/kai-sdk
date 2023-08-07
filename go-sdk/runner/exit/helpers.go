@@ -16,6 +16,7 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 			initializer(sdk)
 			sdk.Logger.WithName("[INITIALIZER]").V(3).Info("User initializer executed")
 		}
+		
 		sdk.Logger.WithName("[INITIALIZER]").V(1).Info("ExitRunner initialized")
 	}
 }

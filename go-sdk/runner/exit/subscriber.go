@@ -29,6 +29,8 @@ func (er *Runner) startSubscriber() {
 		er.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Subscribing to subject",
 			"Subject", subject, "Queue group", consumerName)
 
+		ackWaitTime := 22 * time.Hour
+
 		s, err := er.jetstream.QueueSubscribe(
 			subject,
 			consumerName,
@@ -36,14 +38,16 @@ func (er *Runner) startSubscriber() {
 			nats.DeliverNew(),
 			nats.Durable(consumerName),
 			nats.ManualAck(),
-			nats.AckWait(22*time.Hour),
+			nats.AckWait(ackWaitTime),
 		)
 		if err != nil {
 			er.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error subscribing to NATS subject",
 				"Subject", subject)
 			os.Exit(1)
 		}
+		
 		subscriptions = append(subscriptions, s)
+		
 		er.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Listening to subject",
 			"Subject", subject, "Queue group", consumerName)
 	}
@@ -55,6 +59,7 @@ func (er *Runner) startSubscriber() {
 
 	// Handle shutdown
 	er.sdk.Logger.WithName("[SUBSCRIBER]").Info("Shutdown signal received")
+	
 	for _, s := range subscriptions {
 		err := s.Unsubscribe()
 		if err != nil {
@@ -71,6 +76,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 		errMsg := fmt.Sprintf("Error parsing msg.data coming from subject %s because is not a valid protobuf: %s",
 			msg.Subject, err)
 		er.processRunnerError(msg, errMsg, requestMsg.RequestId)
+		
 		return
 	}
 
@@ -81,6 +87,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 	if handler == nil {
 		errMsg := fmt.Sprintf("Error missing handler for node %q", requestMsg.FromNode)
 		er.processRunnerError(msg, errMsg, requestMsg.RequestId)
+		
 		return
 	}
 
@@ -93,6 +100,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 			errMsg := fmt.Sprintf("Error in node %q executing handler preprocessor for node %q: %s",
 				er.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
 			er.processRunnerError(msg, errMsg, requestMsg.RequestId)
+			
 			return
 		}
 	}
@@ -102,6 +110,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 		errMsg := fmt.Sprintf("Error in node %q executing handler for node %q: %s",
 			er.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
 		er.processRunnerError(msg, errMsg, requestMsg.RequestId)
+		
 		return
 	}
 
@@ -111,6 +120,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 			errMsg := fmt.Sprintf("Error in node %q executing handler postprocessor for node %q: %s",
 				er.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
 			er.processRunnerError(msg, errMsg, requestMsg.RequestId)
+			
 			return
 		}
 	}
@@ -189,6 +199,7 @@ func (er *Runner) getOutputSubject(channel string) string {
 	if channel != "" {
 		return fmt.Sprintf("%s.%s", outputSubject, channel)
 	}
+	
 	return outputSubject
 }
 
@@ -216,7 +227,8 @@ func (er *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 			Info("Compressed message exceeds maximum size allowed",
 				"Current message size", sizeInMB(lenOutMsg),
 				"Compressed message size", sizeInMB(maxSize))
-		return nil, errors.ErrMessageToBig
+
+				return nil, errors.ErrMessageToBig
 	}
 
 	er.sdk.Logger.WithName("[SUBSCRIBER]").Info("Message prepared",
@@ -256,5 +268,6 @@ func (er *Runner) getMaxMessageSize() (int64, error) {
 }
 
 func sizeInMB(size int64) string {
-	return fmt.Sprintf("%.1f MB", float32(size)/1024/1024)
+	mbSize := float32(size) / 1024 / 1024
+	return fmt.Sprintf("%.1f MB", mbSize)
 }
