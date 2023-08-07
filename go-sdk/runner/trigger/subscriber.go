@@ -29,6 +29,8 @@ func (tr *Runner) startSubscriber() {
 		tr.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Subscribing to subject",
 			"Subject", subject, "Queue group", consumerName)
 
+		ackWaitTime := 22 * time.Hour
+
 		s, err := tr.jetstream.QueueSubscribe(
 			subject,
 			consumerName,
@@ -36,7 +38,7 @@ func (tr *Runner) startSubscriber() {
 			nats.DeliverNew(),
 			nats.Durable(consumerName),
 			nats.ManualAck(),
-			nats.AckWait(22*time.Hour),
+			nats.AckWait(ackWaitTime),
 		)
 		if err != nil {
 			tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error subscribing to NATS subject",
@@ -44,7 +46,9 @@ func (tr *Runner) startSubscriber() {
 			wg.Done()
 			os.Exit(1)
 		}
+
 		subscriptions = append(subscriptions, s)
+
 		tr.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Listening to subject",
 			"Subject", subject, "Queue group", consumerName)
 	}
@@ -58,9 +62,11 @@ func (tr *Runner) startSubscriber() {
 
 	// Handle shutdown
 	tr.sdk.Logger.WithName("[SUBSCRIBER]").Info("Shutdown signal received")
+
 	for _, s := range subscriptions {
 		tr.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Unsubscribing from subject",
 			"Subject", s.Subject)
+
 		err := s.Unsubscribe()
 		if err != nil {
 			tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error unsubscribing from the NATS subject",
@@ -77,6 +83,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 	if err != nil {
 		errMsg := fmt.Sprintf("Error parsing msg.data coming from subject %s because is not a valid protobuf: %s", msg.Subject, err)
 		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
+
 		return
 	}
 
@@ -86,6 +93,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 	if tr.responseHandler == nil {
 		errMsg := "Error missing handler"
 		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
+
 		return
 	}
 
@@ -97,6 +105,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 		errMsg := fmt.Sprintf("Error in node %q executing handler for node %q: %s",
 			tr.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
 		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
+
 		return
 	}
 
@@ -172,6 +181,7 @@ func (tr *Runner) getOutputSubject(channel string) string {
 	if channel != "" {
 		return fmt.Sprintf("%s.%s", outputSubject, channel)
 	}
+
 	return outputSubject
 }
 
@@ -198,7 +208,8 @@ func (tr *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 		tr.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Compressed message exceeds maximum size allowed",
 			"Current message size", sizeInMB(lenOutMsg),
 			"Compressed message size", sizeInMB(maxSize))
-		return nil, errors.ErrMessageToBig
+
+			return nil, errors.ErrMessageToBig
 	}
 
 	tr.sdk.Logger.WithName("[SUBSCRIBER]").Info("Message prepared",
@@ -229,5 +240,6 @@ func (tr *Runner) getMaxMessageSize() (int64, error) {
 }
 
 func sizeInMB(size int64) string {
-	return fmt.Sprintf("%.1f MB", float32(size)/1024/1024)
+	mbSize := float32(size) / 1024 / 1024
+	return fmt.Sprintf("%.1f MB", mbSize)
 }

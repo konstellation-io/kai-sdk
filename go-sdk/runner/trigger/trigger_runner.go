@@ -63,6 +63,7 @@ func (tr *Runner) Run() {
 	if tr.runner == nil {
 		panic("No runner function defined")
 	}
+	
 	if tr.initializer == nil {
 		tr.initializer = composeInitializer(nil)
 	}
@@ -79,7 +80,8 @@ func (tr *Runner) Run() {
 
 	go tr.startSubscriber()
 
-	wg.Add(2)
+	delta:= 2
+	wg.Add(delta)
 	wg.Wait()
 
 	tr.finalizer(tr.sdk)

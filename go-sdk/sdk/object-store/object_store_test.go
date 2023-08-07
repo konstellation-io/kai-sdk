@@ -86,7 +86,7 @@ func TestSdkObjectStoreTestSuite(t *testing.T) {
 }
 
 func generateObjectInfoResponse(keys []string) []*nats.ObjectInfo {
-	var objects []*nats.ObjectInfo
+	objects := make([]*nats.ObjectInfo, 0, len(keys))
 	for _, key := range keys {
 		objects = append(objects, &nats.ObjectInfo{
 			ObjectMeta: nats.ObjectMeta{
@@ -94,5 +94,6 @@ func generateObjectInfoResponse(keys []string) []*nats.ObjectInfo {
 			},
 		})
 	}
+	
 	return objects
 }

@@ -12,10 +12,15 @@ import (
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetConfigOnAllScopes_ExpectOK() {
 	// Given
 	productResponse := mocks.NewKeyValueEntryMock(s.T())
+
 	productResponse.On("Value").Return([]byte("value1"))
+
 	workflowResponse := mocks.NewKeyValueEntryMock(s.T())
+
 	workflowResponse.On("Value").Return([]byte("value2"))
+
 	processResponse := mocks.NewKeyValueEntryMock(s.T())
+
 	processResponse.On("Value").Return([]byte("value3"))
 
 	s.productKv.On("Get", "key1").Return(productResponse, nil)
@@ -114,6 +119,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetO
 	productResponse := mocks.NewKeyValueEntryMock(s.T())
 	workflowResponse := mocks.NewKeyValueEntryMock(s.T())
 	workflowResponse.On("Value").Return([]byte("workflowValue"))
+
 	processResponse := mocks.NewKeyValueEntryMock(s.T())
 	processResponse.On("Value").Return([]byte("processValue"))
 

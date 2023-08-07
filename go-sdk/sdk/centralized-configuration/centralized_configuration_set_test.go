@@ -11,7 +11,6 @@ const notExist = "not exist"
 
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetConfigOnDefaultScope_ExpectOK() {
 	// Given
-
 	s.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(1), nil)
