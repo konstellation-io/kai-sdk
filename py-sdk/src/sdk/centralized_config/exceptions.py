@@ -1,22 +1,22 @@
 class FailedInitializingConfigError(Exception):
-    def __init__(self, error: Exception):
-        message = f"failed initializing configuration: {error}"
-        super().__init__(message)
+    def __init__(self, error: Exception = None):
+        message = "failed initializing configuration"
+        super().__init__(f"{message}: {error}" if error else message)
 
 
 class FailedGettingConfigError(Exception):
-    def __init__(self, key: str, scope: str, error: Exception):
-        message = f"failed getting configuration given key {key} and scope {scope}: {error}"
-        super().__init__(message)
+    def __init__(self, key: str, scope: str, error: Exception = None):
+        message = f"failed getting configuration given key {key} and scope {scope}"
+        super().__init__(f"{message}: {error}" if error else message)
 
 
 class FailedSettingConfigError(Exception):
-    def __init__(self, key: str, scope: str, error: Exception):
-        message = f"failed setting configuration given key {key} and scope {scope}: {error}"
-        super().__init__(message)
+    def __init__(self, key: str, scope: str, error: Exception = None):
+        message = f"failed setting configuration given key {key} and scope {scope}"
+        super().__init__(f"{message}: {error}" if error else message)
 
 
 class FailedDeletingConfigError(Exception):
-    def __init__(self, key: str, scope: str, error: Exception):
-        message = f"failed deleting configuration given key {key} and scope {scope}: {error}"
-        super().__init__(message)
+    def __init__(self, key: str, scope: str, error: Exception = None):
+        message = f"failed deleting configuration given key {key} and scope {scope}"
+        super().__init__(f"{message}: {error}" if error else message)

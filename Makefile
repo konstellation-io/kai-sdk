@@ -12,7 +12,7 @@ tidy: ## Run black, isort and codespell
 	poetry --directory py-sdk run black py-sdk/src \
 	&& poetry --directory py-sdk run isort py-sdk/src \
 	&& poetry --directory py-sdk run codespell py-sdk/src -I py-sdk/dictionary.txt \
-	--skip="*.git,*.json,public_input_pb2.py,public_input_pb2_grpc.py,.venv,*.lock" \
+	--skip="*.git,*.json,kai_nats_msg_pb2.py,.venv,*.lock" \
 
 .PHONY: protos
 protos: ## Generate proto files

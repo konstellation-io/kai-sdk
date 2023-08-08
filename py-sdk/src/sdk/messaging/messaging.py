@@ -4,7 +4,7 @@ from typing import Optional
 
 from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
-from kai_nats_msg import KaiNatsMessage, MessageType
+from kai_nats_msg_pb2 import KaiNatsMessage, MessageType
 from loguru import logger
 from loguru._logger import Logger
 from messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
@@ -22,8 +22,8 @@ class Messaging:
     messaging_utils: MessagingUtils = None
     logger: Logger = logger.bind(context="[MESSAGING]")
 
-    def __post__init__(self):
-        self.message_utils = MessagingUtils(js=self.js, nc=self.nc)
+    def __post_init__(self):
+        self.messaging_utils = MessagingUtils(js=self.js, nc=self.nc)
 
     def send_output(self, response: Message, chan: Optional[str] = None):
         self._publish_msg(msg=response, msg_type=MessageType.OK, chan=chan)
@@ -72,7 +72,6 @@ class Messaging:
             request_id = str(uuid.uuid4())
 
         response_msg = self._new_response_msg(payload, request_id, msg_type)
-
         self._publish_response(response_msg, chan)
 
     def _publish_any(self, payload: Any, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None):
@@ -84,10 +83,10 @@ class Messaging:
 
     def _publish_error(self, request_id: str, err_msg: str):
         response_msg = KaiNatsMessage(
-            RequestId=request_id,
-            Error=err_msg,
-            FromNode=v.get("metadata.process_id"),
-            MessageType=MessageType.ERROR,
+            request_id=request_id,
+            error=err_msg,
+            from_node=v.get("metadata.process_id"),
+            message_type=MessageType.ERROR,
         )
         self._publish_response(response_msg)
 

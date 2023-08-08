@@ -6,7 +6,7 @@ from typing import Optional
 from centralized_config.centralized_config import CentralizedConfig
 from centralized_config.constants import Scope
 from google.protobuf.message import Message
-from kai_nats_msg import KaiNatsMessage
+from kai_nats_msg_pb2 import KaiNatsMessage
 from loguru import logger
 from loguru._logger import Logger
 from messaging.messaging import Messaging
@@ -16,7 +16,7 @@ from nats.js.client import JetStreamContext
 from object_store.object_store import ObjectStore
 from path_utils.path_utils import PathUtils
 
-logger.remove()
+logger.remove()  # Remove the pre-configured handler
 logger.add(
     sys.stdout,
     colorize=True,

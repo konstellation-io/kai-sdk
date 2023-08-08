@@ -11,14 +11,9 @@ keywords = ["python", "sdk", "kai", "konstellation"]
 [tool.poetry.dependencies]
 python = "3.11.4"
 nats-py = "2.3.0"
-influxdb-client = "1.37.0"
 protobuf = "4.23.4"
-pymongo = "4.4.1"
 loguru = "0.7.0"
 vyper-config = "1.1.1"
-grpcio-tools = "1.56.2"
-betterproto = {extras = ["compiler"], version = "1.2.5"}
-google = "3.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -40,7 +35,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 target-version = ["py311"]
 line-length = 120
-exclude = '/(.*_pb2.*\.py)|(.venv)|(.kai_nats_msg.py)/'
+exclude = '/(.*_pb2.*\.py)|(.venv)/'
 
 [tool.isort]
 py_version=311
@@ -51,7 +46,7 @@ use_parentheses = true
 ensure_newline_before_comments = true
 line_length = 120
 extend_skip = [
-    "kai_nats_msg.py",
+    "kai_nats_msg_pb2.py",
     ".venv",
 ]
 
@@ -72,7 +67,7 @@ asyncio_mode = "auto"
 branch = true
 omit = [
     "*_test.py",
-    "kai_nats_msg.py",
+    "kai_nats_msg_pb2.py",
     ".venv",
     "config.py",
     "constants.py",
