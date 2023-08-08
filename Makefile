@@ -16,10 +16,7 @@ tidy: ## Run black, isort and codespell
 
 .PHONY: protos
 protos: ## Generate proto files
-	poetry --directory py-sdk -- run python -m grpc_tools.protoc -I="proto" \
-	--python_betterproto_out="py-sdk/src/sdk" \
-	proto/kai_nats_msg.proto && \
-	protoc -I proto --go_out=go-sdk/protos --go_opt=paths=source_relative proto/kai_nats_msg.proto
+	protoc -I proto --python_out=py-sdk/src/sdk --go_out=go-sdk/protos --go_opt=paths=source_relative proto/kai_nats_msg.proto
 
 .PHONY: generate_mocks
 generate_mocks: ## Generate mocks
