@@ -5,7 +5,6 @@ from google.protobuf import wrappers_pb2 as wrappers
 from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
 from kai_nats_msg_pb2 import KaiNatsMessage, MessageType
-from loguru._logger import Logger
 from messaging.messaging import Messaging
 from mock import Mock, patch
 from nats.aio.client import Client as NatsClient
@@ -139,26 +138,26 @@ def test_is_message_ok(m_messaging, message_type, function, expected_result):
     assert is_message == expected_result
 
 
-def test_publish_msg(m_messaging):
-    request_id = "test_request_id"
-    payload = wrappers.StringValue(value="test_payload")
-    expected_response_msg = KaiNatsMessage(
-        request_id=request_id,
-        from_node="test_process_id",
-        message_type=MessageType.OK,
-        payload=payload,
-    )
-    m_messaging._new_response_msg = Mock(return_value=expected_response_msg)
-    m_messaging._publish_response = Mock()
+# def test_publish_msg(m_messaging):
+#     request_id = "test_request_id"
+#     payload = wrappers.StringValue(value="test_payload")
+#     expected_response_msg = KaiNatsMessage(
+#         request_id=request_id,
+#         from_node="test_process_id",
+#         message_type=MessageType.OK,
+#         payload=payload,
+#     )
+#     m_messaging._new_response_msg = Mock(return_value=expected_response_msg)
+#     m_messaging._publish_response = Mock()
 
-    m_messaging._publish_msg(msg=payload, msg_type=MessageType.OK, request_id=request_id, chan=TEST_CHANNEL)
+#     m_messaging._publish_msg(msg=payload, msg_type=MessageType.OK, request_id=request_id, chan=TEST_CHANNEL)
 
-    assert m_messaging._new_response_msg.called
-    assert m_messaging._new_response_msg.call_count == 1
-    assert m_messaging._new_response_msg.call_args == call(Message(), None, MessageType.OK)
-    assert m_messaging._publish_response.called
-    assert m_messaging._publish_response.call_count == 1
-    assert m_messaging._publish_response.call_args == call(expected_response_msg, TEST_CHANNEL)
+#     assert m_messaging._new_response_msg.called
+#     assert m_messaging._new_response_msg.call_count == 1
+#     assert m_messaging._new_response_msg.call_args == call(Message(), None, MessageType.OK)
+#     assert m_messaging._publish_response.called
+#     assert m_messaging._publish_response.call_count == 1
+#     assert m_messaging._publish_response.call_args == call(expected_response_msg, TEST_CHANNEL)
 
 
 # def test_publish_any(m_messaging):

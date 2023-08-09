@@ -4,7 +4,7 @@ from centralized_config.exceptions import FailedInitializingConfigError
 from kai_nats_msg_pb2 import KaiNatsMessage
 from kai_sdk import KaiSDK
 from loguru import logger
-from mock import patch
+from mock import Mock, patch
 from nats.aio.client import Client as NatsClient
 from object_store.object_store import FailedObjectStoreInitializationError, ObjectStore
 from vyper import v
@@ -45,7 +45,7 @@ async def test_initialize_ok(centralized_config_initialize_mock):
     assert sdk.storage is None
 
 
-@patch.object(CentralizedConfig, "_init_kv_stores", side_effect=FailedInitializingConfigError)
+@patch.object(CentralizedConfig, "_init_kv_stores", side_effect=Exception)
 async def test_initialize_ko(centralized_config_initialize_mock, caplog):
     nc = NatsClient()
     js = nc.jetstream()
@@ -63,7 +63,7 @@ async def test_initialize_ko(centralized_config_initialize_mock, caplog):
             logger.enable("kai_sdk")
 
 
-@patch.object(ObjectStore, "_init_object_store", return_value="Not Empty")
+@patch.object(ObjectStore, "_init_object_store", return_value=Mock(spec=ObjectStore))
 @patch.object(CentralizedConfig, "_init_kv_stores", return_value=("test_product", "test_workflow", "test_process"))
 async def test_nats_initialize_ok(centralized_config_initialize_mock, object_store_initialize_mock):
     nc = NatsClient()
@@ -85,7 +85,7 @@ async def test_nats_initialize_ok(centralized_config_initialize_mock, object_sto
     assert sdk.object_store.object_store_name == "test_object_store"
 
 
-@patch.object(ObjectStore, "_init_object_store", side_effect=FailedObjectStoreInitializationError)
+@patch.object(ObjectStore, "_init_object_store", side_effect=Exception)
 async def test_nats_initialize_ko(object_store_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
