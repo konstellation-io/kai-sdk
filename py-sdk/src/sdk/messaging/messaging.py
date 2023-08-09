@@ -65,7 +65,7 @@ class Messaging:
             payload = Any()
             payload.Pack(msg)
         except Exception as e:
-            logger.debug(f"failed packing message: {e}")
+            self.logger.debug(f"failed packing message: {e}")
             return
 
         if not request_id:
@@ -105,13 +105,13 @@ class Messaging:
         try:
             output_msg = response_msg.SerializeToString()
         except Exception as e:
-            logger.debug(f"failed serializing response message: {e}")
+            self.logger.debug(f"failed serializing response message: {e}")
             return
 
         try:
             output_msg = self._prepare_output_message(output_msg)
         except (FailedGettingMaxMessageSizeError, MessageTooLargeError) as e:
-            logger.debug(f"failed preparing output message: {e}")
+            self.logger.debug(f"failed preparing output message: {e}")
             return
 
         self.logger.info(f"publishing response to subject {output_subject}...")
