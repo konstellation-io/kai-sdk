@@ -65,7 +65,7 @@ class Messaging:
             payload = Any()
             payload.Pack(msg)
         except Exception as e:
-            logger.error(f"failed packing message: {e}")
+            logger.debug(f"failed packing message: {e}")
             return
 
         if not request_id:
@@ -105,13 +105,13 @@ class Messaging:
         try:
             output_msg = response_msg.SerializeToString()
         except Exception as e:
-            logger.error(f"failed serializing response message: {e}")
+            logger.debug(f"failed serializing response message: {e}")
             return
 
         try:
             output_msg = self._prepare_output_message(output_msg)
         except (FailedGettingMaxMessageSizeError, MessageTooLargeError) as e:
-            logger.error(f"failed preparing output message: {e}")
+            logger.debug(f"failed preparing output message: {e}")
             return
 
         self.logger.info(f"publishing response to subject {output_subject}...")
@@ -119,7 +119,7 @@ class Messaging:
         try:
             await self.js.publish(output_subject, output_msg)
         except Exception as e:
-            self.logger.error(f"failed publishing response: {e}")
+            self.logger.debug(f"failed publishing response: {e}")
             return
 
     def _get_output_subject(self, chan: Optional[str] = None) -> str:
@@ -137,7 +137,7 @@ class Messaging:
 
         len_out_msg = len(out_msg)
         if len_out_msg > max_size:
-            self.logger.info(f"compressed message size: {len_out_msg} exceeds maximum allowed size: {max_size}")
+            self.logger.warning(f"compressed message size: {len_out_msg} exceeds maximum allowed size: {max_size}")
             raise MessageTooLargeError(size_in_mb(len_out_msg), size_in_mb(max_size))
 
         self.logger.info(

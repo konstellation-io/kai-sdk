@@ -9,11 +9,6 @@ class FailedObjectStoreInitializationError(Exception):
         super().__init__(f"{message}: {error}" if error else message)
 
 
-class EmptyPayloadError(Exception):
-    def __init__(self):
-        super().__init__("empty payload")
-
-
 class FailedCompilingRegexpError(Exception):
     def __init__(self, error: Exception = None):
         message = "error compiling regexp"

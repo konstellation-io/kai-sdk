@@ -46,6 +46,7 @@ class CentralizedConfig:
 
             return product_kv, workflow_kv, process_kv
         except Exception as e:
+            logger.warning(f"failed initializing configuration: {e}")
             raise FailedInitializingConfigError(error=e)
 
     def get_config(self, key: str, scope: Optional[Scope] = None) -> tuple[str, bool] | Exception:
@@ -53,9 +54,10 @@ class CentralizedConfig:
             try:
                 config = self._get_config_from_scope(key, scope)
             except KeyNotFoundError:
-                logger.warning(f"key {key} not found in scope {scope}")
+                logger.debug(f"key {key} not found in scope {scope}")
                 return None, False
             except Exception as e:
+                logger.warning(f"failed getting config: {e}")
                 raise FailedGettingConfigError(key=key, scope=scope, error=e)
 
             return config, True
@@ -67,6 +69,7 @@ class CentralizedConfig:
                 logger.debug(f"key {key} not found in scope {_scope}")
                 continue
             except Exception as e:
+                logger.warning(f"failed getting config: {e}")
                 raise FailedGettingConfigError(key=key, scope=_scope, error=e)
 
             return config, True
@@ -80,12 +83,14 @@ class CentralizedConfig:
         try:
             kv_store.put(key, value)
         except Exception as e:
+            logger.warning(f"failed setting config: {e}")
             raise FailedSettingConfigError(key=key, scope=scope, error=e)
 
     def delete_config(self, key: str, scope: Optional[Scope] = None) -> bool | Exception:
         try:
             return self._get_scoped_config(scope).delete(key)
         except Exception as e:
+            logger.warning(f"failed deleting config: {e}")
             raise FailedDeletingConfigError(key=key, scope=scope, error=e)
 
     def _get_config_from_scope(self, key: str, scope: str) -> str:
