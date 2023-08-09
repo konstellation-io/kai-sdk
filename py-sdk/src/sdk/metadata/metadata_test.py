@@ -14,6 +14,8 @@ def test_ok():
 
     metadata = Metadata()
 
+    assert metadata is not None
+    assert metadata.logger is not None
     assert metadata.get_product() == "test_product_id"
     assert metadata.get_workflow() == "test_workflow_id"
     assert metadata.get_process() == "test_process_id"

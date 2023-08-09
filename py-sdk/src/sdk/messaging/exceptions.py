@@ -1,5 +1,5 @@
 class FailedGettingMaxMessageSizeError(Exception):
-    def __init__(self, error=None):
+    def __init__(self, error: Exception = None):
         message = "failed getting max message size"
         super().__init__(f"{message}: {error}" if error else message)
 

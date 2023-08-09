@@ -2,9 +2,16 @@ from path_utils.path_utils import PathUtils
 from vyper import v
 
 
+def test_ok():
+    path = PathUtils()
+
+    assert path is not None
+    assert path.logger is not None
+
+
 def test_get_basepath_ok():
     v.set("metadata.base_path", "base_path")
-    _ = PathUtils()
+    PathUtils()
 
     base_path = PathUtils.get_base_path()
 
@@ -13,7 +20,7 @@ def test_get_basepath_ok():
 
 def test_compose_path_ok():
     v.set("metadata.base_path", "path")
-    _ = PathUtils()
+    PathUtils()
 
     base_path = PathUtils.compose_path("other_path", "another_path")
 

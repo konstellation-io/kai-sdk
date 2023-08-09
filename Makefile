@@ -12,14 +12,11 @@ tidy: ## Run black, isort and codespell
 	poetry --directory py-sdk run black py-sdk/src \
 	&& poetry --directory py-sdk run isort py-sdk/src \
 	&& poetry --directory py-sdk run codespell py-sdk/src -I py-sdk/dictionary.txt \
-	--skip="*.git,*.json,public_input_pb2.py,public_input_pb2_grpc.py,.venv,*.lock" \
+	--skip="*.git,*.json,kai_nats_msg_pb2.py,.venv,*.lock" \
 
 .PHONY: protos
 protos: ## Generate proto files
-	poetry --directory py-sdk -- run python -m grpc_tools.protoc -I="proto" \
-	--python_betterproto_out="py-sdk/src/sdk" \
-	proto/kai_nats_msg.proto && \
-	protoc -I proto --go_out=go-sdk/protos --go_opt=paths=source_relative proto/kai_nats_msg.proto
+	protoc -I proto --python_out=py-sdk/src/sdk --go_out=go-sdk/protos --go_opt=paths=source_relative proto/kai_nats_msg.proto
 
 .PHONY: generate_mocks
 generate_mocks: ## Generate mocks
