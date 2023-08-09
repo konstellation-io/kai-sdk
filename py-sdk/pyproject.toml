@@ -89,6 +89,9 @@ exclude_lines = [
     # Do not complain if non-runnable code is not run:
     "if 0:",
     "if __name__ == .__main__.:",
+
+    # Don't complain about logs not being tested
+    "self.logger.*",
 ]
 
 ignore_errors = false

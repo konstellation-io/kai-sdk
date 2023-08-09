@@ -274,8 +274,9 @@ async def test_purge_regex_ko(m_object_store):
     with pytest.raises(FailedCompilingRegexpError):
         await m_object_store.purge(1)
 
-async def test_purge_failed_ko(m_object_store):
-    m_object_store.object_store.delete = AsyncMock(side_effect=Exception)
+async def test_purge_failed_ko(m_object_store, m_objects):
+    m_object_store.object_store.list.return_value = [m_objects[0], m_objects[2]]
+    m_object_store.object_store.delete = Mock(side_effect=Exception)
 
     with pytest.raises(FailedPurgingFilesError):
         await m_object_store.purge()
