@@ -6,6 +6,8 @@ from messaging.exceptions import FailedGettingMaxMessageSizeError
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
+from loguru import logger
+from loguru._logger import Logger
 
 GZIP_HEADER = b"\x1f\x8b"
 GZIP_BEST_COMPRESSION = 9
@@ -22,11 +24,13 @@ class MessagingUtils(ABC):
 class MessagingUtils:
     js: JetStreamContext
     nc: NatsClient
+    logger: Logger = logger.bind(context="[MESSAGING UTILS]")
 
     async def get_max_message_size(self) -> int | str:
         try:
             stream_info = await self.js.stream_info(v.get("nats.stream"))
         except Exception as e:
+            logger.warning(f"failed getting stream info: {e}")
             raise FailedGettingMaxMessageSizeError(error=e)
 
         stream_max_size = int(stream_info.config.max_msg_size)
