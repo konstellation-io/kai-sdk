@@ -1,11 +1,10 @@
-from dataclasses import dataclass, field
 from typing import List
 from unittest.mock import call
 
 import pytest
 from mock import Mock, AsyncMock
 from nats.aio.client import Client as NatsClient
-from nats.js.api import ObjectInfo, ObjectMeta
+from nats.js.api import ObjectInfo
 from nats.js.client import JetStreamContext
 from nats.js.errors import NotFoundError, ObjectNotFoundError
 from nats.js.object_store import ObjectStore as NatsObjectStore
@@ -21,7 +20,10 @@ from object_store.exceptions import (
 )
 from object_store.object_store import ObjectStore
 
-LIST_KEYS = ["object:140", "object:141", "object:142"]
+KEY_140 = "object:140"
+KEY_141 = "object:141"
+KEY_142 = "object:142"
+LIST_KEYS = [KEY_140, KEY_141, KEY_142]
 
 
 @pytest.fixture(scope="function")
@@ -206,7 +208,7 @@ async def test_delete_ok(m_object_store, m_objects):
     deleted_object.deleted = True
     m_object_store.object_store.delete = Mock(return_value=deleted_object)
 
-    result = await m_object_store.delete("object:140")
+    result = await m_object_store.delete(KEY_140)
 
     assert result
 
@@ -245,9 +247,9 @@ async def test_purge_ok(m_object_store, m_objects):
     assert result is None
     assert m_object_store.object_store.delete.call_count == 3
     assert m_object_store.object_store.delete.call_args_list == [
-        call("object:140"),
-        call("object:141"),
-        call("object:142"),
+        call(KEY_140),
+        call(KEY_141),
+        call(KEY_142),
     ]
 
 
@@ -261,7 +263,7 @@ async def test_purge_regex_ok(m_object_store, m_objects):
 
     assert result is None
     assert m_object_store.object_store.delete.call_count == 2
-    assert m_object_store.object_store.delete.call_args_list == [call("object:140"), call("object:142")]
+    assert m_object_store.object_store.delete.call_args_list == [call(KEY_140), call(KEY_142)]
 
 async def test_purge_undefined_ko(m_object_store):
     m_object_store.object_store_name = None
