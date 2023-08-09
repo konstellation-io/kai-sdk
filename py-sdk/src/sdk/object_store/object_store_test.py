@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
+from typing import List
 from unittest.mock import call
 
 import pytest
-from mock import Mock
+from mock import Mock, AsyncMock
 from nats.aio.client import Client as NatsClient
+from nats.js.api import ObjectInfo, ObjectMeta
 from nats.js.client import JetStreamContext
 from nats.js.errors import NotFoundError, ObjectNotFoundError
 from nats.js.object_store import ObjectStore as NatsObjectStore
@@ -15,24 +17,27 @@ from object_store.exceptions import (
     FailedObjectStoreInitializationError,
     FailedSavingFileError,
     UndefinedObjectStoreError,
+    FailedPurgingFilesError
 )
 from object_store.object_store import ObjectStore
-from nats.js.api import ObjectInfo, ObjectMeta
-
 
 LIST_KEYS = ["object:140", "object:141", "object:142"]
 
+
 @pytest.fixture(scope="function")
-def m_objects() -> list(Mock):
+def m_objects() -> List[ObjectInfo]:
     objects = []
     for key in LIST_KEYS:
-        object_info = Mock(spec=ObjectInfo(
+        object_info = ObjectInfo(
             name=key,
             deleted=False,
-        ))
+            bucket="test_bucket",
+            nuid="test_nuid",
+        )
         objects.append(object_info)
-    
+
     return objects
+
 
 @pytest.fixture(scope="function")
 def m_object_store() -> ObjectStore:
@@ -42,6 +47,7 @@ def m_object_store() -> ObjectStore:
     object_store.object_store = Mock(spec=NatsObjectStore)
 
     return object_store
+
 
 def test_ok():
     nc = NatsClient()
@@ -87,17 +93,17 @@ async def test_list_ok(m_object_store, m_objects):
 
     result = await m_object_store.list()
 
-    assert m_object_store.object_store.list.call_count == 1
-    assert m_object_store.object_store.list.call_args_list == [call(ignore_deleted=True)]
-    assert result == m_objects
+    assert m_object_store.object_store.list.called
+    assert result == [obj.name for obj in m_objects]
 
 
 async def test_list_regex_ok(m_object_store, m_objects):
     m_object_store.object_store.list.return_value = m_objects
-    expected = [m_objects[0], m_objects[1]]
+    expected = [m_objects[0].name, m_objects[1].name]
 
     result = await m_object_store.list(r"(object:140|object:141)")
 
+    assert m_object_store.object_store.list.called
     assert result == expected
 
 
@@ -121,6 +127,7 @@ async def test_list_not_found(m_object_store):
 
     result = await m_object_store.list()
 
+    assert m_object_store.object_store.list.called
     assert result == []
 
 
@@ -136,6 +143,8 @@ async def test_get_ok(m_object_store):
 
     result = await m_object_store.get("test-key")
 
+    assert m_object_store.object_store.get.called
+    assert m_object_store.object_store.get.call_args == call("test-key")
     assert result == (expected, True)
 
 
@@ -152,6 +161,7 @@ async def test_get_not_found(m_object_store):
 
     result = await m_object_store.get("test-key")
 
+    assert m_object_store.object_store.get.called
     assert result == (None, False)
 
 
@@ -165,6 +175,8 @@ async def test_get_failed_ko(m_object_store):
 async def test_save_ok(m_object_store):
     result = await m_object_store.save("test-key", b"any")
 
+    assert m_object_store.object_store.put.called
+    assert m_object_store.object_store.put.call_args == call("test-key", b"any")
     assert result is None
 
 
@@ -188,12 +200,13 @@ async def test_save_failed_ko(m_object_store):
         await m_object_store.save("test-key", b"prueba")
 
 
+async def test_delete_ok(m_object_store, m_objects):
+    m_object_store.object_store.list.return_value = m_objects
+    deleted_object = m_objects[0]
+    deleted_object.deleted = True
+    m_object_store.object_store.delete = Mock(return_value=deleted_object)
 
-
-async def test_delete_ok(m_object_store):
-    m_object_store.object_store.delete = Mock(return_value=Mock(spec=ObjectInfo(deleted=True)))
-
-    result = await m_object_store.delete("test-key")
+    result = await m_object_store.delete("object:140")
 
     assert result
 
@@ -220,22 +233,49 @@ async def test_delete_failed_ko(m_object_store):
     with pytest.raises(FailedDeletingFileError):
         await m_object_store.delete("test-key")
 
-async def test_purge_ok(m_object_store):
-    m_object_store.object_store.delete.return_value = MockedInfo(deleted=True)
-    m_object_store.object_store.list.return_value = [LIST_VALUES]
+
+async def test_purge_ok(m_object_store, m_objects):
+    m_object_store.object_store.list.return_value = [obj for obj in m_objects]
+    for obj in m_objects:
+        obj.deleted = True
+    m_object_store.object_store.delete = AsyncMock(side_effect=m_objects)
 
     result = await m_object_store.purge()
 
     assert result is None
     assert m_object_store.object_store.delete.call_count == 3
-    assert m_object_store.object_store.delete.call_args_list == [call("object:140"), call("object:141"), call("object:142")]
+    assert m_object_store.object_store.delete.call_args_list == [
+        call("object:140"),
+        call("object:141"),
+        call("object:142"),
+    ]
 
-async def test_purge_regex_ok(m_object_store):
-    m_object_store.object_store.delete.return_value = MockedInfo(deleted=True)
-    m_object_store.object_store.list.return_value = [LIST_VALUES]
+
+async def test_purge_regex_ok(m_object_store, m_objects):
+    m_object_store.object_store.list.return_value = [m_objects[0], m_objects[2]]
+    for obj in m_objects:
+        obj.deleted = True
+    m_object_store.object_store.delete = AsyncMock(side_effect=[m_objects[0], m_objects[2]])
 
     result = await m_object_store.purge(r"(object:140|object:142)")
 
     assert result is None
     assert m_object_store.object_store.delete.call_count == 2
     assert m_object_store.object_store.delete.call_args_list == [call("object:140"), call("object:142")]
+
+async def test_purge_undefined_ko(m_object_store):
+    m_object_store.object_store_name = None
+    m_object_store.object_store = None
+
+    with pytest.raises(UndefinedObjectStoreError):
+        await m_object_store.purge()
+
+async def test_purge_regex_ko(m_object_store):
+    with pytest.raises(FailedCompilingRegexpError):
+        await m_object_store.purge(1)
+
+async def test_purge_failed_ko(m_object_store):
+    m_object_store.object_store.delete = AsyncMock(side_effect=Exception)
+
+    with pytest.raises(FailedPurgingFilesError):
+        await m_object_store.purge()

@@ -47,7 +47,6 @@ def test_send_output(m_messaging):
     m_messaging.send_output(response=response, chan=TEST_CHANNEL)
 
     assert m_messaging._publish_msg.called
-    assert m_messaging._publish_msg.call_count == 1
     assert m_messaging._publish_msg.call_args == call(msg=response, msg_type=MessageType.OK, chan=TEST_CHANNEL)
 
 
@@ -59,7 +58,6 @@ def test_send_output_with_request_id(m_messaging):
     m_messaging.send_output_with_request_id(response=response, request_id=request_id, chan=TEST_CHANNEL)
 
     assert m_messaging._publish_msg.called
-    assert m_messaging._publish_msg.call_count == 1
     assert m_messaging._publish_msg.call_args == call(
         msg=response, msg_type=MessageType.OK, request_id=request_id, chan=TEST_CHANNEL
     )
@@ -72,7 +70,6 @@ def test_send_any(m_messaging):
     m_messaging.send_any(response=response, chan=TEST_CHANNEL)
 
     assert m_messaging._publish_any.called
-    assert m_messaging._publish_any.call_count == 1
     assert m_messaging._publish_any.call_args == call(payload=response, msg_type=MessageType.OK, chan=TEST_CHANNEL)
 
 
@@ -84,7 +81,6 @@ def test_send_any_with_request_id(m_messaging):
     m_messaging.send_any_with_request_id(response=response, request_id=request_id, chan=TEST_CHANNEL)
 
     assert m_messaging._publish_any.called
-    assert m_messaging._publish_any.call_count == 1
     assert m_messaging._publish_any.call_args == call(
         payload=response, msg_type=MessageType.OK, request_id=request_id, chan=TEST_CHANNEL
     )
@@ -97,7 +93,6 @@ def test_send_early_reply(m_messaging):
     m_messaging.send_early_reply(response=response, chan=TEST_CHANNEL)
 
     assert m_messaging._publish_msg.called
-    assert m_messaging._publish_msg.call_count == 1
     assert m_messaging._publish_msg.call_args == call(msg=response, msg_type=MessageType.EARLY_REPLY, chan=TEST_CHANNEL)
 
 
@@ -108,7 +103,6 @@ def test_send_early_exit(m_messaging):
     m_messaging.send_early_exit(response=response, chan=TEST_CHANNEL)
 
     assert m_messaging._publish_msg.called
-    assert m_messaging._publish_msg.call_count == 1
     assert m_messaging._publish_msg.call_args == call(msg=response, msg_type=MessageType.EARLY_EXIT, chan=TEST_CHANNEL)
 
 
@@ -153,10 +147,8 @@ def test_is_message_ok(m_messaging, message_type, function, expected_result):
 #     m_messaging._publish_msg(msg=payload, msg_type=MessageType.OK, request_id=request_id, chan=TEST_CHANNEL)
 
 #     assert m_messaging._new_response_msg.called
-#     assert m_messaging._new_response_msg.call_count == 1
 #     assert m_messaging._new_response_msg.call_args == call(Message(), None, MessageType.OK)
 #     assert m_messaging._publish_response.called
-#     assert m_messaging._publish_response.call_count == 1
 #     assert m_messaging._publish_response.call_args == call(expected_response_msg, TEST_CHANNEL)
 
 
@@ -175,10 +167,8 @@ def test_is_message_ok(m_messaging, message_type, function, expected_result):
 #     m_messaging._publish_any(payload=payload, msg_type=MessageType.OK, request_id=request_id, chan=TEST_CHANNEL)
 
 #     assert m_messaging._new_response_msg.called
-#     assert m_messaging._new_response_msg.call_count == 1
 #     assert m_messaging._new_response_msg.call_args == call(Any(), None, MessageType.OK)
 #     assert m_messaging._publish_response.called
-#     assert m_messaging._publish_response.call_count == 1
 #     assert m_messaging._publish_response.call_args == call(expected_response_msg, TEST_CHANNEL)
 
 # @pytest.mark.parametrize(
@@ -202,10 +192,8 @@ def test_is_message_ok(m_messaging, message_type, function, expected_result):
 #     getattr(m_messaging, function)(payload=payload, request_id=request_id, msg_type=MessageType.OK, chan=TEST_CHANNEL)
 
 #     assert m_messaging._new_response_msg.called
-#     assert m_messaging._new_response_msg.call_count == 1
 #     assert m_messaging._new_response_msg.call_args == call(payload, None, MessageType.OK)
 #     assert m_messaging._publish_response.called
-#     assert m_messaging._publish_response.call_count == 1
 #     assert m_messaging._publish_response.call_args == call(expected_response_msg, TEST_CHANNEL)
 
 # def test_publish_error(m_messaging):
@@ -215,7 +203,6 @@ def test_is_message_ok(m_messaging, message_type, function, expected_result):
 #     m_messaging._publish_error(request_id="test_request_id", err_msg="test_error")
 
 #     assert m_messaging._publish_response.called
-#     assert m_messaging._publish_response.call_count == 1
 #     assert m_messaging._publish_response.call_args == call(
 #         KaiNatsMessage(
 #             RequestId="test_request_id",

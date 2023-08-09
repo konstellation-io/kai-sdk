@@ -30,23 +30,23 @@ class CentralizedConfig:
     async def _init_kv_stores(self) -> tuple[KeyValue, KeyValue, KeyValue] | Exception:
         try:
             name = v.get("centralized_configuration.product.bucket")
-            logger.info(f"initializing product key-value store {name}...")
+            self.logger.info(f"initializing product key-value store {name}...")
             product_kv = await self.js.key_value(bucket=name)
-            logger.info("product key-value store initialized")
+            self.logger.info("product key-value store initialized")
 
             name = v.get("centralized_configuration.workflow.bucket")
-            logger.info(f"initializing workflow key-value store {name}...")
+            self.logger.info(f"initializing workflow key-value store {name}...")
             workflow_kv = await self.js.key_value(bucket=name)
-            logger.info("workflow key-value store initialized")
+            self.logger.info("workflow key-value store initialized")
 
             name = v.get("centralized_configuration.process.bucket")
-            logger.info(f"initializing process key-value store {name}...")
+            self.logger.info(f"initializing process key-value store {name}...")
             process_kv = await self.js.key_value(bucket=name)
-            logger.info("process key-value store initialized")
+            self.logger.info("process key-value store initialized")
 
             return product_kv, workflow_kv, process_kv
         except Exception as e:
-            logger.warning(f"failed initializing configuration: {e}")
+            self.logger.warning(f"failed initializing configuration: {e}")
             raise FailedInitializingConfigError(error=e)
 
     def get_config(self, key: str, scope: Optional[Scope] = None) -> tuple[str, bool] | Exception:
@@ -54,10 +54,10 @@ class CentralizedConfig:
             try:
                 config = self._get_config_from_scope(key, scope)
             except KeyNotFoundError:
-                logger.debug(f"key {key} not found in scope {scope}")
+                self.logger.debug(f"key {key} not found in scope {scope}")
                 return None, False
             except Exception as e:
-                logger.warning(f"failed getting config: {e}")
+                self.logger.warning(f"failed getting config: {e}")
                 raise FailedGettingConfigError(key=key, scope=scope, error=e)
 
             return config, True
@@ -66,15 +66,15 @@ class CentralizedConfig:
             try:
                 config = self._get_config_from_scope(key, _scope)
             except KeyNotFoundError:
-                logger.debug(f"key {key} not found in scope {_scope}")
+                self.logger.debug(f"key {key} not found in scope {_scope}")
                 continue
             except Exception as e:
-                logger.warning(f"failed getting config: {e}")
+                self.logger.warning(f"failed getting config: {e}")
                 raise FailedGettingConfigError(key=key, scope=_scope, error=e)
 
             return config, True
 
-        logger.warning(f"key {key} not found in any scope")
+        self.logger.warning(f"key {key} not found in any scope")
         return None, False
 
     def set_config(self, key: str, value: str, scope: Optional[Scope] = None) -> Optional[Exception]:
@@ -83,14 +83,14 @@ class CentralizedConfig:
         try:
             kv_store.put(key, value)
         except Exception as e:
-            logger.warning(f"failed setting config: {e}")
+            self.logger.warning(f"failed setting config: {e}")
             raise FailedSettingConfigError(key=key, scope=scope, error=e)
 
     def delete_config(self, key: str, scope: Optional[Scope] = None) -> bool | Exception:
         try:
             return self._get_scoped_config(scope).delete(key)
         except Exception as e:
-            logger.warning(f"failed deleting config: {e}")
+            self.logger.warning(f"failed deleting config: {e}")
             raise FailedDeletingConfigError(key=key, scope=scope, error=e)
 
     def _get_config_from_scope(self, key: str, scope: str) -> str:
