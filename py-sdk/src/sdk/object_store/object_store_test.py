@@ -18,21 +18,18 @@ from object_store.exceptions import (
 )
 from object_store.object_store import ObjectStore
 from nats.js.api import ObjectInfo, ObjectMeta
-from vyper import v
 
 
 LIST_KEYS = ["object:140", "object:141", "object:142"]
 
 @pytest.fixture(scope="function")
-def m_objects() -> list[ObjectInfo]:
+def m_objects() -> list(Mock):
     objects = []
     for key in LIST_KEYS:
-        object_info = ObjectInfo(
+        object_info = Mock(spec=ObjectInfo(
             name=key,
             deleted=False,
-            bucket="test_bucket",
-            nuid="test_nuid",
-        )
+        ))
         objects.append(object_info)
     
     return objects
@@ -78,6 +75,7 @@ async def test_initialize_undefined_object_store_name(m_object_store):
 
 
 async def test_initialize_ko(m_object_store):
+    m_object_store.object_store = None
     m_object_store.js = Mock(side_effect=Exception)
 
     with pytest.raises(FailedObjectStoreInitializationError):
@@ -96,15 +94,15 @@ async def test_list_ok(m_object_store, m_objects):
 
 async def test_list_regex_ok(m_object_store, m_objects):
     m_object_store.object_store.list.return_value = m_objects
-    expected = m_objects
+    expected = [m_objects[0], m_objects[1]]
 
     result = await m_object_store.list(r"(object:140|object:141)")
 
     assert result == expected
 
 
-async def test_list_regex_ko(m_object_store):
-    m_object_store.object_store.list.return_value = [MockedObjectInfo(data=b"any")]
+async def test_list_regex_ko(m_object_store, m_objects):
+    m_object_store.object_store.list.return_value = m_objects
 
     with pytest.raises(FailedCompilingRegexpError):
         await m_object_store.list(1)
@@ -133,7 +131,7 @@ async def test_list_failed_ko(m_object_store):
 
 
 async def test_get_ok(m_object_store):
-    expected = "object-test-key"
+    expected = Mock(spec=ObjectInfo)
     m_object_store.object_store.get.return_value = expected
 
     result = await m_object_store.get("test-key")
@@ -193,7 +191,7 @@ async def test_save_failed_ko(m_object_store):
 
 
 async def test_delete_ok(m_object_store):
-    m_object_store.object_store.delete = Mock(return_value=MockedInfo(deleted=True))
+    m_object_store.object_store.delete = Mock(return_value=Mock(spec=ObjectInfo(deleted=True)))
 
     result = await m_object_store.delete("test-key")
 
