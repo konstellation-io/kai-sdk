@@ -146,7 +146,7 @@ class CentralizedConfig(ABC):
         pass
 
     @abstractmethod
-    def set_config(self, key: str, value: str, scope: Optional[Scope]) -> Optional[Exception]:
+    def set_config(self, key: str, value: bytes, scope: Optional[Scope]) -> Optional[Exception]:
         pass
 
     @abstractmethod

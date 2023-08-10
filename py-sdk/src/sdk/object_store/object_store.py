@@ -88,8 +88,8 @@ class ObjectStore:
 
         try:
             response = await self.object_store.get(key)
-        except ObjectNotFoundError:
-            self.logger.debug(f"file {key} not found in object store {self.object_store_name}")
+        except ObjectNotFoundError as e:
+            self.logger.debug(f"file {key} not found in object store {self.object_store_name}: {e}")
             return None, False
         except Exception as e:
             self.logger.warning(f"failed getting file {key} from object store {self.object_store_name}: {e}")
@@ -120,8 +120,8 @@ class ObjectStore:
         try:
             info_ = self.object_store.delete(key)
             return info_.deleted
-        except ObjectNotFoundError:
-            self.logger.debug(f"file {key} not found in object store {self.object_store_name}")
+        except ObjectNotFoundError as e:
+            self.logger.debug(f"file {key} not found in object store {self.object_store_name}: {e}")
             return False
         except Exception as e:
             self.logger.warning(f"failed deleting file {key} from object store {self.object_store_name}: {e}")

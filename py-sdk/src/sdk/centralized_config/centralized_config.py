@@ -53,8 +53,8 @@ class CentralizedConfig:
         if scope:
             try:
                 config = self._get_config_from_scope(key, scope)
-            except KeyNotFoundError:
-                self.logger.debug(f"key {key} not found in scope {scope}")
+            except KeyNotFoundError as e:
+                self.logger.debug(f"key {key} not found in scope {scope}: {e}")
                 return None, False
             except Exception as e:
                 self.logger.warning(f"failed getting config: {e}")
@@ -65,8 +65,8 @@ class CentralizedConfig:
         for _scope in Scope:
             try:
                 config = self._get_config_from_scope(key, _scope)
-            except KeyNotFoundError:
-                self.logger.debug(f"key {key} not found in scope {_scope}")
+            except KeyNotFoundError as e:
+                self.logger.debug(f"key {key} not found in scope {_scope}: {e}")
                 continue
             except Exception as e:
                 self.logger.warning(f"failed getting config: {e}")
@@ -77,7 +77,7 @@ class CentralizedConfig:
         self.logger.warning(f"key {key} not found in any scope")
         return None, False
 
-    def set_config(self, key: str, value: str, scope: Optional[Scope] = None) -> Optional[Exception]:
+    def set_config(self, key: str, value: bytes, scope: Optional[Scope] = None) -> Optional[Exception]:
         kv_store = self._get_scoped_config(scope)
 
         try:
@@ -93,8 +93,9 @@ class CentralizedConfig:
             self.logger.warning(f"failed deleting config: {e}")
             raise FailedDeletingConfigError(key=key, scope=scope, error=e)
 
-    def _get_config_from_scope(self, key: str, scope: str) -> str:
-        return self._get_scoped_config(scope).get(key).value().decode("utf-8")
+    async def _get_config_from_scope(self, key: str, scope: Scope) -> str:
+        entry = await self._get_scoped_config(scope).get(key)
+        return entry.value.decode("utf-8")
 
     def _get_scoped_config(self, scope: Optional[Scope] = Scope.ProcessScope) -> KeyValue:
         if scope == Scope.ProductScope:
