@@ -2,7 +2,7 @@ from typing import List
 from unittest.mock import call
 
 import pytest
-from mock import Mock, AsyncMock
+from mock import AsyncMock, Mock
 from nats.aio.client import Client as NatsClient
 from nats.js.api import ObjectInfo
 from nats.js.client import JetStreamContext
@@ -14,9 +14,9 @@ from object_store.exceptions import (
     FailedGettingFileError,
     FailedListingFilesError,
     FailedObjectStoreInitializationError,
+    FailedPurgingFilesError,
     FailedSavingFileError,
     UndefinedObjectStoreError,
-    FailedPurgingFilesError
 )
 from object_store.object_store import ObjectStore
 
@@ -84,7 +84,7 @@ async def test_initialize_undefined_object_store_name(m_object_store):
 
 async def test_initialize_ko(m_object_store):
     m_object_store.object_store = None
-    m_object_store.js = Mock(side_effect=Exception)
+    m_object_store.js.object_store.side_effect = Exception
 
     with pytest.raises(FailedObjectStoreInitializationError):
         await m_object_store.initialize()
@@ -125,7 +125,7 @@ async def test_list_undefined_ko(m_object_store):
 
 
 async def test_list_not_found(m_object_store):
-    m_object_store.object_store.list = Mock(side_effect=NotFoundError)
+    m_object_store.object_store.list.side_effect = NotFoundError
 
     result = await m_object_store.list()
 
@@ -134,7 +134,7 @@ async def test_list_not_found(m_object_store):
 
 
 async def test_list_failed_ko(m_object_store):
-    m_object_store.object_store.list = Mock(side_effect=Exception)
+    m_object_store.object_store.list.side_effect = Exception
     with pytest.raises(FailedListingFilesError):
         await m_object_store.list()
 
@@ -159,7 +159,7 @@ async def test_get_undefined_ko(m_object_store):
 
 
 async def test_get_not_found(m_object_store):
-    m_object_store.object_store.get = Mock(side_effect=ObjectNotFoundError)
+    m_object_store.object_store.get.side_effect = ObjectNotFoundError
 
     result = await m_object_store.get("test-key")
 
@@ -168,7 +168,7 @@ async def test_get_not_found(m_object_store):
 
 
 async def test_get_failed_ko(m_object_store):
-    m_object_store.object_store.get = Mock(side_effect=Exception)
+    m_object_store.object_store.get.side_effect = Exception
 
     with pytest.raises(FailedGettingFileError):
         await m_object_store.get("test-key")
@@ -196,7 +196,7 @@ async def test_save_missing_payload_ko(m_object_store):
 
 
 async def test_save_failed_ko(m_object_store):
-    m_object_store.object_store.put = Mock(side_effect=Exception)
+    m_object_store.object_store.put.side_effect = Exception
 
     with pytest.raises(FailedSavingFileError):
         await m_object_store.save("test-key", b"prueba")
@@ -230,7 +230,7 @@ async def test_delete_not_found_ko(m_object_store):
 
 
 async def test_delete_failed_ko(m_object_store):
-    m_object_store.object_store.delete = Mock(side_effect=Exception)
+    m_object_store.object_store.delete.side_effect = Exception
 
     with pytest.raises(FailedDeletingFileError):
         await m_object_store.delete("test-key")
@@ -265,6 +265,7 @@ async def test_purge_regex_ok(m_object_store, m_objects):
     assert m_object_store.object_store.delete.call_count == 2
     assert m_object_store.object_store.delete.call_args_list == [call(KEY_140), call(KEY_142)]
 
+
 async def test_purge_undefined_ko(m_object_store):
     m_object_store.object_store_name = None
     m_object_store.object_store = None
@@ -272,13 +273,15 @@ async def test_purge_undefined_ko(m_object_store):
     with pytest.raises(UndefinedObjectStoreError):
         await m_object_store.purge()
 
+
 async def test_purge_regex_ko(m_object_store):
     with pytest.raises(FailedCompilingRegexpError):
         await m_object_store.purge(1)
 
+
 async def test_purge_failed_ko(m_object_store, m_objects):
     m_object_store.object_store.list.return_value = [m_objects[0], m_objects[2]]
-    m_object_store.object_store.delete = Mock(side_effect=Exception)
+    m_object_store.object_store.delete.side_effect = Exception
 
     with pytest.raises(FailedPurgingFilesError):
         await m_object_store.purge()
