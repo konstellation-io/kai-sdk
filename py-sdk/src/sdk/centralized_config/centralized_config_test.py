@@ -173,7 +173,7 @@ async def test__get_config_from_scope_ok(m_centralized_config):
     entry = AsyncMock(spec=KeyValue.Entry)
     entry.key = "test_key"
     entry.value = b"test_value"
-    m_centralized_config.product_kv.get.return_value = AsyncMock(return_value=entry)
+    m_centralized_config.product_kv.get = AsyncMock(return_value=entry)
 
     result = await m_centralized_config._get_config_from_scope("test_key", Scope.ProductScope)
 
