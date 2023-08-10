@@ -128,6 +128,8 @@ async def test_set_config_with_scope_ok(m_centralized_config):
     assert m_centralized_config.product_kv.put.call_args == call("test_key", b"test_value")
 
 async def test_set_config_without_scope_ok(m_centralized_config):
+
+
     await m_centralized_config.set_config("test_key", b"test_value")
 
     assert m_centralized_config.process_kv.put.awaited
@@ -169,7 +171,7 @@ async def test_delete_config_without_scope_ko(m_centralized_config):
     with pytest.raises(FailedDeletingConfigError):
         await m_centralized_config.delete_config("test_key")
 
-async def test__get_config_from_scope_ok(m_centralized_config):
+async def test__get_config_from_scope_with_scope_ok(m_centralized_config):
     entry = AsyncMock(spec=KeyValue.Entry)
     entry.key = "test_key"
     entry.value = b"test_value"
@@ -179,12 +181,19 @@ async def test__get_config_from_scope_ok(m_centralized_config):
 
     assert result == "test_value"
 
-async def test__get_scoped_config_with_scope_ok(m_centralized_config):
+async def test__get_config_from_scope_without_scope_ok(m_centralized_config):
+    entry = AsyncMock(spec=KeyValue.Entry)
+    entry.key = "test_key"
+    entry.value = b"test_value"
+    m_centralized_config.process_kv.get.return_value=entry
+
+    result = await m_centralized_config._get_config_from_scope("test_key")
+
+    assert result == "test_value"
+
+
+
+def test__get_scoped_config_ok(m_centralized_config):
     result = m_centralized_config._get_scoped_config(Scope.ProductScope)
 
     assert result == m_centralized_config.product_kv
-
-async def test__get_scoped_config_without_scope_ok(m_centralized_config):
-    result = m_centralized_config._get_scoped_config()
-
-    assert result == m_centralized_config.process_kv

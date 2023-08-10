@@ -78,7 +78,10 @@ class CentralizedConfig:
         return None, False
 
     async def set_config(self, key: str, value: bytes, scope: Optional[Scope] = None) -> Optional[Exception]:
-        kv_store = self._get_scoped_config(scope)
+        if scope:
+            kv_store = self._get_scoped_config(scope)
+        else:
+            kv_store = self._get_scoped_config(Scope.ProcessScope)
 
         try:
             await kv_store.put(key, value)
@@ -87,19 +90,26 @@ class CentralizedConfig:
             raise FailedSettingConfigError(key=key, scope=scope, error=e)
 
     async def delete_config(self, key: str, scope: Optional[Scope] = None) -> bool | Exception:
-        kv_store = self._get_scoped_config(scope)
+        if scope:
+            kv_store = self._get_scoped_config(scope)
+        else:
+            kv_store = self._get_scoped_config(Scope.ProcessScope)
         try:
             return await kv_store.delete(key)
         except Exception as e:
             self.logger.warning(f"failed deleting config: {e}")
             raise FailedDeletingConfigError(key=key, scope=scope, error=e)
 
-    async def _get_config_from_scope(self, key: str, scope: Scope) -> str:
-        scoped_config = self._get_scoped_config(scope)
+    async def _get_config_from_scope(self, key: str, scope: Optional[Scope] = None) -> str:
+        if scope:
+            scoped_config = self._get_scoped_config(scope)
+        else:
+            scoped_config = self._get_scoped_config(Scope.ProcessScope)
+
         entry = await scoped_config.get(key)
         return entry.value.decode("utf-8")
 
-    def _get_scoped_config(self, scope: Optional[Scope] = Scope.ProcessScope) -> KeyValue:
+    def _get_scoped_config(self, scope: Scope) -> KeyValue:
         if scope == Scope.ProductScope:
             return self.product_kv
         elif scope == Scope.WorkflowScope:
