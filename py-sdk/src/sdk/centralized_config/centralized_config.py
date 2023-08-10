@@ -49,10 +49,10 @@ class CentralizedConfig:
             self.logger.warning(f"failed initializing configuration: {e}")
             raise FailedInitializingConfigError(error=e)
 
-    def get_config(self, key: str, scope: Optional[Scope] = None) -> tuple[str, bool] | Exception:
+    async def get_config(self, key: str, scope: Optional[Scope] = None) -> tuple[str, bool] | Exception:
         if scope:
             try:
-                config = self._get_config_from_scope(key, scope)
+                config = await self._get_config_from_scope(key, scope)
             except KeyNotFoundError as e:
                 self.logger.debug(f"key {key} not found in scope {scope}: {e}")
                 return None, False
@@ -64,7 +64,7 @@ class CentralizedConfig:
 
         for _scope in Scope:
             try:
-                config = self._get_config_from_scope(key, _scope)
+                config = await self._get_config_from_scope(key, _scope)
             except KeyNotFoundError as e:
                 self.logger.debug(f"key {key} not found in scope {_scope}: {e}")
                 continue
@@ -77,24 +77,26 @@ class CentralizedConfig:
         self.logger.warning(f"key {key} not found in any scope")
         return None, False
 
-    def set_config(self, key: str, value: bytes, scope: Optional[Scope] = None) -> Optional[Exception]:
+    async def set_config(self, key: str, value: bytes, scope: Optional[Scope] = None) -> Optional[Exception]:
         kv_store = self._get_scoped_config(scope)
 
         try:
-            kv_store.put(key, value)
+            await kv_store.put(key, value)
         except Exception as e:
             self.logger.warning(f"failed setting config: {e}")
             raise FailedSettingConfigError(key=key, scope=scope, error=e)
 
-    def delete_config(self, key: str, scope: Optional[Scope] = None) -> bool | Exception:
+    async def delete_config(self, key: str, scope: Optional[Scope] = None) -> bool | Exception:
+        kv_store = self._get_scoped_config(scope)
         try:
-            return self._get_scoped_config(scope).delete(key)
+            return await kv_store.delete(key)
         except Exception as e:
             self.logger.warning(f"failed deleting config: {e}")
             raise FailedDeletingConfigError(key=key, scope=scope, error=e)
 
     async def _get_config_from_scope(self, key: str, scope: Scope) -> str:
-        entry = await self._get_scoped_config(scope).get(key)
+        scoped_config = self._get_scoped_config(scope)
+        entry = await scoped_config.get(key)
         return entry.value.decode("utf-8")
 
     def _get_scoped_config(self, scope: Optional[Scope] = Scope.ProcessScope) -> KeyValue:

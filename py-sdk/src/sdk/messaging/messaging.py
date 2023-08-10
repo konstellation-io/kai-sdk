@@ -25,25 +25,25 @@ class Messaging:
     def __post_init__(self):
         self.messaging_utils = MessagingUtils(js=self.js, nc=self.nc)
 
-    def send_output(self, response: Message, chan: Optional[str] = None):
-        self._publish_msg(msg=response, msg_type=MessageType.OK, chan=chan)
+    async def send_output(self, response: Message, chan: Optional[str] = None):
+        await self._publish_msg(msg=response, msg_type=MessageType.OK, chan=chan)
 
-    def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str] = None):
-        self._publish_msg(msg=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
+    async def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str] = None):
+        await self._publish_msg(msg=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
 
-    def send_any(self, response: Any, chan: Optional[str] = None):
-        self._publish_any(payload=response, msg_type=MessageType.OK, chan=chan)
+    async def send_any(self, response: Any, chan: Optional[str] = None):
+        await self._publish_any(payload=response, msg_type=MessageType.OK, chan=chan)
 
-    def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str] = None):
-        self._publish_any(payload=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
-
-    # TODO: remove this method
-    def send_early_reply(self, response: Message, chan: Optional[str] = None):
-        self._publish_msg(msg=response, msg_type=MessageType.EARLY_REPLY, chan=chan)
+    async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str] = None):
+        await self._publish_any(payload=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
 
     # TODO: remove this method
-    def send_early_exit(self, response: Message, chan: Optional[str] = None):
-        self._publish_msg(msg=response, msg_type=MessageType.EARLY_EXIT, chan=chan)
+    async def send_early_reply(self, response: Message, chan: Optional[str] = None):
+        await self._publish_msg(msg=response, msg_type=MessageType.EARLY_REPLY, chan=chan)
+
+    # TODO: remove this method
+    async def send_early_exit(self, response: Message, chan: Optional[str] = None):
+        await self._publish_msg(msg=response, msg_type=MessageType.EARLY_EXIT, chan=chan)
 
     def get_error_message(self) -> str:
         return self.req_msg.error if self.is_message_error() else ""
@@ -60,7 +60,7 @@ class Messaging:
     def is_message_early_exit(self) -> bool:
         return self.req_msg.message_type == MessageType.EARLY_EXIT
 
-    def _publish_msg(self, msg: Message, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None):
+    async def _publish_msg(self, msg: Message, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None):
         try:
             payload = Any()
             payload.Pack(msg)
@@ -72,31 +72,31 @@ class Messaging:
             request_id = str(uuid.uuid4())
 
         response_msg = self._new_response_msg(payload, request_id, msg_type)
-        self._publish_response(response_msg, chan)
+        await self._publish_response(response_msg, chan)
 
-    def _publish_any(self, payload: Any, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None):
+    async def _publish_any(self, payload: Any, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None):
         if not request_id:
             request_id = str(uuid.uuid4())
 
         response_msg = self._new_response_msg(payload, request_id, msg_type)
-        self._publish_response(response_msg, chan)
+        await self._publish_response(response_msg, chan)
 
-    def _publish_error(self, request_id: str, err_msg: str):
+    async def _publish_error(self, request_id: str, err_msg: str):
         response_msg = KaiNatsMessage(
             request_id=request_id,
             error=err_msg,
             from_node=v.get("metadata.process_id"),
             message_type=MessageType.ERROR,
         )
-        self._publish_response(response_msg)
+        await self._publish_response(response_msg)
 
     def _new_response_msg(self, payload: Any, request_id: str, msg_type: int) -> KaiNatsMessage:
         self.logger.info(f"preparing response message of type {msg_type} and request_id {request_id}...")
         return KaiNatsMessage(
-            RequestId=request_id,
-            Payload=payload,
-            FromNode=v.get("metadata.process_id"),
-            MessageType=msg_type,
+            request_id=request_id,
+            payload=payload,
+            from_node=v.get("metadata.process_id"),
+            message_type=msg_type,
         )
 
     async def _publish_response(self, response_msg: KaiNatsMessage, chan: Optional[str] = None):

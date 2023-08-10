@@ -6,6 +6,7 @@ from typing import Optional
 from centralized_config.centralized_config import CentralizedConfig
 from centralized_config.constants import Scope
 from google.protobuf.message import Message
+from google.protobuf.any_pb2 import Any
 from kai_nats_msg_pb2 import KaiNatsMessage
 from loguru import logger
 from loguru._logger import Logger
@@ -29,23 +30,27 @@ logger.add(
 @dataclass
 class Messaging(ABC):
     @abstractmethod
-    def send_output(self, response: Message, chan: Optional[str]):
+    async def send_output(self, response: Message, chan: Optional[str]):
         pass
 
     @abstractmethod
-    def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str]):
+    async def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str]):
         pass
 
     @abstractmethod
-    def send_any(self, response: Message, chan: Optional[str]):
+    async def send_any(self, response: Any, chan: Optional[str]):
         pass
 
     @abstractmethod
-    def send_early_reply(self, response: Message, chan: Optional[str]):
+    async def send_any_with_request_id(self, response: Any, request_id:str, chan: Optional[str]):
         pass
 
     @abstractmethod
-    def send_early_exit(self, response: Message, chan: Optional[str]):
+    async def send_early_reply(self, response: Message, chan: Optional[str]):
+        pass
+
+    @abstractmethod
+    async def send_early_exit(self, response: Message, chan: Optional[str]):
         pass
 
     @abstractmethod
@@ -111,46 +116,46 @@ class Metadata(ABC):
 @dataclass
 class ObjectStore(ABC):
     @abstractmethod
-    def initialize(self) -> Optional[Exception]:
+    async def initialize(self) -> Optional[Exception]:
         pass
 
     @abstractmethod
-    def list(self, regexp: Optional[str]) -> list[str] | Exception:
+    async def list(self, regexp: Optional[str]) -> list[str] | Exception:
         pass
 
     @abstractmethod
-    def get(self, key: str) -> tuple[bytes, bool] | Exception:
+    async def get(self, key: str) -> tuple[bytes, bool] | Exception:
         pass
 
     @abstractmethod
-    def save(self, key: str, payload: bytes) -> Optional[Exception]:
+    async def save(self, key: str, payload: bytes) -> Optional[Exception]:
         pass
 
     @abstractmethod
-    def delete(self, key: str) -> bool | Exception:
+    async def delete(self, key: str) -> bool | Exception:
         pass
 
     @abstractmethod
-    def purge(self, regexp: Optional[str]) -> Optional[Exception]:
+    async def purge(self, regexp: Optional[str]) -> Optional[Exception]:
         pass
 
 
 @dataclass
 class CentralizedConfig(ABC):
     @abstractmethod
-    def initialize(self) -> Optional[Exception]:
+    async def initialize(self) -> Optional[Exception]:
         pass
 
     @abstractmethod
-    def get_config(self, key: str, scope: Optional[Scope]) -> tuple[str, bool] | Exception:
+    async def get_config(self, key: str, scope: Optional[Scope]) -> tuple[str, bool] | Exception:
         pass
 
     @abstractmethod
-    def set_config(self, key: str, value: bytes, scope: Optional[Scope]) -> Optional[Exception]:
+    async def set_config(self, key: str, value: bytes, scope: Optional[Scope]) -> Optional[Exception]:
         pass
 
     @abstractmethod
-    def delete_config(self, key: str, scope: Optional[Scope]) -> bool | Exception:
+    async def delete_config(self, key: str, scope: Optional[Scope]) -> bool | Exception:
         pass
 
 

@@ -1,8 +1,8 @@
 from typing import List
 from unittest.mock import call
+from mock import AsyncMock
 
 import pytest
-from mock import AsyncMock, Mock
 from nats.aio.client import Client as NatsClient
 from nats.js.api import ObjectInfo
 from nats.js.client import JetStreamContext
@@ -43,10 +43,10 @@ def m_objects() -> List[ObjectInfo]:
 
 @pytest.fixture(scope="function")
 def m_object_store() -> ObjectStore:
-    js = Mock(spec=JetStreamContext)
+    js = AsyncMock(spec=JetStreamContext)
 
     object_store = ObjectStore(js=js, object_store_name="test_object_store")
-    object_store.object_store = Mock(spec=NatsObjectStore)
+    object_store.object_store = AsyncMock(spec=NatsObjectStore)
 
     return object_store
 
@@ -65,7 +65,7 @@ def test_ok():
 
 async def test_initialize_ok(m_object_store):
     m_object_store.object_store = None
-    fake_object_store = Mock(spec=ObjectStore)
+    fake_object_store = AsyncMock(spec=ObjectStore)
     m_object_store.js.object_store.return_value = fake_object_store
 
     await m_object_store.initialize()
@@ -140,7 +140,7 @@ async def test_list_failed_ko(m_object_store):
 
 
 async def test_get_ok(m_object_store):
-    expected = Mock(spec=ObjectInfo)
+    expected = AsyncMock(spec=ObjectInfo)
     m_object_store.object_store.get.return_value = expected
 
     result = await m_object_store.get("test-key")
@@ -206,7 +206,7 @@ async def test_delete_ok(m_object_store, m_objects):
     m_object_store.object_store.list.return_value = m_objects
     deleted_object = m_objects[0]
     deleted_object.deleted = True
-    m_object_store.object_store.delete = Mock(return_value=deleted_object)
+    m_object_store.object_store.delete.return_value=deleted_object
 
     result = await m_object_store.delete(KEY_140)
 
@@ -222,7 +222,7 @@ async def test_delete_undefined_ko(m_object_store):
 
 
 async def test_delete_not_found_ko(m_object_store):
-    m_object_store.object_store.delete = Mock(side_effect=ObjectNotFoundError)
+    m_object_store.object_store.delete.side_effect=ObjectNotFoundError
 
     result = await m_object_store.delete("key-1")
 
@@ -240,7 +240,7 @@ async def test_purge_ok(m_object_store, m_objects):
     m_object_store.object_store.list.return_value = [obj for obj in m_objects]
     for obj in m_objects:
         obj.deleted = True
-    m_object_store.object_store.delete = AsyncMock(side_effect=m_objects)
+    m_object_store.object_store.delete.side_effect=m_objects
 
     result = await m_object_store.purge()
 
@@ -257,7 +257,7 @@ async def test_purge_regex_ok(m_object_store, m_objects):
     m_object_store.object_store.list.return_value = [m_objects[0], m_objects[2]]
     for obj in m_objects:
         obj.deleted = True
-    m_object_store.object_store.delete = AsyncMock(side_effect=[m_objects[0], m_objects[2]])
+    m_object_store.object_store.delete.side_effect=[m_objects[0], m_objects[2]]
 
     result = await m_object_store.purge(r"(object:140|object:142)")
 

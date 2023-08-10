@@ -118,7 +118,7 @@ class ObjectStore:
             raise UndefinedObjectStoreError
 
         try:
-            info_ = self.object_store.delete(key)
+            info_ = await self.object_store.delete(key)
             return info_.deleted
         except ObjectNotFoundError as e:
             self.logger.debug(f"file {key} not found in object store {self.object_store_name}: {e}")
