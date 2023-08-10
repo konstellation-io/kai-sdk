@@ -95,7 +95,7 @@ async def test_list_ok(m_object_store, m_objects):
 
     result = await m_object_store.list()
 
-    assert m_object_store.object_store.list.called
+    assert m_object_store.object_store.list.awaited
     assert result == [obj.name for obj in m_objects]
 
 
@@ -105,7 +105,7 @@ async def test_list_regex_ok(m_object_store, m_objects):
 
     result = await m_object_store.list(r"(object:140|object:141)")
 
-    assert m_object_store.object_store.list.called
+    assert m_object_store.object_store.list.awaited
     assert result == expected
 
 
@@ -129,7 +129,7 @@ async def test_list_not_found(m_object_store):
 
     result = await m_object_store.list()
 
-    assert m_object_store.object_store.list.called
+    assert m_object_store.object_store.list.awaited
     assert result == []
 
 
@@ -145,7 +145,7 @@ async def test_get_ok(m_object_store):
 
     result = await m_object_store.get("test-key")
 
-    assert m_object_store.object_store.get.called
+    assert m_object_store.object_store.get.awaited
     assert m_object_store.object_store.get.call_args == call("test-key")
     assert result == (expected, True)
 
@@ -163,7 +163,7 @@ async def test_get_not_found(m_object_store):
 
     result = await m_object_store.get("test-key")
 
-    assert m_object_store.object_store.get.called
+    assert m_object_store.object_store.get.awaited
     assert result == (None, False)
 
 
@@ -177,7 +177,7 @@ async def test_get_failed_ko(m_object_store):
 async def test_save_ok(m_object_store):
     result = await m_object_store.save("test-key", b"any")
 
-    assert m_object_store.object_store.put.called
+    assert m_object_store.object_store.put.awaited
     assert m_object_store.object_store.put.call_args == call("test-key", b"any")
     assert result is None
 
