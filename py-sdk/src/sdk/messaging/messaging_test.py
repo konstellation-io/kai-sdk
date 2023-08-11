@@ -132,82 +132,88 @@ def test_is_message_ok(m_messaging, message_type, function, expected_result):
     assert is_message == expected_result
 
 
-# async def test_publish_msg(m_messaging):
-#     request_id = "test_request_id"
-#     payload = wrappers.StringValue(value="test_payload")
-#     expected_response_msg = KaiNatsMessage(
-#         request_id=request_id,
-#         from_node="test_process_id",
-#         message_type=MessageType.OK,
-#         payload=payload,
-#     )
-#     m_messaging._new_response_msg = Mock(return_value=expected_response_msg)
-#     m_messaging._publish_response = AsyncMock()
+async def test__publish_msg(m_messaging):
+    request_id = "test_request_id"
+    payload = wrappers.StringValue(value="test_payload")
+    serialized_payload = payload.SerializeToString()
+    any_payload = Any(type_url="type.googleapis.com/google.protobuf.StringValue", value=serialized_payload)
+    expected_response_msg = KaiNatsMessage(
+        request_id=request_id, from_node="test_process_id", message_type=MessageType.OK, payload=any_payload
+    )
+    m_messaging._new_response_msg = Mock(return_value=expected_response_msg)
+    m_messaging._publish_response = AsyncMock()
 
-#     await m_messaging._publish_msg(msg=payload, msg_type=MessageType.OK, request_id=request_id, chan=TEST_CHANNEL)
+    await m_messaging._publish_msg(msg=any_payload, msg_type=MessageType.OK, request_id=request_id, chan=TEST_CHANNEL)
 
-#     assert m_messaging._new_response_msg.awaited
-#     assert m_messaging._new_response_msg.call_args == call(Message(), None, MessageType.OK)
-#     assert m_messaging._publish_response.awaited
-#     assert m_messaging._publish_response.call_args == call(expected_response_msg, TEST_CHANNEL)
+    assert m_messaging._new_response_msg.awaited
+    assert m_messaging._new_response_msg.call_args == call(any_payload, None, MessageType.OK)
+    assert m_messaging._publish_response.awaited
+    assert m_messaging._publish_response.call_args == call(expected_response_msg, TEST_CHANNEL)
 
 
-# async def test_publish_any(m_messaging):
-#     request_id = "test_request_id"
-#     payload = Any()
-#     expected_response_msg = KaiNatsMessage(
-#         request_id=request_id,
-#         payload=payload,
-#         from_node="test_process_id",
-#         message_type=MessageType.OK,
-#     )
-#     m_messaging._new_response_msg = Mock(return_value=expected_response_msg)
-#     m_messaging._publish_response = AsyncMock()
+async def test__publish_any(m_messaging):
+    request_id = "test_request_id"
+    payload = Any()
+    expected_response_msg = KaiNatsMessage(
+        request_id=request_id,
+        payload=payload,
+        from_node="test_process_id",
+        message_type=MessageType.OK,
+    )
+    m_messaging._new_response_msg = Mock(return_value=expected_response_msg)
+    m_messaging._publish_response = AsyncMock()
 
-#     await m_messaging._publish_any(payload=payload, msg_type=MessageType.OK, request_id=request_id, chan=TEST_CHANNEL)
+    await m_messaging._publish_any(payload=payload, msg_type=MessageType.OK, request_id=request_id, chan=TEST_CHANNEL)
 
-#     assert m_messaging._new_response_msg.awaited
-#     assert m_messaging._new_response_msg.call_args == call(Any(), None, MessageType.OK)
-#     assert m_messaging._publish_response.awaited
-#     assert m_messaging._publish_response.call_args == call(expected_response_msg, TEST_CHANNEL)
+    assert m_messaging._new_response_msg.awaited
+    assert m_messaging._new_response_msg.call_args == call(Any(), None, MessageType.OK)
+    assert m_messaging._publish_response.awaited
+    assert m_messaging._publish_response.call_args == call(expected_response_msg, TEST_CHANNEL)
 
-# @pytest.mark.parametrize(
-#         "payload, function",
-#         [
-#             (Message(), "_publish_msg"),
-#             (Any(), "_publish_any"),
-#         ],
-#     )
-# async def test_publish_output(m_messaging, payload, function, expected_call_args):
-#     request_id = "test_request_id"
-#     expected_response_msg = KaiNatsMessage(
-#         request_id=request_id,
-#         payload=payload,
-#         from_node="test_process_id",
-#         message_type=MessageType.OK,
-#     )
-#     m_messaging._new_response_msg = Mock(return_value=expected_response_msg)
-#     m_messaging._publish_response = AsyncMock()
 
-#     await getattr(m_messaging, function)(payload=payload, request_id=request_id, msg_type=MessageType.OK, chan=TEST_CHANNEL)
+async def test__publish_error(m_messaging):
+    m_messaging._publish_response = AsyncMock()
+    v.set("metadata.process_id", "test_process_id")
 
-#     assert m_messaging._new_response_msg.awaited
-#     assert m_messaging._new_response_msg.call_args == call(payload, None, MessageType.OK)
-#     assert m_messaging._publish_response.awaited
-#     assert m_messaging._publish_response.call_args == call(expected_response_msg, TEST_CHANNEL)
+    await m_messaging._publish_error(request_id="test_request_id", err_msg="test_error")
 
-# async def test_publish_error(m_messaging):
-#     m_messaging._publish_response = AsyncMock()
-#     v.set("metadata.process_id", "test_process_id")
+    assert m_messaging._publish_response.awaited
+    assert m_messaging._publish_response.call_args == call(
+        KaiNatsMessage(
+            request_id="test_request_id",
+            error="test_error",
+            from_node="test_process_id",
+            message_type=MessageType.ERROR,
+        )
+    )
 
-#     await m_messaging._publish_error(request_id="test_request_id", err_msg="test_error")
+def test__new_response_msg_ok(m_messaging):
+    v.set("metadata.process_id", "test_process_id")
+    request_id = "test_request_id"
+    payload = Any()
 
-#     assert m_messaging._publish_response.awaited
-#     assert m_messaging._publish_response.call_args == call(
-#         KaiNatsMessage(
-#             request_id="test_request_id",
-#             error="test_error",
-#             from_mode="test_process_id",
-#             message_type=MessageType.ERROR,
-#         )
-#     )
+    response = m_messaging._new_response_msg(payload, request_id, msg_type=MessageType.OK)
+
+    assert response == KaiNatsMessage(
+        request_id=request_id,
+        payload=payload,
+        from_node="test_process_id",
+        message_type=MessageType.OK,
+    )
+
+@patch.object(KaiNatsMessage, "SerializeToString")
+async def test__publish_response_ok(m_messaging, m_serialize):
+    m_messaging.js.publish = AsyncMock()
+    message = KaiNatsMessage()
+    bytes_message = message.SerializeToString()
+    m_serialize.return_value = Mock(return_value=bytes_message)
+    m_messaging._prepare_output_message = Mock(return_value=message)
+
+    m_messaging._publish_response(message)
+
+    assert m_messaging.js.publish.awaited
+    assert m_messaging.js.publish.call_args == call("nats.output", message)
+    assert m_messaging.KaiNatsMessage.SerializeToString.awaited
+    assert m_messaging.KaiNatsMessage.SerializeToString.call_args == call(message)
+    assert m_messaging._prepare_output_message.awaited
+    assert m_messaging._prepare_output_message.call_args == call(bytes_message)
