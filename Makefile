@@ -28,8 +28,8 @@ golint: ## Run golint
 
 .PHONY: gotest
 gotest: ## Run tests
-	cd go-sdk && go test ./... -coverprofile=coverage.out && cd -
+	cd go-sdk && go test ./... -cover -coverpkg=./... -coverprofile=coverage-unit.out --tags=unit
 
 .PHONY: pytest
 pytest: ## Run tests
-	poetry --directory py-sdk run pytest py-sdk/src --cov --cov-report term-missing --cov-config=py-sdk/pyproject.toml
+	poetry --directory py-sdk run pytest py-sdk/src --cov --cov-report term-missing --cov-config=py-sdk/pyproject.toml --no-cov-on-fail

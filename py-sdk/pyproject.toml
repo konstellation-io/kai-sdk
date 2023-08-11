@@ -101,3 +101,11 @@ ignore_errors = false
 fail_under = 80
 precision = 2
 show_missing = true
+
+[tool.codespell]
+skip = [
+    ".venv",
+    "kai_nats_msg_pb2.py",
+    "config.py",
+    "constants.py",
+]
