@@ -109,7 +109,7 @@ async def test_get_config_with_scope_not_found(m_centralized_config):
 async def test_get_config_with_scope_ko(m_centralized_config):
     m_centralized_config._get_config_from_scope = AsyncMock(side_effect=Exception)
 
-    with pytest.raises(Exception):
+    with pytest.raises(FailedGettingConfigError):
         await m_centralized_config.get_config("test_key", scope=Scope.ProductScope)
 
 
@@ -133,7 +133,7 @@ async def test_get_config_without_scope_not_found(m_centralized_config):
 async def test_get_config_without_scope_ko(m_centralized_config):
     m_centralized_config._get_config_from_scope = AsyncMock(side_effect=Exception)
 
-    with pytest.raises(Exception):
+    with pytest.raises(FailedGettingConfigError):
         await m_centralized_config.get_config("test_key")
 
 

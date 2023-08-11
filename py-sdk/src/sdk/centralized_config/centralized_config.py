@@ -22,7 +22,7 @@ class CentralizedConfig:
     product_kv: KeyValue = None
     workflow_kv: KeyValue = None
     process_kv: KeyValue = None
-    logger: Logger = logger.bind(component="[CENTRALIZED CONFIGURATION]")
+    logger: Logger = logger.bind(context="[CENTRALIZED CONFIGURATION]")
 
     async def initialize(self) -> Optional[Exception]:
         self.product_kv, self.workflow_kv, self.process_kv = await self._init_kv_stores()
@@ -78,10 +78,8 @@ class CentralizedConfig:
         return None, False
 
     async def set_config(self, key: str, value: bytes, scope: Optional[Scope] = None) -> Optional[Exception]:
-        if scope:
-            kv_store = self._get_scoped_config(scope)
-        else:
-            kv_store = self._get_scoped_config(Scope.ProcessScope)
+        scope = scope or Scope.ProcessScope
+        kv_store = self._get_scoped_config(scope)
 
         try:
             await kv_store.put(key, value)
@@ -90,10 +88,9 @@ class CentralizedConfig:
             raise FailedSettingConfigError(key=key, scope=scope, error=e)
 
     async def delete_config(self, key: str, scope: Optional[Scope] = None) -> bool | Exception:
-        if scope:
-            kv_store = self._get_scoped_config(scope)
-        else:
-            kv_store = self._get_scoped_config(Scope.ProcessScope)
+        scope = scope or Scope.ProcessScope
+        kv_store = self._get_scoped_config(scope)
+
         try:
             return await kv_store.delete(key)
         except Exception as e:
@@ -101,12 +98,10 @@ class CentralizedConfig:
             raise FailedDeletingConfigError(key=key, scope=scope, error=e)
 
     async def _get_config_from_scope(self, key: str, scope: Optional[Scope] = None) -> str:
-        if scope:
-            scoped_config = self._get_scoped_config(scope)
-        else:
-            scoped_config = self._get_scoped_config(Scope.ProcessScope)
+        scope = scope or Scope.ProcessScope
+        kv_store = self._get_scoped_config(scope)
+        entry = await kv_store.get(key)
 
-        entry = await scoped_config.get(key)
         return entry.value.decode("utf-8")
 
     def _get_scoped_config(self, scope: Scope) -> KeyValue:
