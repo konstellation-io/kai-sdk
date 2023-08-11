@@ -84,7 +84,7 @@ jobs:
       - name: Run unit tests Python
         if: matrix.changes == 'true' && matrix.component == 'py-sdk'
         run: make pytest
-        working-directory: ./${{ matrix.component }}
+        working-directory: ./
       - name: Run integration tests
         if: matrix.changes == 'true' && matrix.component == 'go-sdk'
         run: go test ./... -cover -v -coverpkg=./... -coverprofile=coverage-integration.out --tags=integration
