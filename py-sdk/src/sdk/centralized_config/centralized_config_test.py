@@ -75,7 +75,7 @@ async def test_get_config_with_scope_ok(m_centralized_config):
 
     config, found = await m_centralized_config.get_config("test_key", Scope.WorkflowScope)
 
-    assert m_centralized_config._get_config_from_scope.awaited
+    assert m_centralized_config._get_config_from_scope.called
     assert m_centralized_config._get_config_from_scope.call_args == call("test_key", Scope.WorkflowScope)
     assert config == "test_config"
     assert found
@@ -86,7 +86,7 @@ async def test_get_config_without_scope_ok(m_centralized_config):
 
     config, found = await m_centralized_config.get_config("test_key")
 
-    assert m_centralized_config._get_config_from_scope.awaited
+    assert m_centralized_config._get_config_from_scope.called
     assert m_centralized_config._get_config_from_scope.call_args_list == [
         call("test_key", Scope.ProcessScope),
         call("test_key", Scope.WorkflowScope),
@@ -100,7 +100,7 @@ async def test_get_config_with_scope_not_found(m_centralized_config):
 
     config, found = await m_centralized_config.get_config("test_key", Scope.ProductScope)
 
-    assert m_centralized_config._get_config_from_scope.awaited
+    assert m_centralized_config._get_config_from_scope.called
     assert m_centralized_config._get_config_from_scope.call_args == call("test_key", Scope.ProductScope)
     assert config is None
     assert not found
@@ -120,7 +120,7 @@ async def test_get_config_without_scope_not_found(m_centralized_config):
 
     config, found = await m_centralized_config.get_config("test_key")
 
-    assert m_centralized_config._get_config_from_scope.awaited
+    assert m_centralized_config._get_config_from_scope.called
     assert m_centralized_config._get_config_from_scope.call_args_list == [
         call("test_key", Scope.ProcessScope),
         call("test_key", Scope.WorkflowScope),
@@ -140,14 +140,14 @@ async def test_get_config_without_scope_ko(m_centralized_config):
 async def test_set_config_with_scope_ok(m_centralized_config):
     await m_centralized_config.set_config("test_key", b"test_value", Scope.ProductScope)
 
-    assert m_centralized_config.product_kv.put.awaited
+    assert m_centralized_config.product_kv.put.called
     assert m_centralized_config.product_kv.put.call_args == call("test_key", b"test_value")
 
 
 async def test_set_config_without_scope_ok(m_centralized_config):
     await m_centralized_config.set_config("test_key", b"test_value")
 
-    assert m_centralized_config.process_kv.put.awaited
+    assert m_centralized_config.process_kv.put.called
     assert m_centralized_config.process_kv.put.call_args == call("test_key", b"test_value")
 
 
@@ -168,14 +168,14 @@ async def test_set_config_without_scope_ko(m_centralized_config):
 async def test_delete_config_with_scope_ok(m_centralized_config):
     await m_centralized_config.delete_config("test_key", Scope.ProductScope)
 
-    assert m_centralized_config.product_kv.delete.awaited
+    assert m_centralized_config.product_kv.delete.called
     assert m_centralized_config.product_kv.delete.call_args == call("test_key")
 
 
 async def test_delete_config_without_scope_ok(m_centralized_config):
     await m_centralized_config.delete_config("test_key")
 
-    assert m_centralized_config.process_kv.delete.awaited
+    assert m_centralized_config.process_kv.delete.called
     assert m_centralized_config.process_kv.delete.call_args == call("test_key")
 
 
@@ -216,6 +216,11 @@ async def test__get_config_from_scope_without_scope_ok(m_centralized_config):
 
 
 def test__get_scoped_config_ok(m_centralized_config):
-    result = m_centralized_config._get_scoped_config(Scope.ProductScope)
+    result = m_centralized_config._get_scoped_config(Scope.WorkflowScope)
 
-    assert result == m_centralized_config.product_kv
+    assert result == m_centralized_config.workflow_kv
+
+def test__get_scoped_config_ko(m_centralized_config):
+    result = m_centralized_config._get_scoped_config("wrong_scope")
+
+    assert result is None

@@ -113,7 +113,7 @@ class Messaging:
             return
 
         try:
-            output_msg = self._prepare_output_message(output_msg)
+            output_msg = await self._prepare_output_message(output_msg)
         except (FailedGettingMaxMessageSizeError, MessageTooLargeError) as e:
             self.logger.debug(f"failed preparing output message: {e}")
             return
@@ -130,9 +130,8 @@ class Messaging:
         output_subject = v.get("nats.output")
         return f"{output_subject}.{chan}" if chan else output_subject
 
-    def _prepare_output_message(self, msg: bytes) -> bytes | Exception:
-        max_size = self.message_utils.get_max_message_size()
-
+    async def _prepare_output_message(self, msg: bytes) -> bytes | Exception:
+        max_size = await self.messaging_utils.get_max_message_size()
         if len(msg) <= max_size:
             return msg
 
