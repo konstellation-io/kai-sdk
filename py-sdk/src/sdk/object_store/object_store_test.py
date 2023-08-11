@@ -253,6 +253,24 @@ async def test_purge_ok(m_object_store, m_objects):
     ]
 
 
+async def test_purge_one_already_deleted_ok(m_object_store, m_objects):
+    m_object_store.object_store.list.return_value = [obj for obj in m_objects]
+    for obj in m_objects[1:]:
+        obj.deleted = True
+
+    m_object_store.object_store.delete.side_effect = m_objects
+
+    result = await m_object_store.purge()
+
+    assert result is None
+    assert m_object_store.object_store.delete.call_count == 3
+    assert m_object_store.object_store.delete.call_args_list == [
+        call(KEY_140),
+        call(KEY_141),
+        call(KEY_142),
+    ]
+
+
 async def test_purge_regex_ok(m_object_store, m_objects):
     m_object_store.object_store.list.return_value = [m_objects[0], m_objects[2]]
     for obj in m_objects:

@@ -220,6 +220,7 @@ def test__get_scoped_config_ok(m_centralized_config):
 
     assert result == m_centralized_config.workflow_kv
 
+
 def test__get_scoped_config_ko(m_centralized_config):
     result = m_centralized_config._get_scoped_config("wrong_scope")
 
