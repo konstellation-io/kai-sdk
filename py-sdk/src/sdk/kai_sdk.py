@@ -5,8 +5,8 @@ from typing import Optional
 
 from centralized_config.centralized_config import CentralizedConfig
 from centralized_config.constants import Scope
-from google.protobuf.message import Message
 from google.protobuf.any_pb2 import Any
+from google.protobuf.message import Message
 from kai_nats_msg_pb2 import KaiNatsMessage
 from loguru import logger
 from loguru._logger import Logger
@@ -42,7 +42,7 @@ class Messaging(ABC):
         pass
 
     @abstractmethod
-    async def send_any_with_request_id(self, response: Any, request_id:str, chan: Optional[str]):
+    async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str]):
         pass
 
     @abstractmethod

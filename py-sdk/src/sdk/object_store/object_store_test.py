@@ -1,8 +1,8 @@
 from typing import List
 from unittest.mock import call
-from mock import AsyncMock
 
 import pytest
+from mock import AsyncMock
 from nats.aio.client import Client as NatsClient
 from nats.js.api import ObjectInfo
 from nats.js.client import JetStreamContext
@@ -206,7 +206,7 @@ async def test_delete_ok(m_object_store, m_objects):
     m_object_store.object_store.list.return_value = m_objects
     deleted_object = m_objects[0]
     deleted_object.deleted = True
-    m_object_store.object_store.delete.return_value=deleted_object
+    m_object_store.object_store.delete.return_value = deleted_object
 
     result = await m_object_store.delete(KEY_140)
 
@@ -222,7 +222,7 @@ async def test_delete_undefined_ko(m_object_store):
 
 
 async def test_delete_not_found_ko(m_object_store):
-    m_object_store.object_store.delete.side_effect=ObjectNotFoundError
+    m_object_store.object_store.delete.side_effect = ObjectNotFoundError
 
     result = await m_object_store.delete("key-1")
 
@@ -240,7 +240,7 @@ async def test_purge_ok(m_object_store, m_objects):
     m_object_store.object_store.list.return_value = [obj for obj in m_objects]
     for obj in m_objects:
         obj.deleted = True
-    m_object_store.object_store.delete.side_effect=m_objects
+    m_object_store.object_store.delete.side_effect = m_objects
 
     result = await m_object_store.purge()
 
@@ -257,7 +257,7 @@ async def test_purge_regex_ok(m_object_store, m_objects):
     m_object_store.object_store.list.return_value = [m_objects[0], m_objects[2]]
     for obj in m_objects:
         obj.deleted = True
-    m_object_store.object_store.delete.side_effect=[m_objects[0], m_objects[2]]
+    m_object_store.object_store.delete.side_effect = [m_objects[0], m_objects[2]]
 
     result = await m_object_store.purge(r"(object:140|object:142)")
 

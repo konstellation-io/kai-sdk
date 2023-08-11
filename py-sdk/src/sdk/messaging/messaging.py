@@ -60,7 +60,9 @@ class Messaging:
     def is_message_early_exit(self) -> bool:
         return self.req_msg.message_type == MessageType.EARLY_EXIT
 
-    async def _publish_msg(self, msg: Message, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None):
+    async def _publish_msg(
+        self, msg: Message, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None
+    ):
         try:
             payload = Any()
             payload.Pack(msg)
@@ -74,7 +76,9 @@ class Messaging:
         response_msg = self._new_response_msg(payload, request_id, msg_type)
         await self._publish_response(response_msg, chan)
 
-    async def _publish_any(self, payload: Any, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None):
+    async def _publish_any(
+        self, payload: Any, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None
+    ):
         if not request_id:
             request_id = str(uuid.uuid4())
 
@@ -103,7 +107,7 @@ class Messaging:
         output_subject = self._get_output_subject(chan)
 
         try:
-            output_msg = response_msg.SerializeToString()
+            output_msg = response_msg.SerializeToString()  # bytes
         except Exception as e:
             self.logger.debug(f"failed serializing response message: {e}")
             return
