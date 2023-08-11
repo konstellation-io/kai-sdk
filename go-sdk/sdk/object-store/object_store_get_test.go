@@ -13,7 +13,8 @@ import (
 func (s *SdkObjectStoreTestSuite) TestObjectStore_GetObjectStoreNotInitialized_ExpectError() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, "")
-	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	
+	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	// When
 	value, err := objectStore.Get("key")
@@ -28,7 +29,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorRetrievingObject_ExpectEr
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("GetBytes", "key").Return(nil, fmt.Errorf("error saving object"))
 
@@ -46,7 +47,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_GetObject_ExpectOK() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("GetBytes", "key").Return([]byte("value"), nil)
 

@@ -66,6 +66,7 @@ func (ms Messaging) GetErrorMessage() string {
 	if ms.IsMessageError() {
 		return ms.requestMessage.GetError()
 	}
+	
 	return ""
 }
 

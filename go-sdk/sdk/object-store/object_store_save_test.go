@@ -14,10 +14,11 @@ import (
 func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObjectStoreNotInitialized_ExpectError() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, "")
-	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	
+	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	// When
-	err = objectStore.Save("key", []byte("value"))
+	err := objectStore.Save("key", []byte("value"))
 
 	// Then
 	s.ErrorIs(err, errors.ErrUndefinedObjectStore)
@@ -27,13 +28,15 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObjectStoreNotInitialized_
 func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveEmptyPayload_ExpectError() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	
+	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("PutBytes", "key", []byte("value")).Return(&nats.ObjectInfo{}, nil)
 
 	// When
-	err = objectStore.Save("key", nil)
+	err := objectStore.Save("key", nil)
 
 	// Then
 	s.ErrorIs(err, errors.ErrEmptyPayload)
@@ -43,13 +46,15 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveEmptyPayload_ExpectError()
 func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorSavingPayload_ExpectError() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	
+	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("PutBytes", "key", []byte("value")).Return(nil, fmt.Errorf("error saving payload"))
 
 	// When
-	err = objectStore.Save("key", []byte("value"))
+	err := objectStore.Save("key", []byte("value"))
 
 	// Then
 	s.Error(err)
@@ -59,13 +64,15 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorSavingPayload_ExpectError
 func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObject_ExpectOK() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
+	
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	
+	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("PutBytes", "key", []byte("value")).Return(&nats.ObjectInfo{}, nil)
 
 	// When
-	err = objectStore.Save("key", []byte("value"))
+	err := objectStore.Save("key", []byte("value"))
 
 	// Then
 	s.NoError(err)

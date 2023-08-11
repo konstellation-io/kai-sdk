@@ -18,10 +18,11 @@ const (
 func (s *SdkObjectStoreTestSuite) TestObjectStore_DeleteObjectStoreNotInitialized_ExpectError() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, "")
-	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	
+	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	// When
-	err = objectStore.Delete("key")
+	err := objectStore.Delete("key")
 
 	// Then
 	s.ErrorIs(err, errors.ErrUndefinedObjectStore)
@@ -32,12 +33,12 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorDeletingObject_ExpectErro
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
-
+	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	
 	s.objectStore.On("Delete", "key").Return(fmt.Errorf("error saving object"))
 
 	// When
-	err = objectStore.Delete("key")
+	err := objectStore.Delete("key")
 
 	// Then
 	s.Error(err)
@@ -49,12 +50,12 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_DeleteObject_ExpectOK() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, err := objectstore.NewObjectStore(s.logger, &s.jetstream)
-
+	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	
 	s.objectStore.On("Delete", "key").Return(nil)
 
 	// When
-	err = objectStore.Delete("key")
+	err := objectStore.Delete("key")
 
 	// Then
 	s.NoError(err)

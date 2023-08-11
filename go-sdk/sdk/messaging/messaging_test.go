@@ -52,6 +52,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_PublishError_ExpectOk() {
 	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
 	s.messagingUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
+	
 	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
 
 	// When
@@ -74,7 +75,7 @@ func generateRandomString(sizeInBytes int) string {
 	randomBytes := make([]byte, sizeInBytes)
 
 	for i := 0; i < sizeInBytes; i++ {
-		randomBytes[i] = validChars[rand.Intn(validCharCount)]
+		randomBytes[i] = validChars[rand.Intn(validCharCount)] //nolint:gosec
 	}
 
 	return string(randomBytes)
@@ -83,6 +84,7 @@ func generateRandomString(sizeInBytes int) string {
 func getOutputMessage(requestID string, msg interface{},
 	errorMessage, fromNode string, messageType kai.MessageType) []byte {
 	var payload *anypb.Any
+
 	if msg != nil {
 		value, ok := msg.(*anypb.Any)
 		if ok {
@@ -91,6 +93,7 @@ func getOutputMessage(requestID string, msg interface{},
 			payload, _ = anypb.New(msg.(proto.Message))
 		}
 	}
+	
 	responseMsg := &kai.KaiNatsMessage{
 		RequestId:   requestID,
 		Payload:     payload,
@@ -99,5 +102,6 @@ func getOutputMessage(requestID string, msg interface{},
 		MessageType: messageType,
 	}
 	outputMsg, _ := proto.Marshal(responseMsg)
+	
 	return outputMsg
 }

@@ -19,15 +19,15 @@ func InitializeProcessConfiguration(sdk sdk.KaiSDK) {
 	values := viper.GetStringMapString("centralized_configuration.process.config")
 
 	sdk.Logger.WithName("[CONFIG INITIALIZER]").V(1).Info("Initializing process configuration")
-	if values != nil {
-		for key, value := range values {
-			err := sdk.CentralizedConfig.SetConfig(key, value)
-			if err != nil {
-				sdk.Logger.WithName("[CONFIG INITIALIZER]").
-					Error(err, "Error initializing process configuration", "key", key)
-			}
-			sdk.Logger.WithName("[CONFIG INITIALIZER]").V(3).
-				Info("New process configuration added", "key", key, "value", value)
+
+	for key, value := range values {
+		err := sdk.CentralizedConfig.SetConfig(key, value)
+		if err != nil {
+			sdk.Logger.WithName("[CONFIG INITIALIZER]").
+				Error(err, "Error initializing process configuration", "key", key)
 		}
+
+		sdk.Logger.WithName("[CONFIG INITIALIZER]").V(3).
+			Info("New process configuration added", "key", key, "value", value)
 	}
 }
