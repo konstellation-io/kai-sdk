@@ -90,7 +90,7 @@ jobs:
         run: go test ./... -cover -v -coverpkg=./... -coverprofile=coverage-integration.out --tags=integration
         working-directory: ./${{ matrix.component }}
       - name: Archive code coverage results
-        if: matrix.changes == 'true' && matrix.component == 'go-sdk'
+        if: matrix.changes == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: coverage-report-${{ matrix.component }}
@@ -98,39 +98,39 @@ jobs:
             ${{ matrix.component }}/coverage-unit.out
             ${{ matrix.component }}/coverage-integration.out
 
-  # sonarcloud:
-  #   name: SonarCloud
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - check-folder-changes
-  #     - unit-tests
-  #   strategy:
-  #     fail-fast: true
-  #     matrix:
-  #       include:
-  #         - component: go-sdk
-  #           changes: ${{ needs.check-folder-changes.outputs.go-sdk }}
-  #           sonar_token_secret: SONAR_TOKEN_GO_SDK
-  #         - component: py-sdk
-  #           changes: ${{ needs.check-folder-changes.outputs.py-sdk }}
-  #           sonar_token_secret: SONAR_TOKEN_PYTHON_SDK
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       if: matrix.changes == 'true'
-  #       with:
-  #         fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-  #     - name: Download code coverage results
-  #       if: matrix.changes == 'true' && matrix.component == 'go-sdk'
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: coverage-report-${{ matrix.component }}
-  #         path: |
-  #           ${{ matrix.component }}
-  #     - name: SonarCloud Scan
-  #       if: matrix.changes == 'true'
-  #       uses: SonarSource/sonarcloud-github-action@master
-  #       with:
-  #         projectBaseDir: ${{ matrix.component }}
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.PAT }}  # Needed to get PR information, if any
-  #         SONAR_TOKEN: ${{ secrets[matrix.sonar_token_secret] }}
+  sonarcloud:
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    needs:
+      - check-folder-changes
+      - unit-tests
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: go-sdk
+            changes: ${{ needs.check-folder-changes.outputs.go-sdk }}
+            sonar_token_secret: SONAR_TOKEN_GO_SDK
+          - component: py-sdk
+            changes: ${{ needs.check-folder-changes.outputs.py-sdk }}
+            sonar_token_secret: SONAR_TOKEN_PYTHON_SDK
+    steps:
+      - uses: actions/checkout@v3
+        if: matrix.changes == 'true'
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Download code coverage results
+        if: matrix.changes == 'true'
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-report-${{ matrix.component }}
+          path: |
+            ${{ matrix.component }}
+      - name: SonarCloud Scan
+        if: matrix.changes == 'true'
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          projectBaseDir: ${{ matrix.component }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets[matrix.sonar_token_secret] }}
