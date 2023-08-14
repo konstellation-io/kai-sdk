@@ -17,15 +17,6 @@ from nats.js.client import JetStreamContext
 from object_store.object_store import ObjectStore
 from path_utils.path_utils import PathUtils
 
-logger.remove()  # Remove the pre-configured handler
-logger.add(
-    sys.stdout,
-    colorize=True,
-    format="<green>{time}</green> <level>{extra[context]} {message}</level>",
-    backtrace=True,
-    diagnose=True,
-)
-
 
 @dataclass
 class Messaging(ABC):
