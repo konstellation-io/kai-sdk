@@ -97,7 +97,6 @@ jobs:
           path: |
             ${{ matrix.component }}/coverage-unit.out
             ${{ matrix.component }}/coverage-integration.out
-            ${{ matrix.component }}/coverage-reports/coverage.xml
 
   sonarcloud:
     name: SonarCloud

@@ -12,7 +12,6 @@ go.work.sum
 .coverage
 coverage-unit.out
 coverage-integration.out
-coverage-reports
 
 build
 
