@@ -32,4 +32,4 @@ gotest: ## Run tests
 
 .PHONY: pytest
 pytest: ## Run tests
-	cd py-sdk && poetry run pytest src --cov=src --cov-report=term-missing --cov-report=xml:coverage-reports/coverage.xml --cov-config=pyproject.toml --no-cov-on-fail
+	cd py-sdk && poetry run pytest src --cov --cov-report=term-missing --cov-report=xml:coverage-reports/coverage.xml --cov-config=pyproject.toml --no-cov-on-fail
