@@ -2,10 +2,13 @@ import sys
 from dataclasses import dataclass
 
 from exceptions import FailedLoadingConfigError, JetStreamConnectionError, NATSConnectionError
+from exit.exit_runner import ExitRunner
 from loguru import logger
 from loguru._logger import Logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
+from task.task_runner import TaskRunner
+from trigger.trigger_runner import TriggerRunner
 from vyper import v
 
 
@@ -78,7 +81,7 @@ class Runner:
         for output_path in output_paths:
             if output_path == "stdout":
                 output_path = sys.stdout
-            
+
             logger.add(
                 output_path,
                 colorize=True,
@@ -90,7 +93,7 @@ class Runner:
         for error_output_path in error_output_paths:
             if output_path == "stderr":
                 output_path = sys.stderr
-        
+
             logger.add(
                 error_output_path,
                 colorize=True,
@@ -102,3 +105,12 @@ class Runner:
 
         self.logger = logger.bind(context="[RUNNER CONFIG]")
         self.logger.info("logger initialized")
+
+    async def trigger_runner(self):
+        return await TriggerRunner(self.js, self.logger).initialize()
+
+    async def task_runner(self):
+        return await TaskRunner(self.js, self.logger).initialize()
+
+    async def exit_runner(self):
+        return await ExitRunner(self.js, self.logger).initialize()
