@@ -16,7 +16,7 @@ tidy: ## Run black, isort and codespell
 
 .PHONY: protos
 protos: ## Generate proto files
-	protoc -I proto --python_out=py-sdk/src/sdk --go_out=go-sdk/protos --go_opt=paths=source_relative proto/kai_nats_msg.proto
+	protoc -I proto --python_out=py-sdk/src/sdk --python_out=py-sdk/src/runner --go_out=go-sdk/protos --go_opt=paths=source_relative proto/kai_nats_msg.proto
 
 .PHONY: generate_mocks
 generate_mocks: ## Generate mocks

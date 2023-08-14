@@ -1,11 +1,14 @@
 .dockerignore
 Dockerfile
-src/tests/
+*test.py
 *.md
 !README.md
 __pycache__
 .coverage
 .coverage.*
+coverage-unit.out
+coverage-integration.out
+coverage.out
 .cache
 coverage.xml
 *.cover
