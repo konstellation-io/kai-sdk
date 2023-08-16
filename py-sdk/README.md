@@ -2,7 +2,6 @@
 
 KAI SDK's implementation in Python.
 
-This image is built on top of nvidia/cuda-10.2-devel to add GPU support (TODO UPDATE)
 
 ## How it works
 
