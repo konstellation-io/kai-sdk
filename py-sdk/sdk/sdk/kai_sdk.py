@@ -180,7 +180,7 @@ class KaiSDK:
     js: JetStreamContext
     req_msg: KaiNatsMessage
 
-    logger: Logger = logger.bind(context="[KAI SDK]")
+    logger: Logger = None
     metadata: Metadata = None
     messaging: Messaging = None
     object_store: Optional[ObjectStore] = None
@@ -195,6 +195,11 @@ class KaiSDK:
         from sdk.metadata.metadata import Metadata
         from sdk.object_store.object_store import ObjectStore
         from sdk.path_utils.path_utils import PathUtils
+
+        if not self.logger:
+            self._initialize_logger()
+        else:
+            self.logger = self.logger.bind(context="[KAI SDK]")
 
         self.centralized_config = CentralizedConfig(js=self.js)
         self.metadata = Metadata()
@@ -217,3 +222,16 @@ class KaiSDK:
 
     def get_request_id(self):
         return self.req_msg.request_id if self.req_msg else None
+
+    def _initialize_logger(self):
+        logger.remove()  # Remove the pre-configured handler
+        logger.add(
+            sys.stdout,
+            colorize=True,
+            format="<green>{time}</green> <level>{extra[context]} {message}</level>",
+            backtrace=True,
+            diagnose=True,
+        )
+
+        self.logger = logger.bind(context="[KAI SDK]")
+        self.logger.debug("logger initialized")
