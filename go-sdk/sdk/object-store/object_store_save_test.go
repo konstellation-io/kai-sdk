@@ -14,7 +14,7 @@ import (
 func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObjectStoreNotInitialized_ExpectError() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, "")
-	
+
 	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	// When
@@ -28,9 +28,9 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObjectStoreNotInitialized_
 func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveEmptyPayload_ExpectError() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
-	
+
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	
+
 	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("PutBytes", "key", []byte("value")).Return(&nats.ObjectInfo{}, nil)
@@ -46,9 +46,9 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveEmptyPayload_ExpectError()
 func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorSavingPayload_ExpectError() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
-	
+
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	
+
 	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("PutBytes", "key", []byte("value")).Return(nil, fmt.Errorf("error saving payload"))
@@ -64,9 +64,9 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorSavingPayload_ExpectError
 func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObject_ExpectOK() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
-	
+
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	
+
 	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	s.objectStore.On("PutBytes", "key", []byte("value")).Return(&nats.ObjectInfo{}, nil)

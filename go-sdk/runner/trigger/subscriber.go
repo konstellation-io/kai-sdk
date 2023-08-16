@@ -209,7 +209,7 @@ func (tr *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 			"Current message size", sizeInMB(lenOutMsg),
 			"Compressed message size", sizeInMB(maxSize))
 
-			return nil, errors.ErrMessageToBig
+		return nil, errors.ErrMessageToBig
 	}
 
 	tr.sdk.Logger.WithName("[SUBSCRIBER]").Info("Message prepared",
