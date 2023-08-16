@@ -13,7 +13,7 @@ import (
 func (s *SdkObjectStoreTestSuite) TestObjectStore_ListObjectStoreNotInitialized_ExpectError() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, "")
-	
+
 	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
 
 	// When
@@ -30,7 +30,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorListObject_ExpectError() 
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
-	
+
 	s.objectStore.On("List").Return(nil, fmt.Errorf("error saving object"))
 
 	// When
@@ -48,10 +48,10 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ListObject_ExpectOK() {
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
-	
+
 	keys := []string{"key1", "key2"}
 	objects := generateObjectInfoResponse(keys)
-	
+
 	s.objectStore.On("List").Return(objects, nil)
 
 	// When
@@ -70,10 +70,10 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ListObjectWithFilter_ExpectOK(
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
-	
+
 	keys := []string{"key1", "key2", "anotherKey3", "anotherKey4"}
 	objects := generateObjectInfoResponse(keys)
-	
+
 	s.objectStore.On("List").Return(objects, nil)
 
 	// When
@@ -92,10 +92,10 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ListObjectWithFilter_InvalidRe
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
-	
+
 	keys := []string{"key1", "key2", "anotherKey3", "anotherKey4"}
 	objects := generateObjectInfoResponse(keys)
-	
+
 	s.objectStore.On("List").Return(objects, nil)
 
 	// When
@@ -113,7 +113,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ListObject_ErrorOnList_ExpectE
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
-	
+
 	s.objectStore.On("List").Return(nil, fmt.Errorf("error listing objects"))
 
 	// When

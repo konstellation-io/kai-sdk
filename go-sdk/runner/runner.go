@@ -102,12 +102,12 @@ func getLogger() logr.Logger {
 	var log logr.Logger
 
 	config := zap.NewDevelopmentConfig()
-	
+
 	logLevel, err := zap.ParseAtomicLevel(viper.GetString("runner.logger.level"))
 	if err != nil {
 		logLevel = zap.NewAtomicLevelAt(zap.InfoLevel)
 	}
-	
+
 	config.Level = zap.NewAtomicLevelAt(logLevel.Level())
 	config.OutputPaths = viper.GetStringSlice("runner.logger.output_paths")
 	config.ErrorOutputPaths = viper.GetStringSlice("runner.logger.error_output_paths")

@@ -13,7 +13,7 @@ import (
 func (s *SdkObjectStoreTestSuite) TestObjectStore_GetObjectStoreNotInitialized_ExpectError() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, "")
-	
+
 	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
 
 	// When

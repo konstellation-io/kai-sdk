@@ -30,11 +30,11 @@ func (ms Messaging) publishMsg(msg proto.Message, requestID string, msgType kai.
 	if err != nil {
 		return fmt.Errorf("the handler result is not a valid protobuf: %s", err)
 	}
-	
+
 	if requestID == "" {
 		requestID = uuid.New().String()
 	}
-	
+
 	responseMsg := ms.newResponseMsg(payload, requestID, msgType)
 
 	ms.publishResponse(responseMsg, channel)
@@ -46,7 +46,7 @@ func (ms Messaging) publishAny(payload *anypb.Any, requestID string, msgType kai
 	if requestID == "" {
 		requestID = uuid.New().String()
 	}
-	
+
 	responseMsg := ms.newResponseMsg(payload, requestID, msgType)
 	ms.publishResponse(responseMsg, channel)
 }
@@ -92,7 +92,7 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 	}
 
 	ms.logger.Info("Publishing response", "subject", outputSubject)
-	
+
 	_, err = ms.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
 		ms.logger.Error(err, "Error publishing output")
@@ -104,7 +104,7 @@ func (ms Messaging) getOutputSubject(channel string) string {
 	if channel != "" {
 		return fmt.Sprintf("%s.%s", outputSubject, channel)
 	}
-	
+
 	return outputSubject
 }
 
@@ -120,7 +120,7 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 	}
 
 	ms.logger.V(1).Info("Message exceeds maximum size allowed, compressing data")
-	
+
 	outMsg, err := common.CompressData(msg)
 	if err != nil {
 		return nil, err

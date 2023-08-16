@@ -68,11 +68,11 @@ func (tr *Runner) Run() {
 	if tr.responseHandlers["default"] == nil {
 		panic("No default handler defined")
 	}
-	
+
 	if tr.initializer == nil {
 		tr.initializer = composeInitializer(nil)
 	}
-	
+
 	if tr.finalizer == nil {
 		tr.finalizer = composeFinalizer(nil)
 	}
