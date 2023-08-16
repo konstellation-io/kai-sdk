@@ -7,8 +7,8 @@ help: ## This help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 .DEFAULT_GOAL := help
 
-.PHONY: tidy
-tidy: ## Run black, isort and codespell
+.PHONY: pytidy
+pytidy: ## Run black, isort and codespell
 	poetry --directory py-sdk run black py-sdk/src \
 	&& poetry --directory py-sdk run isort py-sdk/src \
 	&& poetry --directory py-sdk run codespell py-sdk/src -I py-sdk/dictionary.txt \
@@ -22,9 +22,9 @@ protos: ## Generate proto files
 generate_mocks: ## Generate mocks
 	cd go-sdk && go generate ./... && cd -
 
-.PHONY: golint
-golint: ## Run golint
-	cd go-sdk && golangci-lint run ./... && cd -
+.PHONY: gotidy
+gotidy: ## Run golint, goimports and gofmt
+	cd go-sdk && golangci-lint run ./... && goimports -w . && gofmt -s -w . && cd -
 
 .PHONY: gotest
 gotest: ## Run tests

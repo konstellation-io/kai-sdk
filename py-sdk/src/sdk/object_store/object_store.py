@@ -42,6 +42,7 @@ class ObjectStore:
         if self.object_store_name:
             try:
                 object_store = await self.js.object_store(self.object_store_name)
+                self.logger.debug(f"object store {self.object_store_name} successfully initialized")
                 return object_store
             except Exception as e:
                 self.logger.warning(f"failed initializing object store {self.object_store_name}: {e}")

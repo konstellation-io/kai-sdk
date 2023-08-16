@@ -30,19 +30,19 @@ class CentralizedConfig:
     async def _init_kv_stores(self) -> tuple[KeyValue, KeyValue, KeyValue] | Exception:
         try:
             name = v.get("centralized_configuration.product.bucket")
-            self.logger.info(f"initializing product key-value store {name}...")
+            self.logger.debug(f"initializing product key-value store {name}...")
             product_kv = await self.js.key_value(bucket=name)
-            self.logger.info("product key-value store initialized")
+            self.logger.debug("product key-value store initialized")
 
             name = v.get("centralized_configuration.workflow.bucket")
-            self.logger.info(f"initializing workflow key-value store {name}...")
+            self.logger.debug(f"initializing workflow key-value store {name}...")
             workflow_kv = await self.js.key_value(bucket=name)
-            self.logger.info("workflow key-value store initialized")
+            self.logger.debug("workflow key-value store initialized")
 
             name = v.get("centralized_configuration.process.bucket")
-            self.logger.info(f"initializing process key-value store {name}...")
+            self.logger.debug(f"initializing process key-value store {name}...")
             process_kv = await self.js.key_value(bucket=name)
-            self.logger.info("process key-value store initialized")
+            self.logger.debug("process key-value store initialized")
 
             return product_kv, workflow_kv, process_kv
         except Exception as e:
