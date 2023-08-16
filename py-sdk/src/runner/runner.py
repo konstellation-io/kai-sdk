@@ -107,10 +107,10 @@ class Runner:
         self.logger.info("logger initialized")
 
     async def trigger_runner(self):
-        return await TriggerRunner(self.js, self.logger).initialize()
+        return await TriggerRunner(self.nc, self.js).initialize()
 
     async def task_runner(self):
-        return await TaskRunner(self.js, self.logger).initialize()
+        return await TaskRunner(self.nc, self.js).initialize()
 
     async def exit_runner(self):
-        return await ExitRunner(self.js, self.logger).initialize()
+        return await ExitRunner(self.nc, self.js).initialize()
