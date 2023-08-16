@@ -14,7 +14,8 @@ coverage-unit.out
 coverage-integration.out
 
 build
-
+.venv
 
 # python
 __pycache__/
+.pytest_cache

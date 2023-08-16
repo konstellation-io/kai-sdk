@@ -703,25 +703,6 @@ files = [
 ]
 
 [[package]]
-name = "sdk"
-version = "0.1.0"
-description = "KAI SDK's implementation in Python"
-optional = false
-python-versions = "3.11.4"
-files = []
-develop = true
-
-[package.dependencies]
-loguru = "0.7.0"
-nats-py = "2.3.0"
-protobuf = "4.23.4"
-vyper-config = "1.1.1"
-
-[package.source]
-type = "directory"
-url = "sdk"
-
-[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -860,4 +841,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.4"
-content-hash = "300b3f4908084eba7c0d240f3e21744dc14b8d1022e93d500aaadcff683badda"
+content-hash = "dd4c4522bfdbbda5de211ac842bc7d0334783f94d75b480a0b7c029604ff1d6c"

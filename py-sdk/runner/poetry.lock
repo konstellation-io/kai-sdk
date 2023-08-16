@@ -719,7 +719,7 @@ vyper-config = "1.1.1"
 
 [package.source]
 type = "directory"
-url = "sdk"
+url = "../sdk"
 
 [[package]]
 name = "six"
@@ -860,4 +860,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.4"
-content-hash = "300b3f4908084eba7c0d240f3e21744dc14b8d1022e93d500aaadcff683badda"
+content-hash = "cfdfffc61d4c2f9f2aa7eac8a7dc6c5bfd065657c9b08fe15ef613f7e653e617"

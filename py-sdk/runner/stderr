@@ -1,0 +1,3 @@
+[32m2023-08-16T15:12:37.872662+0200[0m [31m[1m[RUNNER CONFIG] error connecting to nats: nats: invalid connect url option[0m
+[32m2023-08-16T15:13:14.059413+0200[0m [31m[1m[RUNNER CONFIG] error connecting to jetstream: object JetStreamContext can't be used in 'await' expression[0m
+[32m2023-08-16T15:14:10.139177+0200[0m [31m[1m[RUNNER CONFIG] error connecting to jetstream: object MagicMock can't be used in 'await' expression[0m
