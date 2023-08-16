@@ -68,7 +68,7 @@ jobs:
       #     args: --timeout=5m
       - name: Install Python
         if: matrix.changes == 'true' && matrix.component == 'py-sdk'
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.11
       - name: Install poetry and dependencies
