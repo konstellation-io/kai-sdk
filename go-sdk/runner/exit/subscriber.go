@@ -45,9 +45,9 @@ func (er *Runner) startSubscriber() {
 				"Subject", subject)
 			os.Exit(1)
 		}
-		
+
 		subscriptions = append(subscriptions, s)
-		
+
 		er.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Listening to subject",
 			"Subject", subject, "Queue group", consumerName)
 	}
@@ -59,7 +59,7 @@ func (er *Runner) startSubscriber() {
 
 	// Handle shutdown
 	er.sdk.Logger.WithName("[SUBSCRIBER]").Info("Shutdown signal received")
-	
+
 	for _, s := range subscriptions {
 		err := s.Unsubscribe()
 		if err != nil {
@@ -76,7 +76,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 		errMsg := fmt.Sprintf("Error parsing msg.data coming from subject %s because is not a valid protobuf: %s",
 			msg.Subject, err)
 		er.processRunnerError(msg, errMsg, requestMsg.RequestId)
-		
+
 		return
 	}
 
@@ -87,7 +87,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 	if handler == nil {
 		errMsg := fmt.Sprintf("Error missing handler for node %q", requestMsg.FromNode)
 		er.processRunnerError(msg, errMsg, requestMsg.RequestId)
-		
+
 		return
 	}
 
@@ -100,7 +100,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 			errMsg := fmt.Sprintf("Error in node %q executing handler preprocessor for node %q: %s",
 				er.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
 			er.processRunnerError(msg, errMsg, requestMsg.RequestId)
-			
+
 			return
 		}
 	}
@@ -110,7 +110,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 		errMsg := fmt.Sprintf("Error in node %q executing handler for node %q: %s",
 			er.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
 		er.processRunnerError(msg, errMsg, requestMsg.RequestId)
-		
+
 		return
 	}
 
@@ -120,7 +120,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 			errMsg := fmt.Sprintf("Error in node %q executing handler postprocessor for node %q: %s",
 				er.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
 			er.processRunnerError(msg, errMsg, requestMsg.RequestId)
-			
+
 			return
 		}
 	}
@@ -199,7 +199,7 @@ func (er *Runner) getOutputSubject(channel string) string {
 	if channel != "" {
 		return fmt.Sprintf("%s.%s", outputSubject, channel)
 	}
-	
+
 	return outputSubject
 }
 
@@ -228,7 +228,7 @@ func (er *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 				"Current message size", sizeInMB(lenOutMsg),
 				"Compressed message size", sizeInMB(maxSize))
 
-				return nil, errors.ErrMessageToBig
+		return nil, errors.ErrMessageToBig
 	}
 
 	er.sdk.Logger.WithName("[SUBSCRIBER]").Info("Message prepared",

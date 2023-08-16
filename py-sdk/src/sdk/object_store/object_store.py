@@ -42,6 +42,7 @@ class ObjectStore:
         if self.object_store_name:
             try:
                 object_store = await self.js.object_store(self.object_store_name)
+                self.logger.debug(f"object store {self.object_store_name} successfully initialized")
                 return object_store
             except Exception as e:
                 self.logger.warning(f"failed initializing object store {self.object_store_name}: {e}")
@@ -57,7 +58,7 @@ class ObjectStore:
         try:
             objects = await self.object_store.list(ignore_deleted=True)
         except NotFoundError as e:
-            self.logger.debug(f"not found any files in object store {self.object_store_name}: {e}")
+            self.logger.debug(f"no files found in object store {self.object_store_name}: {e}")
             return []
         except Exception as e:
             self.logger.warning(f"failed listing files from object store {self.object_store_name}: {e}")

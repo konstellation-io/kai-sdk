@@ -22,7 +22,7 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 			initializer(sdk)
 			sdk.Logger.WithName("[RUNNER]").V(3).Info("User initializer executed")
 		}
-		
+
 		sdk.Logger.WithName("[RUNNER]").V(1).Info("TriggerRunner initialized")
 	}
 }

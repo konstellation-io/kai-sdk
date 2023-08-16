@@ -94,6 +94,6 @@ func generateObjectInfoResponse(keys []string) []*nats.ObjectInfo {
 			},
 		})
 	}
-	
+
 	return objects
 }

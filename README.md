@@ -1,6 +1,6 @@
 # KAI SDK
 
-This repo contains all language SDKs for [KAI](https://github.com/konstellation-io/kai).
+This repository contains all available languages SDKs and Runners for the [KAI](https://github.com/konstellation-io/kai).
 
 ## Runners coverage
 

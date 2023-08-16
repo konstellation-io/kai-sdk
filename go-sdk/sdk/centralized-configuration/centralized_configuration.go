@@ -53,7 +53,7 @@ func initKVStores(logger logr.Logger, jetstream nats.JetStreamContext) (
 		logger.Error(err, "Error initializing product key-value store")
 		return nil, nil, nil, wrapErr(err)
 	}
-	
+
 	logger.V(1).Info("Product key-value store initialized")
 
 	name = viper.GetString("centralized_configuration.workflow.bucket")
@@ -65,7 +65,7 @@ func initKVStores(logger logr.Logger, jetstream nats.JetStreamContext) (
 		logger.Error(err, "Error initializing workflow key-value store")
 		return nil, nil, nil, wrapErr(err)
 	}
-	
+
 	logger.V(1).Info("Workflow key-value store initialized")
 
 	name = viper.GetString("centralized_configuration.process.bucket")
@@ -77,7 +77,7 @@ func initKVStores(logger logr.Logger, jetstream nats.JetStreamContext) (
 		logger.Error(err, "Error initializing process key-value store")
 		return nil, nil, nil, wrapErr(err)
 	}
-	
+
 	logger.V(1).Info("Process key-value store initialized")
 
 	return productKv, workflowKv, processKv, nil
@@ -93,7 +93,7 @@ func (cc CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.S
 		} else if err != nil {
 			return "", wrapErr(err)
 		}
-		
+
 		return config, nil
 	}
 

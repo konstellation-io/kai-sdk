@@ -21,7 +21,7 @@ func (s *SdkRunnerTestSuite) SetupSuite() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("../../testdata")
-	
+
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("fatal error initializing configuration: %w", err))

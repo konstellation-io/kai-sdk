@@ -176,7 +176,7 @@ func (tr *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel strin
 		tr.sdk.Logger.WithName("[SUBSCRIBER]").
 			Error(err, "Error generating output result because handler result is not a serializable Protobuf")
 
-			return
+		return
 	}
 
 	outputMsg, err = tr.prepareOutputMessage(outputMsg)
@@ -228,7 +228,7 @@ func (tr *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 				"Current message size", sizeInMB(lenOutMsg),
 				"Compressed message size", sizeInMB(maxSize))
 
-				return nil, errors.ErrMessageToBig
+		return nil, errors.ErrMessageToBig
 	}
 
 	tr.sdk.Logger.WithName("[SUBSCRIBER]").Info("Message prepared",
