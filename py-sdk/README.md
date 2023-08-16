@@ -5,7 +5,7 @@ KAI SDK's implementation in Python.
 
 ## How it works
 
-The SDK can be used in a KAI workflow for working with Python code
+The SDK can be used in a KAI workflows for working with Python code
 
 Once the Python SDK is deployed, it connects to NATS and it subscribes permanently to an input subject. Each node knows to which subject it has to subscribe and also to which subject it has to send messages, since the K8s manager tells it with environment variables. It is important to note that the nodes use a queue subscription, which allows load balancing of messages when there are multiple replicas
 
