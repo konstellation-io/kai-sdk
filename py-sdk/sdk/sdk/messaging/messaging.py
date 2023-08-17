@@ -1,18 +1,20 @@
+from __future__ import annotations
+
 import uuid
 from dataclasses import dataclass, field
 from typing import Optional
 
+import loguru
 from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
 from loguru import logger
-from loguru._logger import Logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
 
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
 from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
-from sdk.messaging.messaging_utils import MessagingUtils, compress, size_in_mb
+from sdk.messaging.messaging_utils import MessagingUtils, MessagingUtilsABC, compress, size_in_mb
 
 
 @dataclass
@@ -20,8 +22,8 @@ class Messaging:
     js: JetStreamContext
     nc: NatsClient
     req_msg: KaiNatsMessage
-    messaging_utils: MessagingUtils = field(init=False)
-    logger: Logger = logger.bind(context="[MESSAGING]")
+    messaging_utils: MessagingUtilsABC = field(init=False)
+    logger: loguru.Logger = logger.bind(context="[MESSAGING]")
 
     def __post_init__(self):
         self.messaging_utils = MessagingUtils(js=self.js, nc=self.nc)
@@ -131,6 +133,7 @@ class Messaging:
 
     async def _prepare_output_message(self, msg: bytes) -> bytes | Exception:
         max_size = await self.messaging_utils.get_max_message_size()
+        assert isinstance(max_size, int)
         if len(msg) <= max_size:
             return msg
 

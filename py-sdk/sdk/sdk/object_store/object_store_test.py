@@ -43,6 +43,19 @@ def m_objects() -> List[ObjectInfo]:
 
 
 @pytest.fixture(scope="function")
+def m_objects_results(m_objects) -> List[NatsObjectStore.ObjectResult]:
+    objects_results = []
+    for obj in m_objects:
+        object_result = NatsObjectStore.ObjectResult(
+            info=obj,
+            data=b"any",
+        )
+        objects_results.append(object_result)
+
+    return objects_results
+
+
+@pytest.fixture(scope="function")
 def m_object_store() -> ObjectStore:
     js = AsyncMock(spec=JetStreamContext)
 
@@ -61,12 +74,12 @@ def test_ok():
 
     assert object_store.js is not None
     assert object_store.object_store_name == name
-    assert object_store.object_store is None
+    assert getattr(object_store, "object_store", None) is None
 
 
 async def test_initialize_ok(m_object_store):
     m_object_store.object_store = None
-    fake_object_store = AsyncMock(spec=ObjectStore)
+    fake_object_store = AsyncMock(spec=NatsObjectStore)
     m_object_store.js.object_store.return_value = fake_object_store
 
     await m_object_store.initialize()
@@ -96,7 +109,7 @@ async def test_list_ok(m_object_store, m_objects):
 
     result = await m_object_store.list()
 
-    assert m_object_store.object_store.list.awaited
+    assert m_object_store.object_store.list.called
     assert result == [obj.name for obj in m_objects]
 
 
@@ -106,7 +119,7 @@ async def test_list_regex_ok(m_object_store, m_objects):
 
     result = await m_object_store.list(r"(object:140|object:141)")
 
-    assert m_object_store.object_store.list.awaited
+    assert m_object_store.object_store.list.called
     assert result == expected
 
 
@@ -130,7 +143,7 @@ async def test_list_not_found(m_object_store):
 
     result = await m_object_store.list()
 
-    assert m_object_store.object_store.list.awaited
+    assert m_object_store.object_store.list.called
     assert result == []
 
 
@@ -141,14 +154,15 @@ async def test_list_failed_ko(m_object_store):
 
 
 async def test_get_ok(m_object_store):
-    expected = AsyncMock(spec=ObjectInfo)
+    expected = AsyncMock(spec=NatsObjectStore.ObjectResult)
+    expected.data = b"any"
     m_object_store.object_store.get.return_value = expected
 
     result = await m_object_store.get("test-key")
 
-    assert m_object_store.object_store.get.awaited
+    assert m_object_store.object_store.get.called
     assert m_object_store.object_store.get.call_args == call("test-key")
-    assert result == (expected, True)
+    assert result == (expected.data, True)
 
 
 async def test_get_undefined_ko(m_object_store):
@@ -164,7 +178,7 @@ async def test_get_not_found(m_object_store):
 
     result = await m_object_store.get("test-key")
 
-    assert m_object_store.object_store.get.awaited
+    assert m_object_store.object_store.get.called
     assert result == (None, False)
 
 
@@ -178,7 +192,7 @@ async def test_get_failed_ko(m_object_store):
 async def test_save_ok(m_object_store):
     result = await m_object_store.save("test-key", b"any")
 
-    assert m_object_store.object_store.put.awaited
+    assert m_object_store.object_store.put.called
     assert m_object_store.object_store.put.call_args == call("test-key", b"any")
     assert result is None
 
@@ -203,10 +217,10 @@ async def test_save_failed_ko(m_object_store):
         await m_object_store.save("test-key", b"prueba")
 
 
-async def test_delete_ok(m_object_store, m_objects):
+async def test_delete_ok(m_object_store, m_objects, m_objects_results):
     m_object_store.object_store.list.return_value = m_objects
-    deleted_object = m_objects[0]
-    deleted_object.deleted = True
+    deleted_object = m_objects_results[0]
+    deleted_object.info.deleted = True
     m_object_store.object_store.delete.return_value = deleted_object
 
     result = await m_object_store.delete(KEY_140)
@@ -237,11 +251,11 @@ async def test_delete_failed_ko(m_object_store):
         await m_object_store.delete("test-key")
 
 
-async def test_purge_ok(m_object_store, m_objects):
+async def test_purge_ok(m_object_store, m_objects, m_objects_results):
     m_object_store.object_store.list.return_value = [obj for obj in m_objects]
-    for obj in m_objects:
-        obj.deleted = True
-    m_object_store.object_store.delete.side_effect = m_objects
+    for obj in m_objects_results:
+        obj.info.deleted = True
+    m_object_store.object_store.delete.side_effect = m_objects_results
 
     result = await m_object_store.purge()
 
@@ -254,12 +268,12 @@ async def test_purge_ok(m_object_store, m_objects):
     ]
 
 
-async def test_purge_one_already_deleted_ok(m_object_store, m_objects):
+async def test_purge_one_already_deleted_ok(m_object_store, m_objects, m_objects_results):
     m_object_store.object_store.list.return_value = [obj for obj in m_objects]
-    for obj in m_objects[1:]:
-        obj.deleted = True
+    for obj in m_objects_results[1:]:
+        obj.info.deleted = True
 
-    m_object_store.object_store.delete.side_effect = m_objects
+    m_object_store.object_store.delete.side_effect = m_objects_results
 
     result = await m_object_store.purge()
 
@@ -272,11 +286,11 @@ async def test_purge_one_already_deleted_ok(m_object_store, m_objects):
     ]
 
 
-async def test_purge_regex_ok(m_object_store, m_objects):
+async def test_purge_regex_ok(m_object_store, m_objects, m_objects_results):
     m_object_store.object_store.list.return_value = [m_objects[0], m_objects[2]]
-    for obj in m_objects:
-        obj.deleted = True
-    m_object_store.object_store.delete.side_effect = [m_objects[0], m_objects[2]]
+    for obj in m_objects_results:
+        obj.info.deleted = True
+    m_object_store.object_store.delete.side_effect = [m_objects_results[0], m_objects_results[2]]
 
     result = await m_object_store.purge(r"(object:140|object:142)")
 

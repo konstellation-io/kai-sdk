@@ -22,7 +22,6 @@ async def test_ok():
 
     utils = MessagingUtils(js=js, nc=nc)
 
-    assert utils is not None
     assert utils.js is not None
     assert utils.nc is not None
 
@@ -36,14 +35,13 @@ async def test_ok():
     ],
 )
 @patch.object(JetStreamContext, "stream_info")
-@patch.object(NatsClient, "max_payload")
 async def test_get_max_message_size_ok(
-    nats_max_payload_mock, jetstream_context_mock, nats_max_payload, jetstream_max_msg_size, max_message_size
+    jetstream_context_mock, nats_max_payload, jetstream_max_msg_size, max_message_size
 ):
     v.set("nats.stream", "test_stream")
     nc = NatsClient()
+    nc._max_payload = nats_max_payload
     js = nc.jetstream()
-    nats_max_payload_mock.return_value = nats_max_payload
     jetstream_context_mock.return_value = StreamInfo(
         config=StreamConfig(max_msg_size=jetstream_max_msg_size), state=None
     )

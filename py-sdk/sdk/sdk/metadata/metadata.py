@@ -1,13 +1,15 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 
+import loguru
 from loguru import logger
-from loguru._logger import Logger
 from vyper import v
 
 
 @dataclass
 class Metadata:
-    logger: Logger = logger.bind(context="[METADATA]")
+    logger: loguru.Logger = logger.bind(context="[METADATA]")
 
     @staticmethod
     def get_product() -> str:

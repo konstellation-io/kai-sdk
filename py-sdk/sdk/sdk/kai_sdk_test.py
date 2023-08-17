@@ -2,6 +2,7 @@ import pytest
 from loguru import logger
 from mock import Mock, patch
 from nats.aio.client import Client as NatsClient
+from nats.js.object_store import ObjectStore as NatsObjectStore
 from vyper import v
 
 from sdk.centralized_config.centralized_config import CentralizedConfig
@@ -35,8 +36,8 @@ async def test_initialize_ok(centralized_config_initialize_mock):
     assert sdk.logger is not None
     assert sdk.metadata is not None
     assert sdk.messaging is not None
-    assert sdk.object_store.object_store_name is None
-    assert sdk.object_store.object_store is None
+    assert getattr(sdk.object_store, "object_store_name", None) is None
+    assert getattr(sdk.object_store, "object_store", None) is None
     assert sdk.centralized_config is not None
     assert sdk.centralized_config.product_kv == "test_product"
     assert sdk.centralized_config.workflow_kv == "test_workflow"
@@ -64,7 +65,7 @@ async def test_initialize_ko(centralized_config_initialize_mock, caplog):
             logger.enable("kai_sdk")
 
 
-@patch.object(ObjectStore, "_init_object_store", return_value=Mock(spec=ObjectStore))
+@patch.object(ObjectStore, "_init_object_store", return_value=Mock(spec=NatsObjectStore))
 @patch.object(CentralizedConfig, "_init_kv_stores", return_value=("test_product", "test_workflow", "test_process"))
 async def test_nats_initialize_ok(centralized_config_initialize_mock, object_store_initialize_mock):
     nc = NatsClient()

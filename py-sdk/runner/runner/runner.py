@@ -1,8 +1,10 @@
-import sys
-from dataclasses import dataclass
+from __future__ import annotations
 
+import sys
+from dataclasses import dataclass, field
+
+import loguru
 from loguru import logger
-from loguru._logger import Logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
@@ -16,8 +18,8 @@ from runner.trigger.trigger_runner import TriggerRunner
 @dataclass
 class Runner:
     nc: NatsClient = NatsClient()
-    js: JetStreamContext = None
-    logger: Logger = None
+    js: JetStreamContext = field(init=False)
+    logger: loguru.Logger = field(init=False)
 
     def __post_init__(self):
         self.initialize_config()

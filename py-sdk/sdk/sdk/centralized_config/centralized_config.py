@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Optional
 
+import loguru
 from loguru import logger
-from loguru._logger import Logger
 from nats.js.client import JetStreamContext
 from nats.js.errors import KeyNotFoundError
 from nats.js.kv import KeyValue
@@ -23,7 +25,7 @@ class CentralizedConfig:
     product_kv: KeyValue = field(init=False)
     workflow_kv: KeyValue = field(init=False)
     process_kv: KeyValue = field(init=False)
-    logger: Logger = logger.bind(context="[CENTRALIZED CONFIGURATION]")
+    logger: loguru.Logger = logger.bind(context="[CENTRALIZED CONFIGURATION]")
 
     async def initialize(self) -> Optional[Exception]:
         self.product_kv, self.workflow_kv, self.process_kv = await self._init_kv_stores()

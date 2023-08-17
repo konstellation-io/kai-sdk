@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import gzip
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
+import loguru
 from loguru import logger
-from loguru._logger import Logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
@@ -16,7 +18,7 @@ GZIP_BEST_COMPRESSION = 9
 
 
 @dataclass
-class MessagingUtils(ABC):
+class MessagingUtilsABC(ABC):
     @abstractmethod
     async def get_max_message_size(self) -> int | Optional[Exception]:
         pass
@@ -26,9 +28,9 @@ class MessagingUtils(ABC):
 class MessagingUtils:
     js: JetStreamContext
     nc: NatsClient
-    logger: Logger = logger.bind(context="[MESSAGING UTILS]")
+    logger: loguru.Logger = logger.bind(context="[MESSAGING UTILS]")
 
-    async def get_max_message_size(self) -> int | Optional[Exception]:
+    async def get_max_message_size(self) -> int | Exception:
         try:
             stream_info = await self.js.stream_info(v.get("nats.stream"))
         except Exception as e:
@@ -36,9 +38,9 @@ class MessagingUtils:
             raise FailedGettingMaxMessageSizeError(error=e)
 
         stream_max_size = stream_info.config.max_msg_size
-        server_max_size = self.nc.max_payload()
+        server_max_size = self.nc.max_payload
 
-        if stream_max_size == -1:
+        if stream_max_size is None or stream_max_size == -1:
             return server_max_size
 
         if stream_max_size < server_max_size:

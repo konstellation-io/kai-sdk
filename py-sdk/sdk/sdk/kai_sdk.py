@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Optional
 
+import loguru
 from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
 from loguru import logger
-from loguru._logger import Logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 
@@ -20,7 +22,7 @@ from sdk.path_utils.path_utils import PathUtils
 
 
 @dataclass
-class Messaging(ABC):
+class MessagingABC(ABC):
     @abstractmethod
     async def send_output(self, response: Message, chan: Optional[str]):
         pass
@@ -63,7 +65,7 @@ class Messaging(ABC):
 
 
 @dataclass
-class Metadata(ABC):
+class MetadataABC(ABC):
     @staticmethod
     @abstractmethod
     def get_product(self) -> str:
@@ -106,7 +108,7 @@ class Metadata(ABC):
 
 
 @dataclass
-class ObjectStore(ABC):
+class ObjectStoreABC(ABC):
     @abstractmethod
     async def initialize(self) -> Optional[Exception]:
         pass
@@ -133,7 +135,7 @@ class ObjectStore(ABC):
 
 
 @dataclass
-class CentralizedConfig(ABC):
+class CentralizedConfigABC(ABC):
     @abstractmethod
     async def initialize(self) -> Optional[Exception]:
         pass
@@ -152,7 +154,7 @@ class CentralizedConfig(ABC):
 
 
 @dataclass
-class PathUtils(ABC):
+class PathUtilsABC(ABC):
     @staticmethod
     @abstractmethod
     def get_base_path(self) -> str:
@@ -165,12 +167,12 @@ class PathUtils(ABC):
 
 
 @dataclass
-class Measurements(ABC):
+class MeasurementsABC(ABC):
     pass
 
 
 @dataclass
-class Storage(ABC):
+class StorageABC(ABC):
     pass
 
 
@@ -180,22 +182,16 @@ class KaiSDK:
     js: JetStreamContext
     req_msg: KaiNatsMessage
 
-    logger: Optional[Logger] = None
-    metadata: Metadata = field(init=False)
-    messaging: Messaging = field(init=False)
-    object_store: Optional[ObjectStore] = field(init=False)
-    centralized_config: CentralizedConfig = field(init=False)
-    path_utils: PathUtils = field(init=False)
-    measurements: Measurements = field(init=False)
-    storage: Storage = field(init=False)
+    logger: Optional[loguru.Logger] = None
+    metadata: MetadataABC = field(init=False)
+    messaging: MessagingABC = field(init=False)
+    object_store: Optional[ObjectStoreABC] = field(init=False)
+    centralized_config: CentralizedConfigABC = field(init=False)
+    path_utils: PathUtilsABC = field(init=False)
+    measurements: MeasurementsABC = field(init=False)
+    storage: StorageABC = field(init=False)
 
     def __post_init__(self):
-        from sdk.centralized_config.centralized_config import CentralizedConfig
-        from sdk.messaging.messaging import Messaging
-        from sdk.metadata.metadata import Metadata
-        from sdk.object_store.object_store import ObjectStore
-        from sdk.path_utils.path_utils import PathUtils
-
         if not self.logger:
             self._initialize_logger()
         else:

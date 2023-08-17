@@ -39,7 +39,6 @@ def test_ok():
 
     messaging = Messaging(nc=nc, js=js, req_msg=req_msg)
 
-    assert messaging is not None
     assert messaging.js is not None
     assert messaging.nc is not None
     assert messaging.req_msg is not None

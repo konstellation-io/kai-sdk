@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import re
 from dataclasses import dataclass, field
 from typing import Optional
 
+import loguru
 from loguru import logger
-from loguru._logger import Logger
 from nats.js.client import JetStreamContext
 from nats.js.errors import NotFoundError, ObjectNotFoundError
 from nats.js.object_store import ObjectStore as NatsObjectStore
@@ -28,7 +30,7 @@ class ObjectStore:
     js: JetStreamContext
     object_store_name: Optional[str] = None
     object_store: NatsObjectStore = field(init=False)
-    logger: Logger = logger.bind(context="[OBJECT STORE]")
+    logger: loguru.Logger = logger.bind(context="[OBJECT STORE]")
 
     def __post_init__(self):
         self.object_store_name = v.get("nats.object_store")
@@ -37,7 +39,10 @@ class ObjectStore:
 
     async def initialize(self) -> Optional[Exception]:
         if self.object_store_name:
-            self.object_store = await self._init_object_store()
+            object_store = await self._init_object_store()
+            if isinstance(object_store, NatsObjectStore):
+                self.object_store = object_store
+        return None
 
     async def _init_object_store(self) -> Optional[NatsObjectStore] | Exception:
         if self.object_store_name:
@@ -50,6 +55,7 @@ class ObjectStore:
                 raise FailedObjectStoreInitializationError(error=e)
 
         self.logger.info("object store not defined [skipped]")
+        return None
 
     async def list(self, regexp: Optional[str] = None) -> list[str] | Exception:
         if not self.object_store:
@@ -83,7 +89,7 @@ class ObjectStore:
 
         return response
 
-    async def get(self, key: str) -> tuple[bytes, bool] | Exception:
+    async def get(self, key: str) -> tuple[Optional[bytes], bool] | Exception:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
             raise UndefinedObjectStoreError
@@ -99,7 +105,7 @@ class ObjectStore:
         else:
             self.logger.info(f"file {key} successfully retrieved from object store {self.object_store_name}")
 
-        return response, True
+        return response.data, True
 
     async def save(self, key: str, payload: bytes) -> Optional[Exception]:
         if not self.object_store:
@@ -113,15 +119,16 @@ class ObjectStore:
             raise FailedSavingFileError(key=key, error=e)
         else:
             self.logger.info(f"file {key} successfully saved in object store {self.object_store_name}")
+        return None
 
-    async def delete(self, key: str) -> bool | Exception:
+    async def delete(self, key: str) -> bool | Optional[Exception]:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
             raise UndefinedObjectStoreError
 
         try:
             info_ = await self.object_store.delete(key)
-            return info_.deleted
+            return info_.info.deleted
         except ObjectNotFoundError as e:
             self.logger.debug(f"file {key} not found in object store {self.object_store_name}: {e}")
             return False
@@ -143,6 +150,7 @@ class ObjectStore:
                 raise FailedCompilingRegexpError(error=e)
 
         object_names = await self.list()
+        assert isinstance(object_names, list)
         deleted = 0
         for name in object_names:
             if not pattern or pattern.match(name):
@@ -150,7 +158,7 @@ class ObjectStore:
 
                 try:
                     info_ = await self.object_store.delete(name)
-                    if info_.deleted:
+                    if info_.info.deleted:
                         deleted += 1
                         self.logger.info(f"file {name} successfully deleted from object store {self.object_store_name}")
                 except Exception as e:
@@ -158,3 +166,4 @@ class ObjectStore:
                     raise FailedPurgingFilesError(error=e)
 
         self.logger.info(f"{deleted} files successfully purged from object store {self.object_store_name}")
+        return None
