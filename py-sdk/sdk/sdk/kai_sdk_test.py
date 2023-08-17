@@ -42,8 +42,8 @@ async def test_initialize_ok(centralized_config_initialize_mock):
     assert sdk.centralized_config.workflow_kv == "test_workflow"
     assert sdk.centralized_config.process_kv == "test_process"
     assert sdk.path_utils is not None
-    assert sdk.measurements is None
-    assert sdk.storage is None
+    assert getattr(sdk, "measurements", None) is None
+    assert getattr(sdk, "storage", None) is None
 
 
 @patch.object(CentralizedConfig, "_init_kv_stores", side_effect=Exception)

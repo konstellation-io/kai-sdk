@@ -1,6 +1,6 @@
 import sys
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from google.protobuf.any_pb2 import Any
@@ -180,14 +180,14 @@ class KaiSDK:
     js: JetStreamContext
     req_msg: KaiNatsMessage
 
-    logger: Logger = None
-    metadata: Metadata = None
-    messaging: Messaging = None
-    object_store: Optional[ObjectStore] = None
-    centralized_config: CentralizedConfig = None
-    path_utils: PathUtils = None
-    measurements: Measurements = None
-    storage: Storage = None
+    logger: Optional[Logger] = None
+    metadata: Metadata = field(init=False)
+    messaging: Messaging = field(init=False)
+    object_store: Optional[ObjectStore] = field(init=False)
+    centralized_config: CentralizedConfig = field(init=False)
+    path_utils: PathUtils = field(init=False)
+    measurements: Measurements = field(init=False)
+    storage: Storage = field(init=False)
 
     def __post_init__(self):
         from sdk.centralized_config.centralized_config import CentralizedConfig

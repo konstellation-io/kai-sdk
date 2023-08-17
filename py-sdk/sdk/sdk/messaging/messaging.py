@@ -1,5 +1,5 @@
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from google.protobuf.any_pb2 import Any
@@ -20,7 +20,7 @@ class Messaging:
     js: JetStreamContext
     nc: NatsClient
     req_msg: KaiNatsMessage
-    messaging_utils: MessagingUtils = None
+    messaging_utils: MessagingUtils = field(init=False)
     logger: Logger = logger.bind(context="[MESSAGING]")
 
     def __post_init__(self):

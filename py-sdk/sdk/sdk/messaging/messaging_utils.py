@@ -1,6 +1,7 @@
 import gzip
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Optional
 
 from loguru import logger
 from loguru._logger import Logger
@@ -17,7 +18,7 @@ GZIP_BEST_COMPRESSION = 9
 @dataclass
 class MessagingUtils(ABC):
     @abstractmethod
-    async def get_max_message_size(self) -> int | str:
+    async def get_max_message_size(self) -> int | Optional[Exception]:
         pass
 
 
@@ -27,14 +28,14 @@ class MessagingUtils:
     nc: NatsClient
     logger: Logger = logger.bind(context="[MESSAGING UTILS]")
 
-    async def get_max_message_size(self) -> int | str:
+    async def get_max_message_size(self) -> int | Optional[Exception]:
         try:
             stream_info = await self.js.stream_info(v.get("nats.stream"))
         except Exception as e:
             self.logger.warning(f"failed getting stream info: {e}")
             raise FailedGettingMaxMessageSizeError(error=e)
 
-        stream_max_size = int(stream_info.config.max_msg_size)
+        stream_max_size = stream_info.config.max_msg_size
         server_max_size = self.nc.max_payload()
 
         if stream_max_size == -1:

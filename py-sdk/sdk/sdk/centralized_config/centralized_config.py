@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from loguru import logger
@@ -20,9 +20,9 @@ from sdk.centralized_config.exceptions import (
 @dataclass
 class CentralizedConfig:
     js: JetStreamContext
-    product_kv: KeyValue = None
-    workflow_kv: KeyValue = None
-    process_kv: KeyValue = None
+    product_kv: KeyValue = field(init=False)
+    workflow_kv: KeyValue = field(init=False)
+    process_kv: KeyValue = field(init=False)
     logger: Logger = logger.bind(context="[CENTRALIZED CONFIGURATION]")
 
     async def initialize(self) -> Optional[Exception]:

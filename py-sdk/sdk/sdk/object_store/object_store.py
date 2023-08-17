@@ -1,5 +1,5 @@
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from loguru import logger
@@ -27,7 +27,7 @@ UNDEFINED_OBJECT_STORE = "object store not defined"
 class ObjectStore:
     js: JetStreamContext
     object_store_name: Optional[str] = None
-    object_store: Optional[NatsObjectStore] = None
+    object_store: NatsObjectStore = field(init=False)
     logger: Logger = logger.bind(context="[OBJECT STORE]")
 
     def __post_init__(self):
@@ -57,7 +57,7 @@ class ObjectStore:
             raise UndefinedObjectStoreError
 
         try:
-            objects = await self.object_store.list(ignore_deleted=True)
+            objects = await self.object_store.list(ignore_deletes=True)
         except NotFoundError as e:
             self.logger.debug(f"no files found in object store {self.object_store_name}: {e}")
             return []
