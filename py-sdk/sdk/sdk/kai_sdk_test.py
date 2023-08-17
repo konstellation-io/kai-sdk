@@ -36,15 +36,17 @@ async def test_initialize_ok(centralized_config_initialize_mock):
     assert sdk.metadata is not None
     assert sdk.messaging is not None
     assert sdk.messaging.req_msg is None
-    assert getattr(sdk.object_store, "object_store_name", None) is None
-    assert getattr(sdk.object_store, "object_store", None) is None
+    assert sdk.object_store is not None
+    assert sdk.object_store.object_store_name is None
+    assert sdk.object_store.object_store is None
     assert sdk.centralized_config is not None
     assert sdk.centralized_config.product_kv == "test_product"
     assert sdk.centralized_config.workflow_kv == "test_workflow"
     assert sdk.centralized_config.process_kv == "test_process"
     assert sdk.path_utils is not None
-    assert getattr(sdk, "measurements", None) is None
-    assert getattr(sdk, "storage", None) is None
+    assert sdk.measurements is None
+    assert sdk.storage is None
+
 
 @patch.object(CentralizedConfig, "_init_kv_stores", side_effect=Exception)
 async def test_initialize_ko(centralized_config_initialize_mock):

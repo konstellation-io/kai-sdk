@@ -27,6 +27,11 @@ class CentralizedConfig:
     process_kv: KeyValue = field(init=False)
     logger: loguru.Logger = logger.bind(context="[CENTRALIZED CONFIGURATION]")
 
+    def __post_init__(self):
+        self.product_kv = None
+        self.workflow_kv = None
+        self.process_kv = None
+
     async def initialize(self) -> Optional[Exception]:
         self.product_kv, self.workflow_kv, self.process_kv = await self._init_kv_stores()
 

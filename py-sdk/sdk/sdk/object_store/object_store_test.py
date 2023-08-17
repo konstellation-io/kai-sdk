@@ -74,7 +74,7 @@ def test_ok():
 
     assert object_store.js is not None
     assert object_store.object_store_name == name
-    assert getattr(object_store, "object_store", None) is None
+    assert object_store.object_store is None
 
 
 async def test_initialize_ok(m_object_store):

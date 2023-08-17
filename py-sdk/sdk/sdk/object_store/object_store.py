@@ -33,6 +33,7 @@ class ObjectStore:
     logger: loguru.Logger = logger.bind(context="[OBJECT STORE]")
 
     def __post_init__(self):
+        self.object_store = None
         self.object_store_name = v.get("nats.object_store")
         if self.object_store_name:
             self.logger = logger.bind(context=f"[OBJECT STORE: {self.object_store_name}]")

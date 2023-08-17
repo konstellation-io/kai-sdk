@@ -202,6 +202,8 @@ class KaiSDK:
         self.messaging = Messaging(nc=self.nc, js=self.js)
         self.object_store = ObjectStore(js=self.js)
         self.path_utils = PathUtils()
+        self.measurements = None
+        self.storage = None
 
     async def initialize(self):
         try:

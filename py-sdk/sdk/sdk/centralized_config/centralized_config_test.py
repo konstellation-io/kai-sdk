@@ -40,9 +40,9 @@ def test_ok():
     centralized_config = CentralizedConfig(js=js)
 
     assert centralized_config.js is not None
-    assert getattr(centralized_config, "product_kv", None) is None
-    assert getattr(centralized_config, "workflow_kv", None) is None
-    assert getattr(centralized_config, "process_kv", None) is None
+    assert centralized_config.product_kv is None
+    assert centralized_config.workflow_kv is None
+    assert centralized_config.process_kv is None
 
 
 async def test_initialize_ok(m_centralized_config):
