@@ -25,6 +25,10 @@ codespell = "2.2.5"
 ipdb = "0.13.13"
 pytest-mock = "3.11.1"
 mock = "5.1.0"
+types-mock = "5.1.0.1"
+mypy = "1.5.1"
+types-protobuf = "4.24.0.1"
+loguru-mypy = "0.0.4"
 
 [build-system]
 requires = ["poetry-core"]
@@ -112,3 +116,14 @@ skip = [
     "constants.py",
     "__init__.py",
 ]
+
+[tool.mypy]
+python_version = 3.11
+exclude = [
+    ".venv",
+    "kai_nats_msg_pb2.py",
+    "config.py",
+    "constants.py",
+    "__init__.py",
+]
+ignore_missing_imports = true

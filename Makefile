@@ -16,7 +16,7 @@ generate_mocks: ## Generate mocks
 	cd go-sdk && go generate ./... && cd -
 
 .PHONY: gotidy
-gotidy: ## Run golint, goimports and gofmt
+gotidy: ## Run golangci-lint, goimports and gofmt
 	cd go-sdk && golangci-lint run ./... && goimports -w  . && gofmt -s -w . && cd -
 
 .PHONY: gotest
@@ -33,3 +33,7 @@ pytidy: ## Run black, isort and codespell
 	&& poetry --directory py-sdk run isort py-sdk \
 	&& poetry --directory py-sdk run codespell py-sdk -I py-sdk/dictionary.txt \
 	--skip="*.git,*.json,kai_nats_msg_pb2.py,.venv,*.lock,__init__.py" \
+
+.PHONY: mypy
+mypy: ## Run mypy
+	poetry --directory py-sdk run mypy py-sdk --config-file py-sdk/pyproject.toml
