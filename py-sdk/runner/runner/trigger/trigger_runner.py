@@ -15,7 +15,7 @@ from runner.trigger.subscriber import start_subscriber
 from runner.trigger.utils import compose_finalizer, compose_initializer, compose_runner, get_response_handler
 from sdk.kai_sdk import KaiSDK
 
-ResponseHandler = Callable[[KaiSDK, Any], Optional[Exception]]
+ResponseHandler = Callable[[KaiSDK, Any], Optional[Exception]] # TODO revisit optional exception
 
 
 @dataclass

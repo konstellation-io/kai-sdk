@@ -22,6 +22,7 @@ class Runner:
     logger: loguru.Logger = field(init=False)
 
     def __post_init__(self):
+        self.js = None
         self.initialize_config()
         self.initialize_logger()
 

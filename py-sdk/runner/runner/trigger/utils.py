@@ -1,10 +1,13 @@
+from __future__ import annotations
 import signal
 from typing import Optional
 
 from google.protobuf.any_pb2 import Any
 
 from runner.common.common import Finalizer, Initializer, initialize_process_configuration
-from runner.trigger.trigger_runner import ResponseHandler, RunnerFunc, TriggerRunner
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from runner.trigger.trigger_runner import ResponseHandler, RunnerFunc, TriggerRunner
 from sdk.kai_sdk import KaiSDK
 
 
@@ -53,7 +56,7 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
 
 
 def get_response_handler(handlers) -> ResponseHandler:  # TODO define type
-    def response_handler_func(sdk: KaiSDK, response: Any):
+    def response_handler_func(sdk: KaiSDK, response: Any) -> Optional[Exception]: # TODO check this
         logger = sdk.logger.bind(context="[RESPONSE HANDLER]")
         request_id = sdk.get_request_id()
         logger.info(f"message received with requestID {request_id}")
