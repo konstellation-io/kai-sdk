@@ -1,4 +1,4 @@
-class MissingRunnerFuncError(Exception):
+class UndefinedRunnerFunctionError(Exception):
     def __init__(self):
-        message = "Runner function not found"
+        message = "Undefined runner function"
         super().__init__(message)

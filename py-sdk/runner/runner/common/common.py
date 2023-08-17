@@ -14,7 +14,7 @@ Handler = Callable[[KaiSDK, Any], Optional[Exception]]
 async def initialize_process_configuration(sdk: KaiSDK):
     values = v._get_key_value_config("centralized_configuration.process.config")
 
-    logger = sdk.logger.bind("[CONFIG INITIALIZER]")
+    logger = sdk.logger.bind(context="[CONFIG INITIALIZER]")
     logger.info("initializing process configuration")
 
     for key, value in values.items():
