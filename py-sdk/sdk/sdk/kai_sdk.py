@@ -162,7 +162,7 @@ class PathUtilsABC(ABC):
 
     @staticmethod
     @abstractmethod
-    def compose_path(self, *relative_path: tuple[str]) -> str:
+    def compose_path(self, *relative_path: str) -> str:
         pass
 
 
@@ -180,9 +180,8 @@ class StorageABC(ABC):
 class KaiSDK:
     nc: NatsClient
     js: JetStreamContext
-    req_msg: KaiNatsMessage
-
     logger: Optional[loguru.Logger] = None
+    req_msg: KaiNatsMessage = field(init=False)
     metadata: MetadataABC = field(init=False)
     messaging: MessagingABC = field(init=False)
     object_store: Optional[ObjectStoreABC] = field(init=False)
@@ -197,9 +196,10 @@ class KaiSDK:
         else:
             self.logger = self.logger.bind(context="[KAI SDK]")
 
+        self.req_msg = None
         self.centralized_config = CentralizedConfig(js=self.js)
         self.metadata = Metadata()
-        self.messaging = Messaging(nc=self.nc, js=self.js, req_msg=self.req_msg)
+        self.messaging = Messaging(nc=self.nc, js=self.js)
         self.object_store = ObjectStore(js=self.js)
         self.path_utils = PathUtils()
 
@@ -231,3 +231,8 @@ class KaiSDK:
 
         self.logger = logger.bind(context="[KAI SDK]")
         self.logger.debug("logger initialized")
+
+    def set_request_message(self, req_msg: KaiNatsMessage):
+        self.req_msg = req_msg
+        assert isinstance(self.messaging, Messaging)
+        self.messaging.req_msg = req_msg

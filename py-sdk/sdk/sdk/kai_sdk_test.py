@@ -21,21 +21,21 @@ NATS_OBJECT_STORE = "nats.object_store"
 async def test_initialize_ok(centralized_config_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
-    req_msg = KaiNatsMessage()
     v.set(NATS_OBJECT_STORE, None)
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
 
-    sdk = KaiSDK(nc=nc, js=js, req_msg=req_msg)
+    sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()
 
     assert sdk.nc is not None
     assert sdk.js is not None
-    assert sdk.req_msg is not None
+    assert sdk.req_msg is None
     assert sdk.logger is not None
     assert sdk.metadata is not None
     assert sdk.messaging is not None
+    assert sdk.messaging.req_msg is None
     assert getattr(sdk.object_store, "object_store_name", None) is None
     assert getattr(sdk.object_store, "object_store", None) is None
     assert sdk.centralized_config is not None
@@ -46,12 +46,10 @@ async def test_initialize_ok(centralized_config_initialize_mock):
     assert getattr(sdk, "measurements", None) is None
     assert getattr(sdk, "storage", None) is None
 
-
 @patch.object(CentralizedConfig, "_init_kv_stores", side_effect=Exception)
-async def test_initialize_ko(centralized_config_initialize_mock, caplog):
+async def test_initialize_ko(centralized_config_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
-    req_msg = KaiNatsMessage()
     v.set(NATS_OBJECT_STORE, None)
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
@@ -59,10 +57,8 @@ async def test_initialize_ko(centralized_config_initialize_mock, caplog):
 
     with pytest.raises(SystemExit):
         with pytest.raises(FailedInitializingConfigError):
-            logger.disable("kai_sdk")
-            sdk = KaiSDK(nc=nc, js=js, req_msg=req_msg)
+            sdk = KaiSDK(nc=nc, js=js)
             await sdk.initialize()
-            logger.enable("kai_sdk")
 
 
 @patch.object(ObjectStore, "_init_object_store", return_value=Mock(spec=NatsObjectStore))
@@ -70,13 +66,12 @@ async def test_initialize_ko(centralized_config_initialize_mock, caplog):
 async def test_nats_initialize_ok(centralized_config_initialize_mock, object_store_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
-    req_msg = KaiNatsMessage()
     v.set(NATS_OBJECT_STORE, "test_object_store")
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
 
-    sdk = KaiSDK(nc=nc, js=js, req_msg=req_msg)
+    sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()
 
     assert sdk.centralized_config is not None
@@ -91,14 +86,11 @@ async def test_nats_initialize_ok(centralized_config_initialize_mock, object_sto
 async def test_nats_initialize_ko(object_store_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
-    req_msg = KaiNatsMessage()
 
     with pytest.raises(SystemExit):
         with pytest.raises(FailedObjectStoreInitializationError):
-            logger.disable("kai_sdk")
-            sdk = KaiSDK(nc=nc, js=js, req_msg=req_msg)
+            sdk = KaiSDK(nc=nc, js=js)
             await sdk.initialize()
-            logger.enable("kai_sdk")
 
 
 @patch.object(CentralizedConfig, "_init_kv_stores", return_value=("test_product", "test_workflow", "test_process"))
@@ -111,7 +103,29 @@ async def test_get_request_id_ok(centralized_config_initialize_mock):
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
 
-    sdk = KaiSDK(nc=nc, js=js, req_msg=req_msg)
+    sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()
 
+    assert sdk.get_request_id() is None
+
+    sdk.set_request_message(req_msg)
+
     assert sdk.get_request_id() == "test_request_id"
+
+
+@patch.object(CentralizedConfig, "_init_kv_stores", return_value=("test_product", "test_workflow", "test_process"))
+async def test_set_request_message_ok(centralized_config_initialize_mock):
+    nc = NatsClient()
+    js = nc.jetstream()
+    req_msg = KaiNatsMessage(request_id="test_request_id")
+    v.set(NATS_OBJECT_STORE, None)
+    v.set(PRODUCT_BUCKET, "test_product")
+    v.set(WORKFLOW_BUCKET, "test_workflow")
+    v.set(PROCESS_BUCKET, "test_process")
+
+    sdk = KaiSDK(nc=nc, js=js)
+    await sdk.initialize()
+    sdk.set_request_message(req_msg)
+
+    assert sdk.req_msg == req_msg
+    assert sdk.messaging.req_msg == req_msg

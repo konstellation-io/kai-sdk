@@ -27,7 +27,8 @@ def m_messaging() -> Messaging:
     js = AsyncMock(spec=JetStreamContext)
     req_msg = Mock(spec=KaiNatsMessage)
 
-    messaging = Messaging(nc=nc, js=js, req_msg=req_msg)
+    messaging = Messaging(nc=nc, js=js)
+    messaging.req_msg = req_msg
 
     return messaging
 
@@ -37,7 +38,8 @@ def test_ok():
     js = nc.jetstream()
     req_msg = KaiNatsMessage()
 
-    messaging = Messaging(nc=nc, js=js, req_msg=req_msg)
+    messaging = Messaging(nc=nc, js=js)
+    messaging.req_msg = req_msg
 
     assert messaging.js is not None
     assert messaging.nc is not None

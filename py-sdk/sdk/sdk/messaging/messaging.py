@@ -21,11 +21,12 @@ from sdk.messaging.messaging_utils import MessagingUtils, MessagingUtilsABC, com
 class Messaging:
     js: JetStreamContext
     nc: NatsClient
-    req_msg: KaiNatsMessage
+    req_msg: KaiNatsMessage = field(init=False)
     messaging_utils: MessagingUtilsABC = field(init=False)
     logger: loguru.Logger = logger.bind(context="[MESSAGING]")
 
     def __post_init__(self):
+        self.req_msg = None
         self.messaging_utils = MessagingUtils(js=self.js, nc=self.nc)
 
     async def send_output(self, response: Message, chan: Optional[str] = None):
