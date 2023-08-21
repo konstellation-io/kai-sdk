@@ -41,22 +41,21 @@ class ObjectStore:
     async def initialize(self) -> Optional[Exception]:
         if self.object_store_name:
             object_store = await self._init_object_store()
-            if isinstance(object_store, NatsObjectStore):
-                self.object_store = object_store
+            assert isinstance(object_store, NatsObjectStore)
+            self.object_store = object_store
+        else:
+            self.logger.info("object store not defined [skipped]")
         return None
 
-    async def _init_object_store(self) -> Optional[NatsObjectStore] | Exception:
-        if self.object_store_name:
-            try:
-                object_store = await self.js.object_store(self.object_store_name)
-                self.logger.debug(f"object store {self.object_store_name} successfully initialized")
-                return object_store
-            except Exception as e:
-                self.logger.warning(f"failed initializing object store {self.object_store_name}: {e}")
-                raise FailedObjectStoreInitializationError(error=e)
-
-        self.logger.info("object store not defined [skipped]")
-        return None
+    async def _init_object_store(self) -> NatsObjectStore | Exception:
+        try:
+            assert isinstance(self.object_store_name, str)
+            object_store = await self.js.object_store(self.object_store_name)
+            self.logger.debug(f"object store {self.object_store_name} successfully initialized")
+            return object_store
+        except Exception as e:
+            self.logger.warning(f"failed initializing object store {self.object_store_name}: {e}")
+            raise FailedObjectStoreInitializationError(error=e)
 
     async def list(self, regexp: Optional[str] = None) -> list[str] | Exception:
         if not self.object_store:
