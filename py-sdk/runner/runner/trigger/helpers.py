@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import inspect
-import signal
-from typing import TYPE_CHECKING, Optional
+from asyncio import Queue
+from signal import SIGINT, SIGTERM, signal
+from typing import TYPE_CHECKING
 
 from google.protobuf.any_pb2 import Any
-from nats.aio.client import Client as NatsClient
-
 
 from runner.common.common import Finalizer, Initializer, initialize_process_configuration
 
@@ -14,7 +13,6 @@ if TYPE_CHECKING:
     from runner.trigger.trigger_runner import ResponseHandler, RunnerFunc, TriggerRunner
 
 from sdk.kai_sdk import KaiSDK
-import threading
 
 
 def compose_initializer(initializer: Initializer) -> Initializer:
@@ -40,7 +38,6 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
     def runner_func(runner: TriggerRunner, sdk: KaiSDK):
         logger = sdk.logger.bind(context="[RUNNER]")
         logger.info("executing TriggerRunner...")
-        shutdown_event = threading.Event()
 
         if user_runner is not None:
             logger.info("executing user runner...")
@@ -48,29 +45,24 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
             logger.info("user runner executed")
 
         def shutdown_handler(sig, frame):
-            shutdown_event.set()
             logger.info("shutting down runner...")
             logger.info("closing opened channels...")
             for request_id, channel in runner.response_channels.items():
-                channel.close()
+                channel.put(1)  # TODO object?
                 logger.info(f"channel closed for request id {request_id}")
 
-            logger.info("runnerFunc shutdown")
+            trigger_runner.runner_thread_shutdown_event.set()
 
-        user_runner_thread = threading.Thread(target=user_runner_thread)
-        user_runner_thread.start()     
+        signal(SIGINT, shutdown_handler)
+        signal(SIGTERM, shutdown_handler)
 
-        signal.signal(signal.SIGINT, shutdown_handler)
-        signal.signal(signal.SIGTERM, shutdown_handler)
-
-        shutdown_event.wait()
-
-        # TODO wait group done? waitgroup.set()?
+        trigger_runner.runner_thread_shutdown_event.wait()
+        logger.info("runnerFunc shutdown")
 
     return runner_func
 
 
-def get_response_handler(handlers: dict[str, NatsClient]) -> ResponseHandler:
+def get_response_handler(handlers: dict[str, Queue]) -> ResponseHandler:
     def response_handler_func(sdk: KaiSDK, response: Any):
         logger = sdk.logger.bind(context="[RESPONSE HANDLER]")
         request_id = sdk.get_request_id()
@@ -78,9 +70,9 @@ def get_response_handler(handlers: dict[str, NatsClient]) -> ResponseHandler:
 
         response_handler = handlers.pop(request_id, None)
         if response_handler:
-            response_handler.publish(response)
+            response_handler.put(response)
             return
-        
+
         logger.debug(f"no response handler found for request id {request_id}")
 
     return response_handler_func

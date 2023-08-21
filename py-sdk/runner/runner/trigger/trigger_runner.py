@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from asyncio import Queue
 from dataclasses import dataclass, field
+from threading import Event, Thread
 from typing import Callable, Optional
 
 import loguru
@@ -8,14 +10,15 @@ from google.protobuf.any_pb2 import Any
 from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
+from vyper import v
 
 from runner.common.common import Finalizer, Initializer
 from runner.trigger.exceptions import UndefinedRunnerFunctionError
-from runner.trigger.subscriber import start_subscriber
-from runner.trigger.utils import compose_finalizer, compose_initializer, compose_runner, get_response_handler
+from runner.trigger.helpers import compose_finalizer, compose_initializer, compose_runner, get_response_handler
+from runner.trigger.subscriber import TriggerSubscriber
 from sdk.kai_sdk import KaiSDK
 
-ResponseHandler = Callable[[KaiSDK, Any], Optional[Exception]] # TODO revisit optional exception
+ResponseHandler = Callable[[KaiSDK, Any], Optional[Exception]]  # TODO revisit optional exception
 
 
 @dataclass
@@ -24,14 +27,18 @@ class TriggerRunner:
     nc: NatsClient
     js: JetStreamContext
     logger: loguru.Logger = logger.bind(context="[TRIGGER]")
-    response_handler: ResponseHandler = None
-    response_channels: dict[str, NatsClient] = field(default_factory=dict)
-    initializer: Initializer = None
-    runner: RunnerFunc = None
-    finalizer: Finalizer = None
+    response_handler: ResponseHandler = field(init=False)
+    response_channels: dict[str, Queue] = field(default_factory=dict)
+    initializer: Optional[Initializer]
+    runner: RunnerFunc = field(init=False)
+    subscriber: TriggerSubscriber = field(init=False)
+    runner_thread_shutdown_event: Event = field(default_factory=Event)
+    subscriber_thread_shutdown_event: Event = field(default_factory=Event)
+    finalizer: Optional[Finalizer]
 
     def __post_init__(self):
         self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=self.logger)
+        self.subscriber = TriggerSubscriber(self)
 
     def with_initializer(self, initializer: Initializer):
         self.initializer = compose_initializer(initializer)
@@ -45,12 +52,12 @@ class TriggerRunner:
         self.finalizer = compose_finalizer(finalizer)
         return self
 
-    def get_response_channel(self, request_id: str) -> NatsClient:
+    async def get_response_channel(self, request_id: str):
         if request_id not in self.response_channels:
-            self.response_channels[request_id] = self.nc.new_inbox()
-        return self.response_channels[request_id]
+            self.response_channels[request_id] = Queue(maxsize=1, type=Any)
+        return self.response_channels[request_id].get()
 
-    def run(self):
+    async def run(self):
         if not self.runner:
             raise UndefinedRunnerFunctionError()
 
@@ -62,13 +69,17 @@ class TriggerRunner:
         if not self.finalizer:
             self.finalizer = compose_finalizer(None)
 
-        self.initializer(self.sdk)  # await?
+        initializer_func = self.initializer(self.sdk)
+        await initializer_func
 
-        self.runner(self.sdk)  # routine
+        runner_thread = Thread(target=self.runner, args=(self, self.sdk))
+        runner_thread.start()
 
-        start_subscriber()  # routine
+        subscriber_thread = Thread(target=self.subscriber.start_subscriber, args=())
+        subscriber_thread.start()
 
-        # wait?
+        runner_thread.join()
+        subscriber_thread.join()
 
         self.finalizer(self.sdk)
 
