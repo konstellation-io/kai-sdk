@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable, Optional, Awaitable
 
 from google.protobuf.any_pb2 import Any
 from vyper import v
@@ -6,13 +6,13 @@ from vyper import v
 from sdk.kai_sdk import KaiSDK
 
 Task = Callable[[KaiSDK], None]
-Initializer = Task
+Initializer = Callable[[KaiSDK], Awaitable[None] | None]
 Finalizer = Task
 Handler = Callable[[KaiSDK, Any], Optional[Exception]]
 
 
 async def initialize_process_configuration(sdk: KaiSDK):
-    values = v._get_key_value_config("centralized_configuration.process.config")
+    values = v.get("centralized_configuration.process.config")
 
     logger = sdk.logger.bind(context="[CONFIG INITIALIZER]")
     logger.info("initializing process configuration")

@@ -1,19 +1,19 @@
-from mock import patch
-from nats.aio.client import Client as NatsClient
-from vyper import v
 import pytest
+from mock import AsyncMock, patch
+from nats.aio.client import Client as NatsClient
+from nats.js.client import JetStreamContext
+from vyper import v
 
 from runner.kai_nats_msg_pb2 import KaiNatsMessage
 from runner.runner import Runner
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_sdk import KaiSDK
-from mock import AsyncMock
-from nats.js.client import JetStreamContext
 
 PRODUCT_BUCKET = "centralized_configuration.product.bucket"
 WORKFLOW_BUCKET = "centralized_configuration.workflow.bucket"
 PROCESS_BUCKET = "centralized_configuration.process.bucket"
 NATS_OBJECT_STORE = "nats.object_store"
+
 
 @pytest.fixture(scope="function")
 def m_runner() -> Runner:
@@ -24,10 +24,11 @@ def m_runner() -> Runner:
     v.set("runner.logger.output_paths", ["stdout"])
     v.set("runner.logger.error_output_paths", ["stderr"])
     v.set("runner.logger.level", "INFO")
-    
+
     runner = Runner(nc=nc, js=js)
 
     return runner
+
 
 @patch.object(CentralizedConfig, "_init_kv_stores", return_value=("test_product", "test_workflow", "test_process"))
 async def test_sdk_import_ok(_):
@@ -46,7 +47,7 @@ async def test_sdk_import_ok(_):
     assert sdk.nc is not None
     assert sdk.js is not None
     assert sdk.req_msg == req_msg
-    assert sdk.logger is not None # TODO add logger initializing in runner test
+    assert sdk.logger is not None  # TODO add logger initializing in runner test
     assert sdk.metadata is not None
     assert sdk.messaging is not None
     assert sdk.messaging.req_msg == req_msg
