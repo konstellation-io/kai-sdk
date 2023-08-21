@@ -17,8 +17,9 @@ from runner.trigger.exceptions import UndefinedRunnerFunctionError
 from runner.trigger.helpers import compose_finalizer, compose_initializer, compose_runner, get_response_handler
 from runner.trigger.subscriber import TriggerSubscriber
 from sdk.kai_sdk import KaiSDK
+from typing import Awaitable
 
-ResponseHandler = Callable[[KaiSDK, Any], Optional[Exception]]  # TODO revisit optional exception
+ResponseHandler = Callable[[KaiSDK, Any], Awaitable[None]]
 
 
 @dataclass
@@ -29,12 +30,12 @@ class TriggerRunner:
     logger: loguru.Logger = logger.bind(context="[TRIGGER]")
     response_handler: ResponseHandler = field(init=False)
     response_channels: dict[str, Queue] = field(default_factory=dict)
-    initializer: Optional[Initializer]
+    initializer: Optional[Initializer] = None
     runner: RunnerFunc = field(init=False)
     subscriber: TriggerSubscriber = field(init=False)
+    finalizer: Optional[Finalizer] = None
     runner_thread_shutdown_event: Event = field(default_factory=Event)
     subscriber_thread_shutdown_event: Event = field(default_factory=Event)
-    finalizer: Optional[Finalizer]
 
     def __post_init__(self):
         self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=self.logger)
@@ -54,7 +55,7 @@ class TriggerRunner:
 
     async def get_response_channel(self, request_id: str):
         if request_id not in self.response_channels:
-            self.response_channels[request_id] = Queue(maxsize=1, type=Any)
+            self.response_channels[request_id] = Queue(maxsize=1)
         return self.response_channels[request_id].get()
 
     async def run(self):

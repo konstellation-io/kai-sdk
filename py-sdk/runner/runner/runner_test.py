@@ -25,7 +25,8 @@ def m_runner() -> Runner:
     v.set("runner.logger.error_output_paths", ["stderr"])
     v.set("runner.logger.level", "INFO")
 
-    runner = Runner(nc=nc, js=js)
+    runner = Runner(nc=nc)
+    runner.js = js
 
     return runner
 

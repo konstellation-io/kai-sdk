@@ -6,7 +6,7 @@ from signal import SIGINT, SIGTERM, signal
 from typing import TYPE_CHECKING
 
 from google.protobuf.any_pb2 import Any
-
+import loguru
 from runner.common.common import Finalizer, Initializer, initialize_process_configuration
 
 if TYPE_CHECKING:
@@ -17,6 +17,7 @@ from sdk.kai_sdk import KaiSDK
 
 def compose_initializer(initializer: Initializer) -> Initializer:
     async def initializer_func(sdk: KaiSDK):
+        assert isinstance(sdk.logger, loguru.Logger)
         logger = sdk.logger.bind(context="[RUNNER]")
         logger.info("initializing TriggerRunner...")
         await initialize_process_configuration(sdk)
@@ -36,6 +37,7 @@ def compose_initializer(initializer: Initializer) -> Initializer:
 
 def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> RunnerFunc:
     def runner_func(runner: TriggerRunner, sdk: KaiSDK):
+        assert isinstance(sdk.logger, loguru.Logger)
         logger = sdk.logger.bind(context="[RUNNER]")
         logger.info("executing TriggerRunner...")
 
@@ -48,7 +50,7 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
             logger.info("shutting down runner...")
             logger.info("closing opened channels...")
             for request_id, channel in runner.response_channels.items():
-                channel.put(1)  # TODO object?
+                channel.put(1)
                 logger.info(f"channel closed for request id {request_id}")
 
             trigger_runner.runner_thread_shutdown_event.set()
@@ -63,14 +65,15 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
 
 
 def get_response_handler(handlers: dict[str, Queue]) -> ResponseHandler:
-    def response_handler_func(sdk: KaiSDK, response: Any):
+    async def response_handler_func(sdk: KaiSDK, response: Any):
+        assert isinstance(sdk.logger, loguru.Logger)
         logger = sdk.logger.bind(context="[RESPONSE HANDLER]")
         request_id = sdk.get_request_id()
         logger.info(f"message received with request id {request_id}")
 
-        response_handler = handlers.pop(request_id, None)
-        if response_handler:
-            response_handler.put(response)
+        handler = handlers.pop(request_id, None)
+        if handler:
+            await handler.put(response)
             return
 
         logger.debug(f"no response handler found for request id {request_id}")
@@ -80,6 +83,7 @@ def get_response_handler(handlers: dict[str, Queue]) -> ResponseHandler:
 
 def compose_finalizer(user_finalizer: Finalizer) -> Finalizer:
     def finalizer_func(sdk: KaiSDK):
+        assert isinstance(sdk.logger, loguru.Logger)
         logger = sdk.logger.bind(context="[FINALIZER]")
         logger.info("finalizing TriggerRunner...")
 

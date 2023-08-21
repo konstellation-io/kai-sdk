@@ -95,8 +95,8 @@ class Runner:
                 level=v.get("runner.logger.level"),
             )
         for error_output_path in error_output_paths:
-            if output_path == "stderr":
-                output_path = sys.stderr
+            if error_output_path == "stderr":
+                error_output_path = sys.stderr
 
             logger.add(
                 error_output_path,
@@ -110,11 +110,11 @@ class Runner:
         self.logger = logger.bind(context="[RUNNER CONFIG]")
         self.logger.info("logger initialized")
 
-    async def trigger_runner(self):
-        return await TriggerRunner(self.nc, self.js).initialize()
+    def trigger_runner(self):
+        return TriggerRunner(self.nc, self.js)
 
-    async def task_runner(self):
-        return await TaskRunner(self.nc, self.js).initialize()
+    def task_runner(self):
+        return TaskRunner(self.nc, self.js)
 
-    async def exit_runner(self):
-        return await ExitRunner(self.nc, self.js).initialize()
+    def exit_runner(self):
+        return ExitRunner(self.nc, self.js)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import timedelta
 from signal import SIGINT, SIGTERM, signal
@@ -9,15 +11,19 @@ from nats.js.client import JetStreamContext
 from nats.aio.subscription import Msg
 import asyncio
 from vyper import v
+from sdk.messaging.messaging_utils import uncompress, is_compressed
+from typing import TYPE_CHECKING
 
-from runner.trigger.trigger_runner import TriggerRunner
+if TYPE_CHECKING:
+    from runner.trigger.trigger_runner import TriggerRunner
 from runner.trigger.exceptions import NewRequestMsgError, UndefinedResponseHandlerError, HandlerError
 from runner.kai_nats_msg_pb2 import KaiNatsMessage
+from sdk.metadata.metadata import Metadata
 ACK_TIME = 22  # hours
 
 @dataclass
 class TriggerSubscriber:
-    trigger_runner: TriggerRunner
+    trigger_runner: 'TriggerRunner'
     logger: loguru.Logger = field(init=False)
 
     def __post_init__(self):
@@ -37,7 +43,7 @@ class TriggerSubscriber:
             ack_wait_time = timedelta(hours=ACK_TIME)
 
             try:
-                s = await self.trigger_runner.js.subscribe(
+                sub = await self.trigger_runner.js.subscribe(
                     subject=subject,
                     queue=consumer_name,
                     cb=self.process_message,
@@ -52,19 +58,19 @@ class TriggerSubscriber:
                 asyncio.get_event_loop().stop()
                 sys.exit(1)
 
-            subscriptions.append(s)
+            subscriptions.append(sub)
             self.logger.info(f"listening to {subject} from queue group {consumer_name}")
 
         async def shutdown_handler(sig, frame):
             self.logger.info("shutting signal received")
 
-            for s in subscriptions:
-                self.logger.info(f"unsubscribing from subject {s.subject}")
+            for sub in subscriptions:
+                self.logger.info(f"unsubscribing from subject {sub.subject}")
 
                 try:
-                    await s.unsubscribe()
+                    await sub.unsubscribe()
                 except Exception as e:
-                    self.logger.error(f"error unsubscribing from the NATS subject {s.subject}: {e}")
+                    self.logger.error(f"error unsubscribing from the NATS subject {sub.subject}: {e}")
                     self.trigger_runner.subscriber_thread_shutdown_event.set()
                     asyncio.get_event_loop().stop()
                     sys.exit(1)
@@ -89,7 +95,7 @@ class TriggerSubscriber:
         
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
         
-        if not self.trigger_runner.response_handler:
+        if self.trigger_runner.response_handler is None:
             self.logger.error("no response handler defined")
             await self.process_runner_error(msg, UndefinedResponseHandlerError, request_msg.request_id)
             return
@@ -97,9 +103,10 @@ class TriggerSubscriber:
         self.trigger_runner.sdk.set_request_message(request_msg)
 
         try:
-            self.trigger_runner.response_handler(self.trigger_runner.sdk, request_msg.payload)
+            await self.trigger_runner.response_handler(self.trigger_runner.sdk, request_msg.payload)
         except Exception as e:
             self.logger.error(f"error executing response handler: {e}")
+            assert isinstance(self.trigger_runner.sdk.metadata, Metadata)
             error = HandlerError(request_msg.from_node, self.trigger_runner.sdk.metadata.get_process(), error=e)
             await self.process_runner_error(msg, error, request_msg.request_id)
             return
@@ -121,9 +128,9 @@ class TriggerSubscriber:
     def new_request_msg(self, data: bytes) -> KaiNatsMessage:
         request_msg = KaiNatsMessage()
 
-        if self.trigger_runner.sdk.messaging.messaging_utils.is_compressed(data):
+        if is_compressed(data):
             try:
-                data = self.trigger_runner.sdk.messaging.messaging_utils.uncompress(data)
+                data = uncompress(data)
             except Exception as e:
                 self.logger.error(f"error decompressing message: {e}")
                 raise NewRequestMsgError(error=e)
