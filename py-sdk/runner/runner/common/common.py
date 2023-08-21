@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Awaitable
+from typing import Awaitable, Callable, Optional
 
 from google.protobuf.any_pb2 import Any
 from vyper import v
@@ -8,7 +8,7 @@ from sdk.kai_sdk import KaiSDK
 Task = Callable[[KaiSDK], None]
 Initializer = Callable[[KaiSDK], Awaitable[None] | None]
 Finalizer = Task
-Handler = Callable[[KaiSDK, Any], Optional[Exception]]
+Handler = Callable[[KaiSDK, Any], None]
 
 
 async def initialize_process_configuration(sdk: KaiSDK):
