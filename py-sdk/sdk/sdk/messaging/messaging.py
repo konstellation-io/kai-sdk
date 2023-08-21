@@ -47,6 +47,9 @@ class Messaging:
     async def send_early_exit(self, response: Message, chan: Optional[str] = None):
         await self._publish_msg(msg=response, msg_type=MessageType.EARLY_EXIT, chan=chan)
 
+    async def send_error(self, error: str):
+        await self._publish_error(request_id=self.req_msg.request_id, err_msg=error)
+
     def get_error_message(self) -> str:
         return self.req_msg.error if self.is_message_error() else ""
 
@@ -109,7 +112,7 @@ class Messaging:
         output_subject = self._get_output_subject(chan)
 
         try:
-            output_msg = response_msg.SerializeToString()  # bytes
+            output_msg = response_msg.SerializeToString()  # serialize to bytes
         except Exception as e:
             self.logger.debug(f"failed serializing response message: {e}")
             return

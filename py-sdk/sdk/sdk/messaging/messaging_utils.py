@@ -61,7 +61,7 @@ def compress(payload: bytes) -> bytes:
     return gzip.compress(payload, compresslevel=GZIP_BEST_COMPRESSION)
 
 
-def decompress(payload: bytes) -> bytes:
+def uncompress(payload: bytes) -> bytes:
     return gzip.decompress(payload)
 
 

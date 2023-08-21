@@ -19,7 +19,7 @@ from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
 from sdk.object_store.object_store import ObjectStore
 from sdk.path_utils.path_utils import PathUtils
-
+import asyncio
 
 @dataclass
 class MessagingABC(ABC):
@@ -37,6 +37,10 @@ class MessagingABC(ABC):
 
     @abstractmethod
     async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str]):
+        pass
+
+    @abstractmethod
+    async def send_error(self, error: str):
         pass
 
     @abstractmethod
@@ -210,13 +214,13 @@ class KaiSDK:
             await self.object_store.initialize()
         except Exception as e:
             self.logger.error(f"error initializing object store: {e}")
-            sys.exit(1)
+            asyncio.get_event_loop().stop()
 
         try:
             await self.centralized_config.initialize()
         except Exception as e:
             self.logger.error(f"error initializing centralized configuration: {e}")
-            sys.exit(1)
+            asyncio.get_event_loop().stop()
 
     def get_request_id(self):
         return self.req_msg.request_id if self.req_msg else None

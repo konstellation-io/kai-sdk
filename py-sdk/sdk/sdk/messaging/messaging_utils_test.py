@@ -9,7 +9,7 @@ from sdk.messaging.messaging_utils import (
     FailedGettingMaxMessageSizeError,
     MessagingUtils,
     compress,
-    decompress,
+    uncompress,
     is_compressed,
     size_in_kb,
     size_in_mb,
@@ -72,8 +72,8 @@ def test_size_in_kb_ok():
     assert size_in_kb(1024) == "1.00 KB"
 
 
-def test_compress_decompress_ok():
-    compress_ = compress(b"test")
-    decompress_ = decompress(compress_)
-    assert decompress_ == b"test"
-    assert is_compressed(compress_)
+def test_compress_uncompress_ok():
+    compressed = compress(b"test")
+    uncompressed_ = uncompress(compressed)
+    assert uncompressed_ == b"test"
+    assert is_compressed(compressed)
