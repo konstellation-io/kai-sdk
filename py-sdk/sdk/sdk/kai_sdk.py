@@ -40,7 +40,7 @@ class MessagingABC(ABC):
         pass
 
     @abstractmethod
-    async def send_error(self, error: str):
+    async def send_error(self, error: str, request_id: str):
         pass
 
     @abstractmethod

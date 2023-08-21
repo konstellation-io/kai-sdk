@@ -47,8 +47,8 @@ class Messaging:
     async def send_early_exit(self, response: Message, chan: Optional[str] = None):
         await self._publish_msg(msg=response, msg_type=MessageType.EARLY_EXIT, chan=chan)
 
-    async def send_error(self, error: str):
-        await self._publish_error(request_id=self.req_msg.request_id, err_msg=error)
+    async def send_error(self, error: str, request_id: str):
+        await self._publish_error(err_msg=error, request_id=request_id)
 
     def get_error_message(self) -> str:
         return self.req_msg.error if self.is_message_error() else ""
