@@ -1,11 +1,11 @@
 from typing import Awaitable, Callable, Optional
 
+import loguru
 from google.protobuf.any_pb2 import Any
 from vyper import v
 
-from sdk.kai_sdk import KaiSDK
 from sdk.centralized_config.centralized_config import CentralizedConfig
-import loguru
+from sdk.kai_sdk import KaiSDK
 
 Task = Callable[[KaiSDK], None]
 Initializer = Callable[[KaiSDK], Awaitable[None]]

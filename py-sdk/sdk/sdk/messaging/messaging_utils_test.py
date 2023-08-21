@@ -9,10 +9,10 @@ from sdk.messaging.messaging_utils import (
     FailedGettingMaxMessageSizeError,
     MessagingUtils,
     compress,
-    uncompress,
     is_compressed,
     size_in_kb,
     size_in_mb,
+    uncompress,
 )
 
 

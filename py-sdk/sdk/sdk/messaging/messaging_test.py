@@ -93,6 +93,7 @@ async def test_send_any_with_request_id(m_messaging):
         payload=response, msg_type=MessageType.OK, request_id=request_id, chan=TEST_CHANNEL
     )
 
+
 async def test_send_error(m_messaging):
     m_messaging._publish_error = AsyncMock()
 
@@ -100,6 +101,7 @@ async def test_send_error(m_messaging):
 
     assert m_messaging._publish_error.called
     assert m_messaging._publish_error.call_args == call(err_msg="test_error", request_id="test_request_id")
+
 
 async def test_send_early_reply(m_messaging):
     m_messaging._publish_msg = AsyncMock()

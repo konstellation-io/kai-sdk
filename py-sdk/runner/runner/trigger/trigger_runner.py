@@ -3,7 +3,7 @@ from __future__ import annotations
 from asyncio import Queue
 from dataclasses import dataclass, field
 from threading import Event, Thread
-from typing import Callable, Optional
+from typing import Awaitable, Callable, Optional
 
 import loguru
 from google.protobuf.any_pb2 import Any
@@ -17,7 +17,6 @@ from runner.trigger.exceptions import UndefinedRunnerFunctionError
 from runner.trigger.helpers import compose_finalizer, compose_initializer, compose_runner, get_response_handler
 from runner.trigger.subscriber import TriggerSubscriber
 from sdk.kai_sdk import KaiSDK
-from typing import Awaitable
 
 ResponseHandler = Callable[[KaiSDK, Any], Awaitable[None]]
 

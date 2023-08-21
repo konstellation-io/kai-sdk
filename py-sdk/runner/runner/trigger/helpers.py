@@ -5,8 +5,9 @@ from asyncio import Queue
 from signal import SIGINT, SIGTERM, signal
 from typing import TYPE_CHECKING
 
-from google.protobuf.any_pb2 import Any
 import loguru
+from google.protobuf.any_pb2 import Any
+
 from runner.common.common import Finalizer, Initializer, initialize_process_configuration
 
 if TYPE_CHECKING:
