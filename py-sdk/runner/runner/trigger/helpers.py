@@ -19,7 +19,7 @@ from sdk.kai_sdk import KaiSDK
 def compose_initializer(initializer: Initializer) -> Initializer:
     async def initializer_func(sdk: KaiSDK):
         assert isinstance(sdk.logger, loguru.Logger)
-        logger = sdk.logger.bind(context="[RUNNER]")
+        logger = sdk.logger.bind(context="[INITIALIZER]")
         logger.info("initializing TriggerRunner...")
         await initialize_process_configuration(sdk)
 

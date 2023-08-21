@@ -1,4 +1,4 @@
-from typing import Awaitable, Callable, Optional
+from typing import Awaitable, Callable
 
 import loguru
 from google.protobuf.any_pb2 import Any
