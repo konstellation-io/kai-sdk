@@ -215,12 +215,14 @@ class KaiSDK:
         except Exception as e:
             self.logger.error(f"error initializing object store: {e}")
             asyncio.get_event_loop().stop()
+            sys.exit(1)
 
         try:
             await self.centralized_config.initialize()
         except Exception as e:
             self.logger.error(f"error initializing centralized configuration: {e}")
             asyncio.get_event_loop().stop()
+            sys.exit(1)
 
     def get_request_id(self):
         return self.req_msg.request_id if self.req_msg else None
