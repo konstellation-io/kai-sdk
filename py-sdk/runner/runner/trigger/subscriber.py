@@ -5,6 +5,7 @@ import sys
 from dataclasses import dataclass, field
 from datetime import timedelta
 from signal import SIGINT, SIGTERM, signal
+from threading import Event
 from typing import TYPE_CHECKING
 
 import loguru
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
     from runner.trigger.trigger_runner import TriggerRunner
 
 from runner.kai_nats_msg_pb2 import KaiNatsMessage
-from runner.trigger.exceptions import HandlerError, NewRequestMsgError, UndefinedResponseHandlerError
+from runner.trigger.exceptions import HandlerError, NewRequestMsgError, NotValidProtobuf, UndefinedResponseHandlerError
 from sdk.metadata.metadata import Metadata
 
 ACK_TIME = 22  # hours
@@ -46,6 +47,7 @@ class TriggerSubscriber:
 
             ack_wait_time = timedelta(hours=ACK_TIME)
 
+            subscriber_thread_shutdown_event = Event()
             try:
                 sub = await self.trigger_runner.js.subscribe(
                     subject=subject,
@@ -58,7 +60,7 @@ class TriggerSubscriber:
                 )
             except Exception as e:
                 self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")
-                self.trigger_runner.subscriber_thread_shutdown_event.set()
+                subscriber_thread_shutdown_event.set()
                 asyncio.get_event_loop().stop()
                 sys.exit(1)
 
@@ -75,16 +77,16 @@ class TriggerSubscriber:
                     await sub.unsubscribe()
                 except Exception as e:
                     self.logger.error(f"error unsubscribing from the NATS subject {sub.subject}: {e}")
-                    self.trigger_runner.subscriber_thread_shutdown_event.set()
+                    subscriber_thread_shutdown_event.set()
                     asyncio.get_event_loop().stop()
                     sys.exit(1)
 
-            self.trigger_runner.subscriber_thread_shutdown_event.set()
+            subscriber_thread_shutdown_event.set()
 
         signal(SIGINT, asyncio.create_task(shutdown_handler))
         signal(SIGTERM, asyncio.create_task(shutdown_handler))
 
-        self.trigger_runner.subscriber_thread_shutdown_event.wait()
+        subscriber_thread_shutdown_event.wait()
         self.logger.info("subscriber shutdown")
 
     async def process_message(self, msg: Msg):
@@ -92,26 +94,29 @@ class TriggerSubscriber:
 
         try:
             request_msg = self.new_request_msg(msg.data)
+            self.trigger_runner.sdk.set_request_message(request_msg)
         except Exception as e:
-            self.logger.error(f"error parsing message: {e}")
-            await self.process_runner_error(msg, e, request_msg.request_id)
+            error = NotValidProtobuf(msg.subject, error=e)
+            self.logger.error(f"{error}")
+            await self.process_runner_error(msg, error, request_msg.request_id)
             return
 
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
         if self.trigger_runner.response_handler is None:
-            self.logger.error("no response handler defined")
-            await self.process_runner_error(msg, UndefinedResponseHandlerError, request_msg.request_id)
+            error = UndefinedResponseHandlerError()
+            self.logger.error(f"{error}")
+            await self.process_runner_error(msg, error, request_msg.request_id)
             return
-
-        self.trigger_runner.sdk.set_request_message(request_msg)
 
         try:
             await self.trigger_runner.response_handler(self.trigger_runner.sdk, request_msg.payload)
         except Exception as e:
-            self.logger.error(f"error executing response handler: {e}")
+            from_node = request_msg.from_node
             assert isinstance(self.trigger_runner.sdk.metadata, Metadata)
-            error = HandlerError(request_msg.from_node, self.trigger_runner.sdk.metadata.get_process(), error=e)
+            to_node = self.trigger_runner.sdk.metadata.get_process()
+            error = HandlerError(from_node, to_node, error=e)
+            self.logger.error(f"{error}")
             await self.process_runner_error(msg, error, request_msg.request_id)
             return
 
@@ -136,13 +141,15 @@ class TriggerSubscriber:
             try:
                 data = uncompress(data)
             except Exception as e:
-                self.logger.error(f"error decompressing message: {e}")
-                raise NewRequestMsgError(error=e)
+                error = NewRequestMsgError(error=e)
+                self.logger.error(f"{error}")
+                raise error
 
         try:
             request_msg.ParseFromString(data)  # deserialize from bytes
         except Exception as e:
-            self.logger.error(f"error parsing message: {e}")
-            raise NewRequestMsgError(error=e)
+            error = NewRequestMsgError(error=e)
+            self.logger.error(f"{error}")
+            raise error
 
         return request_msg

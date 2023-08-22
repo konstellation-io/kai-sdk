@@ -34,7 +34,6 @@ class TriggerRunner:
     subscriber: TriggerSubscriber = field(init=False)
     finalizer: Optional[Finalizer] = None
     runner_thread_shutdown_event: Event = field(default_factory=Event)
-    subscriber_thread_shutdown_event: Event = field(default_factory=Event)
 
     def __post_init__(self):
         self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=self.logger)

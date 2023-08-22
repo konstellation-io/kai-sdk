@@ -7,6 +7,12 @@ class UndefinedRunnerFunctionError(Exception):
         super().__init__(message)
 
 
+class NotValidProtobuf(Exception):
+    def __init__(self, subject: str, error: Optional[Exception] = None):
+        message = f"error parsing message data coming from subject {subject} because is not a valid protobuf"
+        super().__init__(f"{message}: {error}" if error else message)
+
+
 class NewRequestMsgError(Exception):
     def __init__(self, error: Optional[Exception] = None):
         message = "error creating new request message"
