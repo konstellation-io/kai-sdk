@@ -1,11 +1,14 @@
 import pytest
-from mock import AsyncMock, patch
+from mock import AsyncMock, Mock, patch
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
 
+from runner.exit.exit_runner import ExitRunner
 from runner.kai_nats_msg_pb2 import KaiNatsMessage
 from runner.runner import Runner
+from runner.task.task_runner import TaskRunner
+from runner.trigger.trigger_runner import TriggerRunner
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_sdk import KaiSDK
 
@@ -13,13 +16,14 @@ PRODUCT_BUCKET = "centralized_configuration.product.bucket"
 WORKFLOW_BUCKET = "centralized_configuration.workflow.bucket"
 PROCESS_BUCKET = "centralized_configuration.process.bucket"
 NATS_OBJECT_STORE = "nats.object_store"
+NATS_URL = "nats.url"
 
 
 @pytest.fixture(scope="function")
 def m_runner() -> Runner:
     nc = AsyncMock(spec=NatsClient)
     js = AsyncMock(spec=JetStreamContext)
-    v.set("nats.url", "test_url")
+    v.set(NATS_URL, "test_url")
     v.set("APP_CONFIG_PATH", "test_path")
     v.set("runner.logger.output_paths", ["stdout"])
     v.set("runner.logger.error_output_paths", ["stderr"])
@@ -48,7 +52,7 @@ async def test_sdk_import_ok(_):
     assert sdk.nc is not None
     assert sdk.js is not None
     assert sdk.req_msg == req_msg
-    assert sdk.logger is not None  # TODO add logger initializing in runner test
+    assert sdk.logger is not None
     assert sdk.metadata is not None
     assert sdk.messaging is not None
     assert sdk.messaging.req_msg == req_msg
@@ -63,11 +67,9 @@ async def test_sdk_import_ok(_):
     assert sdk.storage is None
 
 
-@patch.object(NatsClient, "connect", return_value=None)
-@patch("runner.runner.NatsClient.jetstream", return_value=AsyncMock(spec=JetStreamContext))
-async def test_runner_ok(nats_jetstream, nats_connect):
+async def test_runner_ok():
     nc = NatsClient()
-    v.set("nats.url", "test_url")
+    v.set(NATS_URL, "test_url")
     v.set("APP_CONFIG_PATH", "test_path")
     v.set("runner.logger.output_paths", ["stdout"])
     v.set("runner.logger.error_output_paths", ["stderr"])
@@ -78,19 +80,27 @@ async def test_runner_ok(nats_jetstream, nats_connect):
     assert runner.nc is not None
     assert runner.js is None
     assert runner.logger is not None
-    # assert runner.logger.level == "INFO"
-    # assert runner.logger._handlers[0].sink == "stdout"
-    # assert runner.logger._handlers[1].sink == "stderr"
 
 
-# @patch.object(NatsClient, "connect", return_value=None)
-# @patch("runner.runner.NatsClient.jetstream", return_value=AsyncMock(spec=JetStreamContext))
-# async def test_runner_ok(nats_jetstream, nats_connect):
-#     nc = NatsClient()
-#     v.set("nats.url", "test_url")
+async def test_runner_initialize_ok():
+    nc = AsyncMock(spec=NatsClient)
+    nc.connect.return_value = None
+    v.set(NATS_URL, "test_url")
+    m_js = Mock(spec=JetStreamContext)
+    nc.jetstream = AsyncMock(return_value=m_js)
 
-#     runner = Runner(nc=nc)
-#     await runner.initialize()
+    runner = Runner(nc=nc)
+    await runner.initialize()
 
-#     assert runner.nc is not None
-#     assert runner.js is not None
+    assert runner.nc is nc
+    assert runner.js is m_js
+
+
+@pytest.mark.parametrize(
+    "runner_type, runner_method",
+    [(TriggerRunner, "trigger_runner"), (TaskRunner, "task_runner"), (ExitRunner, "exit_runner")],
+)
+def test_get_runner_ok(runner_type, runner_method, m_runner):
+    result = getattr(m_runner, runner_method)()
+
+    assert isinstance(result, runner_type)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Awaitable, Callable
 
 import loguru
@@ -16,7 +18,8 @@ Handler = Callable[[KaiSDK, Any], None]
 async def initialize_process_configuration(sdk: KaiSDK):
     values = v.get("centralized_configuration.process.config")
 
-    assert isinstance(sdk.logger, loguru.Logger)
+    if not __debug__:
+        assert isinstance(sdk.logger, loguru.Logger)
     logger = sdk.logger.bind(context="[CONFIG INITIALIZER]")
     logger.info("initializing process configuration")
 
