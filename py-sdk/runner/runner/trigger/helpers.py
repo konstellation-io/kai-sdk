@@ -18,7 +18,7 @@ from sdk.kai_sdk import KaiSDK
 
 def compose_initializer(initializer: Initializer) -> Initializer:
     async def initializer_func(sdk: KaiSDK):
-        assert isinstance(sdk.logger, loguru.Logger)
+        assert sdk.logger is not None
         logger = sdk.logger.bind(context="[INITIALIZER]")
         logger.info("initializing TriggerRunner...")
         await initialize_process_configuration(sdk)
@@ -38,7 +38,7 @@ def compose_initializer(initializer: Initializer) -> Initializer:
 
 def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> RunnerFunc:
     def runner_func(runner: TriggerRunner, sdk: KaiSDK):
-        assert isinstance(sdk.logger, loguru.Logger)
+        assert sdk.logger is not None
         logger = sdk.logger.bind(context="[RUNNER]")
         logger.info("executing TriggerRunner...")
 
@@ -67,7 +67,7 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
 
 def get_response_handler(handlers: dict[str, Queue]) -> ResponseHandler:
     async def response_handler_func(sdk: KaiSDK, response: Any):
-        assert isinstance(sdk.logger, loguru.Logger)
+        assert sdk.logger is not None
         logger = sdk.logger.bind(context="[RESPONSE HANDLER]")
         request_id = sdk.get_request_id()
         logger.info(f"message received with request id {request_id}")
@@ -84,7 +84,7 @@ def get_response_handler(handlers: dict[str, Queue]) -> ResponseHandler:
 
 def compose_finalizer(user_finalizer: Finalizer) -> Finalizer:
     def finalizer_func(sdk: KaiSDK):
-        assert isinstance(sdk.logger, loguru.Logger)
+        assert sdk.logger is not None
         logger = sdk.logger.bind(context="[FINALIZER]")
         logger.info("finalizing TriggerRunner...")
 

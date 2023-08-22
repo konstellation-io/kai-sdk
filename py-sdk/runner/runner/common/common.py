@@ -18,8 +18,7 @@ Handler = Callable[[KaiSDK, Any], None]
 async def initialize_process_configuration(sdk: KaiSDK):
     values = v.get("centralized_configuration.process.config")
 
-    if not __debug__:
-        assert isinstance(sdk.logger, loguru.Logger)
+    assert sdk.logger is not None
     logger = sdk.logger.bind(context="[CONFIG INITIALIZER]")
     logger.info("initializing process configuration")
 

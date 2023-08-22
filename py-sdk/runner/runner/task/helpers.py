@@ -19,7 +19,7 @@ from sdk.kai_sdk import KaiSDK
 
 def compose_initializer(initializer: Initializer) -> Initializer:
     async def initializer_func(sdk: KaiSDK):
-        assert isinstance(sdk.logger, loguru.Logger)
+        assert sdk.logger is not None
         logger = sdk.logger.bind(context="[INITIALIZER]")
         logger.info("initializing TaskRunner...")
         await initialize_process_configuration(sdk)
@@ -39,7 +39,7 @@ def compose_initializer(initializer: Initializer) -> Initializer:
 
 def compose_preprocessor(preprocessor: Preprocessor) -> Optional[Preprocessor]:
     def preprocessor_func(sdk: KaiSDK, response: Any):
-        assert isinstance(sdk.logger, loguru.Logger)
+        assert sdk.logger is not None
         logger = sdk.logger.bind(context="[PREPROCESSOR]")
         logger.info("preprocessing TaskRunner...")
 
@@ -54,7 +54,7 @@ def compose_preprocessor(preprocessor: Preprocessor) -> Optional[Preprocessor]:
 
 def compose_handler(handler: Handler) -> Optional[Handler]:
     def handler_func(sdk: KaiSDK, response: Any):
-        assert isinstance(sdk.logger, loguru.Logger)
+        assert sdk.logger is not None
         logger = sdk.logger.bind(context="[HANDLER]")
         logger.info("handling TaskRunner...")
 
@@ -69,7 +69,7 @@ def compose_handler(handler: Handler) -> Optional[Handler]:
 
 def compose_postprocessor(postprocessor: Postprocessor) -> Optional[Postprocessor]:
     def postprocessor_func(sdk: KaiSDK, response: Any):
-        assert isinstance(sdk.logger, loguru.Logger)
+        assert sdk.logger is not None
         logger = sdk.logger.bind(context="[POSTPROCESSOR]")
         logger.info("postprocessing TaskRunner...")
 
@@ -84,7 +84,7 @@ def compose_postprocessor(postprocessor: Postprocessor) -> Optional[Postprocesso
 
 def compose_finalizer(finalizer: Finalizer) -> Finalizer:
     def finalizer_func(sdk: KaiSDK):
-        assert isinstance(sdk.logger, loguru.Logger)
+        assert sdk.logger is not None
         logger = sdk.logger.bind(context="[FINALIZER]")
         logger.info("finalizing TaskRunner...")
 
