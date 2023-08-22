@@ -75,7 +75,7 @@ class TriggerRunner:
         runner_thread = Thread(target=self.runner, args=(self, self.sdk))
         runner_thread.start()
 
-        subscriber_thread = Thread(target=self.subscriber.start_subscriber, args=())
+        subscriber_thread = Thread(target=self.subscriber.start, args=())
         subscriber_thread.start()
 
         runner_thread.join()

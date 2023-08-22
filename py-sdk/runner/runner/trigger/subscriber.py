@@ -33,7 +33,7 @@ class TriggerSubscriber:
     def __post_init__(self):
         self.logger = self.trigger_runner.logger.bind(context="[SUBSCRIBER]")
 
-    async def start_subscriber(self):
+    async def start(self):
         input_subjects = v.get("nats.inputs")
         subscriptions: list[JetStreamContext.PushSubscription] = []
 
