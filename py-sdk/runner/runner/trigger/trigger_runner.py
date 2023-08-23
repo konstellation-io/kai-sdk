@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from asyncio import Queue
 from dataclasses import dataclass, field
+from queue import Queue
 from threading import Event, Thread
 from typing import Awaitable, Callable, Optional
 

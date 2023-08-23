@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from asyncio import Queue
+from queue import Queue
 from signal import SIGINT, SIGTERM, signal
 from typing import TYPE_CHECKING
 
@@ -46,11 +46,11 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
             user_runner(trigger_runner, sdk)
             logger.info("user runner executed")
 
-        def shutdown_handler(sig, frame):
+        async def shutdown_handler(sig, frame):
             logger.info("shutting down runner...")
             logger.info("closing opened channels...")
             for request_id, channel in runner.response_channels.items():
-                channel.put(1)
+                channel.put(None)
                 logger.info(f"channel closed for request id {request_id}")
 
             trigger_runner.runner_thread_shutdown_event.set()
@@ -65,7 +65,7 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
 
 
 def get_response_handler(handlers: dict[str, Queue]) -> ResponseHandler:
-    async def response_handler_func(sdk: KaiSDK, response: Any):
+    def response_handler_func(sdk: KaiSDK, response: Any):
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[RESPONSE HANDLER]")
         request_id = sdk.get_request_id()
@@ -73,7 +73,7 @@ def get_response_handler(handlers: dict[str, Queue]) -> ResponseHandler:
 
         handler = handlers.pop(request_id, None)
         if handler:
-            await handler.put(response)
+            handler.put(response)
             return
 
         logger.debug(f"no response handler found for request id {request_id}")
