@@ -1,5 +1,4 @@
 import pytest
-from loguru import logger
 from mock import Mock, patch
 from nats.aio.client import Client as NatsClient
 from nats.js.object_store import ObjectStore as NatsObjectStore

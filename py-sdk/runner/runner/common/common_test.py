@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, call, patch
+from unittest.mock import AsyncMock, Mock, call, patch
 
 import pytest
 from nats.aio.client import Client as NatsClient
@@ -14,7 +14,7 @@ from sdk.kai_sdk import KaiSDK
 
 @pytest.fixture(scope="function")
 def m_centralized_config() -> CentralizedConfig:
-    js = AsyncMock(spec=JetStreamContext)
+    js = Mock(spec=JetStreamContext)
     product_kv = AsyncMock(spec=KeyValue)
     workflow_kv = AsyncMock(spec=KeyValue)
     process_kv = AsyncMock(spec=KeyValue)
@@ -30,7 +30,7 @@ def m_centralized_config() -> CentralizedConfig:
 @pytest.fixture(scope="function")
 async def m_sdk(m_centralized_config) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
-    js = nc.jetstream()
+    js = Mock(spec=JetStreamContext)
     req_msg = KaiNatsMessage()
 
     sdk = KaiSDK(nc=nc, js=js)

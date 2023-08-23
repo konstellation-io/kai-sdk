@@ -1,5 +1,5 @@
 from typing import List
-from unittest.mock import call
+from unittest.mock import Mock, call
 
 import pytest
 from mock import AsyncMock
@@ -57,7 +57,7 @@ def m_objects_results(m_objects) -> List[NatsObjectStore.ObjectResult]:
 
 @pytest.fixture(scope="function")
 def m_object_store() -> ObjectStore:
-    js = AsyncMock(spec=JetStreamContext)
+    js = Mock(spec=JetStreamContext)
 
     object_store = ObjectStore(js=js, object_store_name="test_object_store")
     object_store.object_store = AsyncMock(spec=NatsObjectStore)

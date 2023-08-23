@@ -103,6 +103,9 @@ exclude_lines = [
 
     # Do not complain about random uuids
     "uuid.uuid4()",
+
+    # Do not complain about type checking
+    "if TYPE_CHECKING:",
 ]
 
 ignore_errors = false

@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, Mock, call, patch
 
 from vyper import v
 
-from runner.task.helpers import (
+from runner.exit.helpers import (
     compose_finalizer,
     compose_handler,
     compose_initializer,

@@ -1,4 +1,4 @@
-from unittest.mock import call
+from unittest.mock import Mock, call
 
 import pytest
 from mock import AsyncMock
@@ -20,7 +20,7 @@ from sdk.centralized_config.exceptions import (
 
 @pytest.fixture(scope="function")
 def m_centralized_config() -> CentralizedConfig:
-    js = AsyncMock(spec=JetStreamContext)
+    js = Mock(spec=JetStreamContext)
     product_kv = AsyncMock(spec=KeyValue)
     workflow_kv = AsyncMock(spec=KeyValue)
     process_kv = AsyncMock(spec=KeyValue)

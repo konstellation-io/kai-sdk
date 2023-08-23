@@ -22,7 +22,7 @@ NATS_URL = "nats.url"
 @pytest.fixture(scope="function")
 def m_runner() -> Runner:
     nc = AsyncMock(spec=NatsClient)
-    js = AsyncMock(spec=JetStreamContext)
+    js = Mock(spec=JetStreamContext)
     v.set(NATS_URL, "test_url")
     v.set("APP_CONFIG_PATH", "test_path")
     v.set("runner.logger.output_paths", ["stdout"])

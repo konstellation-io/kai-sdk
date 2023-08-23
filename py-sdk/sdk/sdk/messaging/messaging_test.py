@@ -24,7 +24,7 @@ def m_messaging() -> Messaging:
     v.set("nats.output", NATS_OUTPUT)
     v.set("metadata.process_id", "test_process_id")
     nc = AsyncMock(spec=NatsClient)
-    js = AsyncMock(spec=JetStreamContext)
+    js = Mock(spec=JetStreamContext)
     req_msg = Mock(spec=KaiNatsMessage)
 
     messaging = Messaging(nc=nc, js=js)
