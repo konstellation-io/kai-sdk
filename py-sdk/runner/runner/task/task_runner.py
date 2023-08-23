@@ -21,7 +21,8 @@ from runner.task.helpers import (
 from runner.task.subscriber import TaskSubscriber
 from sdk.kai_sdk import KaiSDK
 
-Preprocessor = Postprocessor = Handler
+Preprocessor = Handler
+Postprocessor = Handler
 
 
 @dataclass

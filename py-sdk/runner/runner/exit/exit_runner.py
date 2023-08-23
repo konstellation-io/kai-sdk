@@ -21,7 +21,8 @@ from runner.exit.helpers import (
 from runner.exit.subscriber import ExitSubscriber
 from sdk.kai_sdk import KaiSDK
 
-Preprocessor = Postprocessor = Handler
+Preprocessor = Handler
+Postprocessor = Handler
 
 
 @dataclass
