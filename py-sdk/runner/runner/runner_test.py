@@ -96,6 +96,34 @@ async def test_runner_initialize_ok():
     assert runner.js is m_js
 
 
+async def test_runner_initialize_nats_ko():
+    nc = AsyncMock(spec=NatsClient)
+    nc.connect.side_effect = Exception("test exception")
+    v.set(NATS_URL, "test_url")
+    m_js = Mock(spec=JetStreamContext)
+    nc.jetstream = AsyncMock(return_value=m_js)
+
+    runner = Runner(nc=nc)
+    with pytest.raises(Exception):
+        await runner.initialize()
+
+    assert runner.js is None
+
+
+async def test_runner_initialize_jetstream_ko():
+    nc = AsyncMock(spec=NatsClient)
+    nc.connect.return_value = None
+    v.set(NATS_URL, "test_url")
+    nc.jetstream = AsyncMock(side_effect=Exception("test exception"))
+
+    runner = Runner(nc=nc)
+    with pytest.raises(Exception):
+        await runner.initialize()
+
+    assert runner.nc is nc
+    assert runner.js is None
+
+
 @pytest.mark.parametrize(
     "runner_type, runner_method",
     [(TriggerRunner, "trigger_runner"), (TaskRunner, "task_runner"), (ExitRunner, "exit_runner")],

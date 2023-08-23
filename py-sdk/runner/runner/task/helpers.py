@@ -3,16 +3,12 @@ from __future__ import annotations
 import inspect
 from typing import TYPE_CHECKING, Optional
 
-import loguru
 from google.protobuf.any_pb2 import Any
 
 from runner.common.common import Finalizer, Initializer, initialize_process_configuration
 
 if TYPE_CHECKING:
     from runner.task.task_runner import Preprocessor, Handler, Postprocessor
-
-import loguru
-from google.protobuf.any_pb2 import Any
 
 from sdk.kai_sdk import KaiSDK
 
