@@ -3,7 +3,6 @@ from __future__ import annotations
 import gzip
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional
 
 import loguru
 from loguru import logger

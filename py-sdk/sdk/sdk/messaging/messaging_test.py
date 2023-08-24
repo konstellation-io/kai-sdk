@@ -1,7 +1,6 @@
 from unittest.mock import call, patch
 
 import pytest
-from google.protobuf import wrappers_pb2 as wrappers
 from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
 from mock import AsyncMock, Mock

@@ -45,7 +45,7 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
         user_runner(trigger_runner, sdk)
         logger.info("user runner executed")
 
-        async def _shutdown_handler(sig, frame) -> None:
+        def _shutdown_handler(sig, frame) -> None:
             logger.info("shutting down runner...")
             logger.info("closing opened channels...")
             for request_id, channel in runner.response_channels.items():

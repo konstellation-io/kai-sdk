@@ -4,7 +4,7 @@ import asyncio
 import sys
 from dataclasses import dataclass, field
 from datetime import timedelta
-from signal import SIGINT, SIGTERM, signal
+from signal import SIGINT, SIGTERM
 from threading import Event
 from typing import TYPE_CHECKING
 
@@ -19,9 +19,10 @@ from sdk.messaging.messaging_utils import is_compressed, uncompress
 if TYPE_CHECKING:
     from runner.exit.exit_runner import ExitRunner, Handler
 
+from asyncio import AbstractEventLoop
+
 from runner.exit.exceptions import HandlerError, NewRequestMsgError, NotValidProtobuf, UndefinedHandlerFunctionError
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
-from sdk.metadata.metadata import Metadata
 
 ACK_TIME = 22  # hours
 
@@ -39,15 +40,13 @@ class ExitSubscriber:
         subscriptions: list[JetStreamContext.PushSubscription] = []
         process = self.exit_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
+        ack_wait_time = timedelta(hours=ACK_TIME)
+        subscriber_thread_shutdown_event = Event()
         for _, subject in input_subjects:
             subject_ = subject.replace(".", "-")
             consumer_name = f"{subject_}_{process}"
 
             self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
-
-            ack_wait_time = timedelta(hours=ACK_TIME)
-
-            subscriber_thread_shutdown_event = Event()
             try:
                 sub = await self.exit_runner.js.subscribe(
                     subject=subject,
@@ -67,7 +66,10 @@ class ExitSubscriber:
             subscriptions.append(sub)
             self.logger.info(f"listening to {subject} from queue group {consumer_name}")
 
-        async def _shutdown_handler(sig, frame) -> None:
+        def _shutdown_handler(loop: AbstractEventLoop):
+            loop.create_task(_shutdown_handler_coro())
+
+        async def _shutdown_handler_coro() -> None:
             self.logger.info("shutting signal received")
 
             for sub in subscriptions:
@@ -83,8 +85,9 @@ class ExitSubscriber:
 
             subscriber_thread_shutdown_event.set()
 
-        signal(SIGINT, asyncio.create_task(_shutdown_handler))
-        signal(SIGTERM, asyncio.create_task(_shutdown_handler))
+        loop = asyncio.get_event_loop()
+        loop.add_signal_handler(SIGINT, _shutdown_handler(loop))
+        loop.add_signal_handler(SIGTERM, _shutdown_handler(loop))
 
         subscriber_thread_shutdown_event.wait()
         self.logger.info("subscriber shutdown")

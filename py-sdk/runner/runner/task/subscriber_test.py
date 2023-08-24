@@ -61,7 +61,7 @@ async def test_start_ok(m_signal_task, _, m_shutdown_event, m_task_runner):
 
 @patch("runner.task.subscriber.Event", return_value=Mock(spec=Event))
 @patch("runner.task.subscriber.asyncio", return_value=Mock(spec=asyncio))
-@patch("runner.task.subscriber.signal", return_value=Mock(spec=signal))
+@patch("runner.task.subscriber.asyncio.get_event_loop.add_signal_handler")
 async def test_start_nats_subscribing_ko(m_signal_task, m_asyncio, m_shutdown_event, m_task_runner):
     v.set(NATS_INPUT, [("1", "test.subject")])
     m_task_runner.js.subscribe = AsyncMock(side_effect=Exception("Subscription error"))

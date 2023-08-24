@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import AsyncMock, Mock, call, patch
+from unittest.mock import AsyncMock, Mock, call
 
 from vyper import v
 
