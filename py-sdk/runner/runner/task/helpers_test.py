@@ -75,7 +75,7 @@ async def test_compose_initializer_with_none_ok():
     sdk = Mock(spec=KaiSDK)
     sdk.centralized_config = Mock(spec=CentralizedConfig)
     sdk.centralized_config.set_config = AsyncMock()
-    initializer_func = compose_initializer(None)
+    initializer_func = compose_initializer()
 
     await initializer_func(sdk)
 
@@ -90,13 +90,6 @@ async def test_compose_preprocessor_ok():
     preprocessor_func(sdk, "response")
 
 
-async def test_compose_preprocessor_with_none_ok():
-    sdk = Mock(spec=KaiSDK)
-    preprocessor_func = compose_preprocessor(None)
-
-    preprocessor_func(sdk, "response")
-
-
 async def test_compose_handler_ok():
     sdk = Mock(spec=KaiSDK)
     handler_func = compose_handler(mock_user_handler)
@@ -104,23 +97,9 @@ async def test_compose_handler_ok():
     handler_func(sdk, "response")
 
 
-async def test_compose_handler_with_none_ok():
-    sdk = Mock(spec=KaiSDK)
-    handler_func = compose_handler(None)
-
-    handler_func(sdk, "response")
-
-
 async def test_compose_postprocessor_ok():
     sdk = Mock(spec=KaiSDK)
     postprocessor_func = compose_postprocessor(mock_user_postprocessor)
-
-    postprocessor_func(sdk, "response")
-
-
-async def test_compose_postprocessor_with_none_ok():
-    sdk = Mock(spec=KaiSDK)
-    postprocessor_func = compose_postprocessor(None)
 
     postprocessor_func(sdk, "response")
 
@@ -134,6 +113,6 @@ async def test_compose_finalizer_ok():
 
 async def test_compose_finalizer_with_none_ok():
     sdk = Mock(spec=KaiSDK)
-    finalizer_func = compose_finalizer(None)
+    finalizer_func = compose_finalizer()
 
     finalizer_func(sdk)

@@ -7,8 +7,8 @@ from nats.js.kv import KeyValue
 from vyper import v
 
 from runner.common.common import initialize_process_configuration
-from runner.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.centralized_config.centralized_config import CentralizedConfig
+from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
 
 

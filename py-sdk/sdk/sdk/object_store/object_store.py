@@ -29,25 +29,22 @@ UNDEFINED_OBJECT_STORE = "object store not defined"
 class ObjectStore:
     js: JetStreamContext
     object_store_name: Optional[str] = None
-    object_store: NatsObjectStore = field(init=False)
+    object_store: Optional[NatsObjectStore] = None
     logger: loguru.Logger = logger.bind(context="[OBJECT STORE]")
 
-    def __post_init__(self):
-        self.object_store = None
+    def __post_init__(self) -> None:
         self.object_store_name = v.get("nats.object_store")
         if self.object_store_name:
             self.logger = logger.bind(context=f"[OBJECT STORE: {self.object_store_name}]")
 
-    async def initialize(self) -> Optional[Exception]:
+    async def initialize(self) -> None:
         if self.object_store_name:
             object_store = await self._init_object_store()
-            assert isinstance(object_store, NatsObjectStore)
             self.object_store = object_store
         else:
             self.logger.info("object store not defined [skipped]")
-        return None
 
-    async def _init_object_store(self) -> NatsObjectStore | Exception:
+    async def _init_object_store(self) -> NatsObjectStore:
         try:
             assert isinstance(self.object_store_name, str)
             object_store = await self.js.object_store(self.object_store_name)
@@ -57,7 +54,7 @@ class ObjectStore:
             self.logger.warning(f"failed initializing object store {self.object_store_name}: {e}")
             raise FailedObjectStoreInitializationError(error=e)
 
-    async def list(self, regexp: Optional[str] = None) -> list[str] | Exception:
+    async def list(self, regexp: Optional[str] = None) -> list[str]:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
             raise UndefinedObjectStoreError
@@ -86,49 +83,44 @@ class ObjectStore:
                 response.append(obj_name)
 
         self.logger.info(f"files successfully listed from object store {self.object_store_name}")
-
         return response
 
-    async def get(self, key: str) -> tuple[Optional[bytes], bool] | Exception:
+    async def get(self, key: str) -> tuple[Optional[bytes], bool]:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
             raise UndefinedObjectStoreError
 
         try:
             response = await self.object_store.get(key)
+            self.logger.info(f"file {key} successfully retrieved from object store {self.object_store_name}")
+            return response.data, True
         except ObjectNotFoundError as e:
             self.logger.debug(f"file {key} not found in object store {self.object_store_name}: {e}")
             return None, False
         except Exception as e:
             self.logger.warning(f"failed getting file {key} from object store {self.object_store_name}: {e}")
             raise FailedGettingFileError(key=key, error=e)
-        else:
-            self.logger.info(f"file {key} successfully retrieved from object store {self.object_store_name}")
 
-        return response.data, True
-
-    async def save(self, key: str, payload: bytes) -> Optional[Exception]:
+    async def save(self, key: str, payload: bytes) -> None:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
             raise UndefinedObjectStoreError
 
         try:
             await self.object_store.put(key, payload)
+            self.logger.info(f"file {key} successfully saved in object store {self.object_store_name}")
         except Exception as e:
             self.logger.warning(f"failed saving file {key} in object store {self.object_store_name}: {e}")
             raise FailedSavingFileError(key=key, error=e)
-        else:
-            self.logger.info(f"file {key} successfully saved in object store {self.object_store_name}")
-        return None
 
-    async def delete(self, key: str) -> bool | Optional[Exception]:
+    async def delete(self, key: str) -> bool:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
             raise UndefinedObjectStoreError
 
         try:
             info_ = await self.object_store.delete(key)
-            return info_.info.deleted
+            return info_.info.deleted if info_.info.deleted else False
         except ObjectNotFoundError as e:
             self.logger.debug(f"file {key} not found in object store {self.object_store_name}: {e}")
             return False
@@ -136,7 +128,7 @@ class ObjectStore:
             self.logger.warning(f"failed deleting file {key} from object store {self.object_store_name}: {e}")
             raise FailedDeletingFileError(key=key, error=e)
 
-    async def purge(self, regexp: Optional[str] = None) -> Optional[Exception]:
+    async def purge(self, regexp: Optional[str] = None) -> None:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
             raise UndefinedObjectStoreError
@@ -150,7 +142,6 @@ class ObjectStore:
                 raise FailedCompilingRegexpError(error=e)
 
         object_names = await self.list()
-        assert isinstance(object_names, list)
         deleted = 0
         for name in object_names:
             if not pattern or pattern.match(name):
@@ -166,4 +157,3 @@ class ObjectStore:
                     raise FailedPurgingFilesError(error=e)
 
         self.logger.info(f"{deleted} files successfully purged from object store {self.object_store_name}")
-        return None

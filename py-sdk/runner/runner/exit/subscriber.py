@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from runner.exit.exit_runner import ExitRunner, Handler
 
 from runner.exit.exceptions import HandlerError, NewRequestMsgError, NotValidProtobuf, UndefinedHandlerFunctionError
-from runner.kai_nats_msg_pb2 import KaiNatsMessage
+from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.metadata.metadata import Metadata
 
 ACK_TIME = 22  # hours
@@ -31,17 +31,18 @@ class ExitSubscriber:
     exit_runner: "ExitRunner"
     logger: loguru.Logger = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.logger = self.exit_runner.logger.bind(context="[SUBSCRIBER]")
 
-    async def start(self):
+    async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
         subscriptions: list[JetStreamContext.PushSubscription] = []
+        assert isinstance(self.exit_runner.sdk.metadata, Metadata)
+        process = self.exit_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
         for _, subject in input_subjects:
             subject_ = subject.replace(".", "-")
-            process_ = self.exit_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
-            consumer_name = f"{subject_}_{process_}"
+            consumer_name = f"{subject_}_{process}"
 
             self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
 
@@ -52,7 +53,7 @@ class ExitSubscriber:
                 sub = await self.exit_runner.js.subscribe(
                     subject=subject,
                     queue=consumer_name,
-                    cb=self.process_message,
+                    cb=self._process_message,
                     deliver_policy=DeliverPolicy.NEW,
                     durable=consumer_name,
                     manual_ack=True,
@@ -67,7 +68,7 @@ class ExitSubscriber:
             subscriptions.append(sub)
             self.logger.info(f"listening to {subject} from queue group {consumer_name}")
 
-        async def shutdown_handler(sig, frame):
+        async def _shutdown_handler(sig, frame) -> None:
             self.logger.info("shutting signal received")
 
             for sub in subscriptions:
@@ -83,35 +84,35 @@ class ExitSubscriber:
 
             subscriber_thread_shutdown_event.set()
 
-        signal(SIGINT, asyncio.create_task(shutdown_handler))
-        signal(SIGTERM, asyncio.create_task(shutdown_handler))
+        signal(SIGINT, asyncio.create_task(_shutdown_handler))
+        signal(SIGTERM, asyncio.create_task(_shutdown_handler))
 
         subscriber_thread_shutdown_event.wait()
         self.logger.info("subscriber shutdown")
 
-    async def process_message(self, msg: Msg):
+    async def _process_message(self, msg: Msg) -> None:
         self.logger.info("new message received")
 
         try:
-            request_msg = self.new_request_msg(msg.data)
+            request_msg = self._new_request_msg(msg.data)
             self.exit_runner.sdk.set_request_message(request_msg)
         except Exception as e:
             error = NotValidProtobuf(msg.subject, error=e)
             self.logger.error(f"{error}")
-            await self.process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, error, request_msg.request_id)
             return
 
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
-        from_node = msg.from_node
-        handler = self.get_response_handler(from_node.lower())
+        from_node = request_msg.from_node
+        handler = self._get_response_handler(from_node.lower())
         assert isinstance(self.exit_runner.sdk.metadata, Metadata)
         to_node = self.exit_runner.sdk.metadata.get_process()
 
         if handler is None:
             error = UndefinedHandlerFunctionError(from_node)
             self.logger.error(f"{error}")
-            await self.process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, error, request_msg.request_id)
             return
 
         try:
@@ -120,7 +121,7 @@ class ExitSubscriber:
         except Exception as e:
             error = HandlerError(from_node, to_node, error=e, type="handler preprocessor")
             self.logger.error(f"{error}")
-            await self.process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, error, request_msg.request_id)
             return
 
         try:
@@ -128,7 +129,7 @@ class ExitSubscriber:
         except Exception as e:
             error = HandlerError(from_node, to_node, error=e)
             self.logger.error(f"{error}")
-            await self.process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, error, request_msg.request_id)
             return
 
         try:
@@ -137,7 +138,7 @@ class ExitSubscriber:
         except Exception as e:
             error = HandlerError(from_node, to_node, error=e, type="handler postprocessor")
             self.logger.error(f"{error}")
-            await self.process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, error, request_msg.request_id)
             return
 
         try:
@@ -145,7 +146,7 @@ class ExitSubscriber:
         except Exception as e:
             self.logger.error(f"error acknowledging message: {e}")
 
-    async def process_runner_error(self, msg: Msg, error: Exception, request_id: str):
+    async def _process_runner_error(self, msg: Msg, error: Exception, request_id: str) -> None:
         try:
             await msg.ack()
         except Exception as e:
@@ -154,7 +155,7 @@ class ExitSubscriber:
         self.logger.info(f"publishing error message {error}")
         await self.exit_runner.sdk.messaging.send_error(str(error), request_id)
 
-    def new_request_msg(self, data: bytes) -> KaiNatsMessage:
+    def _new_request_msg(self, data: bytes) -> KaiNatsMessage:
         request_msg = KaiNatsMessage()
 
         if is_compressed(data):
@@ -174,7 +175,7 @@ class ExitSubscriber:
 
         return request_msg
 
-    def get_response_handler(self, subject: str) -> Handler:
+    def _get_response_handler(self, subject: str) -> Handler:
         if subject in self.exit_runner.response_handlers:
             return self.exit_runner.response_handlers[subject]
 

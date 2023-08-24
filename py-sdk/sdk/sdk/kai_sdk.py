@@ -115,46 +115,46 @@ class MetadataABC(ABC):
 @dataclass
 class ObjectStoreABC(ABC):
     @abstractmethod
-    async def initialize(self) -> Optional[Exception]:
+    async def initialize(self) -> None:
         pass
 
     @abstractmethod
-    async def list(self, regexp: Optional[str]) -> list[str] | Exception:
+    async def list(self, regexp: Optional[str]) -> list[str]:
         pass
 
     @abstractmethod
-    async def get(self, key: str) -> tuple[bytes, bool] | Exception:
+    async def get(self, key: str) -> tuple[bytes, bool]:
         pass
 
     @abstractmethod
-    async def save(self, key: str, payload: bytes) -> Optional[Exception]:
+    async def save(self, key: str, payload: bytes) -> None:
         pass
 
     @abstractmethod
-    async def delete(self, key: str) -> bool | Exception:
+    async def delete(self, key: str) -> bool:
         pass
 
     @abstractmethod
-    async def purge(self, regexp: Optional[str]) -> Optional[Exception]:
+    async def purge(self, regexp: Optional[str]) -> None:
         pass
 
 
 @dataclass
 class CentralizedConfigABC(ABC):
     @abstractmethod
-    async def initialize(self) -> Optional[Exception]:
+    async def initialize(self) -> None:
         pass
 
     @abstractmethod
-    async def get_config(self, key: str, scope: Optional[Scope]) -> tuple[str, bool] | Exception:
+    async def get_config(self, key: str, scope: Optional[Scope]) -> tuple[str, bool]:
         pass
 
     @abstractmethod
-    async def set_config(self, key: str, value: bytes, scope: Optional[Scope]) -> Optional[Exception]:
+    async def set_config(self, key: str, value: bytes, scope: Optional[Scope]) -> None:
         pass
 
     @abstractmethod
-    async def delete_config(self, key: str, scope: Optional[Scope]) -> bool | Exception:
+    async def delete_config(self, key: str, scope: Optional[Scope]) -> bool:
         pass
 
 
@@ -195,13 +195,12 @@ class KaiSDK:
     measurements: MeasurementsABC = field(init=False)
     storage: StorageABC = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.logger:
             self._initialize_logger()
         else:
             self.logger = self.logger.bind(context="[KAI SDK]")
 
-        self.req_msg = None
         self.centralized_config = CentralizedConfig(js=self.js)
         self.metadata = Metadata()
         self.messaging = Messaging(nc=self.nc, js=self.js)
@@ -210,10 +209,12 @@ class KaiSDK:
         self.measurements = None
         self.storage = None
 
-    async def initialize(self):
+    async def initialize(self) -> None:
         try:
+            assert self.object_store is not None
             await self.object_store.initialize()
         except Exception as e:
+            assert self.logger is not None
             self.logger.error(f"error initializing object store: {e}")
             asyncio.get_event_loop().stop()
             sys.exit(1)
@@ -221,14 +222,16 @@ class KaiSDK:
         try:
             await self.centralized_config.initialize()
         except Exception as e:
+            assert self.logger is not None
             self.logger.error(f"error initializing centralized configuration: {e}")
             asyncio.get_event_loop().stop()
             sys.exit(1)
 
-    def get_request_id(self):
-        return self.req_msg.request_id if self.req_msg else None
+    def get_request_id(self) -> str | None:
+        req_msg = getattr(self, "req_msg", None)
+        return self.req_msg.request_id if req_msg else None
 
-    def _initialize_logger(self):
+    def _initialize_logger(self) -> None:
         logger.remove()  # Remove the pre-configured handler
         logger.add(
             sys.stdout,
@@ -241,7 +244,7 @@ class KaiSDK:
         self.logger = logger.bind(context="[KAI SDK]")
         self.logger.debug("logger initialized")
 
-    def set_request_message(self, req_msg: KaiNatsMessage):
+    def set_request_message(self, req_msg: KaiNatsMessage) -> None:
         self.req_msg = req_msg
         assert isinstance(self.messaging, Messaging)
         self.messaging.req_msg = req_msg

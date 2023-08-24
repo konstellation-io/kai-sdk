@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 from sdk.kai_sdk import KaiSDK
 
 
-def compose_initializer(initializer: Initializer) -> Initializer:
+def compose_initializer(initializer: Optional[Initializer] = None) -> Initializer:
     async def initializer_func(sdk: KaiSDK):
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[INITIALIZER]")
@@ -33,52 +33,43 @@ def compose_initializer(initializer: Initializer) -> Initializer:
     return initializer_func
 
 
-def compose_preprocessor(preprocessor: Preprocessor) -> Optional[Preprocessor]:
+def compose_preprocessor(preprocessor: Preprocessor) -> Preprocessor:
     def preprocessor_func(sdk: KaiSDK, response: Any):
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[PREPROCESSOR]")
         logger.info("preprocessing TaskRunner...")
 
-        if preprocessor is not None:
-            logger.info("executing user preprocessor...")
-            preprocessor(sdk, response)
-
-        return None
+        logger.info("executing user preprocessor...")
+        preprocessor(sdk, response)
 
     return preprocessor_func
 
 
-def compose_handler(handler: Handler) -> Optional[Handler]:
+def compose_handler(handler: Handler) -> Handler:
     def handler_func(sdk: KaiSDK, response: Any):
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[HANDLER]")
         logger.info("handling TaskRunner...")
 
-        if handler is not None:
-            logger.info("executing user handler...")
-            handler(sdk, response)
-
-        return None
+        logger.info("executing user handler...")
+        handler(sdk, response)
 
     return handler_func
 
 
-def compose_postprocessor(postprocessor: Postprocessor) -> Optional[Postprocessor]:
+def compose_postprocessor(postprocessor: Postprocessor) -> Postprocessor:
     def postprocessor_func(sdk: KaiSDK, response: Any):
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[POSTPROCESSOR]")
         logger.info("postprocessing TaskRunner...")
 
-        if postprocessor is not None:
-            logger.info("executing user postprocessor...")
-            postprocessor(sdk, response)
-
-        return None
+        logger.info("executing user postprocessor...")
+        postprocessor(sdk, response)
 
     return postprocessor_func
 
 
-def compose_finalizer(finalizer: Finalizer) -> Finalizer:
+def compose_finalizer(finalizer: Optional[Finalizer] = None) -> Finalizer:
     def finalizer_func(sdk: KaiSDK):
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[FINALIZER]")

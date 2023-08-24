@@ -37,47 +37,47 @@ class TaskRunner:
     postprocessor: Postprocessor = field(init=False)
     finalizer: Optional[Finalizer] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=self.logger)
         self.subscriber = TaskSubscriber(self)
 
-    def with_initializer(self, initializer: Initializer):
+    def with_initializer(self, initializer: Initializer) -> TaskRunner:
         self.initializer = compose_initializer(initializer)
         return self
 
-    def with_preprocessor(self, preprocessor: Preprocessor):
+    def with_preprocessor(self, preprocessor: Preprocessor) -> TaskRunner:
         self.preprocessor = compose_preprocessor(preprocessor)
         return self
 
-    def with_handler(self, handler: Handler):
+    def with_handler(self, handler: Handler) -> TaskRunner:
         self.response_handlers["default"] = compose_handler(handler)
         return self
 
-    def with_custom_handler(self, subject: str, handler: Handler):
+    def with_custom_handler(self, subject: str, handler: Handler) -> TaskRunner:
         self.response_handlers[subject] = compose_handler(handler)
         return self
 
-    def with_postprocessor(self, postprocessor: Postprocessor):
+    def with_postprocessor(self, postprocessor: Postprocessor) -> TaskRunner:
         self.postprocessor = compose_postprocessor(postprocessor)
         return self
 
-    def with_finalizer(self, finalizer: Finalizer):
+    def with_finalizer(self, finalizer: Finalizer) -> TaskRunner:
         self.finalizer = compose_finalizer(finalizer)
         return self
 
-    async def run(self):
+    async def run(self) -> None:
         if "default" not in self.response_handlers:
             raise UndefinedDefaultHandlerFunctionError()
 
         if not self.initializer:
-            self.initializer = compose_initializer(None)
+            self.initializer = compose_initializer()
 
         if not self.finalizer:
-            self.finalizer = compose_finalizer(None)
+            self.finalizer = compose_finalizer()
 
         initializer_func = self.initializer(self.sdk)
         await initializer_func
 
-        self.subscriber.start()
+        await self.subscriber.start()
 
         self.finalizer(self.sdk)

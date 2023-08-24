@@ -25,29 +25,28 @@ class Messaging:
     messaging_utils: MessagingUtilsABC = field(init=False)
     logger: loguru.Logger = logger.bind(context="[MESSAGING]")
 
-    def __post_init__(self):
-        self.req_msg = None
+    def __post_init__(self) -> None:
         self.messaging_utils = MessagingUtils(js=self.js, nc=self.nc)
 
-    async def send_output(self, response: Message, chan: Optional[str] = None):
+    async def send_output(self, response: Message, chan: Optional[str] = None) -> None:
         await self._publish_msg(msg=response, msg_type=MessageType.OK, chan=chan)
 
-    async def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str] = None):
+    async def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str] = None) -> None:
         await self._publish_msg(msg=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
 
-    async def send_any(self, response: Any, chan: Optional[str] = None):
+    async def send_any(self, response: Any, chan: Optional[str] = None) -> None:
         await self._publish_any(payload=response, msg_type=MessageType.OK, chan=chan)
 
-    async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str] = None):
+    async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str] = None) -> None:
         await self._publish_any(payload=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
 
-    async def send_early_reply(self, response: Message, chan: Optional[str] = None):
+    async def send_early_reply(self, response: Message, chan: Optional[str] = None) -> None:
         await self._publish_msg(msg=response, msg_type=MessageType.EARLY_REPLY, chan=chan)
 
-    async def send_early_exit(self, response: Message, chan: Optional[str] = None):
+    async def send_early_exit(self, response: Message, chan: Optional[str] = None) -> None:
         await self._publish_msg(msg=response, msg_type=MessageType.EARLY_EXIT, chan=chan)
 
-    async def send_error(self, error: str, request_id: str):
+    async def send_error(self, error: str, request_id: str) -> None:
         await self._publish_error(err_msg=error, request_id=request_id)
 
     def get_error_message(self) -> str:
@@ -66,8 +65,8 @@ class Messaging:
         return self.req_msg.message_type == MessageType.EARLY_EXIT
 
     async def _publish_msg(
-        self, msg: Message, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None
-    ):
+        self, msg: Message, msg_type: MessageType.V, request_id: Optional[str] = None, chan: Optional[str] = None
+    ) -> None:
         try:
             payload = Any()
             payload.Pack(msg)
@@ -82,15 +81,15 @@ class Messaging:
         await self._publish_response(response_msg, chan)
 
     async def _publish_any(
-        self, payload: Any, msg_type: int, request_id: Optional[str] = None, chan: Optional[str] = None
-    ):
+        self, payload: Any, msg_type: MessageType.V, request_id: Optional[str] = None, chan: Optional[str] = None
+    ) -> None:
         if not request_id:
             request_id = str(uuid.uuid4())
 
         response_msg = self._new_response_msg(payload, request_id, msg_type)
         await self._publish_response(response_msg, chan)
 
-    async def _publish_error(self, request_id: str, err_msg: str):
+    async def _publish_error(self, request_id: str, err_msg: str) -> None:
         response_msg = KaiNatsMessage(
             request_id=request_id,
             error=err_msg,
@@ -99,7 +98,7 @@ class Messaging:
         )
         await self._publish_response(response_msg)
 
-    def _new_response_msg(self, payload: Any, request_id: str, msg_type: int) -> KaiNatsMessage:
+    def _new_response_msg(self, payload: Any, request_id: str, msg_type: MessageType.V) -> KaiNatsMessage:
         self.logger.info(f"preparing response message of type {msg_type} and request_id {request_id}...")
         return KaiNatsMessage(
             request_id=request_id,
@@ -108,7 +107,7 @@ class Messaging:
             message_type=msg_type,
         )
 
-    async def _publish_response(self, response_msg: KaiNatsMessage, chan: Optional[str] = None):
+    async def _publish_response(self, response_msg: KaiNatsMessage, chan: Optional[str] = None) -> None:
         output_subject = self._get_output_subject(chan)
 
         try:
@@ -135,9 +134,8 @@ class Messaging:
         output_subject = v.get("nats.output")
         return f"{output_subject}.{chan}" if chan else output_subject
 
-    async def _prepare_output_message(self, msg: bytes) -> bytes | Exception:
+    async def _prepare_output_message(self, msg: bytes) -> bytes:
         max_size = await self.messaging_utils.get_max_message_size()
-        assert isinstance(max_size, int)
         if len(msg) <= max_size:
             return msg
 

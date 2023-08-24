@@ -21,12 +21,11 @@ class Runner:
     js: JetStreamContext = field(init=False)
     logger: loguru.Logger = field(init=False)
 
-    def __post_init__(self):
-        self.js = None
+    def __post_init__(self) -> None:
         self.initialize_config()
         self.initialize_logger()
 
-    async def initialize(self):
+    async def initialize(self) -> None:
         try:
             await self.nc.connect(v.get("nats.url"))
         except Exception as e:
@@ -39,7 +38,7 @@ class Runner:
             self.logger.error(f"error connecting to jetstream: {e}")
             raise JetStreamConnectionError(e)
 
-    def initialize_config(self):
+    def initialize_config(self) -> None:
         v.automatic_env()
 
         if v.is_set("APP_CONFIG_PATH"):
@@ -76,7 +75,7 @@ class Runner:
         v.set_default("runner.logger.output_paths", ["stdout"])
         v.set_default("runner.logger.error_output_paths", ["stderr"])
 
-    def initialize_logger(self):
+    def initialize_logger(self) -> None:
         logger_format = "<green>{time}</green> <level>{extra[context]} {message}</level>"
         output_paths = v.get("runner.logger.output_paths")
         error_output_paths = v.get("runner.logger.error_output_paths")
@@ -110,11 +109,11 @@ class Runner:
         self.logger = logger.bind(context="[RUNNER CONFIG]")
         self.logger.info("logger initialized")
 
-    def trigger_runner(self):
+    def trigger_runner(self) -> TriggerRunner:
         return TriggerRunner(self.nc, self.js)
 
-    def task_runner(self):
+    def task_runner(self) -> TaskRunner:
         return TaskRunner(self.nc, self.js)
 
-    def exit_runner(self):
+    def exit_runner(self) -> ExitRunner:
         return ExitRunner(self.nc, self.js)

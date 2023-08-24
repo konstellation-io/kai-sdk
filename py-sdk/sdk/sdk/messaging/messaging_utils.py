@@ -20,7 +20,7 @@ GZIP_BEST_COMPRESSION = 9
 @dataclass
 class MessagingUtilsABC(ABC):
     @abstractmethod
-    async def get_max_message_size(self) -> int | Optional[Exception]:
+    async def get_max_message_size(self) -> int:
         pass
 
 
@@ -30,7 +30,7 @@ class MessagingUtils:
     nc: NatsClient
     logger: loguru.Logger = logger.bind(context="[MESSAGING UTILS]")
 
-    async def get_max_message_size(self) -> int | Exception:
+    async def get_max_message_size(self) -> int:
         try:
             stream_info = await self.js.stream_info(v.get("nats.stream"))
         except Exception as e:

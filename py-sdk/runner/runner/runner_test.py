@@ -5,11 +5,11 @@ from nats.js.client import JetStreamContext
 from vyper import v
 
 from runner.exit.exit_runner import ExitRunner
-from runner.kai_nats_msg_pb2 import KaiNatsMessage
 from runner.runner import Runner
 from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
 from sdk.centralized_config.centralized_config import CentralizedConfig
+from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
 
 PRODUCT_BUCKET = "centralized_configuration.product.bucket"
@@ -78,7 +78,7 @@ async def test_runner_ok():
     runner = Runner(nc=nc)
 
     assert runner.nc is not None
-    assert runner.js is None
+    assert getattr(runner, "js", None) is None
     assert runner.logger is not None
 
 
@@ -107,7 +107,7 @@ async def test_runner_initialize_nats_ko():
     with pytest.raises(Exception):
         await runner.initialize()
 
-    assert runner.js is None
+    assert getattr(runner, "js", None) is None
 
 
 async def test_runner_initialize_jetstream_ko():
@@ -121,7 +121,7 @@ async def test_runner_initialize_jetstream_ko():
         await runner.initialize()
 
     assert runner.nc is nc
-    assert runner.js is None
+    assert getattr(runner, "js", None) is None
 
 
 @pytest.mark.parametrize(

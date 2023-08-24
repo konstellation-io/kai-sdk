@@ -27,15 +27,15 @@ class CentralizedConfig:
     process_kv: KeyValue = field(init=False)
     logger: loguru.Logger = logger.bind(context="[CENTRALIZED CONFIGURATION]")
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.product_kv = None
         self.workflow_kv = None
         self.process_kv = None
 
-    async def initialize(self) -> Optional[Exception]:
+    async def initialize(self) -> None:
         self.product_kv, self.workflow_kv, self.process_kv = await self._init_kv_stores()
 
-    async def _init_kv_stores(self) -> tuple[KeyValue, KeyValue, KeyValue] | Exception:
+    async def _init_kv_stores(self) -> tuple[KeyValue, KeyValue, KeyValue]:
         try:
             name = v.get("centralized_configuration.product.bucket")
             self.logger.debug(f"initializing product key-value store {name}...")
@@ -57,7 +57,7 @@ class CentralizedConfig:
             self.logger.warning(f"failed initializing configuration: {e}")
             raise FailedInitializingConfigError(error=e)
 
-    async def get_config(self, key: str, scope: Optional[Scope] = None) -> tuple[str, bool] | Exception:
+    async def get_config(self, key: str, scope: Optional[Scope] = None) -> tuple[str, bool]:
         if scope:
             try:
                 config = await self._get_config_from_scope(key, scope)
@@ -85,7 +85,7 @@ class CentralizedConfig:
         self.logger.warning(f"key {key} not found in any scope")
         return None, False
 
-    async def set_config(self, key: str, value: bytes, scope: Optional[Scope] = None) -> Optional[Exception]:
+    async def set_config(self, key: str, value: bytes, scope: Optional[Scope] = None) -> None:
         scope = scope or Scope.ProcessScope
         kv_store = self._get_scoped_config(scope)
 
@@ -95,7 +95,7 @@ class CentralizedConfig:
             self.logger.warning(f"failed setting config: {e}")
             raise FailedSettingConfigError(key=key, scope=scope, error=e)
 
-    async def delete_config(self, key: str, scope: Optional[Scope] = None) -> bool | Exception:
+    async def delete_config(self, key: str, scope: Optional[Scope] = None) -> bool:
         scope = scope or Scope.ProcessScope
         kv_store = self._get_scoped_config(scope)
 

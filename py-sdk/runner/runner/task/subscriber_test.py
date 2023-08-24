@@ -8,10 +8,11 @@ from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
 
-from runner.kai_nats_msg_pb2 import KaiNatsMessage
 from runner.task.subscriber import TaskSubscriber
 from runner.task.task_runner import TaskRunner
+from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
+from sdk.metadata.metadata import Metadata
 
 NATS_INPUT = "nats.inputs"
 
@@ -35,7 +36,7 @@ def m_task_runner(m_sdk) -> TaskRunner:
 
     task_runner = TaskRunner(nc=nc, js=js)
     task_runner.sdk = m_sdk
-    task_runner.sdk.metadata = Mock()
+    task_runner.sdk.metadata = Mock(spec=Metadata)
     task_runner.sdk.metadata.get_process = Mock(return_value="test.process")
 
     return task_runner

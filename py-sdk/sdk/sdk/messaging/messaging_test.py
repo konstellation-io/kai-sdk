@@ -50,7 +50,7 @@ def test_ok():
 
 async def test_send_output(m_messaging):
     m_messaging._publish_msg = AsyncMock()
-    response = Message()
+    response = Mock(spec=Message)
 
     await m_messaging.send_output(response=response, chan=TEST_CHANNEL)
 
@@ -60,7 +60,7 @@ async def test_send_output(m_messaging):
 
 async def test_send_output_with_request_id(m_messaging):
     m_messaging._publish_msg = AsyncMock()
-    response = Message()
+    response = Mock(spec=Message)
     request_id = "test_request_id"
 
     await m_messaging.send_output_with_request_id(response=response, request_id=request_id, chan=TEST_CHANNEL)
@@ -73,7 +73,7 @@ async def test_send_output_with_request_id(m_messaging):
 
 async def test_send_any(m_messaging):
     m_messaging._publish_any = AsyncMock()
-    response = Any()
+    response = Mock(spec=Any)
 
     await m_messaging.send_any(response=response, chan=TEST_CHANNEL)
 
@@ -83,7 +83,7 @@ async def test_send_any(m_messaging):
 
 async def test_send_any_with_request_id(m_messaging):
     m_messaging._publish_any = AsyncMock()
-    response = Any()
+    response = Mock(spec=Any)
     request_id = "test_request_id"
 
     await m_messaging.send_any_with_request_id(response=response, request_id=request_id, chan=TEST_CHANNEL)
@@ -105,7 +105,7 @@ async def test_send_error(m_messaging):
 
 async def test_send_early_reply(m_messaging):
     m_messaging._publish_msg = AsyncMock()
-    response = Message()
+    response = Mock(spec=Message)
 
     await m_messaging.send_early_reply(response=response, chan=TEST_CHANNEL)
 
@@ -115,7 +115,7 @@ async def test_send_early_reply(m_messaging):
 
 async def test_send_early_exit(m_messaging):
     m_messaging._publish_msg = AsyncMock()
-    response = Message()
+    response = Mock(spec=Message)
 
     await m_messaging.send_early_exit(response=response, chan=TEST_CHANNEL)
 
@@ -149,7 +149,7 @@ def test_is_message_ok(m_messaging, message_type, function, expected_result):
     assert is_message == expected_result
 
 
-@patch.object(Any, "Pack", return_value=Any())
+@patch.object(Any, "Pack", return_value=Mock(spec=Any))
 async def test__publish_msg_ok(_, m_messaging):
     request_id = "test_request_id"
     msg = Mock(spec=Message)
@@ -169,8 +169,8 @@ async def test__publish_msg_ok(_, m_messaging):
 
 @patch.object(Any, "Pack", side_effect=Exception)
 async def test__publish_msg_packing_message_ko(_, m_messaging):
-    message = Any()
-    m_messaging._new_response_msg = Mock()
+    message = Mock(spec=Any)
+    m_messaging._new_response_msg = Mock(spec=KaiNatsMessage)
     m_messaging._publish_response = AsyncMock()
 
     await m_messaging._publish_msg(msg=message, msg_type=MessageType.OK)

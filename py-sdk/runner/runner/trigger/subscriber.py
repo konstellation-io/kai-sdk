@@ -19,8 +19,8 @@ from sdk.messaging.messaging_utils import is_compressed, uncompress
 if TYPE_CHECKING:
     from runner.trigger.trigger_runner import TriggerRunner
 
-from runner.kai_nats_msg_pb2 import KaiNatsMessage
 from runner.trigger.exceptions import HandlerError, NewRequestMsgError, NotValidProtobuf, UndefinedResponseHandlerError
+from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.metadata.metadata import Metadata
 
 ACK_TIME = 22  # hours
@@ -31,17 +31,18 @@ class TriggerSubscriber:
     trigger_runner: "TriggerRunner"
     logger: loguru.Logger = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.logger = self.trigger_runner.logger.bind(context="[SUBSCRIBER]")
 
-    async def start(self):
+    async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
         subscriptions: list[JetStreamContext.PushSubscription] = []
+        assert isinstance(self.trigger_runner.sdk.metadata, Metadata)
+        process = self.trigger_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
         for _, subject in input_subjects:
             subject_ = subject.replace(".", "-")
-            process_ = self.trigger_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
-            consumer_name = f"{subject_}_{process_}"
+            consumer_name = f"{subject_}_{process}"
 
             self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
 
@@ -52,7 +53,7 @@ class TriggerSubscriber:
                 sub = await self.trigger_runner.js.subscribe(
                     subject=subject,
                     queue=consumer_name,
-                    cb=self.process_message,
+                    cb=self._process_message,
                     deliver_policy=DeliverPolicy.NEW,
                     durable=consumer_name,
                     manual_ack=True,
@@ -67,7 +68,7 @@ class TriggerSubscriber:
             subscriptions.append(sub)
             self.logger.info(f"listening to {subject} from queue group {consumer_name}")
 
-        async def shutdown_handler(sig, frame):
+        async def _shutdown_handler(sig, frame) -> None:
             self.logger.info("shutting signal received")
 
             for sub in subscriptions:
@@ -83,22 +84,22 @@ class TriggerSubscriber:
 
             subscriber_thread_shutdown_event.set()
 
-        signal(SIGINT, asyncio.create_task(shutdown_handler))
-        signal(SIGTERM, asyncio.create_task(shutdown_handler))
+        signal(SIGINT, asyncio.create_task(_shutdown_handler))
+        signal(SIGTERM, asyncio.create_task(_shutdown_handler))
 
         subscriber_thread_shutdown_event.wait()
         self.logger.info("subscriber shutdown")
 
-    async def process_message(self, msg: Msg):
+    async def _process_message(self, msg: Msg) -> None:
         self.logger.info("new message received")
 
         try:
-            request_msg = self.new_request_msg(msg.data)
+            request_msg = self._new_request_msg(msg.data)
             self.trigger_runner.sdk.set_request_message(request_msg)
         except Exception as e:
             error = NotValidProtobuf(msg.subject, error=e)
             self.logger.error(f"{error}")
-            await self.process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, error, request_msg.request_id)
             return
 
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
@@ -106,7 +107,7 @@ class TriggerSubscriber:
         if self.trigger_runner.response_handler is None:
             error = UndefinedResponseHandlerError()
             self.logger.error(f"{error}")
-            await self.process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, error, request_msg.request_id)
             return
 
         try:
@@ -117,7 +118,7 @@ class TriggerSubscriber:
             to_node = self.trigger_runner.sdk.metadata.get_process()
             error = HandlerError(from_node, to_node, error=e)
             self.logger.error(f"{error}")
-            await self.process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, error, request_msg.request_id)
             return
 
         try:
@@ -125,7 +126,7 @@ class TriggerSubscriber:
         except Exception as e:
             self.logger.error(f"error acknowledging message: {e}")
 
-    async def process_runner_error(self, msg: Msg, error: Exception, request_id: str):
+    async def _process_runner_error(self, msg: Msg, error: Exception, request_id: str) -> None:
         try:
             await msg.ack()
         except Exception as e:
@@ -134,7 +135,7 @@ class TriggerSubscriber:
         self.logger.info(f"publishing error message {error}")
         await self.trigger_runner.sdk.messaging.send_error(str(error), request_id)
 
-    def new_request_msg(self, data: bytes) -> KaiNatsMessage:
+    def _new_request_msg(self, data: bytes) -> KaiNatsMessage:
         request_msg = KaiNatsMessage()
 
         if is_compressed(data):

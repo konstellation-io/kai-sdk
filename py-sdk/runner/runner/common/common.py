@@ -15,7 +15,7 @@ Finalizer = Task
 Handler = Callable[[KaiSDK, Any], None]
 
 
-async def initialize_process_configuration(sdk: KaiSDK):
+async def initialize_process_configuration(sdk: KaiSDK) -> None:
     values = v.get("centralized_configuration.process.config")
 
     assert sdk.logger is not None

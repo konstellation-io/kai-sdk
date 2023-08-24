@@ -9,7 +9,7 @@ help: ## This help
 
 .PHONY: protos
 protos: ## Generate proto files
-	protoc -I proto --python_out=py-sdk/sdk/sdk --mypy_out=py-sdk/sdk/sdk --python_out=py-sdk/runner/runner --mypy_out=py-sdk/runner/runner --go_out=go-sdk/protos --go_opt=paths=source_relative proto/kai_nats_msg.proto
+	protoc -I proto --python_out=py-sdk/sdk/sdk --mypy_out=py-sdk/sdk/sdk --go_out=go-sdk/protos --go_opt=paths=source_relative proto/kai_nats_msg.proto
 
 .PHONY: generate_mocks
 generate_mocks: ## Generate mocks

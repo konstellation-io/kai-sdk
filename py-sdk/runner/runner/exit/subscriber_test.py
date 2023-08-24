@@ -10,8 +10,9 @@ from vyper import v
 
 from runner.exit.exit_runner import ExitRunner
 from runner.exit.subscriber import ExitSubscriber
-from runner.kai_nats_msg_pb2 import KaiNatsMessage
+from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
+from sdk.metadata.metadata import Metadata
 
 NATS_INPUT = "nats.inputs"
 
@@ -35,7 +36,7 @@ def m_exit_runner(m_sdk) -> ExitRunner:
 
     exit_runner = ExitRunner(nc=nc, js=js)
     exit_runner.sdk = m_sdk
-    exit_runner.sdk.metadata = Mock()
+    exit_runner.sdk.metadata = Mock(spec=Metadata)
     exit_runner.sdk.metadata.get_process = Mock(return_value="test.process")
 
     return exit_runner
