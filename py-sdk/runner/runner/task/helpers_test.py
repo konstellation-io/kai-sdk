@@ -16,10 +16,6 @@ from sdk.kai_sdk import KaiSDK
 CENTRALIZED_CONFIG = "centralized_configuration.process.config"
 
 
-def mock_user_initializer(sdk):
-    assert sdk is not None
-
-
 async def mock_user_initializer_awaitable(sdk):
     assert sdk is not None
     await asyncio.sleep(0.00001)
@@ -42,19 +38,6 @@ def mock_user_postprocessor(sdk, response):
 
 def mock_user_finalizer(sdk):
     assert sdk is not None
-
-
-async def test_compose_initializer_ok():
-    v.set(CENTRALIZED_CONFIG, {"key": "value"})
-    sdk = Mock(spec=KaiSDK)
-    sdk.centralized_config = Mock(spec=CentralizedConfig)
-    sdk.centralized_config.set_config = AsyncMock()
-    initializer_func = compose_initializer(mock_user_initializer)
-
-    await initializer_func(sdk)
-
-    assert sdk.centralized_config.set_config.called
-    assert sdk.centralized_config.set_config.call_args == call("key", "value")
 
 
 async def test_compose_initializer_with_awaitable_ok():

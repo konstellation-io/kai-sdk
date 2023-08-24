@@ -44,27 +44,27 @@ def m_exit_runner(m_sdk) -> ExitRunner:
 
 @patch("runner.exit.subscriber.Event", return_value=Mock(spec=Event))
 @patch("runner.exit.subscriber.asyncio", return_value=Mock(spec=asyncio))
-@patch("runner.exit.subscriber.signal", return_value=Mock(spec=signal))
-async def test_start_ok(m_signal_task, _, m_shutdown_event, m_exit_runner):
+async def test_start_ok(m_asyncio, m_shutdown_event, m_exit_runner):
     v.set(NATS_INPUT, [("1", "test.subject")])
     m_exit_runner.js.subscribe = AsyncMock()
+    m_add_signal_h = m_asyncio.get_event_loop.return_value.add_signal_handler = Mock()
 
     s = ExitSubscriber(m_exit_runner)
     await s.start()
 
     assert m_shutdown_event.called
     assert m_exit_runner.js.subscribe.called
-    assert m_signal_task.call_count == 2
+    assert m_add_signal_h.call_count == 2
     assert not m_shutdown_event.return_value.set.called
     assert m_shutdown_event.return_value.wait.called
 
 
 @patch("runner.exit.subscriber.Event", return_value=Mock(spec=Event))
 @patch("runner.exit.subscriber.asyncio", return_value=Mock(spec=asyncio))
-@patch("runner.exit.subscriber.signal", return_value=Mock(spec=signal))
-async def test_start_nats_subscribing_ko(m_signal_task, m_asyncio, m_shutdown_event, m_exit_runner):
+async def test_start_nats_subscribing_ko(m_asyncio, m_shutdown_event, m_exit_runner):
     v.set(NATS_INPUT, [("1", "test.subject")])
     m_exit_runner.js.subscribe = AsyncMock(side_effect=Exception("Subscription error"))
+    m_add_signal_h = m_asyncio.get_event_loop.return_value.add_signal_handler = Mock()
 
     with pytest.raises(SystemExit):
         s = ExitSubscriber(m_exit_runner)
@@ -73,7 +73,7 @@ async def test_start_nats_subscribing_ko(m_signal_task, m_asyncio, m_shutdown_ev
         assert m_shutdown_event.called
         assert m_exit_runner.js.subscribe.called
         assert m_asyncio.return_value.get_event_loop.return_value.stop.called
-        assert m_signal_task.call_count == 0
+        assert not m_add_signal_h.called
         assert not m_shutdown_event.return_value.set.called
         assert not m_shutdown_event.return_value.wait.called
 

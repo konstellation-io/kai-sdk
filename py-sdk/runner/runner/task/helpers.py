@@ -22,10 +22,7 @@ def compose_initializer(initializer: Optional[Initializer] = None) -> Initialize
 
         if initializer is not None:
             logger.info("executing user initializer...")
-            if inspect.iscoroutinefunction(initializer):
-                await initializer(sdk)
-            else:
-                initializer(sdk)
+            await initializer(sdk)
             logger.info("user initializer executed")
 
         logger.info("TaskRunner initialized")
