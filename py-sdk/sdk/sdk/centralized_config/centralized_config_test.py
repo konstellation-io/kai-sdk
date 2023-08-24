@@ -8,8 +8,7 @@ from nats.js.errors import KeyNotFoundError
 from nats.js.kv import KeyValue
 from vyper import v
 
-from sdk.centralized_config.centralized_config import CentralizedConfig
-from sdk.centralized_config.constants import Scope
+from sdk.centralized_config.centralized_config import CentralizedConfig, Scope
 from sdk.centralized_config.exceptions import (
     FailedDeletingConfigError,
     FailedGettingConfigError,

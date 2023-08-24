@@ -37,7 +37,6 @@ class ExitSubscriber:
     async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
         subscriptions: list[JetStreamContext.PushSubscription] = []
-        assert isinstance(self.exit_runner.sdk.metadata, Metadata)
         process = self.exit_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
         for _, subject in input_subjects:
@@ -97,48 +96,41 @@ class ExitSubscriber:
             request_msg = self._new_request_msg(msg.data)
             self.exit_runner.sdk.set_request_message(request_msg)
         except Exception as e:
-            error = NotValidProtobuf(msg.subject, error=e)
-            self.logger.error(f"{error}")
-            await self._process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e), request_msg.request_id)
             return
 
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
         from_node = request_msg.from_node
         handler = self._get_response_handler(from_node.lower())
-        assert isinstance(self.exit_runner.sdk.metadata, Metadata)
         to_node = self.exit_runner.sdk.metadata.get_process()
 
         if handler is None:
-            error = UndefinedHandlerFunctionError(from_node)
-            self.logger.error(f"{error}")
-            await self._process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, UndefinedHandlerFunctionError(from_node), request_msg.request_id)
             return
 
         try:
             if self.exit_runner.preprocessor is not None:
                 self.exit_runner.preprocessor(self.exit_runner.sdk, request_msg.payload)
         except Exception as e:
-            error = HandlerError(from_node, to_node, error=e, type="handler preprocessor")
-            self.logger.error(f"{error}")
-            await self._process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(
+                msg, HandlerError(from_node, to_node, error=e, type="handler preprocessor"), request_msg.request_id
+            )
             return
 
         try:
-            await handler(self.exit_runner.sdk, request_msg.payload)
+            handler(self.exit_runner.sdk, request_msg.payload)
         except Exception as e:
-            error = HandlerError(from_node, to_node, error=e)
-            self.logger.error(f"{error}")
-            await self._process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e), request_msg.request_id)
             return
 
         try:
             if self.exit_runner.postprocessor is not None:
                 self.exit_runner.postprocessor(self.exit_runner.sdk, request_msg.payload)
         except Exception as e:
-            error = HandlerError(from_node, to_node, error=e, type="handler postprocessor")
-            self.logger.error(f"{error}")
-            await self._process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(
+                msg, HandlerError(from_node, to_node, error=e, type="handler postprocessor"), request_msg.request_id
+            )
             return
 
         try:
@@ -147,13 +139,15 @@ class ExitSubscriber:
             self.logger.error(f"error acknowledging message: {e}")
 
     async def _process_runner_error(self, msg: Msg, error: Exception, request_id: str) -> None:
+        error_msg = str(error)
+        self.logger.info(f"publishing error message {error_msg}")
+
         try:
             await msg.ack()
         except Exception as e:
             self.logger.error(f"error acknowledging message: {e}")
 
-        self.logger.info(f"publishing error message {error}")
-        await self.exit_runner.sdk.messaging.send_error(str(error), request_id)
+        await self.exit_runner.sdk.messaging.send_error(error_msg, request_id)
 
     def _new_request_msg(self, data: bytes) -> KaiNatsMessage:
         request_msg = KaiNatsMessage()

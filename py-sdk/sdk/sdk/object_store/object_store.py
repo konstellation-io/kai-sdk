@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -26,7 +27,34 @@ UNDEFINED_OBJECT_STORE = "object store not defined"
 
 
 @dataclass
-class ObjectStore:
+class ObjectStoreABC(ABC):
+    @abstractmethod
+    async def initialize(self) -> None:
+        pass
+
+    @abstractmethod
+    async def list(self, regexp: Optional[str]) -> list[str]:
+        pass
+
+    @abstractmethod
+    async def get(self, key: str) -> tuple[Optional[bytes], bool]:
+        pass
+
+    @abstractmethod
+    async def save(self, key: str, payload: bytes) -> None:
+        pass
+
+    @abstractmethod
+    async def delete(self, key: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def purge(self, regexp: Optional[str]) -> None:
+        pass
+
+
+@dataclass
+class ObjectStore(ObjectStoreABC):
     js: JetStreamContext
     object_store_name: Optional[str] = None
     object_store: Optional[NatsObjectStore] = None
@@ -39,8 +67,7 @@ class ObjectStore:
 
     async def initialize(self) -> None:
         if self.object_store_name:
-            object_store = await self._init_object_store()
-            self.object_store = object_store
+            self.object_store = await self._init_object_store()
         else:
             self.logger.info("object store not defined [skipped]")
 

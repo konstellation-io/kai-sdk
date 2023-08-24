@@ -33,7 +33,7 @@ class Runner:
             raise NATSConnectionError(e)
 
         try:
-            self.js = await self.nc.jetstream()
+            self.js = self.nc.jetstream()
         except Exception as e:
             self.logger.error(f"error connecting to jetstream: {e}")
             raise JetStreamConnectionError(e)

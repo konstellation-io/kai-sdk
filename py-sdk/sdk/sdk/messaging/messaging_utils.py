@@ -25,7 +25,7 @@ class MessagingUtilsABC(ABC):
 
 
 @dataclass
-class MessagingUtils:
+class MessagingUtils(MessagingUtilsABC):
     js: JetStreamContext
     nc: NatsClient
     logger: loguru.Logger = logger.bind(context="[MESSAGING UTILS]")

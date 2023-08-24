@@ -37,7 +37,6 @@ class TriggerSubscriber:
     async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
         subscriptions: list[JetStreamContext.PushSubscription] = []
-        assert isinstance(self.trigger_runner.sdk.metadata, Metadata)
         process = self.trigger_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
         for _, subject in input_subjects:
@@ -97,28 +96,21 @@ class TriggerSubscriber:
             request_msg = self._new_request_msg(msg.data)
             self.trigger_runner.sdk.set_request_message(request_msg)
         except Exception as e:
-            error = NotValidProtobuf(msg.subject, error=e)
-            self.logger.error(f"{error}")
-            await self._process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e), request_msg.request_id)
             return
 
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
         if self.trigger_runner.response_handler is None:
-            error = UndefinedResponseHandlerError()
-            self.logger.error(f"{error}")
-            await self._process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, UndefinedResponseHandlerError(), request_msg.request_id)
             return
 
         try:
             await self.trigger_runner.response_handler(self.trigger_runner.sdk, request_msg.payload)
         except Exception as e:
             from_node = request_msg.from_node
-            assert isinstance(self.trigger_runner.sdk.metadata, Metadata)
             to_node = self.trigger_runner.sdk.metadata.get_process()
-            error = HandlerError(from_node, to_node, error=e)
-            self.logger.error(f"{error}")
-            await self._process_runner_error(msg, error, request_msg.request_id)
+            await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e), request_msg.request_id)
             return
 
         try:
@@ -127,13 +119,15 @@ class TriggerSubscriber:
             self.logger.error(f"error acknowledging message: {e}")
 
     async def _process_runner_error(self, msg: Msg, error: Exception, request_id: str) -> None:
+        error_msg = str(error)
+        self.logger.info(f"publishing error message {error_msg}")
+
         try:
             await msg.ack()
         except Exception as e:
             self.logger.error(f"error acknowledging message: {e}")
 
-        self.logger.info(f"publishing error message {error}")
-        await self.trigger_runner.sdk.messaging.send_error(str(error), request_id)
+        await self.trigger_runner.sdk.messaging.send_error(error_msg, request_id)
 
     def _new_request_msg(self, data: bytes) -> KaiNatsMessage:
         request_msg = KaiNatsMessage()

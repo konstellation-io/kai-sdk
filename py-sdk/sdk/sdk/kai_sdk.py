@@ -2,173 +2,21 @@ from __future__ import annotations
 
 import asyncio
 import sys
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass, field
 from typing import Optional
 
 import loguru
-from google.protobuf.any_pb2 import Any
-from google.protobuf.message import Message
 from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 
-from sdk.centralized_config.centralized_config import CentralizedConfig
-from sdk.centralized_config.constants import Scope
+from sdk.centralized_config.centralized_config import CentralizedConfig, CentralizedConfigABC
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
-from sdk.messaging.messaging import Messaging
-from sdk.metadata.metadata import Metadata
-from sdk.object_store.object_store import ObjectStore
-from sdk.path_utils.path_utils import PathUtils
-
-
-@dataclass
-class MessagingABC(ABC):
-    @abstractmethod
-    async def send_output(self, response: Message, chan: Optional[str]):
-        pass
-
-    @abstractmethod
-    async def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str]):
-        pass
-
-    @abstractmethod
-    async def send_any(self, response: Any, chan: Optional[str]):
-        pass
-
-    @abstractmethod
-    async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str]):
-        pass
-
-    @abstractmethod
-    async def send_error(self, error: str, request_id: str):
-        pass
-
-    @abstractmethod
-    async def send_early_reply(self, response: Message, chan: Optional[str]):
-        pass
-
-    @abstractmethod
-    async def send_early_exit(self, response: Message, chan: Optional[str]):
-        pass
-
-    @abstractmethod
-    def is_message_ok(self) -> bool:
-        pass
-
-    @abstractmethod
-    def is_message_error(self) -> bool:
-        pass
-
-    @abstractmethod
-    def is_message_early_reply(self) -> bool:
-        pass
-
-    @abstractmethod
-    def is_message_early_exit(self) -> bool:
-        pass
-
-
-@dataclass
-class MetadataABC(ABC):
-    @staticmethod
-    @abstractmethod
-    def get_product(self) -> str:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def get_workflow(self) -> str:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def get_process(self) -> str:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def get_version(self) -> str:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def get_object_store_name(self) -> str:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def get_key_value_store_product_name(self) -> str:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def get_key_value_store_workflow_name(self) -> str:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def get_key_value_store_process_name(self) -> str:
-        pass
-
-
-@dataclass
-class ObjectStoreABC(ABC):
-    @abstractmethod
-    async def initialize(self) -> None:
-        pass
-
-    @abstractmethod
-    async def list(self, regexp: Optional[str]) -> list[str]:
-        pass
-
-    @abstractmethod
-    async def get(self, key: str) -> tuple[bytes, bool]:
-        pass
-
-    @abstractmethod
-    async def save(self, key: str, payload: bytes) -> None:
-        pass
-
-    @abstractmethod
-    async def delete(self, key: str) -> bool:
-        pass
-
-    @abstractmethod
-    async def purge(self, regexp: Optional[str]) -> None:
-        pass
-
-
-@dataclass
-class CentralizedConfigABC(ABC):
-    @abstractmethod
-    async def initialize(self) -> None:
-        pass
-
-    @abstractmethod
-    async def get_config(self, key: str, scope: Optional[Scope]) -> tuple[str, bool]:
-        pass
-
-    @abstractmethod
-    async def set_config(self, key: str, value: bytes, scope: Optional[Scope]) -> None:
-        pass
-
-    @abstractmethod
-    async def delete_config(self, key: str, scope: Optional[Scope]) -> bool:
-        pass
-
-
-@dataclass
-class PathUtilsABC(ABC):
-    @staticmethod
-    @abstractmethod
-    def get_base_path(self) -> str:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def compose_path(self, *relative_path: str) -> str:
-        pass
+from sdk.messaging.messaging import Messaging, MessagingABC
+from sdk.metadata.metadata import Metadata, MetadataABC
+from sdk.object_store.object_store import ObjectStore, ObjectStoreABC
+from sdk.path_utils.path_utils import PathUtils, PathUtilsABC
 
 
 @dataclass
@@ -206,13 +54,11 @@ class KaiSDK:
         self.messaging = Messaging(nc=self.nc, js=self.js)
         self.object_store = ObjectStore(js=self.js)
         self.path_utils = PathUtils()
-        self.measurements = None
-        self.storage = None
 
     async def initialize(self) -> None:
         try:
-            assert self.object_store is not None
-            await self.object_store.initialize()
+            if self.object_store:
+                await self.object_store.initialize()
         except Exception as e:
             assert self.logger is not None
             self.logger.error(f"error initializing object store: {e}")

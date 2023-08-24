@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 import loguru
@@ -8,7 +9,50 @@ from vyper import v
 
 
 @dataclass
-class Metadata:
+class MetadataABC(ABC):
+    @staticmethod
+    @abstractmethod
+    def get_product() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_workflow() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_process() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_version() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_object_store_name() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_key_value_store_product_name() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_key_value_store_workflow_name() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_key_value_store_process_name() -> str:
+        pass
+
+
+@dataclass
+class Metadata(MetadataABC):
     logger: loguru.Logger = logger.bind(context="[METADATA]")
 
     @staticmethod

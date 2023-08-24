@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 import loguru
@@ -9,7 +10,20 @@ from vyper import v
 
 
 @dataclass
-class PathUtils:
+class PathUtilsABC(ABC):
+    @staticmethod
+    @abstractmethod
+    def get_base_path() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def compose_path(*relative_path: str) -> str:
+        pass
+
+
+@dataclass
+class PathUtils(PathUtilsABC):
     logger: loguru.Logger = logger.bind(context="[PATH UTILS]")
 
     @staticmethod

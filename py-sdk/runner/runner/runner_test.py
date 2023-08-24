@@ -63,8 +63,8 @@ async def test_sdk_import_ok(_):
     assert sdk.centralized_config.workflow_kv == "test_workflow"
     assert sdk.centralized_config.process_kv == "test_process"
     assert sdk.path_utils is not None
-    assert sdk.measurements is None
-    assert sdk.storage is None
+    assert getattr(sdk, "measurements", None) is None
+    assert getattr(sdk, "storage", None) is None
 
 
 async def test_runner_ok():
@@ -87,7 +87,7 @@ async def test_runner_initialize_ok():
     nc.connect.return_value = None
     v.set(NATS_URL, "test_url")
     m_js = Mock(spec=JetStreamContext)
-    nc.jetstream = AsyncMock(return_value=m_js)
+    nc.jetstream = Mock(return_value=m_js)
 
     runner = Runner(nc=nc)
     await runner.initialize()
@@ -101,7 +101,7 @@ async def test_runner_initialize_nats_ko():
     nc.connect.side_effect = Exception("test exception")
     v.set(NATS_URL, "test_url")
     m_js = Mock(spec=JetStreamContext)
-    nc.jetstream = AsyncMock(return_value=m_js)
+    nc.jetstream = Mock(return_value=m_js)
 
     runner = Runner(nc=nc)
     with pytest.raises(Exception):
@@ -114,7 +114,7 @@ async def test_runner_initialize_jetstream_ko():
     nc = AsyncMock(spec=NatsClient)
     nc.connect.return_value = None
     v.set(NATS_URL, "test_url")
-    nc.jetstream = AsyncMock(side_effect=Exception("test exception"))
+    nc.jetstream = Mock(side_effect=Exception("test exception"))
 
     runner = Runner(nc=nc)
     with pytest.raises(Exception):

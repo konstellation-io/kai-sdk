@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -18,7 +19,54 @@ from sdk.messaging.messaging_utils import MessagingUtils, MessagingUtilsABC, com
 
 
 @dataclass
-class Messaging:
+class MessagingABC(ABC):
+    @abstractmethod
+    async def send_output(self, response: Message, chan: Optional[str]):
+        pass
+
+    @abstractmethod
+    async def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str]):
+        pass
+
+    @abstractmethod
+    async def send_any(self, response: Any, chan: Optional[str]):
+        pass
+
+    @abstractmethod
+    async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str]):
+        pass
+
+    @abstractmethod
+    async def send_error(self, error: str, request_id: str):
+        pass
+
+    @abstractmethod
+    async def send_early_reply(self, response: Message, chan: Optional[str]):
+        pass
+
+    @abstractmethod
+    async def send_early_exit(self, response: Message, chan: Optional[str]):
+        pass
+
+    @abstractmethod
+    def is_message_ok(self) -> bool:
+        pass
+
+    @abstractmethod
+    def is_message_error(self) -> bool:
+        pass
+
+    @abstractmethod
+    def is_message_early_reply(self) -> bool:
+        pass
+
+    @abstractmethod
+    def is_message_early_exit(self) -> bool:
+        pass
+
+
+@dataclass
+class Messaging(MessagingABC):
     js: JetStreamContext
     nc: NatsClient
     req_msg: KaiNatsMessage = field(init=False)

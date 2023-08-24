@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Optional
 
 import loguru
@@ -10,7 +12,6 @@ from nats.js.errors import KeyNotFoundError
 from nats.js.kv import KeyValue
 from vyper import v
 
-from sdk.centralized_config.constants import Scope
 from sdk.centralized_config.exceptions import (
     FailedDeletingConfigError,
     FailedGettingConfigError,
@@ -19,8 +20,33 @@ from sdk.centralized_config.exceptions import (
 )
 
 
+class Scope(Enum):
+    ProcessScope = "process"
+    WorkflowScope = "workflow"
+    ProductScope = "product"
+
+
 @dataclass
-class CentralizedConfig:
+class CentralizedConfigABC(ABC):
+    @abstractmethod
+    async def initialize(self) -> None:
+        pass
+
+    @abstractmethod
+    async def get_config(self, key: str, scope: Optional[Scope]) -> tuple[str, bool]:
+        pass
+
+    @abstractmethod
+    async def set_config(self, key: str, value: bytes, scope: Optional[Scope]) -> None:
+        pass
+
+    @abstractmethod
+    async def delete_config(self, key: str, scope: Optional[Scope]) -> bool:
+        pass
+
+
+@dataclass
+class CentralizedConfig(CentralizedConfigABC):
     js: JetStreamContext
     product_kv: KeyValue = field(init=False)
     workflow_kv: KeyValue = field(init=False)
