@@ -37,7 +37,7 @@ class KaiSDK:
     req_msg: KaiNatsMessage = field(init=False)
     metadata: MetadataABC = field(init=False)
     messaging: MessagingABC = field(init=False)
-    object_store: Optional[ObjectStoreABC] = field(init=False)
+    object_store: ObjectStoreABC = field(init=False)
     centralized_config: CentralizedConfigABC = field(init=False)
     path_utils: PathUtilsABC = field(init=False)
     measurements: MeasurementsABC = field(init=False)
@@ -57,8 +57,7 @@ class KaiSDK:
 
     async def initialize(self) -> None:
         try:
-            if self.object_store:
-                await self.object_store.initialize()
+            await self.object_store.initialize()
         except Exception as e:
             assert self.logger is not None
             self.logger.error(f"error initializing object store: {e}")
