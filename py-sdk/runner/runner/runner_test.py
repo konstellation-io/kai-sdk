@@ -2,6 +2,7 @@ import pytest
 from mock import AsyncMock, Mock, patch
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
+from nats.js.kv import KeyValue
 from vyper import v
 
 from runner.exit.exit_runner import ExitRunner
@@ -11,6 +12,10 @@ from runner.trigger.trigger_runner import TriggerRunner
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
+from sdk.messaging.messaging import Messaging
+from sdk.metadata.metadata import Metadata
+from sdk.object_store.object_store import ObjectStore
+from sdk.path_utils.path_utils import PathUtils
 
 PRODUCT_BUCKET = "centralized_configuration.product.bucket"
 WORKFLOW_BUCKET = "centralized_configuration.workflow.bucket"
@@ -35,7 +40,11 @@ def m_runner() -> Runner:
     return runner
 
 
-@patch.object(CentralizedConfig, "_init_kv_stores", return_value=("test_product", "test_workflow", "test_process"))
+@patch.object(
+    CentralizedConfig,
+    "_init_kv_stores",
+    return_value=(AsyncMock(spec=KeyValue), AsyncMock(spec=KeyValue), AsyncMock(spec=KeyValue)),
+)
 async def test_sdk_import_ok(_):
     nc = NatsClient()
     js = nc.jetstream()
@@ -49,6 +58,11 @@ async def test_sdk_import_ok(_):
     await sdk.initialize()
     sdk.set_request_message(req_msg)
 
+    assert isinstance(sdk.metadata, Metadata)
+    assert isinstance(sdk.messaging, Messaging)
+    assert isinstance(sdk.object_store, ObjectStore)
+    assert isinstance(sdk.centralized_config, CentralizedConfig)
+    assert isinstance(sdk.path_utils, PathUtils)
     assert sdk.nc is not None
     assert sdk.js is not None
     assert sdk.req_msg == req_msg
@@ -56,12 +70,12 @@ async def test_sdk_import_ok(_):
     assert sdk.metadata is not None
     assert sdk.messaging is not None
     assert sdk.messaging.req_msg == req_msg
-    assert sdk.object_store.object_store_name is None
+    assert sdk.object_store.object_store_name == ""
     assert sdk.object_store.object_store is None
     assert sdk.centralized_config is not None
-    assert sdk.centralized_config.product_kv == "test_product"
-    assert sdk.centralized_config.workflow_kv == "test_workflow"
-    assert sdk.centralized_config.process_kv == "test_process"
+    assert isinstance(sdk.centralized_config.process_kv, KeyValue)
+    assert isinstance(sdk.centralized_config.product_kv, KeyValue)
+    assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert sdk.path_utils is not None
     assert getattr(sdk, "measurements", None) is None
     assert getattr(sdk, "storage", None) is None

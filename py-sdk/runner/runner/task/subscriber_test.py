@@ -30,7 +30,7 @@ async def m_sdk() -> KaiSDK:
 
 
 @pytest.fixture(scope="function")
-def m_task_runner(m_sdk) -> TaskRunner:
+def m_task_runner(m_sdk: KaiSDK) -> TaskRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 

@@ -21,31 +21,31 @@ from sdk.messaging.messaging_utils import MessagingUtils, MessagingUtilsABC, com
 @dataclass
 class MessagingABC(ABC):
     @abstractmethod
-    async def send_output(self, response: Message, chan: Optional[str]):
+    async def send_output(self, response: Message, chan: Optional[str]) -> None:
         pass
 
     @abstractmethod
-    async def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str]):
+    async def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str]) -> None:
         pass
 
     @abstractmethod
-    async def send_any(self, response: Any, chan: Optional[str]):
+    async def send_any(self, response: Any, chan: Optional[str]) -> None:
         pass
 
     @abstractmethod
-    async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str]):
+    async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str]) -> None:
         pass
 
     @abstractmethod
-    async def send_error(self, error: str, request_id: str):
+    async def send_error(self, error: str, request_id: str) -> None:
         pass
 
     @abstractmethod
-    async def send_early_reply(self, response: Message, chan: Optional[str]):
+    async def send_early_reply(self, response: Message, chan: Optional[str]) -> None:
         pass
 
     @abstractmethod
-    async def send_early_exit(self, response: Message, chan: Optional[str]):
+    async def send_early_exit(self, response: Message, chan: Optional[str]) -> None:
         pass
 
     @abstractmethod
@@ -141,7 +141,7 @@ class Messaging(MessagingABC):
         response_msg = KaiNatsMessage(
             request_id=request_id,
             error=err_msg,
-            from_node=v.get("metadata.process_id"),
+            from_node=v.get_string("metadata.process_id"),
             message_type=MessageType.ERROR,
         )
         await self._publish_response(response_msg)
@@ -151,7 +151,7 @@ class Messaging(MessagingABC):
         return KaiNatsMessage(
             request_id=request_id,
             payload=payload,
-            from_node=v.get("metadata.process_id"),
+            from_node=v.get_string("metadata.process_id"),
             message_type=msg_type,
         )
 
@@ -179,7 +179,7 @@ class Messaging(MessagingABC):
             return
 
     def _get_output_subject(self, chan: Optional[str] = None) -> str:
-        output_subject = v.get("nats.output")
+        output_subject = v.get_string("nats.output")
         return f"{output_subject}.{chan}" if chan else output_subject
 
     async def _prepare_output_message(self, msg: bytes) -> bytes:

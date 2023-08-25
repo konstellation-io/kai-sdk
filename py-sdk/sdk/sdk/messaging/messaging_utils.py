@@ -31,7 +31,7 @@ class MessagingUtils(MessagingUtilsABC):
 
     async def get_max_message_size(self) -> int:
         try:
-            stream_info = await self.js.stream_info(v.get("nats.stream"))
+            stream_info = await self.js.stream_info(v.get_string("nats.stream"))
         except Exception as e:
             self.logger.warning(f"failed getting stream info: {e}")
             raise FailedGettingMaxMessageSizeError(error=e)

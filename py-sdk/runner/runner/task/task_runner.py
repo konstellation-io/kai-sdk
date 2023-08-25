@@ -67,7 +67,7 @@ class TaskRunner:
 
     async def run(self) -> None:
         if "default" not in self.response_handlers:
-            raise UndefinedDefaultHandlerFunctionError()
+            raise UndefinedDefaultHandlerFunctionError
 
         if not self.initializer:
             self.initializer = compose_initializer()

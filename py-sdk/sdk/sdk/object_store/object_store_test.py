@@ -43,7 +43,7 @@ def m_objects() -> List[ObjectInfo]:
 
 
 @pytest.fixture(scope="function")
-def m_objects_results(m_objects) -> List[NatsObjectStore.ObjectResult]:
+def m_objects_results(m_objects: List[ObjectInfo]) -> List[NatsObjectStore.ObjectResult]:
     objects_results = []
     for obj in m_objects:
         object_result = NatsObjectStore.ObjectResult(

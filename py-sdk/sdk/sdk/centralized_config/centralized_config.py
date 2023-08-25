@@ -63,17 +63,17 @@ class CentralizedConfig(CentralizedConfigABC):
 
     async def _init_kv_stores(self) -> tuple[KeyValue, KeyValue, KeyValue]:
         try:
-            name = v.get("centralized_configuration.product.bucket")
+            name = v.get_string("centralized_configuration.product.bucket")
             self.logger.debug(f"initializing product key-value store {name}...")
             product_kv = await self.js.key_value(bucket=name)
             self.logger.debug("product key-value store initialized")
 
-            name = v.get("centralized_configuration.workflow.bucket")
+            name = v.get_string("centralized_configuration.workflow.bucket")
             self.logger.debug(f"initializing workflow key-value store {name}...")
             workflow_kv = await self.js.key_value(bucket=name)
             self.logger.debug("workflow key-value store initialized")
 
-            name = v.get("centralized_configuration.process.bucket")
+            name = v.get_string("centralized_configuration.process.bucket")
             self.logger.debug(f"initializing process key-value store {name}...")
             process_kv = await self.js.key_value(bucket=name)
             self.logger.debug("process key-value store initialized")

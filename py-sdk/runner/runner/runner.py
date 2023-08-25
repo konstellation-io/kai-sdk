@@ -27,7 +27,7 @@ class Runner:
 
     async def initialize(self) -> None:
         try:
-            await self.nc.connect(v.get("nats.url"))
+            await self.nc.connect(v.get_string("nats.url"))
         except Exception as e:
             self.logger.error(f"error connecting to nats: {e}")
             raise NATSConnectionError(e)
@@ -42,7 +42,7 @@ class Runner:
         v.automatic_env()
 
         if v.is_set("APP_CONFIG_PATH"):
-            v.add_config_path(v.get("APP_CONFIG_PATH"))
+            v.add_config_path(v.get_string("APP_CONFIG_PATH"))
 
         v.set_config_name("config")
         v.set_config_type("yaml")
@@ -59,7 +59,7 @@ class Runner:
         v.add_config_path(".")
 
         if v.is_set("APP_CONFIG_PATH"):
-            v.add_config_path(v.get("APP_CONFIG_PATH"))
+            v.add_config_path(v.get_string("APP_CONFIG_PATH"))
 
         try:
             v.merge_in_config()
@@ -77,8 +77,8 @@ class Runner:
 
     def initialize_logger(self) -> None:
         logger_format = "<green>{time}</green> <level>{extra[context]} {message}</level>"
-        output_paths = v.get("runner.logger.output_paths")
-        error_output_paths = v.get("runner.logger.error_output_paths")
+        output_paths = v.get_string("runner.logger.output_paths")
+        error_output_paths = v.get_string("runner.logger.error_output_paths")
 
         logger.remove()  # Remove the pre-configured handler
         for output_path in output_paths:
@@ -91,7 +91,7 @@ class Runner:
                 format=logger_format,
                 backtrace=False,
                 diagnose=False,
-                level=v.get("runner.logger.level"),
+                level=v.get_string("runner.logger.level"),
             )
         for error_output_path in error_output_paths:
             if error_output_path == "stderr":

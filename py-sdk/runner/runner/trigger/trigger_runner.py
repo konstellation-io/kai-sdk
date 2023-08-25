@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from queue import Queue
 from threading import Event, Thread
-from typing import Awaitable, Callable, Optional
+from typing import Any, Callable, Optional
 
 import loguru
-from google.protobuf.any_pb2 import Any
+from google.protobuf import any_pb2
 from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
@@ -17,7 +17,7 @@ from runner.trigger.helpers import compose_finalizer, compose_initializer, compo
 from runner.trigger.subscriber import TriggerSubscriber
 from sdk.kai_sdk import KaiSDK
 
-ResponseHandler = Callable[[KaiSDK, Any], Awaitable[None]]
+ResponseHandler = Callable[[KaiSDK, any_pb2.Any], None]
 
 
 @dataclass
@@ -50,14 +50,14 @@ class TriggerRunner:
         self.finalizer = compose_finalizer(finalizer)
         return self
 
-    async def get_response_channel(self, request_id: str) -> Queue:
+    def get_response_channel(self, request_id: str) -> Any:
         if request_id not in self.response_channels:
             self.response_channels[request_id] = Queue(maxsize=1)
         return self.response_channels[request_id].get()
 
     async def run(self) -> None:
         if self.runner is None:
-            raise UndefinedRunnerFunctionError()
+            raise UndefinedRunnerFunctionError
 
         if not self.initializer:
             self.initializer = compose_initializer()

@@ -14,7 +14,7 @@ from sdk.kai_sdk import KaiSDK
 
 
 def compose_initializer(initializer: Optional[Initializer] = None) -> Initializer:
-    async def initializer_func(sdk: KaiSDK):
+    async def initializer_func(sdk: KaiSDK) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[INITIALIZER]")
         logger.info("initializing TaskRunner...")
@@ -31,7 +31,7 @@ def compose_initializer(initializer: Optional[Initializer] = None) -> Initialize
 
 
 def compose_preprocessor(preprocessor: Preprocessor) -> Preprocessor:
-    def preprocessor_func(sdk: KaiSDK, response: Any):
+    def preprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[PREPROCESSOR]")
         logger.info("preprocessing TaskRunner...")
@@ -43,7 +43,7 @@ def compose_preprocessor(preprocessor: Preprocessor) -> Preprocessor:
 
 
 def compose_handler(handler: Handler) -> Handler:
-    def handler_func(sdk: KaiSDK, response: Any):
+    def handler_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[HANDLER]")
         logger.info("handling TaskRunner...")
@@ -55,7 +55,7 @@ def compose_handler(handler: Handler) -> Handler:
 
 
 def compose_postprocessor(postprocessor: Postprocessor) -> Postprocessor:
-    def postprocessor_func(sdk: KaiSDK, response: Any):
+    def postprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[POSTPROCESSOR]")
         logger.info("postprocessing TaskRunner...")
@@ -67,7 +67,7 @@ def compose_postprocessor(postprocessor: Postprocessor) -> Postprocessor:
 
 
 def compose_finalizer(finalizer: Optional[Finalizer] = None) -> Finalizer:
-    def finalizer_func(sdk: KaiSDK):
+    def finalizer_func(sdk: KaiSDK) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[FINALIZER]")
         logger.info("finalizing TaskRunner...")

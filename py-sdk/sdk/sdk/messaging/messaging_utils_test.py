@@ -1,7 +1,7 @@
 import pytest
-from mock import patch
+from mock import Mock, patch
 from nats.aio.client import Client as NatsClient
-from nats.js.api import StreamConfig, StreamInfo
+from nats.js.api import StreamConfig, StreamInfo, StreamState
 from nats.js.client import JetStreamContext
 from vyper import v
 
@@ -43,7 +43,7 @@ async def test_get_max_message_size_ok(
     nc._max_payload = nats_max_payload
     js = nc.jetstream()
     jetstream_context_mock.return_value = StreamInfo(
-        config=StreamConfig(max_msg_size=jetstream_max_msg_size), state=None
+        config=StreamConfig(max_msg_size=jetstream_max_msg_size), state=Mock(spec=StreamState)
     )
 
     utils = MessagingUtils(js=js, nc=nc)

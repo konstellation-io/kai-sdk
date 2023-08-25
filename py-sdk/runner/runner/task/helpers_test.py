@@ -1,6 +1,7 @@
 import asyncio
 from unittest.mock import AsyncMock, Mock, call
 
+from google.protobuf.any_pb2 import Any
 from vyper import v
 
 from runner.task.helpers import (
@@ -70,21 +71,21 @@ async def test_compose_preprocessor_ok():
     sdk = Mock(spec=KaiSDK)
     preprocessor_func = compose_preprocessor(mock_user_preprocessor)
 
-    preprocessor_func(sdk, "response")
+    preprocessor_func(sdk, Any())
 
 
 async def test_compose_handler_ok():
     sdk = Mock(spec=KaiSDK)
     handler_func = compose_handler(mock_user_handler)
 
-    handler_func(sdk, "response")
+    handler_func(sdk, Any())
 
 
 async def test_compose_postprocessor_ok():
     sdk = Mock(spec=KaiSDK)
     postprocessor_func = compose_postprocessor(mock_user_postprocessor)
 
-    postprocessor_func(sdk, "response")
+    postprocessor_func(sdk, Any())
 
 
 async def test_compose_finalizer_ok():

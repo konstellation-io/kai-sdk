@@ -258,7 +258,7 @@ async def test__publish_response_serializing_message_ko(_, m_messaging):
 
 async def test__publish_response_preparing_output_message_ko(m_messaging):
     message = KaiNatsMessage()
-    m_messaging._prepare_output_message = AsyncMock(side_effect=MessageTooLargeError(0, 0))
+    m_messaging._prepare_output_message = AsyncMock(side_effect=MessageTooLargeError("0", "0"))
 
     await m_messaging._publish_response(message)
 

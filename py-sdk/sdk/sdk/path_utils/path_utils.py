@@ -28,7 +28,7 @@ class PathUtils(PathUtilsABC):
 
     @staticmethod
     def get_base_path() -> str:
-        return v.get("metadata.base_path")
+        return v.get_string("metadata.base_path")
 
     @staticmethod
     def compose_path(*relative_path: str) -> str:

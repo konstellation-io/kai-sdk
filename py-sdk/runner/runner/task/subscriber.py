@@ -66,7 +66,7 @@ class TaskSubscriber:
             subscriptions.append(sub)
             self.logger.info(f"listening to {subject} from queue group {consumer_name}")
 
-        def _shutdown_handler(loop: AbstractEventLoop):
+        def _shutdown_handler(loop: AbstractEventLoop) -> None:
             loop.create_task(_shutdown_handler_coro())
 
         async def _shutdown_handler_coro() -> None:
@@ -86,8 +86,8 @@ class TaskSubscriber:
             subscriber_thread_shutdown_event.set()
 
         loop = asyncio.get_event_loop()
-        loop.add_signal_handler(SIGINT, _shutdown_handler(loop))
-        loop.add_signal_handler(SIGTERM, _shutdown_handler(loop))
+        loop.add_signal_handler(SIGINT, lambda: _shutdown_handler(loop))
+        loop.add_signal_handler(SIGTERM, lambda: _shutdown_handler(loop))
 
         subscriber_thread_shutdown_event.wait()
         self.logger.info("subscriber shutdown")
@@ -172,8 +172,10 @@ class TaskSubscriber:
 
         return request_msg
 
-    def _get_response_handler(self, subject: str) -> Handler:
+    def _get_response_handler(self, subject: str) -> Handler | None:
         if subject in self.task_runner.response_handlers:
             return self.task_runner.response_handlers[subject]
 
-        return self.task_runner.response_handlers["default"]
+        return (
+            self.task_runner.response_handlers["default"] if "default" in self.task_runner.response_handlers else None
+        )

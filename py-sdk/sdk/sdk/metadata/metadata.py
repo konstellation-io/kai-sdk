@@ -57,32 +57,32 @@ class Metadata(MetadataABC):
 
     @staticmethod
     def get_product() -> str:
-        return v.get("metadata.product_id")
+        return v.get_string("metadata.product_id")
 
     @staticmethod
     def get_workflow() -> str:
-        return v.get("metadata.workflow_id")
+        return v.get_string("metadata.workflow_id")
 
     @staticmethod
     def get_process() -> str:
-        return v.get("metadata.process_id")
+        return v.get_string("metadata.process_id")
 
     @staticmethod
     def get_version() -> str:
-        return v.get("metadata.version_id")
+        return v.get_string("metadata.version_id")
 
     @staticmethod
     def get_object_store_name() -> str:
-        return v.get("nats.object_store")
+        return v.get_string("nats.object_store")
 
     @staticmethod
     def get_key_value_store_product_name() -> str:
-        return v.get("centralized_configuration.product.bucket")
+        return v.get_string("centralized_configuration.product.bucket")
 
     @staticmethod
     def get_key_value_store_workflow_name() -> str:
-        return v.get("centralized_configuration.workflow.bucket")
+        return v.get_string("centralized_configuration.workflow.bucket")
 
     @staticmethod
     def get_key_value_store_process_name() -> str:
-        return v.get("centralized_configuration.process.bucket")
+        return v.get_string("centralized_configuration.process.bucket")

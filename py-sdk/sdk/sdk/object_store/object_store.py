@@ -61,7 +61,7 @@ class ObjectStore(ObjectStoreABC):
     logger: loguru.Logger = logger.bind(context="[OBJECT STORE]")
 
     def __post_init__(self) -> None:
-        self.object_store_name = v.get("nats.object_store")
+        self.object_store_name = v.get_string("nats.object_store")
         if self.object_store_name:
             self.logger = logger.bind(context=f"[OBJECT STORE: {self.object_store_name}]")
 

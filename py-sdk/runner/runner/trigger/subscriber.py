@@ -66,7 +66,7 @@ class TriggerSubscriber:
             subscriptions.append(sub)
             self.logger.info(f"listening to {subject} from queue group {consumer_name}")
 
-        def _shutdown_handler(loop: AbstractEventLoop):
+        def _shutdown_handler(loop: AbstractEventLoop) -> None:
             loop.create_task(_shutdown_handler_coro())
 
         async def _shutdown_handler_coro() -> None:
@@ -86,8 +86,8 @@ class TriggerSubscriber:
             subscriber_thread_shutdown_event.set()
 
         loop = asyncio.get_event_loop()
-        loop.add_signal_handler(SIGINT, _shutdown_handler(loop))
-        loop.add_signal_handler(SIGTERM, _shutdown_handler(loop))
+        loop.add_signal_handler(SIGINT, lambda: _shutdown_handler(loop))
+        loop.add_signal_handler(SIGTERM, lambda: _shutdown_handler(loop))
 
         subscriber_thread_shutdown_event.wait()
         self.logger.info("subscriber shutdown")
@@ -104,12 +104,12 @@ class TriggerSubscriber:
 
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
-        if self.trigger_runner.response_handler is None:
-            await self._process_runner_error(msg, UndefinedResponseHandlerError(), request_msg.request_id)
+        if getattr(self.trigger_runner, "response_handler", None) is None:
+            await self._process_runner_error(msg, UndefinedResponseHandlerError, request_msg.request_id)  # type: ignore
             return
 
         try:
-            await self.trigger_runner.response_handler(self.trigger_runner.sdk, request_msg.payload)
+            self.trigger_runner.response_handler(self.trigger_runner.sdk, request_msg.payload)
         except Exception as e:
             from_node = request_msg.from_node
             to_node = self.trigger_runner.sdk.metadata.get_process()

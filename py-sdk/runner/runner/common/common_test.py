@@ -28,7 +28,7 @@ def m_centralized_config() -> CentralizedConfig:
 
 
 @pytest.fixture(scope="function")
-async def m_sdk(m_centralized_config) -> KaiSDK:
+async def m_sdk(m_centralized_config: CentralizedConfig) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     req_msg = KaiNatsMessage()
