@@ -31,10 +31,10 @@ def m_centralized_config() -> CentralizedConfig:
 async def m_sdk(m_centralized_config: CentralizedConfig) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
-    req_msg = KaiNatsMessage()
+    request_msg = KaiNatsMessage()
 
     sdk = KaiSDK(nc=nc, js=js)
-    sdk.set_request_message(req_msg)
+    sdk.set_request_msg(request_msg)
     sdk.centralized_config = m_centralized_config
 
     return sdk

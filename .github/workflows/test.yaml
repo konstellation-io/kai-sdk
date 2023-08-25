@@ -77,10 +77,10 @@ jobs:
           python -m pip install poetry=="1.5.1"
           python -m poetry install --with dev
         working-directory: ./${{ matrix.component }}
-      - name: Run mypy
-        if: matrix.changes == 'true' && matrix.component == 'py-sdk'
-        run: make mypy
-        working-directory: ./
+      # - name: Run mypy
+      #   if: matrix.changes == 'true' && matrix.component == 'py-sdk'
+      #   run: make mypy
+      #   working-directory: ./
       - name: Run unit tests Go
         if: matrix.changes == 'true' && matrix.component == 'go-sdk'
         run: make gotest

@@ -11,7 +11,7 @@ from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
-from sdk.kai_sdk import KaiSDK
+from sdk.kai_sdk import KaiSDK, MeasurementsABC, StorageABC
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
 from sdk.object_store.object_store import ObjectStore
@@ -48,7 +48,7 @@ def m_runner() -> Runner:
 async def test_sdk_import_ok(_):
     nc = NatsClient()
     js = nc.jetstream()
-    req_msg = KaiNatsMessage()
+    request_msg = KaiNatsMessage()
     v.set(NATS_OBJECT_STORE, None)
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
@@ -56,7 +56,7 @@ async def test_sdk_import_ok(_):
 
     sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()
-    sdk.set_request_message(req_msg)
+    sdk.set_request_msg(request_msg)
 
     assert isinstance(sdk.metadata, Metadata)
     assert isinstance(sdk.messaging, Messaging)
@@ -65,11 +65,11 @@ async def test_sdk_import_ok(_):
     assert isinstance(sdk.path_utils, PathUtils)
     assert sdk.nc is not None
     assert sdk.js is not None
-    assert sdk.req_msg == req_msg
+    assert sdk.request_msg == request_msg
     assert sdk.logger is not None
     assert sdk.metadata is not None
     assert sdk.messaging is not None
-    assert sdk.messaging.req_msg == req_msg
+    assert sdk.messaging.request_msg == request_msg
     assert sdk.object_store.object_store_name == ""
     assert sdk.object_store.object_store is None
     assert sdk.centralized_config is not None
@@ -77,8 +77,8 @@ async def test_sdk_import_ok(_):
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert sdk.path_utils is not None
-    assert getattr(sdk, "measurements", None) is None
-    assert getattr(sdk, "storage", None) is None
+    assert isinstance(sdk.measurements, MeasurementsABC)
+    assert isinstance(sdk.storage, StorageABC)
 
 
 async def test_runner_ok():

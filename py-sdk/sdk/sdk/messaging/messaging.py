@@ -69,7 +69,7 @@ class MessagingABC(ABC):
 class Messaging(MessagingABC):
     js: JetStreamContext
     nc: NatsClient
-    req_msg: KaiNatsMessage = field(init=False)
+    request_msg: KaiNatsMessage = field(init=False)
     messaging_utils: MessagingUtilsABC = field(init=False)
     logger: loguru.Logger = logger.bind(context="[MESSAGING]")
 
@@ -98,19 +98,19 @@ class Messaging(MessagingABC):
         await self._publish_error(err_msg=error, request_id=request_id)
 
     def get_error_message(self) -> str:
-        return self.req_msg.error if self.is_message_error() else ""
+        return self.request_msg.error if self.is_message_error() else ""
 
     def is_message_ok(self) -> bool:
-        return self.req_msg.message_type == MessageType.OK
+        return self.request_msg.message_type == MessageType.OK
 
     def is_message_error(self) -> bool:
-        return self.req_msg.message_type == MessageType.ERROR
+        return self.request_msg.message_type == MessageType.ERROR
 
     def is_message_early_reply(self) -> bool:
-        return self.req_msg.message_type == MessageType.EARLY_REPLY
+        return self.request_msg.message_type == MessageType.EARLY_REPLY
 
     def is_message_early_exit(self) -> bool:
-        return self.req_msg.message_type == MessageType.EARLY_EXIT
+        return self.request_msg.message_type == MessageType.EARLY_EXIT
 
     async def _publish_msg(
         self, msg: Message, msg_type: MessageType.V, request_id: Optional[str] = None, chan: Optional[str] = None

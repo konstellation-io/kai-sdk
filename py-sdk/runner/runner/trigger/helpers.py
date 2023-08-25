@@ -4,6 +4,7 @@ from queue import Queue
 from signal import SIGINT, SIGTERM, Signals, signal
 from types import FrameType
 from typing import TYPE_CHECKING, Optional
+import asyncio
 
 from google.protobuf.any_pb2 import Any
 
@@ -42,7 +43,7 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
         user_runner(trigger_runner, sdk)
         logger.info("user runner executed")
 
-        def _shutdown_handler(sig: Signals | int, frame: Optional[FrameType]) -> None:
+        def _shutdown_handler() -> None:
             logger.info("shutting down runner...")
             logger.info("closing opened channels...")
             for request_id, channel in runner.response_channels.items():
@@ -51,8 +52,9 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
 
             trigger_runner.runner_thread_shutdown_event.set()
 
-        signal(SIGINT, _shutdown_handler)
-        signal(SIGTERM, _shutdown_handler)
+        loop = asyncio.get_event_loop()
+        loop.add_signal_handler(SIGINT, lambda: _shutdown_handler())
+        loop.add_signal_handler(SIGTERM, lambda: _shutdown_handler())
 
         trigger_runner.runner_thread_shutdown_event.wait()
         logger.info("runnerFunc shutdown")

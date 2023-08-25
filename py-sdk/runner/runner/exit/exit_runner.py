@@ -33,8 +33,8 @@ class ExitRunner:
     logger: loguru.Logger = logger.bind(context="[EXIT]")
     response_handlers: dict[str, Handler] = field(default_factory=dict)
     initializer: Optional[Initializer] = None
-    preprocessor: Preprocessor = field(init=False)
-    postprocessor: Postprocessor = field(init=False)
+    preprocessor: Optional[Preprocessor] = None
+    postprocessor: Optional[Postprocessor] = None
     finalizer: Optional[Finalizer] = None
 
     def __post_init__(self) -> None:

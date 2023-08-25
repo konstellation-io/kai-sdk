@@ -1,4 +1,3 @@
-from typing import List
 from unittest.mock import Mock, call
 
 import pytest
@@ -28,7 +27,7 @@ LIST_KEYS = [KEY_140, KEY_141, KEY_142]
 
 
 @pytest.fixture(scope="function")
-def m_objects() -> List[ObjectInfo]:
+def m_objects() -> list[ObjectInfo]:
     objects = []
     for key in LIST_KEYS:
         object_info = ObjectInfo(
@@ -43,7 +42,7 @@ def m_objects() -> List[ObjectInfo]:
 
 
 @pytest.fixture(scope="function")
-def m_objects_results(m_objects: List[ObjectInfo]) -> List[NatsObjectStore.ObjectResult]:
+def m_objects_results(m_objects: list[ObjectInfo]) -> list[NatsObjectStore.ObjectResult]:
     objects_results = []
     for obj in m_objects:
         object_result = NatsObjectStore.ObjectResult(

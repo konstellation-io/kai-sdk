@@ -31,9 +31,31 @@ ACK_TIME = 22  # hours
 class TaskSubscriber:
     task_runner: "TaskRunner"
     logger: loguru.Logger = field(init=False)
+    loop: AbstractEventLoop = field(init=False)
+    subscriber_thread_shutdown_event = Event()
 
     def __post_init__(self) -> None:
-        self.logger = self.task_runner.logger.bind(context="[SUBSCRIBER]")
+        self.logger = self.task_runner.logger.bind(context="[TASK SUBSCRIBER]")
+        self.loop = asyncio.get_event_loop()
+
+    def _shutdown_handler(self, subscriptions: list[JetStreamContext.PushSubscription]) -> None:
+        self.loop.create_task(self._shutdown_handler_coro(subscriptions))
+
+    async def _shutdown_handler_coro(self, subscriptions: list[JetStreamContext.PushSubscription]) -> None:
+        self.logger.info("shutting signal received")
+
+        for sub in subscriptions:
+            self.logger.info(f"unsubscribing from subject {sub.subject}")
+
+            try:
+                await sub.unsubscribe()
+            except Exception as e:
+                self.logger.error(f"error unsubscribing from the NATS subject {sub.subject}: {e}")
+                self.subscriber_thread_shutdown_event.set()
+                self.loop.stop()
+                sys.exit(1)
+
+        self.subscriber_thread_shutdown_event.set()
 
     async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
@@ -41,7 +63,6 @@ class TaskSubscriber:
         process = self.task_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
         ack_wait_time = timedelta(hours=ACK_TIME)
-        subscriber_thread_shutdown_event = Event()
         for _, subject in input_subjects:
             subject_ = subject.replace(".", "-")
             consumer_name = f"{subject_}_{process}"
@@ -59,47 +80,26 @@ class TaskSubscriber:
                 )
             except Exception as e:
                 self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")
-                subscriber_thread_shutdown_event.set()
+                self.subscriber_thread_shutdown_event.set()
                 asyncio.get_event_loop().stop()
                 sys.exit(1)
 
             subscriptions.append(sub)
             self.logger.info(f"listening to {subject} from queue group {consumer_name}")
 
-        def _shutdown_handler(loop: AbstractEventLoop) -> None:
-            loop.create_task(_shutdown_handler_coro())
+        self.loop.add_signal_handler(SIGINT, lambda: self._shutdown_handler(subscriptions))
+        self.loop.add_signal_handler(SIGTERM, lambda: self._shutdown_handler(subscriptions))
 
-        async def _shutdown_handler_coro() -> None:
-            self.logger.info("shutting signal received")
-
-            for sub in subscriptions:
-                self.logger.info(f"unsubscribing from subject {sub.subject}")
-
-                try:
-                    await sub.unsubscribe()
-                except Exception as e:
-                    self.logger.error(f"error unsubscribing from the NATS subject {sub.subject}: {e}")
-                    subscriber_thread_shutdown_event.set()
-                    asyncio.get_event_loop().stop()
-                    sys.exit(1)
-
-            subscriber_thread_shutdown_event.set()
-
-        loop = asyncio.get_event_loop()
-        loop.add_signal_handler(SIGINT, lambda: _shutdown_handler(loop))
-        loop.add_signal_handler(SIGTERM, lambda: _shutdown_handler(loop))
-
-        subscriber_thread_shutdown_event.wait()
+        self.subscriber_thread_shutdown_event.wait()
         self.logger.info("subscriber shutdown")
 
     async def _process_message(self, msg: Msg) -> None:
         self.logger.info("new message received")
-
         try:
             request_msg = self._new_request_msg(msg.data)
-            self.task_runner.sdk.set_request_message(request_msg)
+            self.task_runner.sdk.set_request_msg(request_msg)
         except Exception as e:
-            await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e), request_msg.request_id)
+            await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e), "")
             return
 
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")

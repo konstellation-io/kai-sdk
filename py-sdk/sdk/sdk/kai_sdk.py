@@ -34,7 +34,7 @@ class KaiSDK:
     nc: NatsClient
     js: JetStreamContext
     logger: Optional[loguru.Logger] = None
-    req_msg: KaiNatsMessage = field(init=False)
+    request_msg: KaiNatsMessage = field(init=False)
     metadata: MetadataABC = field(init=False)
     messaging: MessagingABC = field(init=False)
     object_store: ObjectStoreABC = field(init=False)
@@ -54,6 +54,8 @@ class KaiSDK:
         self.messaging = Messaging(nc=self.nc, js=self.js)
         self.object_store = ObjectStore(js=self.js)
         self.path_utils = PathUtils()
+        self.measurements = MeasurementsABC()
+        self.storage = StorageABC()
 
     async def initialize(self) -> None:
         try:
@@ -73,8 +75,8 @@ class KaiSDK:
             sys.exit(1)
 
     def get_request_id(self) -> str | None:
-        req_msg = getattr(self, "req_msg", None)
-        return self.req_msg.request_id if req_msg else None
+        request_msg = getattr(self, "request_msg", None)
+        return self.request_msg.request_id if request_msg else None
 
     def _initialize_logger(self) -> None:
         logger.remove()  # Remove the pre-configured handler
@@ -89,7 +91,7 @@ class KaiSDK:
         self.logger = logger.bind(context="[KAI SDK]")
         self.logger.debug("logger initialized")
 
-    def set_request_message(self, req_msg: KaiNatsMessage) -> None:
-        self.req_msg = req_msg
+    def set_request_msg(self, request_msg: KaiNatsMessage) -> None:
+        self.request_msg = request_msg
         assert isinstance(self.messaging, Messaging)
-        self.messaging.req_msg = req_msg
+        self.messaging.request_msg = request_msg

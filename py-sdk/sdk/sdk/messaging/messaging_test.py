@@ -24,10 +24,10 @@ def m_messaging() -> Messaging:
     v.set("metadata.process_id", "test_process_id")
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
-    req_msg = Mock(spec=KaiNatsMessage)
+    request_msg = Mock(spec=KaiNatsMessage)
 
     messaging = Messaging(nc=nc, js=js)
-    messaging.req_msg = req_msg
+    messaging.request_msg = request_msg
 
     return messaging
 
@@ -35,14 +35,14 @@ def m_messaging() -> Messaging:
 def test_ok():
     nc = NatsClient()
     js = nc.jetstream()
-    req_msg = KaiNatsMessage()
+    request_msg = KaiNatsMessage()
 
     messaging = Messaging(nc=nc, js=js)
-    messaging.req_msg = req_msg
+    messaging.request_msg = request_msg
 
     assert messaging.js is not None
     assert messaging.nc is not None
-    assert messaging.req_msg is not None
+    assert messaging.request_msg is not None
     assert messaging.logger is not None
     assert messaging.messaging_utils is not None
 
@@ -123,8 +123,8 @@ async def test_send_early_exit(m_messaging):
 
 
 def test_get_error_message(m_messaging):
-    m_messaging.req_msg.message_type = MessageType.ERROR
-    m_messaging.req_msg.error = "test_error"
+    m_messaging.request_msg.message_type = MessageType.ERROR
+    m_messaging.request_msg.error = "test_error"
 
     message = m_messaging.get_error_message()
 
@@ -141,7 +141,7 @@ def test_get_error_message(m_messaging):
     ],
 )
 def test_is_message_ok(m_messaging, message_type, function, expected_result):
-    m_messaging.req_msg.message_type = message_type
+    m_messaging.request_msg.message_type = message_type
 
     is_message = getattr(m_messaging, function)()
 
