@@ -77,8 +77,8 @@ class Runner:
 
     def initialize_logger(self) -> None:
         logger_format = "<green>{time}</green> <level>{extra[context]} {message}</level>"
-        output_paths = v.get_string("runner.logger.output_paths")
-        error_output_paths = v.get_string("runner.logger.error_output_paths")
+        output_paths = v.get("runner.logger.output_paths")
+        error_output_paths = v.get("runner.logger.error_output_paths")
 
         logger.remove()  # Remove the pre-configured handler
         for output_path in output_paths:
