@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 from queue import Queue
 from signal import SIGINT, SIGTERM, Signals, signal
 from types import FrameType
 from typing import TYPE_CHECKING, Optional
-import asyncio
 
 from google.protobuf.any_pb2 import Any
 

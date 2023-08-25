@@ -34,7 +34,6 @@ class TriggerSubscriber:
     loop: AbstractEventLoop = field(init=False)
     subscriber_thread_shutdown_event = Event()
 
-
     def __post_init__(self) -> None:
         self.logger = self.trigger_runner.logger.bind(context="[TRIGGER SUBSCRIBER]")
         self.loop = asyncio.get_event_loop()

@@ -57,7 +57,6 @@ class ExitSubscriber:
 
         self.subscriber_thread_shutdown_event.set()
 
-
     async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
         subscriptions: list[JetStreamContext.PushSubscription] = []

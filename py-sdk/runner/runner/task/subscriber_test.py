@@ -1,26 +1,23 @@
-
 import asyncio
 from asyncio import AbstractEventLoop
 from threading import Event
-from unittest.mock import AsyncMock, Mock, patch, call
+from unittest.mock import AsyncMock, Mock, call, patch
 
 import pytest
+from google.protobuf.any_pb2 import Any
 from nats.aio.client import Client as NatsClient
 from nats.aio.client import Msg
 from nats.js import JetStreamContext
 from nats.js.client import JetStreamContext
 from vyper import v
 
+from runner.task.exceptions import NewRequestMsgError
 from runner.task.subscriber import TaskSubscriber
 from runner.task.task_runner import TaskRunner
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
 from sdk.kai_sdk import KaiSDK
-from sdk.metadata.metadata import Metadata
-from runner.task.exceptions import NewRequestMsgError
-
-from google.protobuf.any_pb2 import Any
 from sdk.messaging.messaging_utils import compress
-
+from sdk.metadata.metadata import Metadata
 
 NATS_INPUT = "nats.inputs"
 
@@ -49,6 +46,7 @@ def m_task_runner(m_sdk: KaiSDK) -> TaskRunner:
 
     return task_runner
 
+
 @pytest.fixture(scope="function")
 def m_task_subscriber(m_task_runner: TaskRunner) -> TaskSubscriber:
     task_subscriber = TaskSubscriber(m_task_runner)
@@ -57,6 +55,7 @@ def m_task_subscriber(m_task_runner: TaskRunner) -> TaskSubscriber:
 
 
 SUBJECT = "test.subject"
+
 
 @patch("runner.task.subscriber.asyncio", return_value=Mock(spec=asyncio))
 async def test_start_ok(m_asyncio, m_task_runner):
@@ -192,6 +191,7 @@ async def test_process_message_not_valid_protobuf_ko(m_task_runner):
     assert instance._process_runner_error.called
     assert not m_msg.ack.called
 
+
 async def test_process_message_undefined_handler_ko(m_task_runner):
     request_id = "test_request_id"
     m_msg = Mock(spec=Msg)
@@ -216,6 +216,7 @@ async def test_process_message_undefined_handler_ko(m_task_runner):
     assert instance._get_response_handler.called
     assert instance._process_runner_error.called
     assert not m_msg.ack.called
+
 
 async def test_process_message_preprocessor_ko(m_task_runner):
     request_id = "test_request_id"
@@ -243,6 +244,7 @@ async def test_process_message_preprocessor_ko(m_task_runner):
     assert instance._process_runner_error.called
     assert not m_msg.ack.called
 
+
 async def test_process_message_handler_ko(m_task_runner):
     request_id = "test_request_id"
     m_msg = Mock(spec=Msg)
@@ -268,6 +270,7 @@ async def test_process_message_handler_ko(m_task_runner):
     assert instance._get_response_handler.called
     assert instance._process_runner_error.called
     assert not m_msg.ack.called
+
 
 async def test_process_message_postprocessor_ko(m_task_runner):
     request_id = "test_request_id"
@@ -297,6 +300,7 @@ async def test_process_message_postprocessor_ko(m_task_runner):
     assert instance._process_runner_error.called
     assert not m_msg.ack.called
 
+
 async def test_process_message_ack_ko_ok(m_task_runner):
     request_id = "test_request_id"
     m_msg = Mock(spec=Msg)
@@ -323,6 +327,7 @@ async def test_process_message_ack_ko_ok(m_task_runner):
     assert m_handler.called
     assert m_msg.ack.called
 
+
 async def test_process_runner_error_ok(m_task_runner):
     m_msg = Mock(spec=Msg)
     m_msg.data = b"generic error"
@@ -334,9 +339,8 @@ async def test_process_runner_error_ok(m_task_runner):
 
     assert m_msg.ack.called
     assert instance.task_runner.sdk.messaging.send_error.called
-    assert instance.task_runner.sdk.messaging.send_error.call_args == call(
-        "process runner error", "test_request_id"
-    )
+    assert instance.task_runner.sdk.messaging.send_error.call_args == call("process runner error", "test_request_id")
+
 
 async def test_process_runner_error_ack_ko_ok(m_task_runner):
     m_msg = Mock(spec=Msg)
@@ -352,6 +356,7 @@ async def test_process_runner_error_ack_ko_ok(m_task_runner):
         "process runner ack error", "test_request_id"
     )
 
+
 def test_new_request_msg_ok(m_task_runner):
     request_id = "test_request_id"
     expected_response_msg = KaiNatsMessage(
@@ -366,6 +371,7 @@ def test_new_request_msg_ok(m_task_runner):
     result = instance._new_request_msg(data)
 
     assert result == expected_response_msg
+
 
 def test_new_request_msg_compressed_ok(m_task_runner):
     request_id = "test_request_id"
