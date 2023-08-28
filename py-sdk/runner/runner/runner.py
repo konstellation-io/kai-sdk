@@ -67,7 +67,6 @@ class Runner:
             error = e
 
         if len(v.all_keys()) == 0:
-            logger.error("no configuration found")
             raise FailedLoadingConfigError(error)
 
         v.set_default("metadata.base_path", "/")

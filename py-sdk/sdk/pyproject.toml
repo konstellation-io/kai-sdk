@@ -106,6 +106,9 @@ exclude_lines = [
 
     # Do not complain about type checking
     "if TYPE_CHECKING:",
+
+    # Do not complain about signals
+    "self.loop.add_signal_handler",
 ]
 
 ignore_errors = false

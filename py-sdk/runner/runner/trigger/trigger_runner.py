@@ -55,7 +55,7 @@ class TriggerRunner:
         return self.response_channels[request_id].get()
 
     async def run(self) -> None:
-        if self.runner is None:
+        if getattr(self, "runner", None) is None:
             raise UndefinedRunnerFunctionError
 
         if not self.initializer:

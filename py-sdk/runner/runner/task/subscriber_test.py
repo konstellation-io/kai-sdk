@@ -1,6 +1,5 @@
 import asyncio
 from asyncio import AbstractEventLoop
-from threading import Event
 from unittest.mock import AsyncMock, Mock, call, patch
 
 import pytest
@@ -20,6 +19,7 @@ from sdk.messaging.messaging_utils import compress
 from sdk.metadata.metadata import Metadata
 
 NATS_INPUT = "nats.inputs"
+SUBJECT = "test.subject"
 
 
 @pytest.fixture(scope="function")
@@ -54,14 +54,20 @@ def m_task_subscriber(m_task_runner: TaskRunner) -> TaskSubscriber:
     return task_subscriber
 
 
-SUBJECT = "test.subject"
-
-
 class MockEvent:
     def __init__(self):
         self.is_set = Mock()
         self.set = Mock()
         self.wait = Mock()
+
+
+@pytest.fixture(scope="function")
+def m_msg() -> Msg:
+    m_msg = Mock(spec=Msg)
+    m_msg.ack = AsyncMock()
+    m_msg.subject = "test.subject"
+
+    return m_msg
 
 
 @patch("runner.task.subscriber.asyncio", return_value=Mock(spec=asyncio))
@@ -144,10 +150,8 @@ async def test_shutdown_handler_ok(m_task_subscriber):
     assert m_task_subscriber._shutdown_handler_coro.called
 
 
-async def test_process_message_ok(m_task_subscriber):
+async def test_process_message_ok(m_msg, m_task_subscriber):
     request_id = "test_request_id"
-    m_msg = Mock(spec=Msg)
-    m_msg.ack = AsyncMock()
     expected_response_msg = KaiNatsMessage(
         request_id=request_id,
         from_node="test_process_id",
@@ -171,10 +175,8 @@ async def test_process_message_ok(m_task_subscriber):
     assert m_msg.ack.called
 
 
-async def test_process_message_not_valid_protobuf_ko(m_task_subscriber):
+async def test_process_message_not_valid_protobuf_ko(m_msg, m_task_subscriber):
     request_id = "test_request_id"
-    m_msg = Mock(spec=Msg)
-    m_msg.ack = AsyncMock()
     expected_response_msg = KaiNatsMessage(
         request_id=request_id,
         from_node="test_process_id",
@@ -192,10 +194,8 @@ async def test_process_message_not_valid_protobuf_ko(m_task_subscriber):
     assert not m_msg.ack.called
 
 
-async def test_process_message_undefined_handler_ko(m_task_subscriber):
+async def test_process_message_undefined_handler_ko(m_msg, m_task_subscriber):
     request_id = "test_request_id"
-    m_msg = Mock(spec=Msg)
-    m_msg.ack = AsyncMock()
     expected_response_msg = KaiNatsMessage(
         request_id=request_id,
         from_node="test_process_id",
@@ -217,10 +217,8 @@ async def test_process_message_undefined_handler_ko(m_task_subscriber):
     assert not m_msg.ack.called
 
 
-async def test_process_message_preprocessor_ko(m_task_subscriber):
+async def test_process_message_preprocessor_ko(m_msg, m_task_subscriber):
     request_id = "test_request_id"
-    m_msg = Mock(spec=Msg)
-    m_msg.ack = AsyncMock()
     expected_response_msg = KaiNatsMessage(
         request_id=request_id,
         from_node="test_process_id",
@@ -243,10 +241,8 @@ async def test_process_message_preprocessor_ko(m_task_subscriber):
     assert not m_msg.ack.called
 
 
-async def test_process_message_handler_ko(m_task_subscriber):
+async def test_process_message_handler_ko(m_msg, m_task_subscriber):
     request_id = "test_request_id"
-    m_msg = Mock(spec=Msg)
-    m_msg.ack = AsyncMock()
     expected_response_msg = KaiNatsMessage(
         request_id=request_id,
         from_node="test_process_id",
@@ -269,10 +265,8 @@ async def test_process_message_handler_ko(m_task_subscriber):
     assert not m_msg.ack.called
 
 
-async def test_process_message_postprocessor_ko(m_task_subscriber):
+async def test_process_message_postprocessor_ko(m_msg, m_task_subscriber):
     request_id = "test_request_id"
-    m_msg = Mock(spec=Msg)
-    m_msg.ack = AsyncMock()
     expected_response_msg = KaiNatsMessage(
         request_id=request_id,
         from_node="test_process_id",
@@ -297,10 +291,9 @@ async def test_process_message_postprocessor_ko(m_task_subscriber):
     assert not m_msg.ack.called
 
 
-async def test_process_message_ack_ko_ok(m_task_subscriber):
+async def test_process_message_ack_ko_ok(m_msg, m_task_subscriber):
     request_id = "test_request_id"
-    m_msg = Mock(spec=Msg)
-    m_msg.ack = AsyncMock(side_effect=Exception("Ack error"))
+    m_msg.ack.side_effect = Exception("Ack error")
     expected_response_msg = KaiNatsMessage(
         request_id=request_id,
         from_node="test_process_id",
@@ -323,10 +316,8 @@ async def test_process_message_ack_ko_ok(m_task_subscriber):
     assert m_msg.ack.called
 
 
-async def test_process_runner_error_ok(m_task_subscriber):
-    m_msg = Mock(spec=Msg)
-    m_msg.data = b"generic error"
-    m_msg.ack = AsyncMock()
+async def test_process_runner_error_ok(m_msg, m_task_subscriber):
+    m_msg.data = b"wrong bytes"
     m_task_subscriber.task_runner.sdk.messaging.send_error = AsyncMock()
 
     await m_task_subscriber._process_runner_error(m_msg, Exception("process runner error"), "test_request_id")
@@ -338,10 +329,9 @@ async def test_process_runner_error_ok(m_task_subscriber):
     )
 
 
-async def test_process_runner_error_ack_ko_ok(m_task_subscriber):
-    m_msg = Mock(spec=Msg)
-    m_msg.data = b"generic error"
-    m_msg.ack = AsyncMock(side_effect=Exception("Ack error"))
+async def test_process_runner_error_ack_ko_ok(m_msg, m_task_subscriber):
+    m_msg.data = b"wrong bytes"
+    m_msg.ack.side_effect = Exception("Ack error")
     m_task_subscriber.task_runner.sdk.messaging.send_error = AsyncMock()
 
     await m_task_subscriber._process_runner_error(m_msg, Exception("process runner ack error"), "test_request_id")
@@ -397,6 +387,20 @@ def test_new_request_msg_compressed_ko(_, m_task_subscriber):
 
     with pytest.raises(NewRequestMsgError):
         m_task_subscriber._new_request_msg(data)
+
+
+class MockKaiNatsMessage:
+    def __init__(self):
+        self.data = None
+        self.ParseFromString = Mock()  # NOSONAR
+
+
+@patch("runner.task.subscriber.KaiNatsMessage", return_value=MockKaiNatsMessage())
+def test_new_request_msg_not_valid_protobuf_ko(m_request_message, m_task_subscriber):
+    m_request_message.return_value.ParseFromString.side_effect = Exception("ParseFromString error")
+
+    with pytest.raises(NewRequestMsgError):
+        m_task_subscriber._new_request_msg(b"wrong bytes")
 
 
 def test_get_response_handler_undefined_default_subject_ok(m_task_subscriber):

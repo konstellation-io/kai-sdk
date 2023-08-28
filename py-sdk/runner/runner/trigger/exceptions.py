@@ -20,8 +20,8 @@ class NewRequestMsgError(Exception):
 
 
 class UndefinedResponseHandlerError(Exception):
-    def __init__(self):
-        message = "undefined response handler"
+    def __init__(self, subject: str):
+        message = f"undefined response handler from subject {subject}"
         super().__init__(message)
 
 

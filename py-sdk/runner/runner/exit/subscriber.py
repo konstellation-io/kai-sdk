@@ -154,7 +154,6 @@ class ExitSubscriber:
 
     def _new_request_msg(self, data: bytes) -> KaiNatsMessage:
         request_msg = KaiNatsMessage()
-
         if is_compressed(data):
             try:
                 data = uncompress(data)

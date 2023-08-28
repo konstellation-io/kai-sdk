@@ -106,7 +106,7 @@ class TriggerSubscriber:
 
         handler = getattr(self.trigger_runner, "response_handler", None)
         if handler is None:
-            await self._process_runner_error(msg, UndefinedResponseHandlerError, request_msg.request_id)  # type: ignore
+            await self._process_runner_error(msg, UndefinedResponseHandlerError(msg.subject), request_msg.request_id)
             return
 
         try:

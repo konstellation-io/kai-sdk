@@ -5,6 +5,7 @@ from nats.js.client import JetStreamContext
 from nats.js.kv import KeyValue
 from vyper import v
 
+from runner.exceptions import FailedLoadingConfigError
 from runner.exit.exit_runner import ExitRunner
 from runner.runner import Runner
 from runner.task.task_runner import TaskRunner
@@ -146,3 +147,94 @@ def test_get_runner_ok(runner_type, runner_method, m_runner):
     result = getattr(m_runner, runner_method)()
 
     assert isinstance(result, runner_type)
+
+
+class MockVyper:
+    def __init__(self):
+        self.automatic_env = Mock()
+        self.is_set = Mock()
+        self.add_config_path = Mock()
+        self.set_config_name = Mock()
+        self.set_config_type = Mock()
+        self.read_in_config = Mock()
+        self.merge_in_config = Mock()
+        self.all_keys = Mock()
+        self.get_string = Mock()
+        self.set_default = Mock()
+
+
+@patch("runner.runner.v", return_value=MockVyper())
+def test_initialize_config_ok(m_vyper, m_runner):
+    m_vyper.is_set.side_effect = [True, True]
+    m_vyper.get_string.side_effect = ["test_url", "test_path"]
+    m_vyper.all_keys.return_value = [NATS_URL, "app.config_path", "app.other_config_path"]
+
+    m_runner.initialize_config()
+
+    assert m_vyper.automatic_env.called
+    assert m_vyper.is_set.call_count == 2
+    assert m_vyper.add_config_path.call_count == 4
+    assert m_vyper.set_config_name.call_count == 2
+    assert m_vyper.set_config_type.call_count == 2
+    assert m_vyper.read_in_config.called
+    assert m_vyper.merge_in_config.called
+    assert m_vyper.get_string.call_count == 2
+    assert m_vyper.all_keys.call_count == 1
+    assert m_vyper.set_default.call_count == 4
+
+
+@patch("runner.runner.v", return_value=MockVyper())
+def test_initialize_config_no_config_ko(m_vyper, m_runner):
+    m_vyper.is_set.side_effect = [True, True]
+    m_vyper.all_keys.return_value = []
+    with pytest.raises(FailedLoadingConfigError):
+        m_runner.initialize_config()
+
+        assert m_vyper.automatic_env.called
+        assert m_vyper.is_set.call_count == 2
+        assert m_vyper.add_config_path.call_count == 2
+        assert m_vyper.set_config_name.call_count == 2
+        assert m_vyper.set_config_type.call_count == 2
+        assert m_vyper.read_in_config.called
+        assert m_vyper.merge_in_config.called
+        assert m_vyper.get_string.call_count == 2
+        assert m_vyper.all_keys.call_count == 1
+
+
+@patch("runner.runner.v", return_value=MockVyper())
+def test_initialize_config_read_in_config_merge_in_config_ko(m_vyper, m_runner):
+    m_vyper.is_set.side_effect = [False, False]
+    m_vyper.all_keys.return_value = []
+    m_vyper.read_in_config.side_effect = Exception("read exception")
+    m_vyper.merge_in_config.side_effect = Exception("merge exception")
+
+    with pytest.raises(FailedLoadingConfigError):
+        m_runner.initialize_config()
+
+        assert m_vyper.automatic_env.called
+        assert m_vyper.is_set.call_count == 2
+        assert m_vyper.add_config_path.call_count == 2
+        assert m_vyper.set_config_name.call_count == 2
+        assert m_vyper.set_config_type.call_count == 2
+        assert m_vyper.read_in_config.called
+        assert m_vyper.merge_in_config.called
+        assert m_vyper.all_keys.call_count == 1
+
+
+@patch("runner.runner.v", return_value=MockVyper())
+def test_initialize_config_read_one_exception_ok(m_vyper, m_runner):
+    m_vyper.is_set.side_effect = [False, False]
+    m_vyper.all_keys.return_value = [NATS_URL]
+    m_vyper.read_in_config.side_effect = Exception("read exception")
+
+    m_runner.initialize_config()
+
+    assert m_vyper.automatic_env.called
+    assert m_vyper.is_set.call_count == 2
+    assert m_vyper.add_config_path.call_count == 2
+    assert m_vyper.set_config_name.call_count == 2
+    assert m_vyper.set_config_type.call_count == 2
+    assert m_vyper.read_in_config.called
+    assert m_vyper.merge_in_config.called
+    assert m_vyper.all_keys.call_count == 1
+    assert m_vyper.set_default.call_count == 4

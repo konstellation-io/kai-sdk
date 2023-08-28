@@ -1,5 +1,4 @@
 import asyncio
-from threading import Event
 from unittest.mock import AsyncMock, Mock, call, patch
 
 import pytest
