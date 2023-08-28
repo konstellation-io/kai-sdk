@@ -58,91 +58,86 @@ SUBJECT = "test.subject"
 
 
 @patch("runner.exit.subscriber.asyncio", return_value=Mock(spec=asyncio))
-async def test_start_ok(m_asyncio, m_exit_runner):
+async def test_start_ok(m_asyncio, m_exit_subscriber):
     v.set(NATS_INPUT, [("1", SUBJECT)])
-    m_exit_runner.js.subscribe = AsyncMock()
-    instance = ExitSubscriber(m_exit_runner)
-    instance.subscriber_thread_shutdown_event.set = Mock()
-    instance.subscriber_thread_shutdown_event.wait = Mock()
-    m_add_signal_h = instance.loop.add_signal_handler = Mock()
+    m_exit_subscriber.exit_runner.js.subscribe = AsyncMock()
+    m_exit_subscriber.subscriber_thread_shutdown_event.set = Mock()
+    m_exit_subscriber.subscriber_thread_shutdown_event.wait = Mock()
+    m_add_signal_h = m_exit_subscriber.loop.add_signal_handler = Mock()
 
-    await instance.start()
+    await m_exit_subscriber.start()
 
-    assert m_exit_runner.js.subscribe.called
+    assert m_exit_subscriber.exit_runner.js.subscribe.called
     assert m_add_signal_h.call_count == 2
-    assert not instance.subscriber_thread_shutdown_event.set.called
-    assert instance.subscriber_thread_shutdown_event.wait.called
+    assert not m_exit_subscriber.subscriber_thread_shutdown_event.set.called
+    assert m_exit_subscriber.subscriber_thread_shutdown_event.wait.called
 
 
 @patch("runner.exit.subscriber.Event", return_value=Mock(spec=Event))
 @patch("runner.exit.subscriber.asyncio", return_value=Mock(spec=asyncio))
-async def test_start_nats_subscribing_ko(m_asyncio, m_shutdown_event, m_exit_runner):
+async def test_start_nats_subscribing_ko(m_asyncio, m_shutdown_event, m_exit_subscriber):
     v.set(NATS_INPUT, [("1", SUBJECT)])
-    m_exit_runner.js.subscribe = AsyncMock(side_effect=Exception("Subscription error"))
-    instance = ExitSubscriber(m_exit_runner)
-    m_add_signal_h = instance.loop.add_signal_handler = Mock()
+    m_exit_subscriber.exit_runner.js.subscribe = AsyncMock(side_effect=Exception("Subscription error"))
+    m_add_signal_h = m_exit_subscriber.loop.add_signal_handler = Mock()
 
     with pytest.raises(SystemExit):
-        await instance.start()
+        await m_exit_subscriber.start()
 
         assert m_shutdown_event.called
-        assert m_exit_runner.js.subscribe.called
-        assert instance.loop.stop.called
+        assert m_exit_subscriber.exit_runner.js.subscribe.called
+        assert m_exit_subscriber.loop.stop.called
         assert not m_add_signal_h.called
         assert not m_shutdown_event.return_value.set.called
         assert not m_shutdown_event.return_value.wait.called
 
 
-async def test_shutdown_handler_coro_ok(m_exit_runner):
+async def test_shutdown_handler_coro_ok(m_exit_subscriber):
     v.set(NATS_INPUT, [("1", "test.subject1"), ("2", "test.subject2")])
     m_sub = Mock(spec=JetStreamContext.PushSubscription)
     m_sub.unsubscribe.side_effect = [None, None]
     m_subscriptions = [m_sub, m_sub]
-    m_exit_runner.js.subscribe = AsyncMock(return_value=m_sub)
-    instance = ExitSubscriber(m_exit_runner)
-    instance.subscriber_thread_shutdown_event.set = Mock()
+    m_exit_subscriber.exit_runner.js.subscribe = AsyncMock(return_value=m_sub)
+    m_exit_subscriber.subscriber_thread_shutdown_event.set = Mock()
 
-    await instance._shutdown_handler_coro(m_subscriptions)
+    await m_exit_subscriber._shutdown_handler_coro(m_subscriptions)
 
     assert m_subscriptions[0].unsubscribe.called
     assert m_subscriptions[1].unsubscribe.called
-    assert instance.subscriber_thread_shutdown_event.set.called
+    assert m_exit_subscriber.subscriber_thread_shutdown_event.set.called
 
 
-async def test_shutdown_handler_coro_ko(m_exit_runner):
+async def test_shutdown_handler_coro_ko(m_exit_subscriber):
     v.set(NATS_INPUT, [("1", "test.subject1"), ("2", "test.subject2")])
     m_sub = Mock(spec=JetStreamContext.PushSubscription)
     m_sub.unsubscribe.side_effect = [Exception("Unsubscribe error"), None]
     m_subscriptions = [m_sub, m_sub]
-    m_exit_runner.js.subscribe = AsyncMock(return_value=m_sub)
-    instance = ExitSubscriber(m_exit_runner)
-    instance.loop = Mock(spec=AbstractEventLoop)
-    instance.subscriber_thread_shutdown_event.set = Mock()
+    m_exit_subscriber.exit_runner.js.subscribe = AsyncMock(return_value=m_sub)
+    m_exit_subscriber.loop = Mock(spec=AbstractEventLoop)
+    m_exit_subscriber.subscriber_thread_shutdown_event.set = Mock()
 
     with pytest.raises(SystemExit):
-        await instance._shutdown_handler_coro(m_subscriptions)
+        await m_exit_subscriber._shutdown_handler_coro(m_subscriptions)
 
         assert m_subscriptions[0].unsubscribe.called
         assert m_subscriptions[1].unsubscribe.called
-        assert instance.subscriber_thread_shutdown_event.set.called
+        assert m_exit_subscriber.subscriber_thread_shutdown_event.set.called
 
 
-async def test_shutdown_handler_ok(m_exit_runner):
+async def test_shutdown_handler_ok(m_exit_subscriber):
     v.set(NATS_INPUT, [("1", "test.subject3"), ("2", "test.subject4")])
     m_sub = Mock(spec=JetStreamContext.PushSubscription)
     m_sub.unsubscribe.side_effect = [None, None]
     m_subscriptions = [m_sub, m_sub]
-    m_exit_runner.js.subscribe = AsyncMock(return_value=m_sub)
-    instance = ExitSubscriber(m_exit_runner)
-    instance.loop = Mock(spec=AbstractEventLoop)
-    instance._shutdown_handler_coro = AsyncMock()
+    m_exit_subscriber.exit_runner.js.subscribe = AsyncMock(return_value=m_sub)
+    m_exit_subscriber.loop = Mock(spec=AbstractEventLoop)
+    m_exit_subscriber._shutdown_handler_coro = AsyncMock()
 
-    instance._shutdown_handler(m_subscriptions)
+    m_exit_subscriber._shutdown_handler(m_subscriptions)
 
-    assert instance._shutdown_handler_coro.called
+    assert m_exit_subscriber._shutdown_handler_coro.called
 
 
-async def test_process_message_ok(m_exit_runner):
+async def test_process_message_ok(m_exit_subscriber):
     request_id = "test_request_id"
     m_msg = Mock(spec=Msg)
     m_msg.ack = AsyncMock()
@@ -153,24 +148,23 @@ async def test_process_message_ok(m_exit_runner):
         payload=Any(),
     )
     m_msg.data = expected_response_msg.SerializeToString()
-    instance = ExitSubscriber(m_exit_runner)
-    instance._new_request_msg = Mock(return_value=expected_response_msg)
-    instance._process_runner_error = AsyncMock()
+    m_exit_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
+    m_exit_subscriber._process_runner_error = AsyncMock()
     m_handler = Mock()
-    m_exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
-    instance._get_response_handler = m_handler
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
+    m_exit_subscriber._get_response_handler = m_handler
 
-    await instance._process_message(m_msg)
+    await m_exit_subscriber._process_message(m_msg)
 
-    assert instance._new_request_msg.called
-    assert not instance._process_runner_error.called
-    assert instance.exit_runner.sdk.request_msg == expected_response_msg
-    assert instance._get_response_handler.called
+    assert m_exit_subscriber._new_request_msg.called
+    assert not m_exit_subscriber._process_runner_error.called
+    assert m_exit_subscriber.exit_runner.sdk.request_msg == expected_response_msg
+    assert m_exit_subscriber._get_response_handler.called
     assert m_handler.called
     assert m_msg.ack.called
 
 
-async def test_process_message_not_valid_protobuf_ko(m_exit_runner):
+async def test_process_message_not_valid_protobuf_ko(m_exit_subscriber):
     request_id = "test_request_id"
     m_msg = Mock(spec=Msg)
     m_msg.ack = AsyncMock()
@@ -181,18 +175,17 @@ async def test_process_message_not_valid_protobuf_ko(m_exit_runner):
         payload=Any(),
     )
     m_msg.data = expected_response_msg.SerializeToString()
-    instance = ExitSubscriber(m_exit_runner)
-    instance._new_request_msg = Mock(side_effect=Exception(NewRequestMsgError("New request message error")))
-    instance._process_runner_error = AsyncMock()
+    m_exit_subscriber._new_request_msg = Mock(side_effect=Exception(NewRequestMsgError("New request message error")))
+    m_exit_subscriber._process_runner_error = AsyncMock()
 
-    await instance._process_message(m_msg)
+    await m_exit_subscriber._process_message(m_msg)
 
-    assert instance._new_request_msg.called
-    assert instance._process_runner_error.called
+    assert m_exit_subscriber._new_request_msg.called
+    assert m_exit_subscriber._process_runner_error.called
     assert not m_msg.ack.called
 
 
-async def test_process_message_undefined_handler_ko(m_exit_runner):
+async def test_process_message_undefined_handler_ko(m_exit_subscriber):
     request_id = "test_request_id"
     m_msg = Mock(spec=Msg)
     m_msg.ack = AsyncMock()
@@ -203,22 +196,21 @@ async def test_process_message_undefined_handler_ko(m_exit_runner):
         payload=Any(),
     )
     m_msg.data = expected_response_msg.SerializeToString()
-    instance = ExitSubscriber(m_exit_runner)
-    instance._new_request_msg = Mock(return_value=expected_response_msg)
-    instance._process_runner_error = AsyncMock()
-    m_exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
-    instance._get_response_handler = Mock(return_value=None)
+    m_exit_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
+    m_exit_subscriber._process_runner_error = AsyncMock()
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
+    m_exit_subscriber._get_response_handler = Mock(return_value=None)
 
-    await instance._process_message(m_msg)
+    await m_exit_subscriber._process_message(m_msg)
 
-    assert instance._new_request_msg.called
-    m_exit_runner.sdk.metadata.get_process.called
-    assert instance._get_response_handler.called
-    assert instance._process_runner_error.called
+    assert m_exit_subscriber._new_request_msg.called
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process.called
+    assert m_exit_subscriber._get_response_handler.called
+    assert m_exit_subscriber._process_runner_error.called
     assert not m_msg.ack.called
 
 
-async def test_process_message_preprocessor_ko(m_exit_runner):
+async def test_process_message_preprocessor_ko(m_exit_subscriber):
     request_id = "test_request_id"
     m_msg = Mock(spec=Msg)
     m_msg.ack = AsyncMock()
@@ -229,23 +221,22 @@ async def test_process_message_preprocessor_ko(m_exit_runner):
         payload=Any(),
     )
     m_msg.data = expected_response_msg.SerializeToString()
-    instance = ExitSubscriber(m_exit_runner)
-    instance._new_request_msg = Mock(return_value=expected_response_msg)
-    instance._process_runner_error = AsyncMock()
-    m_exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
-    instance._get_response_handler = Mock()
-    instance.exit_runner.preprocessor = Mock(side_effect=Exception("Preprocessor error"))
+    m_exit_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
+    m_exit_subscriber._process_runner_error = AsyncMock()
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
+    m_exit_subscriber._get_response_handler = Mock()
+    m_exit_subscriber.exit_runner.preprocessor = Mock(side_effect=Exception("Preprocessor error"))
 
-    await instance._process_message(m_msg)
+    await m_exit_subscriber._process_message(m_msg)
 
-    assert instance._new_request_msg.called
-    m_exit_runner.sdk.metadata.get_process.called
-    assert instance._get_response_handler.called
-    assert instance._process_runner_error.called
+    assert m_exit_subscriber._new_request_msg.called
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process.called
+    assert m_exit_subscriber._get_response_handler.called
+    assert m_exit_subscriber._process_runner_error.called
     assert not m_msg.ack.called
 
 
-async def test_process_message_handler_ko(m_exit_runner):
+async def test_process_message_handler_ko(m_exit_subscriber):
     request_id = "test_request_id"
     m_msg = Mock(spec=Msg)
     m_msg.ack = AsyncMock()
@@ -256,23 +247,22 @@ async def test_process_message_handler_ko(m_exit_runner):
         payload=Any(),
     )
     m_msg.data = expected_response_msg.SerializeToString()
-    instance = ExitSubscriber(m_exit_runner)
-    instance._new_request_msg = Mock(return_value=expected_response_msg)
-    instance._process_runner_error = AsyncMock()
-    m_exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
+    m_exit_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
+    m_exit_subscriber._process_runner_error = AsyncMock()
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
     m_handler = Mock(side_effect=Exception("Handler error"))
-    instance._get_response_handler = Mock(return_value=m_handler)
+    m_exit_subscriber._get_response_handler = Mock(return_value=m_handler)
 
-    await instance._process_message(m_msg)
+    await m_exit_subscriber._process_message(m_msg)
 
-    assert instance._new_request_msg.called
-    m_exit_runner.sdk.metadata.get_process.called
-    assert instance._get_response_handler.called
-    assert instance._process_runner_error.called
+    assert m_exit_subscriber._new_request_msg.called
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process.called
+    assert m_exit_subscriber._get_response_handler.called
+    assert m_exit_subscriber._process_runner_error.called
     assert not m_msg.ack.called
 
 
-async def test_process_message_postprocessor_ko(m_exit_runner):
+async def test_process_message_postprocessor_ko(m_exit_subscriber):
     request_id = "test_request_id"
     m_msg = Mock(spec=Msg)
     m_msg.ack = AsyncMock()
@@ -283,25 +273,24 @@ async def test_process_message_postprocessor_ko(m_exit_runner):
         payload=Any(),
     )
     m_msg.data = expected_response_msg.SerializeToString()
-    instance = ExitSubscriber(m_exit_runner)
-    instance._new_request_msg = Mock(return_value=expected_response_msg)
-    instance._process_runner_error = AsyncMock()
-    m_exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
+    m_exit_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
+    m_exit_subscriber._process_runner_error = AsyncMock()
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
     m_handler = Mock()
-    instance._get_response_handler = m_handler
-    instance.exit_runner.postprocessor = Mock(side_effect=Exception("Postprocessor error"))
+    m_exit_subscriber._get_response_handler = m_handler
+    m_exit_subscriber.exit_runner.postprocessor = Mock(side_effect=Exception("Postprocessor error"))
 
-    await instance._process_message(m_msg)
+    await m_exit_subscriber._process_message(m_msg)
 
-    assert instance._new_request_msg.called
-    m_exit_runner.sdk.metadata.get_process.called
-    assert instance._get_response_handler.called
+    assert m_exit_subscriber._new_request_msg.called
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process.called
+    assert m_exit_subscriber._get_response_handler.called
     assert m_handler.called
-    assert instance._process_runner_error.called
+    assert m_exit_subscriber._process_runner_error.called
     assert not m_msg.ack.called
 
 
-async def test_process_message_ack_ko_ok(m_exit_runner):
+async def test_process_message_ack_ko_ok(m_exit_subscriber):
     request_id = "test_request_id"
     m_msg = Mock(spec=Msg)
     m_msg.ack = AsyncMock(side_effect=Exception("Ack error"))
@@ -312,52 +301,51 @@ async def test_process_message_ack_ko_ok(m_exit_runner):
         payload=Any(),
     )
     m_msg.data = expected_response_msg.SerializeToString()
-    instance = ExitSubscriber(m_exit_runner)
-    instance._new_request_msg = Mock(return_value=expected_response_msg)
-    instance._process_runner_error = AsyncMock()
-    m_exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
+    m_exit_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
+    m_exit_subscriber._process_runner_error = AsyncMock()
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
     m_handler = Mock()
-    instance._get_response_handler = m_handler
+    m_exit_subscriber._get_response_handler = m_handler
 
-    await instance._process_message(m_msg)
+    await m_exit_subscriber._process_message(m_msg)
 
-    assert instance._new_request_msg.called
-    m_exit_runner.sdk.metadata.get_process.called
-    assert instance._get_response_handler.called
+    assert m_exit_subscriber._new_request_msg.called
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process.called
+    assert m_exit_subscriber._get_response_handler.called
     assert m_handler.called
     assert m_msg.ack.called
 
 
-async def test_process_runner_error_ok(m_exit_runner):
+async def test_process_runner_error_ok(m_exit_subscriber):
     m_msg = Mock(spec=Msg)
     m_msg.data = b"generic error"
     m_msg.ack = AsyncMock()
-    instance = ExitSubscriber(m_exit_runner)
-    instance.exit_runner.sdk.messaging.send_error = AsyncMock()
+    m_exit_subscriber.exit_runner.sdk.messaging.send_error = AsyncMock()
 
-    await instance._process_runner_error(m_msg, Exception("process runner error"), "test_request_id")
+    await m_exit_subscriber._process_runner_error(m_msg, Exception("process runner error"), "test_request_id")
 
     assert m_msg.ack.called
-    assert instance.exit_runner.sdk.messaging.send_error.called
-    assert instance.exit_runner.sdk.messaging.send_error.call_args == call("process runner error", "test_request_id")
+    assert m_exit_subscriber.exit_runner.sdk.messaging.send_error.called
+    assert m_exit_subscriber.exit_runner.sdk.messaging.send_error.call_args == call(
+        "process runner error", "test_request_id"
+    )
 
 
-async def test_process_runner_error_ack_ko_ok(m_exit_runner):
+async def test_process_runner_error_ack_ko_ok(m_exit_subscriber):
     m_msg = Mock(spec=Msg)
     m_msg.data = b"generic error"
     m_msg.ack = AsyncMock(side_effect=Exception("Ack error"))
-    instance = ExitSubscriber(m_exit_runner)
-    instance.exit_runner.sdk.messaging.send_error = AsyncMock()
+    m_exit_subscriber.exit_runner.sdk.messaging.send_error = AsyncMock()
 
-    await instance._process_runner_error(m_msg, Exception("process runner error ack"), "test_request_id")
+    await m_exit_subscriber._process_runner_error(m_msg, Exception("process runner error ack"), "test_request_id")
 
-    assert instance.exit_runner.sdk.messaging.send_error.called
-    assert instance.exit_runner.sdk.messaging.send_error.call_args == call(
+    assert m_exit_subscriber.exit_runner.sdk.messaging.send_error.called
+    assert m_exit_subscriber.exit_runner.sdk.messaging.send_error.call_args == call(
         "process runner error ack", "test_request_id"
     )
 
 
-def test_new_request_msg_ok(m_exit_runner):
+def test_new_request_msg_ok(m_exit_subscriber):
     request_id = "test_request_id"
     expected_response_msg = KaiNatsMessage(
         request_id=request_id,
@@ -366,14 +354,13 @@ def test_new_request_msg_ok(m_exit_runner):
         payload=Any(),
     )
     data = expected_response_msg.SerializeToString()
-    instance = ExitSubscriber(m_exit_runner)
 
-    result = instance._new_request_msg(data)
+    result = m_exit_subscriber._new_request_msg(data)
 
     assert result == expected_response_msg
 
 
-def test_new_request_msg_compressed_ok(m_exit_runner):
+def test_new_request_msg_compressed_ok(m_exit_subscriber):
     request_id = "test_request_id"
     expected_response_msg = KaiNatsMessage(
         request_id=request_id,
@@ -383,15 +370,14 @@ def test_new_request_msg_compressed_ok(m_exit_runner):
     )
     data = expected_response_msg.SerializeToString()
     data = compress(data)
-    instance = ExitSubscriber(m_exit_runner)
 
-    result = instance._new_request_msg(data)
+    result = m_exit_subscriber._new_request_msg(data)
 
     assert result == expected_response_msg
 
 
 @patch("runner.exit.subscriber.uncompress", side_effect=Exception("Uncompress error"))
-def test_new_request_msg_compressed_ko(m_exit_runner):
+def test_new_request_msg_compressed_ko(_, m_exit_subscriber):
     request_id = "test_request_id"
     expected_response_msg = KaiNatsMessage(
         request_id=request_id,
@@ -401,33 +387,28 @@ def test_new_request_msg_compressed_ko(m_exit_runner):
     )
     data = expected_response_msg.SerializeToString()
     data = compress(data)
-    instance = ExitSubscriber(m_exit_runner)
 
     with pytest.raises(NewRequestMsgError):
-        instance._new_request_msg(data)
+        m_exit_subscriber._new_request_msg(data)
 
 
-def test_get_response_handler_undefined_default_subject_ok(m_exit_runner):
-    instance = ExitSubscriber(m_exit_runner)
-
-    result = instance._get_response_handler("wrong_subject")
+def test_get_response_handler_undefined_default_subject_ok(m_exit_subscriber):
+    result = m_exit_subscriber._get_response_handler("wrong_subject")
 
     assert result is None
 
 
-def test_get_response_handler_default_subject_ok(m_exit_runner):
-    instance = ExitSubscriber(m_exit_runner)
-    instance.exit_runner.response_handlers = {"default": Mock()}
+def test_get_response_handler_default_subject_ok(m_exit_subscriber):
+    m_exit_subscriber.exit_runner.response_handlers = {"default": Mock()}
 
-    result = instance._get_response_handler("wrong_subject")
+    result = m_exit_subscriber._get_response_handler("wrong_subject")
 
-    assert result == instance.exit_runner.response_handlers["default"]
+    assert result == m_exit_subscriber.exit_runner.response_handlers["default"]
 
 
-def test_get_response_handler_defined_subject_ok(m_exit_runner):
-    instance = ExitSubscriber(m_exit_runner)
-    instance.exit_runner.response_handlers = {SUBJECT: Mock()}
+def test_get_response_handler_defined_subject_ok(m_exit_subscriber):
+    m_exit_subscriber.exit_runner.response_handlers = {SUBJECT: Mock()}
 
-    result = instance._get_response_handler(SUBJECT)
+    result = m_exit_subscriber._get_response_handler(SUBJECT)
 
-    assert result == instance.exit_runner.response_handlers[SUBJECT]
+    assert result == m_exit_subscriber.exit_runner.response_handlers[SUBJECT]
