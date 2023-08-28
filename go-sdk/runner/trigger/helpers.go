@@ -27,13 +27,13 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 	}
 }
 
-func composeRunner(triggerRunner *Runner, userRunner RunnerFunc) RunnerFunc {
+func composeRunner(userRunner RunnerFunc) RunnerFunc {
 	return func(runner *Runner, sdk sdk.KaiSDK) {
 		sdk.Logger.WithName("[RUNNER]").V(1).Info("Running TriggerRunner...")
 
 		if userRunner != nil {
 			sdk.Logger.WithName("[RUNNER]").V(3).Info("Executing user runner...")
-			userRunner(triggerRunner, sdk)
+			userRunner(runner, sdk)
 			sdk.Logger.WithName("[RUNNER]").V(3).Info("User runner executed")
 		}
 
