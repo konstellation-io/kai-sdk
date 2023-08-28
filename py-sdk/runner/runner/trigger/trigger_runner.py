@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from queue import Queue
-from threading import Event, Thread
+from threading import Thread
 from typing import Any, Callable, Optional
 
 import loguru
@@ -32,7 +32,6 @@ class TriggerRunner:
     runner: RunnerFunc = field(init=False)
     subscriber: TriggerSubscriber = field(init=False)
     finalizer: Optional[Finalizer] = None
-    runner_thread_shutdown_event: Event = field(default_factory=Event)
 
     def __post_init__(self) -> None:
         self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=self.logger)
@@ -43,7 +42,7 @@ class TriggerRunner:
         return self
 
     def with_runner(self, runner: RunnerFunc) -> TriggerRunner:
-        self.runner = compose_runner(self, runner)
+        self.runner = compose_runner(runner)
         return self
 
     def with_finalizer(self, finalizer: Finalizer) -> TriggerRunner:

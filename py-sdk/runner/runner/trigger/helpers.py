@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import asyncio
 from queue import Queue
-from signal import SIGINT, SIGTERM, Signals, signal
-from types import FrameType
+from signal import SIGINT, SIGTERM
+from threading import Event
 from typing import TYPE_CHECKING, Optional
 
+import loguru
 from google.protobuf.any_pb2 import Any
 
 from runner.common.common import Finalizer, Initializer, initialize_process_configuration
@@ -14,6 +15,18 @@ if TYPE_CHECKING:
     from runner.trigger.trigger_runner import ResponseHandler, RunnerFunc, TriggerRunner
 
 from sdk.kai_sdk import KaiSDK
+
+
+def _shutdown_handler(
+    logger: loguru.Logger, trigger_runner: TriggerRunner, runner_thread_shutdown_event: Event
+) -> None:
+    logger.info("shutting down runner...")
+    logger.info("closing opened channels...")
+    for request_id, channel in trigger_runner.response_channels.items():
+        channel.put(None)
+        logger.info(f"channel closed for request id {request_id}")
+
+    runner_thread_shutdown_event.set()
 
 
 def compose_initializer(initializer: Optional[Initializer] = None) -> Initializer:
@@ -33,8 +46,8 @@ def compose_initializer(initializer: Optional[Initializer] = None) -> Initialize
     return initializer_func
 
 
-def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> RunnerFunc:
-    def runner_func(runner: TriggerRunner, sdk: KaiSDK) -> None:
+def compose_runner(user_runner: RunnerFunc) -> RunnerFunc:
+    def runner_func(trigger_runner: TriggerRunner, sdk: KaiSDK) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[RUNNER]")
         logger.info("executing TriggerRunner...")
@@ -43,20 +56,14 @@ def compose_runner(trigger_runner: TriggerRunner, user_runner: RunnerFunc) -> Ru
         user_runner(trigger_runner, sdk)
         logger.info("user runner executed")
 
-        def _shutdown_handler() -> None:
-            logger.info("shutting down runner...")
-            logger.info("closing opened channels...")
-            for request_id, channel in runner.response_channels.items():
-                channel.put(None)
-                logger.info(f"channel closed for request id {request_id}")
-
-            trigger_runner.runner_thread_shutdown_event.set()
-
+        runner_thread_shutdown_event = Event()
         loop = asyncio.get_event_loop()
-        loop.add_signal_handler(SIGINT, lambda: _shutdown_handler())
-        loop.add_signal_handler(SIGTERM, lambda: _shutdown_handler())
+        loop.add_signal_handler(SIGINT, lambda: _shutdown_handler(logger, trigger_runner, runner_thread_shutdown_event))
+        loop.add_signal_handler(
+            SIGTERM, lambda: _shutdown_handler(logger, trigger_runner, runner_thread_shutdown_event)
+        )
 
-        trigger_runner.runner_thread_shutdown_event.wait()
+        runner_thread_shutdown_event.wait()
         logger.info("runnerFunc shutdown")
 
     return runner_func

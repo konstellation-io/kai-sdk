@@ -104,12 +104,13 @@ class TriggerSubscriber:
 
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
-        if getattr(self.trigger_runner, "response_handler", None) is None:
+        handler = getattr(self.trigger_runner, "response_handler", None)
+        if handler is None:
             await self._process_runner_error(msg, UndefinedResponseHandlerError, request_msg.request_id)  # type: ignore
             return
 
         try:
-            self.trigger_runner.response_handler(self.trigger_runner.sdk, request_msg.payload)
+            handler(self.trigger_runner.sdk, request_msg.payload)
         except Exception as e:
             from_node = request_msg.from_node
             to_node = self.trigger_runner.sdk.metadata.get_process()

@@ -1,24 +1,27 @@
 import asyncio
-from unittest.mock import AsyncMock, Mock, call
+from threading import Event
+from unittest.mock import AsyncMock, Mock, call, patch
 
 import pytest
-from google.protobuf.any_pb2 import Any
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
 
-from runner.exit.helpers import (
+from runner.trigger.helpers import (
+    _shutdown_handler,
     compose_finalizer,
-    compose_handler,
     compose_initializer,
-    compose_postprocessor,
-    compose_preprocessor,
+    compose_runner,
+    get_response_handler,
 )
+from runner.trigger.trigger_runner import ResponseHandler, TriggerRunner
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
+from sdk.metadata.metadata import Metadata
 
 CENTRALIZED_CONFIG = "centralized_configuration.process.config"
+TEST_REQUEST_ID = "test-request-id"
 
 
 @pytest.fixture(scope="function")
@@ -33,24 +36,36 @@ async def m_sdk() -> KaiSDK:
     return sdk
 
 
+@pytest.fixture(scope="function")
+def m_trigger_runner(m_sdk: KaiSDK) -> TriggerRunner:
+    nc = AsyncMock(spec=NatsClient)
+    js = Mock(spec=JetStreamContext)
+
+    trigger_runner = TriggerRunner(nc=nc, js=js)
+
+    trigger_runner.response_handler = Mock(spec=ResponseHandler)
+    trigger_runner.sdk = m_sdk
+    trigger_runner.sdk.metadata = Mock(spec=Metadata)
+    trigger_runner.sdk.metadata.get_process = Mock(return_value="test.process")
+
+    return trigger_runner
+
+
+class MockEvent:
+    def __init__(self):
+        self.is_set = Mock()
+        self.set = Mock()
+        self.wait = Mock()
+
+
 async def m_user_initializer_awaitable(sdk):
     assert sdk is not None
     await asyncio.sleep(0.00001)
 
 
-def m_user_preprocessor(sdk, response):
+def m_user_runner(runner, sdk):
     assert sdk is not None
-    assert response is not None
-
-
-def m_user_handler(sdk, response):
-    assert sdk is not None
-    assert response is not None
-
-
-def m_user_postprocessor(sdk, response):
-    assert sdk is not None
-    assert response is not None
+    assert runner is not None
 
 
 def m_user_finalizer(sdk):
@@ -81,22 +96,29 @@ async def test_compose_initializer_with_none_ok(m_sdk):
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
 
 
-def test_compose_preprocessor_ok(m_sdk):
-    preprocessor_func = compose_preprocessor(m_user_preprocessor)
+@patch("runner.trigger.helpers.Event", return_value=MockEvent())
+def test_compose_runner_ok(m_event, m_sdk):
+    runner_func = compose_runner(m_user_runner)
+    m_queue = Mock(spec=asyncio.Queue)
+    m_trigger_runner.response_channels = {TEST_REQUEST_ID: m_queue}
+    m_event.return_value.wait.side_effect = _shutdown_handler(m_sdk.logger, m_trigger_runner, m_event.return_value)
 
-    preprocessor_func(m_sdk, Any())
+    runner_func(m_trigger_runner, m_sdk)
+
+    assert m_event.return_value.wait.called
+    assert m_queue.put.called
+    assert m_event.return_value.set.called
 
 
-def test_compose_handler_ok(m_sdk):
-    handler_func = compose_handler(m_user_handler)
+def test_get_response_handler_ok(m_sdk):
+    m_queue = Mock(spec=asyncio.Queue)
+    m_sdk.get_request_id = Mock(return_value=TEST_REQUEST_ID)
+    handlers = {TEST_REQUEST_ID: m_queue}
+    response_handler_func = get_response_handler(handlers)
 
-    handler_func(m_sdk, Any())
+    response_handler_func(m_sdk, "test-response")
 
-
-def test_compose_postprocessor_ok(m_sdk):
-    postprocessor_func = compose_postprocessor(m_user_postprocessor)
-
-    postprocessor_func(m_sdk, Any())
+    assert m_queue.put.called
 
 
 def test_compose_finalizer_ok(m_sdk):
