@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Awaitable, Callable
 
-import loguru
 from google.protobuf.any_pb2 import Any
 from vyper import v
 
