@@ -26,8 +26,8 @@ class TriggerRunner:
     nc: NatsClient
     js: JetStreamContext
     logger: loguru.Logger = logger.bind(context="[TRIGGER]")
-    response_handler: ResponseHandler = field(init=False)
-    response_channels: dict[str, Queue] = field(default_factory=dict)
+    response_handler: ResponseHandler = field(init=False, default=None)
+    response_channels: dict[str, Queue] = field(init=False, default_factory=dict)
     initializer: Optional[Initializer] = None
     runner: RunnerFunc = field(init=False)
     subscriber: TriggerSubscriber = field(init=False)

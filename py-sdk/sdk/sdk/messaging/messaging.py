@@ -69,7 +69,7 @@ class MessagingABC(ABC):
 class Messaging(MessagingABC):
     js: JetStreamContext
     nc: NatsClient
-    request_msg: KaiNatsMessage = field(init=False)
+    request_msg: KaiNatsMessage = field(init=False, default=None)
     messaging_utils: MessagingUtilsABC = field(init=False)
     logger: loguru.Logger = logger.bind(context="[MESSAGING]")
 

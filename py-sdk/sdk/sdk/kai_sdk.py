@@ -34,7 +34,7 @@ class KaiSDK:
     nc: NatsClient
     js: JetStreamContext
     logger: Optional[loguru.Logger] = None
-    request_msg: KaiNatsMessage = field(init=False)
+    request_msg: KaiNatsMessage = field(init=False, default=None)
     metadata: MetadataABC = field(init=False)
     messaging: MessagingABC = field(init=False)
     object_store: ObjectStoreABC = field(init=False)
