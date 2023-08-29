@@ -37,7 +37,7 @@ class CentralizedConfigABC(ABC):
         pass
 
     @abstractmethod
-    async def set_config(self, key: str, value: bytes, scope: Optional[Scope]) -> None:
+    async def set_config(self, key: str, value: str, scope: Optional[Scope]) -> None:
         pass
 
     @abstractmethod
@@ -111,12 +111,12 @@ class CentralizedConfig(CentralizedConfigABC):
         self.logger.warning(f"key {key} not found in any scope")
         return None, False
 
-    async def set_config(self, key: str, value: bytes, scope: Optional[Scope] = None) -> None:
+    async def set_config(self, key: str, value: str, scope: Optional[Scope] = None) -> None:
         scope = scope or Scope.ProcessScope
         kv_store = self._get_scoped_config(scope)
 
         try:
-            await kv_store.put(key, value)
+            await kv_store.put(key, bytes(value, "utf-8"))
         except Exception as e:
             self.logger.warning(f"failed setting config: {e}")
             raise FailedSettingConfigError(key=key, scope=scope, error=e)
