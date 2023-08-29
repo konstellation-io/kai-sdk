@@ -25,7 +25,7 @@ class Runner:
         self.initialize_config()
         self.initialize_logger()
 
-    async def initialize(self) -> None:
+    async def initialize(self) -> Runner:
         try:
             await self.nc.connect(v.get_string("nats.url"))
         except Exception as e:
@@ -37,6 +37,8 @@ class Runner:
         except Exception as e:
             self.logger.error(f"error connecting to jetstream: {e}")
             raise JetStreamConnectionError(e)
+
+        return self
 
     def initialize_config(self) -> None:
         v.automatic_env()
