@@ -1,0 +1,23 @@
+metadata:
+  product_id: Trigger product
+  workflow_id: Trigger workflow
+  process_id: Trigger process
+  version_id: Trigger version v1.0.0
+  base_path: "/Some/Path"
+
+nats:
+  url: "nats://localhost:4222"
+  stream: trigger
+  output: trigger-output
+  object_store: object-store
+
+centralized_configuration:
+  product:
+    bucket: product
+  workflow:
+    bucket: workflow
+  process:
+    bucket: process
+    config:
+      test1: value1
+      test2: value2
