@@ -13,6 +13,8 @@ vyper-config = "1.1.1"
 sdk = {path = "../../py-sdk/sdk", develop = true}
 runner = {path = "../../py-sdk/runner", develop = true}
 
+[tool.poetry.group.dev.dependencies]
+ipdb = "0.13.13"
 
 [build-system]
 requires = ["poetry-core"]
