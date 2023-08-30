@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 from typing import TYPE_CHECKING, Optional
 
 from google.protobuf.any_pb2 import Any
@@ -19,6 +18,7 @@ def compose_initializer(initializer: Optional[Initializer] = None) -> Initialize
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[INITIALIZER]")
         logger.info("initializing ExitRunner...")
+        await sdk.initialize()
         await initialize_process_configuration(sdk)
 
         if initializer is not None:

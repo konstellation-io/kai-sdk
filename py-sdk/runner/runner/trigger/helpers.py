@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import asyncio
 from queue import Queue
 from signal import SIGINT, SIGTERM
 from threading import Event
 from typing import TYPE_CHECKING, Optional
 
-import loguru
 from google.protobuf.any_pb2 import Any
 
 from runner.common.common import Finalizer, Initializer, initialize_process_configuration
@@ -17,23 +15,12 @@ if TYPE_CHECKING:
 from sdk.kai_sdk import KaiSDK
 
 
-def _shutdown_handler(
-    logger: loguru.Logger, trigger_runner: TriggerRunner, runner_thread_shutdown_event: Event
-) -> None:
-    logger.info("shutting down runner...")
-    logger.info("closing opened channels...")
-    for request_id, channel in trigger_runner.response_channels.items():
-        channel.put(None)
-        logger.info(f"channel closed for request id {request_id}")
-
-    runner_thread_shutdown_event.set()
-
-
 def compose_initializer(initializer: Optional[Initializer] = None) -> Initializer:
     async def initializer_func(sdk: KaiSDK) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[INITIALIZER]")
         logger.info("initializing TriggerRunner...")
+        await sdk.initialize()
         await initialize_process_configuration(sdk)
 
         if initializer is not None:
@@ -47,23 +34,15 @@ def compose_initializer(initializer: Optional[Initializer] = None) -> Initialize
 
 
 def compose_runner(user_runner: RunnerFunc) -> RunnerFunc:
-    def runner_func(trigger_runner: TriggerRunner, sdk: KaiSDK) -> None:
+    async def runner_func(trigger_runner: TriggerRunner, sdk: KaiSDK) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[RUNNER]")
         logger.info("executing TriggerRunner...")
 
         logger.info("executing user runner...")
-        user_runner(trigger_runner, sdk)
+        await user_runner(trigger_runner, sdk)
         logger.info("user runner executed")
 
-        runner_thread_shutdown_event = Event()
-        loop = asyncio.get_event_loop()
-        loop.add_signal_handler(SIGINT, lambda: _shutdown_handler(logger, trigger_runner, runner_thread_shutdown_event))
-        loop.add_signal_handler(
-            SIGTERM, lambda: _shutdown_handler(logger, trigger_runner, runner_thread_shutdown_event)
-        )
-
-        runner_thread_shutdown_event.wait()
         logger.info("runnerFunc shutdown")
 
     return runner_func
