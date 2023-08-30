@@ -38,10 +38,16 @@ def finalizer(sdk: sdk.KaiSDK):
     logger = sdk.logger.bind(context="[CRONJOB FINALIZER]")
     logger.info("finalizing example...")
 
+def handler(sdk: sdk.KaiSDK, response: StringValue):
+    logger = sdk.logger.bind(context="[CRONJOB HANDLER]")
+    logger.info(f"handling response: {response.value}")
+
 
 async def init():
     runner = await Runner().initialize()
     await runner.trigger_runner().with_initializer(initializer).with_runner(cronjob_runner).with_finalizer(finalizer).run()
+    #await runner.task_runner().with_initializer(initializer).with_handler(handler).with_finalizer(finalizer).run()
+    #await runner.exit_runner().with_initializer(initializer).with_handler(handler).with_finalizer(finalizer).run()
 
 if __name__ == "__main__":    
     loop = asyncio.get_event_loop()
