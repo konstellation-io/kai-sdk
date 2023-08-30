@@ -2,9 +2,13 @@ from sdk import kai_sdk as sdk
 from runner.trigger import trigger_runner
 from runner.runner import Runner
 import asyncio
+import time
+from google.protobuf.wrappers_pb2 import StringValue
 
 
 async def initializer(sdk: sdk.KaiSDK):
+    logger = sdk.logger.bind(context="[CRONJOB INITIALIZER]")
+    logger.info("starting example...")
     sdk.metadata.logger.info(f"process {sdk.metadata.get_process()}")
     sdk.metadata.logger.info(f"product {sdk.metadata.get_product()}")
     sdk.metadata.logger.info(f"workflow {sdk.metadata.get_workflow()}")
@@ -23,11 +27,16 @@ async def initializer(sdk: sdk.KaiSDK):
     sdk.centralized_config.logger.info(f"config values from comfig.yaml test1: {value1} test2: {value2}")
 
 
-def cronjob_runner(trigger_runner: trigger_runner.TriggerRunner, sdk: sdk.KaiSDK):
-    sdk.logger.info("Cronjob Runner")
+async def cronjob_runner(trigger_runner: trigger_runner.TriggerRunner, sdk: sdk.KaiSDK):
+    while True:
+        logger = sdk.logger.bind(context="[CRONJOB RUNNER]")
+        logger.info("executing example...")
+        await sdk.messaging.send_output(StringValue(value="hello world"))
+        time.sleep(2)
 
-def finalizer(ctx: sdk.KaiSDK):
-    ctx.logger.info("Finalizer")
+def finalizer(sdk: sdk.KaiSDK):
+    logger = sdk.logger.bind(context="[CRONJOB FINALIZER]")
+    logger.info("finalizing example...")
 
 
 async def init():
