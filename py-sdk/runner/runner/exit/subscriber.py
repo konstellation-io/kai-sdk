@@ -31,66 +31,41 @@ ACK_TIME = 22  # hours
 class ExitSubscriber:
     exit_runner: "ExitRunner"
     logger: loguru.Logger = field(init=False)
-    loop: AbstractEventLoop = field(init=False)
-    subscriber_thread_shutdown_event = Event()
+    subscriptions: list[JetStreamContext.PushSubscription] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
         self.logger = self.exit_runner.logger.bind(context="[EXIT SUBSCRIBER]")
-        self.loop = asyncio.get_event_loop()
-
-    def _shutdown_handler(self, subscriptions: list[JetStreamContext.PushSubscription]) -> None:
-        self.loop.create_task(self._shutdown_handler_coro(subscriptions))
-
-    async def _shutdown_handler_coro(self, subscriptions: list[JetStreamContext.PushSubscription]) -> None:
-        self.logger.info("shutting signal received")
-
-        for sub in subscriptions:
-            self.logger.info(f"unsubscribing from subject {sub.subject}")
-
-            try:
-                await sub.unsubscribe()
-            except Exception as e:
-                self.logger.error(f"error unsubscribing from the NATS subject {sub.subject}: {e}")
-                self.subscriber_thread_shutdown_event.set()
-                self.loop.stop()
-                sys.exit(1)
-
-        self.subscriber_thread_shutdown_event.set()
 
     async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
-        subscriptions: list[JetStreamContext.PushSubscription] = []
         process = self.exit_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
         ack_wait_time = timedelta(hours=ACK_TIME)
-        for _, subject in input_subjects:
-            subject_ = subject.replace(".", "-")
-            consumer_name = f"{subject_}_{process}"
+        if isinstance(input_subjects, dict):
+            for _, subject in input_subjects.items():
+                subject_ = subject.replace(".", "-")
+                consumer_name = f"{subject_}_{process}"
 
-            self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
-            try:
-                sub = await self.exit_runner.js.subscribe(
-                    subject=subject,
-                    queue=consumer_name,
-                    cb=self._process_message,
-                    deliver_policy=DeliverPolicy.NEW,
-                    durable=consumer_name,
-                    manual_ack=True,
-                    config=ConsumerConfig(ack_wait=ack_wait_time.total_seconds()),
-                )
-            except Exception as e:
-                self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")
-                self.subscriber_thread_shutdown_event.set()
-                asyncio.get_event_loop().stop()
-                sys.exit(1)
+                self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
+                try:
+                    sub = await self.exit_runner.js.subscribe(
+                        subject=subject,
+                        queue=consumer_name,
+                        cb=self._process_message,
+                        deliver_policy=DeliverPolicy.NEW,
+                        durable=consumer_name,
+                        manual_ack=True,
+                        config=ConsumerConfig(ack_wait=ack_wait_time.total_seconds()),
+                    )
+                except Exception as e:
+                    self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")
+                    sys.exit(1)
 
-            subscriptions.append(sub)
-            self.logger.info(f"listening to {subject} from queue group {consumer_name}")
+                self.subscriptions.append(sub)
+                self.logger.info(f"listening to {subject} from queue group {consumer_name}")
+        else:
+            self.logger.debug("input subjects undefined, skipping subscription")
 
-        self.loop.add_signal_handler(SIGINT, lambda: self._shutdown_handler(subscriptions))
-        self.loop.add_signal_handler(SIGTERM, lambda: self._shutdown_handler(subscriptions))
-
-        self.subscriber_thread_shutdown_event.wait()
         self.logger.info("subscriber shutdown")
 
     async def _process_message(self, msg: Msg) -> None:
@@ -117,7 +92,9 @@ class ExitSubscriber:
                 self.exit_runner.preprocessor(self.exit_runner.sdk, request_msg.payload)
         except Exception as e:
             await self._process_runner_error(
-                msg, HandlerError(from_node, to_node, error=e, type="handler preprocessor"), request_msg.request_id
+                msg,
+                HandlerError(from_node, to_node, error=e, type="handler preprocessor"),
+                request_msg.request_id,
             )
             return
 
@@ -132,7 +109,9 @@ class ExitSubscriber:
                 self.exit_runner.postprocessor(self.exit_runner.sdk, request_msg.payload)
         except Exception as e:
             await self._process_runner_error(
-                msg, HandlerError(from_node, to_node, error=e, type="handler postprocessor"), request_msg.request_id
+                msg,
+                HandlerError(from_node, to_node, error=e, type="handler postprocessor"),
+                request_msg.request_id,
             )
             return
 

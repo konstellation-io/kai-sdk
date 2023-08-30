@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-import asyncio
 import sys
 from dataclasses import dataclass, field
 from datetime import timedelta
-from signal import SIGINT, SIGTERM
-from threading import Event
 from typing import TYPE_CHECKING
 
 import loguru
@@ -19,8 +16,6 @@ from sdk.messaging.messaging_utils import is_compressed, uncompress
 if TYPE_CHECKING:
     from runner.trigger.trigger_runner import TriggerRunner
 
-from asyncio import AbstractEventLoop
-
 from runner.trigger.exceptions import HandlerError, NewRequestMsgError, NotValidProtobuf, UndefinedResponseHandlerError
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 
@@ -31,66 +26,41 @@ ACK_TIME = 22  # hours
 class TriggerSubscriber:
     trigger_runner: "TriggerRunner"
     logger: loguru.Logger = field(init=False)
-    loop: AbstractEventLoop = field(init=False)
-    subscriber_thread_shutdown_event = Event()
+    subscriptions: list[JetStreamContext.PushSubscription] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
         self.logger = self.trigger_runner.logger.bind(context="[TRIGGER SUBSCRIBER]")
-        self.loop = asyncio.get_event_loop()
-
-    def _shutdown_handler(self, subscriptions: list[JetStreamContext.PushSubscription]) -> None:
-        self.loop.create_task(self._shutdown_handler_coro(subscriptions))
-
-    async def _shutdown_handler_coro(self, subscriptions: list[JetStreamContext.PushSubscription]) -> None:
-        self.logger.info("shutting signal received")
-
-        for sub in subscriptions:
-            self.logger.info(f"unsubscribing from subject {sub.subject}")
-
-            try:
-                await sub.unsubscribe()
-            except Exception as e:
-                self.logger.error(f"error unsubscribing from the NATS subject {sub.subject}: {e}")
-                self.subscriber_thread_shutdown_event.set()
-                self.loop.stop()
-                sys.exit(1)
-
-        self.subscriber_thread_shutdown_event.set()
 
     async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
-        subscriptions: list[JetStreamContext.PushSubscription] = []
         process = self.trigger_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
         ack_wait_time = timedelta(hours=ACK_TIME)
-        for _, subject in input_subjects:
-            subject_ = subject.replace(".", "-")
-            consumer_name = f"{subject_}_{process}"
+        if isinstance(input_subjects, dict):
+            for _, subject in input_subjects.items():
+                subject_ = subject.replace(".", "-")
+                consumer_name = f"{subject_}_{process}"
 
-            self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
-            try:
-                sub = await self.trigger_runner.js.subscribe(
-                    subject=subject,
-                    queue=consumer_name,
-                    cb=self._process_message,
-                    deliver_policy=DeliverPolicy.NEW,
-                    durable=consumer_name,
-                    manual_ack=True,
-                    config=ConsumerConfig(ack_wait=ack_wait_time.total_seconds()),
-                )
-            except Exception as e:
-                self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")
-                self.subscriber_thread_shutdown_event.set()
-                asyncio.get_event_loop().stop()
-                sys.exit(1)
+                self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
+                try:
+                    sub = await self.trigger_runner.js.subscribe(
+                        subject=subject,
+                        queue=consumer_name,
+                        cb=self._process_message,
+                        deliver_policy=DeliverPolicy.NEW,
+                        durable=consumer_name,
+                        manual_ack=True,
+                        config=ConsumerConfig(ack_wait=ack_wait_time.total_seconds()),
+                    )
+                except Exception as e:
+                    self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")
+                    sys.exit(1)
 
-            subscriptions.append(sub)
-            self.logger.info(f"listening to {subject} from queue group {consumer_name}")
+                self.subscriptions.append(sub)
+                self.logger.info(f"listening to {subject} from queue group {consumer_name}")
+        else:
+            self.logger.debug("input subjects undefined, skipping subscription")
 
-        self.loop.add_signal_handler(SIGINT, lambda: self._shutdown_handler(subscriptions))
-        self.loop.add_signal_handler(SIGTERM, lambda: self._shutdown_handler(subscriptions))
-
-        self.subscriber_thread_shutdown_event.wait()
         self.logger.info("subscriber shutdown")
 
     async def _process_message(self, msg: Msg) -> None:

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import asyncio
+import signal
+import sys
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -65,6 +68,37 @@ class ExitRunner:
         self.finalizer = compose_finalizer(finalizer)
         return self
 
+    def _exception_handler(self, loop, context) -> None:
+        msg = context.get("exception", context["message"])
+        self.logger.error(f"caught exception: {msg}")
+        asyncio.create_task(self._shutdown_handler(loop))
+
+    async def _shutdown_handler(self, loop: asyncio.AbstractEventLoop, signal: int = None) -> None:
+        if signal:
+            self.logger.info(f"received exit signal {signal.name}...")
+        self.logger.info("shutting down runner...")
+        self.logger.info("shutting down subscriber")
+        for sub in self.subscriber.subscriptions:
+            self.logger.info(f"unsubscribing from subject {sub.subject}")
+
+            try:
+                await sub.unsubscribe()
+            except Exception as e:
+                self.logger.error(f"error unsubscribing from the NATS subject {sub.subject}: {e}")
+                sys.exit(1)
+
+        self.finalizer(self.sdk)
+        self.logger.info("successfully shutdown trigger runner")
+
+        tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+
+        [task.cancel() for task in tasks]
+
+        self.logger.info(f"cancelling {len(tasks)} outstanding tasks")
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+        loop.stop()
+
     async def run(self) -> None:
         if "default" not in self.response_handlers:
             raise UndefinedDefaultHandlerFunctionError
@@ -78,6 +112,18 @@ class ExitRunner:
         initializer_func = self.initializer(self.sdk)
         await initializer_func
 
-        await self.subscriber.start()
+        loop = asyncio.get_event_loop()
+        signals = (signal.SIGINT, signal.SIGTERM)
+        for s in signals:
+            loop.add_signal_handler(
+                s,
+                lambda s=s: asyncio.create_task(self._shutdown_handler(loop, signal=s)),
+            )
+        loop.set_exception_handler(self._exception_handler)
+
+        try:
+            await self.subscriber.start()
+        finally:
+            self.logger.info("runner started")
 
         self.finalizer(self.sdk)
