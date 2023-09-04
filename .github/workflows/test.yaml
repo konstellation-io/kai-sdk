@@ -24,7 +24,7 @@ jobs:
       py-sdk: ${{ steps.filter.outputs.py-sdk }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - uses: dorny/paths-filter@v2
       id: filter
@@ -53,7 +53,7 @@ jobs:
     steps:
       - name: Checkout code
         if: matrix.changes == 'true'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Go
         if: matrix.changes == 'true' && matrix.component == 'go-sdk'
         uses: actions/setup-go@v4
@@ -115,7 +115,7 @@ jobs:
             changes: ${{ needs.check-folder-changes.outputs.py-sdk }}
             sonar_token_secret: SONAR_TOKEN_PYTHON_SDK
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: matrix.changes == 'true'
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
