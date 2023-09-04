@@ -5,6 +5,7 @@ import concurrent.futures
 import functools
 import signal
 import sys
+import threading
 from dataclasses import dataclass, field
 from queue import Queue
 from typing import Any, Awaitable, Callable, Optional
@@ -20,6 +21,7 @@ from runner.trigger.exceptions import UndefinedRunnerFunctionError
 from runner.trigger.helpers import compose_finalizer, compose_initializer, compose_runner, get_response_handler
 from runner.trigger.subscriber import TriggerSubscriber
 from sdk.kai_sdk import KaiSDK
+from concurrent.futures import ThreadPoolExecutor
 
 ResponseHandler = Callable[[KaiSDK, any_pb2.Any], None]
 
@@ -36,6 +38,7 @@ class TriggerRunner:
     runner: RunnerFunc = field(init=False)
     subscriber: TriggerSubscriber = field(init=False)
     finalizer: Optional[Finalizer] = None
+    tasks: list[threading.Thread] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
         self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=self.logger)
@@ -85,12 +88,10 @@ class TriggerRunner:
         self.finalizer(self.sdk)
         self.logger.info("successfully shutdown trigger runner")
 
-        tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+        [task.cancel() for task in self.tasks]
 
-        [task.cancel() for task in tasks]
-
-        self.logger.info(f"cancelling {len(tasks)} outstanding tasks")
-        await asyncio.gather(*tasks, return_exceptions=True)
+        self.logger.info(f"cancelling {len(self.tasks)} outstanding tasks")
+        await asyncio.gather(*self.tasks, return_exceptions=True)
 
         self.logger.info("shutting down executor")
         executor.shutdown(wait=False)
@@ -108,24 +109,20 @@ class TriggerRunner:
 
         loop.stop()
 
-    def _exception_handler(self, executor, loop, context) -> None:
+    def _exception_handler(self, loop, executor, context) -> None:
         msg = context.get("exception", context["message"])
         self.logger.error(f"caught exception: {msg}")
         asyncio.create_task(self._shutdown_handler(loop, executor))
 
-    def runner_sync(self, loop):
-        asyncio.run_coroutine_threadsafe(self.runner(self, self.sdk), loop)
+    def subscriber_wrapper(self) -> None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self.subscriber.start())
 
-    async def runner_coro(self, executor: concurrent.futures.ThreadPoolExecutor) -> None:
-        loop = asyncio.get_running_loop()
-        await loop.run_in_executor(executor, self.runner_sync, loop)
-
-    def subscriber_sync(self, loop):
-        asyncio.run_coroutine_threadsafe(self.subscriber.start(), loop)
-
-    async def subscriber_coro(self, executor: concurrent.futures.ThreadPoolExecutor) -> None:
-        loop = asyncio.get_running_loop()
-        await loop.run_in_executor(executor, self.subscriber_sync, loop)
+    def runner_wrapper(self) -> None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self.runner(self, self.sdk))
 
     async def run(self) -> None:
         if getattr(self, "runner", None) is None:
@@ -142,20 +139,23 @@ class TriggerRunner:
         initializer_func = self.initializer(self.sdk)
         await initializer_func
 
-        executor = concurrent.futures.ThreadPoolExecutor()
         loop = asyncio.get_event_loop()
+        executor = ThreadPoolExecutor(max_workers=2)
         signals = (signal.SIGINT, signal.SIGTERM)
         for s in signals:
             loop.add_signal_handler(
                 s,
                 lambda s=s: asyncio.create_task(self._shutdown_handler(loop, executor, signal=s)),
             )
-        handle_exec_func = functools.partial(self._exception_handler, executor)
-        loop.set_exception_handler(handle_exec_func)
+        exception_func_handler = functools.partial(self._exception_handler, executor)
+        loop.set_exception_handler(exception_func_handler)
 
         try:
-            loop.create_task(self.runner_coro(executor))
-            loop.create_task(self.subscriber_coro(executor))
+            future_run = loop.run_in_executor(executor, self.runner_wrapper)
+            future_sub = loop.run_in_executor(executor, self.subscriber_wrapper)
+
+            self.tasks = [future_run, future_sub]
+            await asyncio.gather(*self.tasks, return_exceptions=True)
         finally:
             self.logger.info("runner started")
 
