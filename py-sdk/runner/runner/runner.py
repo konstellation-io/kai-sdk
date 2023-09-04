@@ -27,16 +27,16 @@ class Runner:
 
     async def initialize(self) -> Runner:
         try:
-            await self.nc.connect(v.get_string("nats.url"))
-        except Exception as e:
-            self.logger.error(f"error connecting to nats: {e}")
-            raise NATSConnectionError(e)
-
-        try:
             self.js = self.nc.jetstream()
         except Exception as e:
             self.logger.error(f"error connecting to jetstream: {e}")
             raise JetStreamConnectionError(e)
+        
+        try:
+            await self.nc.connect(v.get_string("nats.url"))
+        except Exception as e:
+            self.logger.error(f"error connecting to nats: {e}")
+            raise NATSConnectionError(e)
 
         return self
 
