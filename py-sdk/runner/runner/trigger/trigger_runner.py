@@ -102,6 +102,10 @@ class TriggerRunner:
             except Exception as e:
                 self.logger.error(f"error releasing thread lock: {e}")
 
+        if not self.nc.is_closed:
+            self.logger.info("closing nats connection")
+            await self.nc.close()
+
         loop.stop()
 
     def _exception_handler(self, executor, loop, context) -> None:

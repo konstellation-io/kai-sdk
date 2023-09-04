@@ -97,6 +97,10 @@ class TaskRunner:
         self.logger.info(f"cancelling {len(tasks)} outstanding tasks")
         await asyncio.gather(*tasks, return_exceptions=True)
 
+        if not self.nc.is_closed:
+            self.logger.info("closing nats connection")
+            await self.nc.close()
+
         loop.stop()
 
     async def run(self) -> None:
