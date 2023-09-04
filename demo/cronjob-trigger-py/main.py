@@ -1,11 +1,13 @@
 import asyncio
 import time
+import uuid
 
 from google.protobuf.wrappers_pb2 import StringValue
 
 from runner.runner import Runner
 from runner.trigger import trigger_runner
 from sdk import kai_sdk as sdk
+from sdk.centralized_config.centralized_config import Scope
 
 
 async def initializer(sdk: sdk.KaiSDK):
@@ -34,6 +36,10 @@ async def initializer(sdk: sdk.KaiSDK):
     value1 = await sdk.centralized_config.get_config("test1")
     value2 = await sdk.centralized_config.get_config("test2")
 
+    await sdk.centralized_config.set_config("test1", "value1", Scope.WorkflowScope)
+
+    await sdk.object_store.save("test", bytes("value", 'utf-8'))
+
     sdk.centralized_config.logger.info(
         f"config values from comfig.yaml test1: {value1} test2: {value2}"
     )
@@ -43,8 +49,11 @@ async def cronjob_runner(trigger_runner: trigger_runner.TriggerRunner, sdk: sdk.
     while True:
         logger = sdk.logger.bind(context="[CRONJOB RUNNER]")
         logger.info("executing example...")
-        await sdk.messaging.send_output(StringValue(value="hello world"))
-        time.sleep(2)
+        request_id = str(uuid.uuid4())
+        await sdk.messaging.send_output_with_request_id(StringValue(value="hello world"), request_id)
+        logger.info(f"waiting response for request id {request_id}...")
+        response = trigger_runner.get_response_channel(request_id)
+        logger.info(f"response: {response}")
 
 
 def finalizer(sdk: sdk.KaiSDK):
