@@ -48,7 +48,7 @@ def compose_runner(user_runner: RunnerFunc) -> RunnerFunc:
     return runner_func
 
 
-def get_response_handler(handlers: dict[str, Queue]) -> ResponseHandler:
+def get_response_handler(handlers: [str, Queue]) -> ResponseHandler:
     def response_handler_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[RESPONSE HANDLER]")
