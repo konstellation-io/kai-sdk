@@ -7,7 +7,6 @@ from nats.js.client import JetStreamContext
 from vyper import v
 
 from runner.trigger.helpers import (
-    _shutdown_handler,
     compose_finalizer,
     compose_initializer,
     compose_runner,
@@ -95,18 +94,14 @@ async def test_compose_initializer_with_none_ok(m_sdk):
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
 
 
-@patch("runner.trigger.helpers.Event", return_value=MockEvent())
-def test_compose_runner_ok(m_event, m_sdk):
+def test_compose_runner_ok(m_sdk):
     runner_func = compose_runner(m_user_runner)
     m_queue = Mock(spec=asyncio.Queue)
     m_trigger_runner.response_channels = {TEST_REQUEST_ID: m_queue}
-    m_event.return_value.wait.side_effect = _shutdown_handler(m_sdk.logger, m_trigger_runner, m_event.return_value)
 
     runner_func(m_trigger_runner, m_sdk)
 
-    assert m_event.return_value.wait.called
     assert m_queue.put.called
-    assert m_event.return_value.set.called
 
 
 def test_get_response_handler_ok(m_sdk):
