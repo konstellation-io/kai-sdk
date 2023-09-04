@@ -6,7 +6,7 @@
 For emulating KAI creation of nats resources as defined in `app.yaml` do the following:
 - Create key value stores as needed in centralized configuration with `nats kv add <BUCKET>`
 - Create object stores as needed with `nats object add <OBJECT_STORE>`
-- Create streams as needed for messaging with `nats stream add trigger <STREAM>`
+- Create streams as needed for messaging with `nats stream add <STREAM>`
     - This command will ask you next the subject defined in the documents as `<OUTPUT>`, then select memory and confirm the rest of default settings
     - You can check the subscription is working with `nats subscribe <OUTPUT>`
 - Run the main for each node 
