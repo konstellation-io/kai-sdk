@@ -41,8 +41,8 @@ class TaskSubscriber:
         process = self.task_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
         ack_wait_time = timedelta(hours=ACK_TIME)
-        if isinstance(input_subjects, dict):
-            for _, subject in input_subjects.items():
+        if isinstance(input_subjects, list):
+            for subject in input_subjects:
                 subject_ = subject.replace(".", "-")
                 consumer_name = f"{subject_}_{process}"
 
