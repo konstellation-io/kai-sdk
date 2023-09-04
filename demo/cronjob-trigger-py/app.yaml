@@ -6,7 +6,7 @@ metadata:
   base_path: "/Some/Path"
 
 nats:
-  url: "nats://192.168.1.155:4222"
+  url: "nats://localhost:4222"
   stream: trigger
   inputs:
     - exit-output
