@@ -31,7 +31,9 @@ It is necessary to set the following environment variables in order to use the r
 
 ## Development
 
-Install the dependencies 
+- Build the proto files with `make protos`
+
+- Install the dependencies with `poetry install --group dev`
 
 If you don't have poetry installed (you must have python 3.11 installed in your system):
 

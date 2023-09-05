@@ -7,7 +7,7 @@ metadata:
 
 nats:
   url: "nats://localhost:4222"
-  stream: trigger
+  stream: task
   inputs:
     - trigger-output
   output: task-output

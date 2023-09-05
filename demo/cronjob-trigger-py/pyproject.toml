@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "cronjob-trigger-py"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "KAI SDK's demo in Python"
+authors = ["Intelygenz - AIO Team"]
+maintainers = ["Intelygenz - AIO Team"]
 
 [tool.poetry.dependencies]
 python = "3.11.5"

@@ -36,9 +36,9 @@ async def initializer(sdk: sdk.KaiSDK):
     value1 = await sdk.centralized_config.get_config("test1")
     value2 = await sdk.centralized_config.get_config("test2")
 
-    await sdk.centralized_config.set_config("test1", "value1", Scope.WorkflowScope)
+    await sdk.centralized_config.set_config("test", "value", Scope.WorkflowScope)
 
-    await sdk.object_store.save("test", bytes("value", 'utf-8'))
+    await sdk.object_store.save("test", bytes("value-obj", 'utf-8'))
 
     sdk.centralized_config.logger.info(
         f"config values from comfig.yaml test1: {value1} test2: {value2}"
