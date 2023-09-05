@@ -81,7 +81,9 @@ class ExitSubscriber:
         to_node = self.exit_runner.sdk.metadata.get_process()
 
         if handler is None:
-            await self._process_runner_error(msg, Exception(f"no handler defined for {from_node}"), request_msg.request_id)
+            await self._process_runner_error(
+                msg, Exception(f"no handler defined for {from_node}"), request_msg.request_id
+            )
             return
 
         try:

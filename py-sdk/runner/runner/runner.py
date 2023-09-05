@@ -16,6 +16,7 @@ from runner.trigger.trigger_runner import TriggerRunner
 
 LOGGER_FORMAT = "<green>{time}</green> <level>{extra[context]} {message}</level>"
 
+
 @dataclass
 class Runner:
     nc: NatsClient = NatsClient()

@@ -70,7 +70,7 @@ jobs:
         if: matrix.changes == 'true' && matrix.component == 'py-sdk'
         uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: 3.11.5
       - name: Install poetry and dependencies
         if: matrix.changes == 'true' && matrix.component == 'py-sdk'
         run: |

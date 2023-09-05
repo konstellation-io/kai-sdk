@@ -4,7 +4,7 @@ import asyncio
 import signal
 import sys
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Any, Awaitable, Callable, Optional
 
 import loguru
 from loguru import logger
@@ -22,7 +22,6 @@ from runner.task.helpers import (
 )
 from runner.task.subscriber import TaskSubscriber
 from sdk.kai_sdk import KaiSDK
-from typing import Any, Awaitable, Callable
 
 Preprocessor = Callable[[KaiSDK, Any], Awaitable[None]]
 Postprocessor = Callable[[KaiSDK, Any], Awaitable[None]]
