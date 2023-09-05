@@ -6,7 +6,7 @@ authors = ["Intelygenz - AIO Team"]
 maintainers = ["Intelygenz - AIO Team"]
 readme = "../README.md"
 repository = "https://github.com/konstellation-io/kai-sdk/py-sdk/runner"
-keywords = ["python", "runner", "kai", "konstellation"]
+keywords = ["python", "runner", "kai", "aio"]
 
 
 [tool.poetry.dependencies]
