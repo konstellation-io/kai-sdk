@@ -10,7 +10,6 @@ import loguru
 from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
-from vyper import v
 
 from runner.common.common import Finalizer, Handler, Initializer
 from runner.exit.exceptions import UndefinedDefaultHandlerFunctionError

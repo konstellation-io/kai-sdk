@@ -33,6 +33,7 @@ class TriggerSubscriber:
 
     async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
+        stream_name = v.get("nats.stream")
         process = self.trigger_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
         ack_wait_time = timedelta(hours=ACK_TIME)
@@ -44,6 +45,7 @@ class TriggerSubscriber:
                 self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
                 try:
                     sub = await self.trigger_runner.js.subscribe(
+                        stream=stream_name,
                         subject=subject,
                         queue=consumer_name,
                         cb=self._process_message,

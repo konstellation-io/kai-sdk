@@ -1,12 +1,6 @@
 from typing import Optional
 
 
-class UndefinedHandlerFunctionError(Exception):
-    def __init__(self, node: str):
-        message = f"undefined handler for node {node}"
-        super().__init__(f"{message}")
-
-
 class UndefinedDefaultHandlerFunctionError(Exception):
     def __init__(self):
         super().__init__("Undefined default handler")
