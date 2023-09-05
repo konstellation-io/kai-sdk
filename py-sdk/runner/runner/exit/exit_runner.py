@@ -124,4 +124,4 @@ class ExitRunner:
         try:
             await self.subscriber.start()
         finally:
-            self.logger.info("exit runner stopped")
+            self.logger.info("exit runner initializing finished")
