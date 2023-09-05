@@ -70,8 +70,6 @@ async def init():
     await runner.trigger_runner().with_initializer(initializer).with_runner(
         cronjob_runner
     ).with_finalizer(finalizer).run()
-    # await runner.task_runner().with_initializer(initializer).with_handler(handler).with_finalizer(finalizer).run()
-    # await runner.exit_runner().with_initializer(initializer).with_handler(handler).with_finalizer(finalizer).run()
 
 
 if __name__ == "__main__":
