@@ -126,6 +126,6 @@ class TaskRunner:
         try:
             await self.subscriber.start()
         finally:
-            self.logger.info("runner started")
+            self.logger.info("task runner stopped")
 
         self.finalizer(self.sdk)

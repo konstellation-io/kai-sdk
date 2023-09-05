@@ -40,7 +40,7 @@ class ExitSubscriber:
         if isinstance(input_subjects, list):
             for subject in input_subjects:
                 subject_ = subject.replace(".", "-")
-                consumer_name = f"{subject_}_{process}"
+                consumer_name = f"{subject_}-{process}"
 
                 self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
                 try:

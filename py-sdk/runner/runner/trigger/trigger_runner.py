@@ -156,7 +156,7 @@ class TriggerRunner:
             self.tasks = [future_run, future_sub]
             await asyncio.gather(*self.tasks, return_exceptions=True)
         finally:
-            self.logger.info("runner started")
+            self.logger.info("trigger runner stopped")
 
 
 RunnerFunc = Callable[[TriggerRunner, KaiSDK], Awaitable[None]]
