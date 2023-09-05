@@ -64,6 +64,7 @@ def m_msg() -> Msg:
 
 async def test_start_ok(m_exit_subscriber):
     v.set(NATS_INPUT, [SUBJECT])
+    v.set("nats.stream", "test-stream")
     m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test process id")
     cb_mock = m_exit_subscriber._process_message = AsyncMock()
     m_exit_subscriber.exit_runner.js.subscribe = AsyncMock()
@@ -72,6 +73,7 @@ async def test_start_ok(m_exit_subscriber):
 
     assert m_exit_subscriber.exit_runner.js.subscribe.called
     assert m_exit_subscriber.exit_runner.js.subscribe.call_args == call(
+        stream="test-stream",
         subject=SUBJECT,
         queue="test-subject_test-process-id",
         cb=cb_mock,
