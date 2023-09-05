@@ -56,10 +56,10 @@ class TriggerRunner:
         self.finalizer = compose_finalizer(finalizer)
         return self
 
-    def get_response_channel(self, request_id: str, timeout: int = None) -> Any:
+    def get_response_channel(self, request_id: str) -> Any:
         if request_id not in self.response_channels:
             self.response_channels[request_id] = Queue(maxsize=1)
-        return self.response_channels[request_id].get(timeout=timeout)
+        return self.response_channels[request_id].get()
 
     async def _shutdown_handler(
         self,
