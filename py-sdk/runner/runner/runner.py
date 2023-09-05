@@ -31,7 +31,7 @@ class Runner:
         except Exception as e:
             self.logger.error(f"error connecting to jetstream: {e}")
             raise JetStreamConnectionError(e)
-        
+
         try:
             await self.nc.connect(v.get_string("nats.url"))
         except Exception as e:

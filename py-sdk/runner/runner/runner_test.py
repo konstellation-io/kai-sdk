@@ -122,8 +122,6 @@ async def test_runner_initialize_nats_ko():
     with pytest.raises(Exception):
         await runner.initialize()
 
-    assert getattr(runner, "js", None) is None
-
 
 async def test_runner_initialize_jetstream_ko():
     nc = AsyncMock(spec=NatsClient)

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from queue import Queue
-from signal import SIGINT, SIGTERM
-from threading import Event
 from typing import TYPE_CHECKING, Optional
 
 from google.protobuf.any_pb2 import Any

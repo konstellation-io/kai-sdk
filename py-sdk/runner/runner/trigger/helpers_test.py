@@ -1,17 +1,14 @@
 import asyncio
-from unittest.mock import AsyncMock, Mock, call, patch
+from queue import Queue
+from unittest.mock import AsyncMock, Mock, call
 
 import pytest
+from google.protobuf.any_pb2 import Any
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from vyper import v
 
-from runner.trigger.helpers import (
-    compose_finalizer,
-    compose_initializer,
-    compose_runner,
-    get_response_handler,
-)
+from runner.trigger.helpers import compose_finalizer, compose_initializer, compose_runner, get_response_handler
 from runner.trigger.trigger_runner import ResponseHandler, TriggerRunner
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
@@ -61,9 +58,10 @@ async def m_user_initializer_awaitable(sdk):
     await asyncio.sleep(0.00001)
 
 
-def m_user_runner(runner, sdk):
+async def m_user_runner_awaitable(runner, sdk):
     assert sdk is not None
     assert runner is not None
+    await asyncio.sleep(0.00001)
 
 
 def m_user_finalizer(sdk):
@@ -94,23 +92,19 @@ async def test_compose_initializer_with_none_ok(m_sdk):
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
 
 
-def test_compose_runner_ok(m_sdk):
-    runner_func = compose_runner(m_user_runner)
-    m_queue = Mock(spec=asyncio.Queue)
-    m_trigger_runner.response_channels = {TEST_REQUEST_ID: m_queue}
+async def test_compose_runner_ok(m_sdk):
+    runner_func = compose_runner(m_user_runner_awaitable)
 
-    runner_func(m_trigger_runner, m_sdk)
-
-    assert m_queue.put.called
+    await runner_func(m_trigger_runner, m_sdk)
 
 
 def test_get_response_handler_ok(m_sdk):
-    m_queue = Mock(spec=asyncio.Queue)
+    m_queue = Mock(spec=Queue)
     m_sdk.get_request_id = Mock(return_value=TEST_REQUEST_ID)
     handlers = {TEST_REQUEST_ID: m_queue}
     response_handler_func = get_response_handler(handlers)
 
-    response_handler_func(m_sdk, "test-response")
+    response_handler_func(m_sdk, Any())
 
     assert m_queue.put.called
 

@@ -6,6 +6,7 @@ import functools
 import signal
 import sys
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from queue import Queue
 from typing import Any, Awaitable, Callable, Optional
@@ -21,7 +22,6 @@ from runner.trigger.exceptions import UndefinedRunnerFunctionError
 from runner.trigger.helpers import compose_finalizer, compose_initializer, compose_runner, get_response_handler
 from runner.trigger.subscriber import TriggerSubscriber
 from sdk.kai_sdk import KaiSDK
-from concurrent.futures import ThreadPoolExecutor
 
 ResponseHandler = Callable[[KaiSDK, any_pb2.Any], None]
 

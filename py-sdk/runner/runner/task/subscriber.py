@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-import asyncio
 import sys
 from dataclasses import dataclass, field
 from datetime import timedelta
-from signal import SIGINT, SIGTERM
-from threading import Event
 from typing import TYPE_CHECKING
 
 import loguru
@@ -19,7 +16,6 @@ from sdk.messaging.messaging_utils import is_compressed, uncompress
 if TYPE_CHECKING:
     from runner.task.task_runner import TaskRunner, Handler
 
-from asyncio import AbstractEventLoop
 
 from runner.task.exceptions import HandlerError, NewRequestMsgError, NotValidProtobuf, UndefinedHandlerFunctionError
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage

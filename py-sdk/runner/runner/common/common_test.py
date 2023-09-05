@@ -47,7 +47,7 @@ async def test_initialize_process_configuration_ok(m_sdk):
 
     assert m_sdk.centralized_config is not None
     assert m_sdk.centralized_config.process_kv.put.call_count == 1
-    assert m_sdk.centralized_config.process_kv.put.call_args == call("test_key", "test_value")
+    assert m_sdk.centralized_config.process_kv.put.call_args == call("test_key", b"test_value")
 
 
 async def test_initialize_process_configuration_ko(m_sdk):
@@ -58,4 +58,4 @@ async def test_initialize_process_configuration_ko(m_sdk):
 
     assert m_sdk.centralized_config is not None
     assert m_sdk.centralized_config.process_kv.put.call_count == 1
-    assert m_sdk.centralized_config.process_kv.put.call_args == call("test_key", "test_value")
+    assert m_sdk.centralized_config.process_kv.put.call_args == call("test_key", b"test_value")
