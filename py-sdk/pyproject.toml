@@ -2,8 +2,8 @@
 name = "py-sdk"
 version = "0.1.0"
 description = "KAI SDK Runner's implementation in Python"
-authors = ["Intelygenz - Konstellation Team"]
-maintainers = ["Intelygenz - Konstellation Team"]
+authors = ["Intelygenz - AIO Team"]
+maintainers = ["Intelygenz - AIO Team"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
