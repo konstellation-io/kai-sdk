@@ -2,8 +2,8 @@
 name = "runner"
 version = "0.1.0"
 description = "KAI Runner's implementation in Python"
-authors = ["Intelygenz - Konstellation Team"]
-maintainers = ["Intelygenz - Konstellation Team"]
+authors = ["Intelygenz - AIO Team"]
+maintainers = ["Intelygenz - AIO Team"]
 readme = "../README.md"
 repository = "https://github.com/konstellation-io/kai-sdk/py-sdk/runner"
 keywords = ["python", "runner", "kai", "konstellation"]
