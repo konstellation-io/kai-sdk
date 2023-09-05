@@ -4,14 +4,14 @@ import asyncio
 import signal
 import sys
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, Optional
+from typing import Optional
 
 import loguru
 from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 
-from runner.common.common import Finalizer, Handler, Initializer
+from runner.common.common import Finalizer, Handler, Initializer, Task
 from runner.exit.exceptions import UndefinedDefaultHandlerFunctionError
 from runner.exit.helpers import (
     compose_finalizer,
@@ -23,9 +23,7 @@ from runner.exit.helpers import (
 from runner.exit.subscriber import ExitSubscriber
 from sdk.kai_sdk import KaiSDK
 
-Preprocessor = Callable[[KaiSDK, Any], Awaitable[None] | None]
-Postprocessor = Callable[[KaiSDK, Any], Awaitable[None] | None]
-
+Preprocessor = Postprocessor = Task
 
 @dataclass
 class ExitRunner:
@@ -86,7 +84,7 @@ class ExitRunner:
                 self.logger.error(f"error unsubscribing from the NATS subject {sub.subject}: {e}")
                 sys.exit(1)
 
-        self.finalizer(self.sdk)
+        await self.finalizer(self.sdk)
         self.logger.info("successfully shutdown trigger runner")
 
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
@@ -127,5 +125,3 @@ class ExitRunner:
             await self.subscriber.start()
         finally:
             self.logger.info("exit runner stopped")
-
-        self.finalizer(self.sdk)

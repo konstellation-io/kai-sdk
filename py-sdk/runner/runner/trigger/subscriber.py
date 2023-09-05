@@ -51,7 +51,6 @@ class TriggerSubscriber:
                         config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ack_wait_time.total_seconds()),
                         manual_ack=True,
                     )
-                    self.logger.info("trigger runner successfully subscribed")
                 except Exception as e:
                     self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")
                     sys.exit(1)
@@ -60,6 +59,9 @@ class TriggerSubscriber:
                 self.logger.info(f"listening to {subject} from queue group {consumer_name}")
         else:
             self.logger.debug("input subjects undefined, skipping subscription")
+
+        if len(self.subscriptions) > 0:
+            self.logger.info("runner successfully subscribed")
 
     async def _process_message(self, msg: Msg) -> None:
         self.logger.info("new message received")

@@ -70,14 +70,17 @@ def get_response_handler(handlers: [str, Queue]) -> ResponseHandler:
 
 
 def compose_finalizer(user_finalizer: Optional[Finalizer] = None) -> Finalizer:
-    def finalizer_func(sdk: KaiSDK) -> None:
+    async def finalizer_func(sdk: KaiSDK) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[FINALIZER]")
         logger.info("finalizing TriggerRunner...")
 
         if user_finalizer is not None:
             logger.info("executing user finalizer...")
-            user_finalizer(sdk)
+            if inspect.iscoroutinefunction(user_finalizer):
+                await user_finalizer(sdk)
+            else:
+                user_finalizer(sdk)
             logger.info("user finalizer executed")
 
         logger.info("TriggerRunner finalized")

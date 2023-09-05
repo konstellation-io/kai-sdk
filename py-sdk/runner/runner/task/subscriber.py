@@ -33,7 +33,6 @@ class TaskSubscriber:
 
     async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
-        stream = v.get("nats.stream")
         process = self.task_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
         ack_wait_time = timedelta(hours=ACK_TIME)
@@ -45,7 +44,6 @@ class TaskSubscriber:
                 self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
                 try:
                     sub = await self.task_runner.js.subscribe(
-                        stream=stream,
                         subject=subject,
                         queue=consumer_name,
                         durable=consumer_name,
@@ -62,7 +60,9 @@ class TaskSubscriber:
         else:
             self.logger.debug("input subjects undefined, skipping subscription")
 
-        self.logger.info("subscriber shutdown")
+        if len(self.subscriptions) > 0:
+            self.logger.info("runner successfully subscribed")
+
 
     async def _process_message(self, msg: Msg) -> None:
         self.logger.info("new message received")
@@ -97,7 +97,7 @@ class TaskSubscriber:
             return
 
         try:
-            handler(self.task_runner.sdk, request_msg.payload)
+            await handler(self.task_runner.sdk, request_msg.payload)
         except Exception as e:
             await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e), request_msg.request_id)
             return

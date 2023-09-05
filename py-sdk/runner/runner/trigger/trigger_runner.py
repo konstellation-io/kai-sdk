@@ -85,7 +85,7 @@ class TriggerRunner:
                 self.logger.error(f"error unsubscribing from the NATS subject {sub.subject}: {e}")
                 sys.exit(1)
 
-        self.finalizer(self.sdk)
+        await self.finalizer(self.sdk)
         self.logger.info("successfully shutdown trigger runner")
 
         [task.cancel() for task in self.tasks]
@@ -138,9 +138,25 @@ class TriggerRunner:
 
         await self.initializer(self.sdk)
 
-        await self.subscriber.start()
+        loop = asyncio.get_event_loop()
+        executor = ThreadPoolExecutor(max_workers=2)
+        signals = (signal.SIGINT, signal.SIGTERM)
+        for s in signals:
+            loop.add_signal_handler(
+                s,
+                lambda s=s: asyncio.create_task(self._shutdown_handler(loop, executor, signal=s)),
+            )
+        exception_func_handler = functools.partial(self._exception_handler, executor)
+        loop.set_exception_handler(exception_func_handler)
 
-        asyncio.run_coroutine_threadsafe(self.runner(self, self.sdk), asyncio.get_event_loop())
+        try:
+            future_run = loop.run_in_executor(executor, self.runner_wrapper)
+            future_sub = loop.run_in_executor(executor, self.subscriber_wrapper)
+
+            self.tasks = [future_run, future_sub]
+            await asyncio.gather(*self.tasks, return_exceptions=True)
+        finally:
+            self.logger.info("trigger runner stopped")
 
 
 RunnerFunc = Callable[[TriggerRunner, KaiSDK], Awaitable[None]]

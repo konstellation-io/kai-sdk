@@ -8,10 +8,8 @@ from vyper import v
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_sdk import KaiSDK
 
-Task = Callable[[KaiSDK], None]
-Initializer = Callable[[KaiSDK], Awaitable[None] | None]
-Finalizer = Task
-Handler = Callable[[KaiSDK, Any], None]
+Initializer = Finalizer = Task = Callable[[KaiSDK], Awaitable[None] | None]
+Handler = Callable[[KaiSDK, Any], Awaitable[None] | None]
 
 
 async def initialize_process_configuration(sdk: KaiSDK) -> None:

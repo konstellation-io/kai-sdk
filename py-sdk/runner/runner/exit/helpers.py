@@ -51,13 +51,16 @@ def compose_preprocessor(preprocessor: Preprocessor) -> Preprocessor:
 
 
 def compose_handler(handler: Handler) -> Handler:
-    def handler_func(sdk: KaiSDK, response: Any) -> None:
+    async def handler_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[HANDLER]")
         logger.info("handling ExitRunner...")
 
         logger.info("executing user handler...")
-        handler(sdk, response)
+        if inspect.iscoroutinefunction(handler):
+            await handler(sdk, response)
+        else:
+            handler(sdk, response)
 
     return handler_func
 
@@ -78,14 +81,17 @@ def compose_postprocessor(postprocessor: Postprocessor) -> Postprocessor:
 
 
 def compose_finalizer(finalizer: Optional[Finalizer] = None) -> Finalizer:
-    def finalizer_func(sdk: KaiSDK) -> None:
+    async def finalizer_func(sdk: KaiSDK) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[FINALIZER]")
         logger.info("finalizing ExitRunner...")
 
         if finalizer is not None:
             logger.info("executing user finalizer...")
-            finalizer(sdk)
+            if inspect.iscoroutinefunction(finalizer):
+                await finalizer(sdk)
+            else:
+                finalizer(sdk)
             logger.info("user finalizer executed")
 
         logger.info("ExitRunner finalized")
