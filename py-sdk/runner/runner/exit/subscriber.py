@@ -86,7 +86,8 @@ class ExitSubscriber:
 
         try:
             if self.exit_runner.preprocessor is not None:
-                self.exit_runner.preprocessor(self.exit_runner.sdk, request_msg.payload)
+                preprocessor_func = self.exit_runner.preprocessor(self.exit_runner.sdk, request_msg.payload)
+                await preprocessor_func
         except Exception as e:
             await self._process_runner_error(
                 msg,
@@ -103,7 +104,8 @@ class ExitSubscriber:
 
         try:
             if self.exit_runner.postprocessor is not None:
-                self.exit_runner.postprocessor(self.exit_runner.sdk, request_msg.payload)
+                postprocessor_func = self.exit_runner.postprocessor(self.exit_runner.sdk, request_msg.payload)
+                await postprocessor_func
         except Exception as e:
             await self._process_runner_error(
                 msg,

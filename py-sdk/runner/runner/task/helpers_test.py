@@ -38,9 +38,10 @@ async def m_user_initializer_awaitable(sdk):
     await asyncio.sleep(0.00001)
 
 
-def m_user_preprocessor(sdk, response):
+async def m_user_preprocessor_awaitable(sdk, response):
     assert sdk is not None
     assert response is not None
+    await asyncio.sleep(0.00001)
 
 
 def m_user_handler(sdk, response):
@@ -48,9 +49,10 @@ def m_user_handler(sdk, response):
     assert response is not None
 
 
-def m_user_postprocessor(sdk, response):
+async def m_user_postprocessor_awaitable(sdk, response):
     assert sdk is not None
     assert response is not None
+    await asyncio.sleep(0.00001)
 
 
 def m_user_finalizer(sdk):
@@ -81,10 +83,10 @@ async def test_compose_initializer_with_none_ok(m_sdk):
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
 
 
-def test_compose_preprocessor_ok(m_sdk):
-    preprocessor_func = compose_preprocessor(m_user_preprocessor)
+async def test_compose_preprocessor_ok(m_sdk):
+    preprocessor_func = compose_preprocessor(m_user_preprocessor_awaitable)
 
-    preprocessor_func(m_sdk, Any())
+    await preprocessor_func(m_sdk, Any())
 
 
 def test_compose_handler_ok(m_sdk):
@@ -93,10 +95,10 @@ def test_compose_handler_ok(m_sdk):
     handler_func(m_sdk, Any())
 
 
-def test_compose_postprocessor_ok(m_sdk):
-    postprocessor_func = compose_postprocessor(m_user_postprocessor)
+async def test_compose_postprocessor_ok(m_sdk):
+    postprocessor_func = compose_postprocessor(m_user_postprocessor_awaitable)
 
-    postprocessor_func(m_sdk, Any())
+    await postprocessor_func(m_sdk, Any())
 
 
 def test_compose_finalizer_ok(m_sdk):

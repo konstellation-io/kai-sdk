@@ -31,13 +31,13 @@ def compose_initializer(initializer: Optional[Initializer] = None) -> Initialize
 
 
 def compose_preprocessor(preprocessor: Preprocessor) -> Preprocessor:
-    def preprocessor_func(sdk: KaiSDK, response: Any) -> None:
+    async def preprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[PREPROCESSOR]")
         logger.info("preprocessing TaskRunner...")
 
         logger.info("executing user preprocessor...")
-        preprocessor(sdk, response)
+        await preprocessor(sdk, response)
 
     return preprocessor_func
 
@@ -55,13 +55,13 @@ def compose_handler(handler: Handler) -> Handler:
 
 
 def compose_postprocessor(postprocessor: Postprocessor) -> Postprocessor:
-    def postprocessor_func(sdk: KaiSDK, response: Any) -> None:
+    async def postprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[POSTPROCESSOR]")
         logger.info("postprocessing TaskRunner...")
 
         logger.info("executing user postprocessor...")
-        postprocessor(sdk, response)
+        await postprocessor(sdk, response)
 
     return postprocessor_func
 

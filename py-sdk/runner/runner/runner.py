@@ -14,6 +14,7 @@ from runner.exit.exit_runner import ExitRunner
 from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
 
+LOGGER_FORMAT = "<green>{time}</green> <level>{extra[context]} {message}</level>"
 
 @dataclass
 class Runner:
@@ -77,7 +78,6 @@ class Runner:
         v.set_default("runner.logger.error_output_paths", ["stderr"])
 
     def initialize_logger(self) -> None:
-        logger_format = "<green>{time}</green> <level>{extra[context]} {message}</level>"
         output_paths = v.get("runner.logger.output_paths")
         error_output_paths = v.get("runner.logger.error_output_paths")
 
@@ -89,7 +89,7 @@ class Runner:
             logger.add(
                 output_path,
                 colorize=True,
-                format=logger_format,
+                format=LOGGER_FORMAT,
                 backtrace=False,
                 diagnose=False,
                 level=v.get_string("runner.logger.level"),
@@ -101,7 +101,7 @@ class Runner:
             logger.add(
                 error_output_path,
                 colorize=True,
-                format=logger_format,
+                format=LOGGER_FORMAT,
                 backtrace=True,
                 diagnose=True,
                 level="ERROR",
