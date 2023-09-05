@@ -124,4 +124,4 @@ class TaskRunner:
         try:
             await self.subscriber.start()
         finally:
-            self.logger.info("task runner initializing finished")
+            self.logger.info("task runner initialization finished")
