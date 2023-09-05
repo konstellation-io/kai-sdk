@@ -10,8 +10,9 @@ from runner.common.common import Finalizer, Initializer, initialize_process_conf
 if TYPE_CHECKING:
     from runner.trigger.trigger_runner import ResponseHandler, RunnerFunc, TriggerRunner
 
-from sdk.kai_sdk import KaiSDK
 import inspect
+
+from sdk.kai_sdk import KaiSDK
 
 
 def compose_initializer(initializer: Optional[Initializer] = None) -> Initializer:

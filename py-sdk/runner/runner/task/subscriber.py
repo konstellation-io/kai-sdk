@@ -16,12 +16,7 @@ from sdk.messaging.messaging_utils import is_compressed, uncompress
 if TYPE_CHECKING:
     from runner.task.task_runner import TaskRunner, Handler
 
-
-from runner.task.exceptions import (
-    HandlerError,
-    NewRequestMsgError,
-    NotValidProtobuf,
-)
+from runner.task.exceptions import HandlerError, NewRequestMsgError, NotValidProtobuf
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 
 ACK_TIME = 22  # hours
@@ -53,11 +48,10 @@ class TaskSubscriber:
                         stream=stream,
                         subject=subject,
                         queue=consumer_name,
-                        cb=self._process_message,
-                        deliver_policy=DeliverPolicy.NEW,
                         durable=consumer_name,
+                        cb=self._process_message,
+                        config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ack_wait_time.total_seconds()),
                         manual_ack=True,
-                        config=ConsumerConfig(ack_wait=ack_wait_time.total_seconds()),
                     )
                 except Exception as e:
                     self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")

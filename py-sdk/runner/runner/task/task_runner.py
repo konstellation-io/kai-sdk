@@ -23,8 +23,8 @@ from runner.task.helpers import (
 from runner.task.subscriber import TaskSubscriber
 from sdk.kai_sdk import KaiSDK
 
-Preprocessor = Callable[[KaiSDK, Any], Awaitable[None]|None]
-Postprocessor = Callable[[KaiSDK, Any], Awaitable[None]|None]
+Preprocessor = Callable[[KaiSDK, Any], Awaitable[None] | None]
+Postprocessor = Callable[[KaiSDK, Any], Awaitable[None] | None]
 
 
 @dataclass

@@ -76,11 +76,10 @@ async def test_start_ok(m_task_subscriber):
         stream="test-stream",
         subject=SUBJECT,
         queue="test-subject_test-process-id",
-        cb=cb_mock,
-        deliver_policy=DeliverPolicy.NEW,
         durable="test-subject_test-process-id",
+        cb=cb_mock,
+        config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
         manual_ack=True,
-        config=ConsumerConfig(ack_wait=float(22 * 3600)),
     )
     assert m_task_subscriber.subscriptions == [m_task_subscriber.task_runner.js.subscribe.return_value]
 

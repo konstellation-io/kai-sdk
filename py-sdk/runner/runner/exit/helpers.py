@@ -9,8 +9,9 @@ from runner.common.common import Finalizer, Initializer, initialize_process_conf
 if TYPE_CHECKING:
     from runner.exit.exit_runner import Preprocessor, Handler, Postprocessor
 
-from sdk.kai_sdk import KaiSDK
 import inspect
+
+from sdk.kai_sdk import KaiSDK
 
 
 def compose_initializer(initializer: Optional[Initializer] = None) -> Initializer:

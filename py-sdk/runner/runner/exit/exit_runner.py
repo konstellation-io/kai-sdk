@@ -23,8 +23,8 @@ from runner.exit.helpers import (
 from runner.exit.subscriber import ExitSubscriber
 from sdk.kai_sdk import KaiSDK
 
-Preprocessor = Callable[[KaiSDK, Any], Awaitable[None]|None]
-Postprocessor = Callable[[KaiSDK, Any], Awaitable[None]|None]
+Preprocessor = Callable[[KaiSDK, Any], Awaitable[None] | None]
+Postprocessor = Callable[[KaiSDK, Any], Awaitable[None] | None]
 
 
 @dataclass

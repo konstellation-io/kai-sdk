@@ -48,11 +48,10 @@ class ExitSubscriber:
                         stream=stream,
                         subject=subject,
                         queue=consumer_name,
-                        cb=self._process_message,
-                        deliver_policy=DeliverPolicy.NEW,
                         durable=consumer_name,
+                        cb=self._process_message,
+                        config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ack_wait_time.total_seconds()),
                         manual_ack=True,
-                        config=ConsumerConfig(ack_wait=ack_wait_time.total_seconds()),
                     )
                 except Exception as e:
                     self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")
