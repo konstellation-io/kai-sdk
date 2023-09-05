@@ -23,8 +23,8 @@ from runner.exit.helpers import (
 from runner.exit.subscriber import ExitSubscriber
 from sdk.kai_sdk import KaiSDK
 
-Preprocessor = Callable[[KaiSDK, Any], Awaitable[None]]
-Postprocessor = Callable[[KaiSDK, Any], Awaitable[None]]
+Preprocessor = Callable[[KaiSDK, Any], Awaitable[None]|None]
+Postprocessor = Callable[[KaiSDK, Any], Awaitable[None]|None]
 
 
 @dataclass
@@ -112,8 +112,7 @@ class ExitRunner:
         if not self.finalizer:
             self.finalizer = compose_finalizer()
 
-        initializer_func = self.initializer(self.sdk)
-        await initializer_func
+        await self.initializer(self.sdk)
 
         loop = asyncio.get_event_loop()
         signals = (signal.SIGINT, signal.SIGTERM)

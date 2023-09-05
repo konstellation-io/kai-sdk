@@ -72,9 +72,8 @@ async def test_compose_initializer_with_awaitable_ok(m_sdk):
     v.set(CENTRALIZED_CONFIG, {"key": "value"})
     m_sdk.centralized_config = Mock(spec=CentralizedConfig)
     m_sdk.centralized_config.set_config = AsyncMock()
-    initializer_func = compose_initializer(m_user_initializer_awaitable)
 
-    await initializer_func(m_sdk)
+    await compose_initializer(m_user_initializer_awaitable)(m_sdk)
 
     assert m_sdk.centralized_config.set_config.called
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
@@ -84,38 +83,30 @@ async def test_compose_initializer_with_none_ok(m_sdk):
     v.set(CENTRALIZED_CONFIG, {"key": "value"})
     m_sdk.centralized_config = Mock(spec=CentralizedConfig)
     m_sdk.centralized_config.set_config = AsyncMock()
-    initializer_func = compose_initializer()
 
-    await initializer_func(m_sdk)
+    await compose_initializer()(m_sdk)
 
     assert m_sdk.centralized_config.set_config.called
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
 
 
 async def test_compose_runner_ok(m_sdk):
-    runner_func = compose_runner(m_user_runner_awaitable)
-
-    await runner_func(m_trigger_runner, m_sdk)
+    await compose_runner(m_user_runner_awaitable)(m_trigger_runner, m_sdk)
 
 
 def test_get_response_handler_ok(m_sdk):
     m_queue = Mock(spec=Queue)
     m_sdk.get_request_id = Mock(return_value=TEST_REQUEST_ID)
     handlers = {TEST_REQUEST_ID: m_queue}
-    response_handler_func = get_response_handler(handlers)
 
-    response_handler_func(m_sdk, Any())
+    get_response_handler(handlers)(m_sdk, Any())
 
     assert m_queue.put.called
 
 
 def test_compose_finalizer_ok(m_sdk):
-    finalizer_func = compose_finalizer(m_user_finalizer)
-
-    finalizer_func(m_sdk)
+    compose_finalizer(m_user_finalizer)(m_sdk)
 
 
 def test_compose_finalizer_with_none_ok(m_sdk):
-    finalizer_func = compose_finalizer()
-
-    finalizer_func(m_sdk)
+    compose_finalizer()(m_sdk)

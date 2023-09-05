@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from runner.trigger.trigger_runner import ResponseHandler, RunnerFunc, TriggerRunner
 
 from sdk.kai_sdk import KaiSDK
+import inspect
 
 
 def compose_initializer(initializer: Optional[Initializer] = None) -> Initializer:
@@ -23,7 +24,10 @@ def compose_initializer(initializer: Optional[Initializer] = None) -> Initialize
 
         if initializer is not None:
             logger.info("executing user initializer...")
-            await initializer(sdk)
+            if inspect.iscoroutinefunction(initializer):
+                await initializer(sdk)
+            else:
+                initializer(sdk)
             logger.info("user initializer executed")
 
         logger.info("TriggerRunner initialized")

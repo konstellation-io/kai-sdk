@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from runner.exit.exit_runner import Preprocessor, Handler, Postprocessor
 
 from sdk.kai_sdk import KaiSDK
+import inspect
 
 
 def compose_initializer(initializer: Optional[Initializer] = None) -> Initializer:
@@ -22,7 +23,10 @@ def compose_initializer(initializer: Optional[Initializer] = None) -> Initialize
 
         if initializer is not None:
             logger.info("executing user initializer...")
-            await initializer(sdk)
+            if inspect.iscoroutinefunction(initializer):
+                await initializer(sdk)
+            else:
+                initializer(sdk)
             logger.info("user initializer executed")
 
         logger.info("ExitRunner initialized")
@@ -37,7 +41,10 @@ def compose_preprocessor(preprocessor: Preprocessor) -> Preprocessor:
         logger.info("preprocessing ExitRunner...")
 
         logger.info("executing user preprocessor...")
-        await preprocessor(sdk, response)
+        if inspect.iscoroutinefunction(preprocessor):
+            await preprocessor(sdk, response)
+        else:
+            preprocessor(sdk, response)
 
     return preprocessor_func
 
@@ -61,7 +68,10 @@ def compose_postprocessor(postprocessor: Postprocessor) -> Postprocessor:
         logger.info("postprocessing ExitRunner...")
 
         logger.info("executing user postprocessor...")
-        await postprocessor(sdk, response)
+        if inspect.iscoroutinefunction(postprocessor):
+            await postprocessor(sdk, response)
+        else:
+            postprocessor(sdk, response)
 
     return postprocessor_func
 

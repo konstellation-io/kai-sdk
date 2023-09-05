@@ -63,9 +63,8 @@ async def test_compose_initializer_with_awaitable_ok(m_sdk):
     v.set(CENTRALIZED_CONFIG, {"key": "value"})
     m_sdk.centralized_config = Mock(spec=CentralizedConfig)
     m_sdk.centralized_config.set_config = AsyncMock()
-    initializer_func = compose_initializer(m_user_initializer_awaitable)
 
-    await initializer_func(m_sdk)
+    await compose_initializer(m_user_initializer_awaitable)(m_sdk)
 
     assert m_sdk.centralized_config.set_config.called
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
@@ -75,39 +74,28 @@ async def test_compose_initializer_with_none_ok(m_sdk):
     v.set(CENTRALIZED_CONFIG, {"key": "value"})
     m_sdk.centralized_config = Mock(spec=CentralizedConfig)
     m_sdk.centralized_config.set_config = AsyncMock()
-    initializer_func = compose_initializer()
 
-    await initializer_func(m_sdk)
+    await compose_initializer()(m_sdk)
 
     assert m_sdk.centralized_config.set_config.called
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
 
 
 async def test_compose_preprocessor_ok(m_sdk):
-    preprocessor_func = compose_preprocessor(m_user_preprocessor_awaitable)
-
-    await preprocessor_func(m_sdk, Any())
+    await compose_preprocessor(m_user_preprocessor_awaitable)(m_sdk, Any())
 
 
 def test_compose_handler_ok(m_sdk):
-    handler_func = compose_handler(m_user_handler)
-
-    handler_func(m_sdk, Any())
+    compose_handler(m_user_handler)(m_sdk, Any())
 
 
 async def test_compose_postprocessor_ok(m_sdk):
-    postprocessor_func = compose_postprocessor(m_user_postprocessor_awaitable)
-
-    await postprocessor_func(m_sdk, Any())
+    await compose_postprocessor(m_user_postprocessor_awaitable)(m_sdk, Any())
 
 
 def test_compose_finalizer_ok(m_sdk):
-    finalizer_func = compose_finalizer(m_user_finalizer)
-
-    finalizer_func(m_sdk)
+    compose_finalizer(m_user_finalizer)(m_sdk)
 
 
 def test_compose_finalizer_with_none_ok(m_sdk):
-    finalizer_func = compose_finalizer()
-
-    finalizer_func(m_sdk)
+    compose_finalizer()(m_sdk)

@@ -136,8 +136,7 @@ class TriggerRunner:
         if not self.finalizer:
             self.finalizer = compose_finalizer()
 
-        initializer_func = self.initializer(self.sdk)
-        await initializer_func
+        await self.initializer(self.sdk)
 
         loop = asyncio.get_event_loop()
         executor = ThreadPoolExecutor(max_workers=2)

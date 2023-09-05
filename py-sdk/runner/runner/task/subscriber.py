@@ -21,7 +21,6 @@ from runner.task.exceptions import (
     HandlerError,
     NewRequestMsgError,
     NotValidProtobuf,
-    UndefinedDefaultHandlerFunctionError,
 )
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 
@@ -94,8 +93,7 @@ class TaskSubscriber:
 
         try:
             if self.task_runner.preprocessor is not None:
-                preprocessor_func = self.task_runner.preprocessor(self.task_runner.sdk, request_msg.payload)
-                await preprocessor_func
+                await self.task_runner.preprocessor(self.task_runner.sdk, request_msg.payload)
         except Exception as e:
             await self._process_runner_error(
                 msg,
@@ -112,8 +110,7 @@ class TaskSubscriber:
 
         try:
             if self.task_runner.postprocessor is not None:
-                postprocessor_func = self.task_runner.postprocessor(self.task_runner.sdk, request_msg.payload)
-                await postprocessor_func
+                await self.task_runner.postprocessor(self.task_runner.sdk, request_msg.payload)
         except Exception as e:
             await self._process_runner_error(
                 msg,
