@@ -138,14 +138,14 @@ async def test_get_config_without_scope_ko(m_centralized_config):
 
 
 async def test_set_config_with_scope_ok(m_centralized_config):
-    await m_centralized_config.set_config("test_key", b"test_value", Scope.ProductScope)
+    await m_centralized_config.set_config("test_key", "test_value", Scope.ProductScope)
 
     assert m_centralized_config.product_kv.put.called
     assert m_centralized_config.product_kv.put.call_args == call("test_key", b"test_value")
 
 
 async def test_set_config_without_scope_ok(m_centralized_config):
-    await m_centralized_config.set_config("test_key", b"test_value")
+    await m_centralized_config.set_config("test_key", "test_value")
 
     assert m_centralized_config.process_kv.put.called
     assert m_centralized_config.process_kv.put.call_args == call("test_key", b"test_value")
@@ -155,14 +155,14 @@ async def test_set_config_with_scope_ko(m_centralized_config):
     m_centralized_config.product_kv.put.side_effect = Exception
 
     with pytest.raises(FailedSettingConfigError):
-        await m_centralized_config.set_config("test_key", b"test_value", Scope.ProductScope)
+        await m_centralized_config.set_config("test_key", "test_value", Scope.ProductScope)
 
 
 async def test_set_config_without_scope_ko(m_centralized_config):
     m_centralized_config.process_kv.put.side_effect = Exception
 
     with pytest.raises(FailedSettingConfigError):
-        await m_centralized_config.set_config("test_key", b"test_value")
+        await m_centralized_config.set_config("test_key", "test_value")
 
 
 async def test_delete_config_with_scope_ok(m_centralized_config):
