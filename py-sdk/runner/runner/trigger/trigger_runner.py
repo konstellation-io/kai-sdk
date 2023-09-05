@@ -56,10 +56,10 @@ class TriggerRunner:
         self.finalizer = compose_finalizer(finalizer)
         return self
 
-    def get_response_channel(self, request_id: str) -> Any:
+    def get_response_channel(self, request_id: str, timeout: int = None) -> Any:
         if request_id not in self.response_channels:
             self.response_channels[request_id] = Queue(maxsize=1)
-        return self.response_channels[request_id].get()
+        return self.response_channels[request_id].get(timeout=timeout)
 
     async def _shutdown_handler(
         self,
@@ -138,25 +138,9 @@ class TriggerRunner:
 
         await self.initializer(self.sdk)
 
-        loop = asyncio.get_event_loop()
-        executor = ThreadPoolExecutor(max_workers=2)
-        signals = (signal.SIGINT, signal.SIGTERM)
-        for s in signals:
-            loop.add_signal_handler(
-                s,
-                lambda s=s: asyncio.create_task(self._shutdown_handler(loop, executor, signal=s)),
-            )
-        exception_func_handler = functools.partial(self._exception_handler, executor)
-        loop.set_exception_handler(exception_func_handler)
+        await self.subscriber.start()
 
-        try:
-            future_run = loop.run_in_executor(executor, self.runner_wrapper)
-            future_sub = loop.run_in_executor(executor, self.subscriber_wrapper)
-
-            self.tasks = [future_run, future_sub]
-            await asyncio.gather(*self.tasks, return_exceptions=True)
-        finally:
-            self.logger.info("trigger runner stopped")
+        asyncio.run_coroutine_threadsafe(self.runner(self, self.sdk), asyncio.get_event_loop())
 
 
 RunnerFunc = Callable[[TriggerRunner, KaiSDK], Awaitable[None]]

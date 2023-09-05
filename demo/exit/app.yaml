@@ -9,7 +9,7 @@ nats:
   url: "nats://localhost:4222"
   stream: exit
   inputs:
-    - task-output
+    - trigger-output
   output: exit-output
   object_store: object-store
 

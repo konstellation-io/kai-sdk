@@ -51,7 +51,7 @@ async def cronjob_runner(trigger_runner: trigger_runner.TriggerRunner, sdk: sdk.
         request_id = str(uuid.uuid4())
         await sdk.messaging.send_output_with_request_id(StringValue(value="hello world"), request_id)
         logger.info(f"waiting response for request id {request_id}...")
-        response = trigger_runner.get_response_channel(request_id)
+        response = trigger_runner.get_response_channel(request_id, timeout=30)
         logger.info(f"response: {response}")
 
 
