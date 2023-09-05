@@ -147,7 +147,9 @@ class Messaging(MessagingABC):
         await self._publish_response(response_msg)
 
     def _new_response_msg(self, payload: Any, request_id: str, msg_type: MessageType.V) -> KaiNatsMessage:
-        self.logger.info(f"preparing response message of type {message_type_converter(msg_type)} and request_id {request_id}...")
+        self.logger.info(
+            f"preparing response message of type {message_type_converter(msg_type)} and request_id {request_id}..."
+        )
         return KaiNatsMessage(
             request_id=request_id,
             payload=payload,
@@ -201,6 +203,7 @@ class Messaging(MessagingABC):
 
         return out_msg
 
+
 def message_type_converter(msg_type: MessageType.V) -> str:
     if msg_type == MessageType.ERROR:
         return "error"
@@ -212,4 +215,3 @@ def message_type_converter(msg_type: MessageType.V) -> str:
         return "early exit"
     else:
         return "undefined"
-    

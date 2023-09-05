@@ -66,7 +66,9 @@ def m_msg() -> Msg:
 
 async def test_start_ok(m_trigger_subscriber):
     v.set(NATS_INPUT, [SUBJECT])
-    v.set("nats.stream", "test-stream")
+    stream = "test-stream"
+    consumer_name = f"{SUBJECT.replace('.', '-')}-test-process-id"
+    v.set("nats.stream", stream)
     m_trigger_subscriber.trigger_runner.sdk.metadata.get_process = Mock(return_value="test process id")
     cb_mock = m_trigger_subscriber._process_message = AsyncMock()
     m_trigger_subscriber.trigger_runner.js.subscribe = AsyncMock()
@@ -75,10 +77,10 @@ async def test_start_ok(m_trigger_subscriber):
 
     assert m_trigger_subscriber.trigger_runner.js.subscribe.called
     assert m_trigger_subscriber.trigger_runner.js.subscribe.call_args == call(
-        stream="test-stream",
+        stream=stream,
         subject=SUBJECT,
-        queue="test-subject_test-process-id",
-        durable="test-subject_test-process-id",
+        queue=consumer_name,
+        durable=consumer_name,
         cb=cb_mock,
         config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
         manual_ack=True,
