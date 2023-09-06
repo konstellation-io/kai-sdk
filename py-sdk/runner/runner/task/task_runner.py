@@ -85,7 +85,7 @@ class TaskRunner:
                 sys.exit(1)
 
         await self.finalizer(self.sdk)
-        self.logger.info("successfully shutdown trigger runner")
+        self.logger.info("successfully shutdown task runner")
 
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
 
