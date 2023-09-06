@@ -65,7 +65,7 @@ class TriggerRunner:
         self,
         loop: asyncio.AbstractEventLoop,
         executor: concurrent.futures.ThreadPoolExecutor,
-        signal: Optional[int] = None,
+        signal: Optional[signal.Signals] = None,
     ) -> None:
         if signal:
             self.logger.info(f"received exit signal {signal.name}...")
