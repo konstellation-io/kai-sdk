@@ -59,12 +59,6 @@ def finalizer(sdk: sdk.KaiSDK):
     logger = sdk.logger.bind(context="[CRONJOB FINALIZER]")
     logger.info("finalizing example...")
 
-
-def handler(sdk: sdk.KaiSDK, response: StringValue):
-    logger = sdk.logger.bind(context="[CRONJOB HANDLER]")
-    logger.info(f"handling response: {response.value}")
-
-
 async def init():
     runner = await Runner().initialize()
     await runner.trigger_runner().with_initializer(initializer).with_runner(
