@@ -122,7 +122,4 @@ class TaskRunner:
             )
         loop.set_exception_handler(self._exception_handler)
 
-        try:
-            await self.subscriber.start()
-        finally:
-            self.logger.info("task runner initialization finished")
+        await self.subscriber.start()

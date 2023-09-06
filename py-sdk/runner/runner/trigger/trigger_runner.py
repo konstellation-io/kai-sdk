@@ -1,14 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-import concurrent.futures
-import functools
 import signal
 import sys
 import threading
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from queue import Queue
+from asyncio import Queue
 from typing import Any, Awaitable, Callable, Optional
 
 import loguru
@@ -23,7 +20,7 @@ from runner.trigger.helpers import compose_finalizer, compose_initializer, compo
 from runner.trigger.subscriber import TriggerSubscriber
 from sdk.kai_sdk import KaiSDK
 
-ResponseHandler = Callable[[KaiSDK, any_pb2.Any], None]
+ResponseHandler = Callable[[KaiSDK, any_pb2.Any], Awaitable[None]]
 
 
 @dataclass
@@ -56,15 +53,15 @@ class TriggerRunner:
         self.finalizer = compose_finalizer(finalizer)
         return self
 
-    def get_response_channel(self, request_id: str) -> Any:
+    async def get_response_channel(self, request_id: str) -> Any:
         if request_id not in self.response_channels:
             self.response_channels[request_id] = Queue(maxsize=1)
-        return self.response_channels[request_id].get()
+        response = await self.response_channels[request_id].get()
+        return response
 
     async def _shutdown_handler(
         self,
         loop: asyncio.AbstractEventLoop,
-        executor: concurrent.futures.ThreadPoolExecutor,
         signal: Optional[signal.Signals] = None,
     ) -> None:
         if signal:
@@ -72,7 +69,7 @@ class TriggerRunner:
         self.logger.info("shutting down runner...")
         self.logger.info("closing opened channels...")
         for request_id, channel in self.response_channels.items():
-            channel.put(None)
+            await channel.put(None)
             self.logger.info(f"channel closed for request id {request_id}")
 
         self.logger.info("shutting down subscriber")
@@ -88,20 +85,12 @@ class TriggerRunner:
         await self.finalizer(self.sdk)
         self.logger.info("successfully shutdown trigger runner")
 
-        [task.cancel() for task in self.tasks]
+        tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
 
-        self.logger.info(f"cancelling {len(self.tasks)} outstanding tasks")
-        await asyncio.gather(*self.tasks, return_exceptions=True)
+        [task.cancel() for task in tasks]
 
-        self.logger.info("shutting down executor")
-        executor.shutdown(wait=False)
-
-        self.logger.info(f"releasing {len(executor._threads)} threads from executor")
-        for thread in executor._threads:
-            try:
-                thread._tstate_lock.release()
-            except Exception as e:
-                self.logger.error(f"error releasing thread lock: {e}")
+        self.logger.info(f"cancelling {len(tasks)} outstanding tasks")
+        await asyncio.gather(*tasks, return_exceptions=True)
 
         if not self.nc.is_closed:
             self.logger.info("closing nats connection")
@@ -109,20 +98,11 @@ class TriggerRunner:
 
         loop.stop()
 
-    def _exception_handler(self, loop, executor, context) -> None:
+    def _exception_handler(self, loop, context) -> None:
         msg = context.get("exception", context["message"])
         self.logger.error(f"caught exception: {msg}")
-        asyncio.create_task(self._shutdown_handler(loop, executor))
-
-    def subscriber_wrapper(self) -> None:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(self.subscriber.start())
-
-    def runner_wrapper(self) -> None:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(self.runner(self, self.sdk))
+        if not loop.is_closed():
+            asyncio.create_task(self._shutdown_handler(loop))
 
     async def run(self) -> None:
         if getattr(self, "runner", None) is None:
@@ -139,24 +119,16 @@ class TriggerRunner:
         await self.initializer(self.sdk)
 
         loop = asyncio.get_event_loop()
-        executor = ThreadPoolExecutor(max_workers=2)
         signals = (signal.SIGINT, signal.SIGTERM)
         for s in signals:
             loop.add_signal_handler(
                 s,
-                lambda s=s: asyncio.create_task(self._shutdown_handler(loop, executor, signal=s)),
+                lambda s=s: asyncio.create_task(self._shutdown_handler(loop, signal=s)),
             )
-        exception_func_handler = functools.partial(self._exception_handler, executor)
-        loop.set_exception_handler(exception_func_handler)
+        loop.set_exception_handler(self._exception_handler)
 
-        try:
-            future_run = loop.run_in_executor(executor, self.runner_wrapper)
-            future_sub = loop.run_in_executor(executor, self.subscriber_wrapper)
-
-            self.tasks = [future_run, future_sub]
-            await asyncio.gather(*self.tasks, return_exceptions=True)
-        finally:
-            self.logger.info("trigger runner stopped")
+        await self.subscriber.start()
+        asyncio.create_task(self.runner(self, self.sdk))
 
 
 RunnerFunc = Callable[[TriggerRunner, KaiSDK], Awaitable[None]]

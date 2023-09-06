@@ -52,7 +52,7 @@ def compose_runner(user_runner: RunnerFunc) -> RunnerFunc:
 
 
 def get_response_handler(handlers: [str, Queue]) -> ResponseHandler:
-    def response_handler_func(sdk: KaiSDK, response: Any) -> None:
+    async def response_handler_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[RESPONSE HANDLER]")
         request_id = sdk.get_request_id()
@@ -61,7 +61,7 @@ def get_response_handler(handlers: [str, Queue]) -> ResponseHandler:
 
         handler = handlers.pop(request_id, None)
         if handler:
-            handler.put(response)
+            await handler.put(response)
             return
 
         logger.debug(f"no response handler found for request id {request_id}")

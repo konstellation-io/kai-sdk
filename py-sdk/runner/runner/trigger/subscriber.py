@@ -80,7 +80,7 @@ class TriggerSubscriber:
             return
 
         try:
-            handler(self.trigger_runner.sdk, request_msg.payload)
+            await handler(self.trigger_runner.sdk, request_msg.payload)
         except Exception as e:
             from_node = request_msg.from_node
             to_node = self.trigger_runner.sdk.metadata.get_process()
