@@ -37,7 +37,7 @@ class MessagingABC(ABC):
         pass
 
     @abstractmethod
-    async def send_error(self, error: str, request_id: str) -> None:
+    async def send_error(self, error: str) -> None:
         pass
 
     @abstractmethod
@@ -77,24 +77,29 @@ class Messaging(MessagingABC):
         self.messaging_utils = MessagingUtils(js=self.js, nc=self.nc)
 
     async def send_output(self, response: Message, chan: Optional[str] = None) -> None:
-        await self._publish_msg(msg=response, msg_type=MessageType.OK, chan=chan)
+        request_id = self.request_msg.request_id if self.request_msg else None
+        await self._publish_msg(msg=response, msg_type=MessageType.OK, chan=chan, request_id=request_id)
 
     async def send_output_with_request_id(self, response: Message, request_id: str, chan: Optional[str] = None) -> None:
         await self._publish_msg(msg=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
 
     async def send_any(self, response: Any, chan: Optional[str] = None) -> None:
-        await self._publish_any(payload=response, msg_type=MessageType.OK, chan=chan)
+        request_id = self.request_msg.request_id if self.request_msg else None
+        await self._publish_any(payload=response, msg_type=MessageType.OK, chan=chan, request_id=request_id)
 
     async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str] = None) -> None:
         await self._publish_any(payload=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
 
     async def send_early_reply(self, response: Message, chan: Optional[str] = None) -> None:
-        await self._publish_msg(msg=response, msg_type=MessageType.EARLY_REPLY, chan=chan)
+        request_id = self.request_msg.request_id if self.request_msg else None
+        await self._publish_msg(msg=response, msg_type=MessageType.EARLY_REPLY, chan=chan, request_id=request_id)
 
     async def send_early_exit(self, response: Message, chan: Optional[str] = None) -> None:
-        await self._publish_msg(msg=response, msg_type=MessageType.EARLY_EXIT, chan=chan)
+        request_id = self.request_msg.request_id if self.request_msg else None
+        await self._publish_msg(msg=response, msg_type=MessageType.EARLY_EXIT, chan=chan, request_id=request_id)
 
-    async def send_error(self, error: str, request_id: str) -> None:
+    async def send_error(self, error: str) -> None:
+        request_id = self.request_msg.request_id if self.request_msg else None
         await self._publish_error(err_msg=error, request_id=request_id)
 
     def get_error_message(self) -> str:
@@ -122,6 +127,7 @@ class Messaging(MessagingABC):
             self.logger.debug(f"failed packing message: {e}")
             return
 
+        request_id = request_id if request_id else self.request_msg.request_id
         if not request_id:
             request_id = str(uuid.uuid4())
 

@@ -69,14 +69,14 @@ class TriggerSubscriber:
             request_msg = self._new_request_msg(msg.data)
             self.trigger_runner.sdk.set_request_msg(request_msg)
         except Exception as e:
-            await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e), "")
+            await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e))
             return
 
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
         handler = getattr(self.trigger_runner, "response_handler", None)
         if handler is None:
-            await self._process_runner_error(msg, UndefinedResponseHandlerError(msg.subject), request_msg.request_id)
+            await self._process_runner_error(msg, UndefinedResponseHandlerError(msg.subject))
             return
 
         try:
@@ -84,7 +84,7 @@ class TriggerSubscriber:
         except Exception as e:
             from_node = request_msg.from_node
             to_node = self.trigger_runner.sdk.metadata.get_process()
-            await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e), request_msg.request_id)
+            await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
             return
 
         try:
@@ -92,7 +92,7 @@ class TriggerSubscriber:
         except Exception as e:
             self.logger.error(f"error acknowledging message: {e}")
 
-    async def _process_runner_error(self, msg: Msg, error: Exception, request_id: str) -> None:
+    async def _process_runner_error(self, msg: Msg, error: Exception) -> None:
         error_msg = str(error)
         self.logger.info(f"publishing error message {error_msg}")
 
@@ -101,7 +101,7 @@ class TriggerSubscriber:
         except Exception as e:
             self.logger.error(f"error acknowledging message: {e}")
 
-        await self.trigger_runner.sdk.messaging.send_error(error_msg, request_id)
+        await self.trigger_runner.sdk.messaging.send_error(error_msg)
 
     def _new_request_msg(self, data: bytes) -> KaiNatsMessage:
         request_msg = KaiNatsMessage()

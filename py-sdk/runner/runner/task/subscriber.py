@@ -70,7 +70,7 @@ class TaskSubscriber:
             request_msg = self._new_request_msg(msg.data)
             self.task_runner.sdk.set_request_msg(request_msg)
         except Exception as e:
-            await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e), "")
+            await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e))
             return
 
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
@@ -81,7 +81,7 @@ class TaskSubscriber:
 
         if handler is None:
             await self._process_runner_error(
-                msg, Exception(f"no handler defined for {from_node}"), request_msg.request_id
+                msg, Exception(f"no handler defined for {from_node}")
             )
             return
 
@@ -91,15 +91,14 @@ class TaskSubscriber:
         except Exception as e:
             await self._process_runner_error(
                 msg,
-                HandlerError(from_node, to_node, error=e, type="handler preprocessor"),
-                request_msg.request_id,
+                HandlerError(from_node, to_node, error=e, type="handler preprocessor")
             )
             return
 
         try:
             await handler(self.task_runner.sdk, request_msg.payload)
         except Exception as e:
-            await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e), request_msg.request_id)
+            await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
             return
 
         try:
@@ -108,8 +107,7 @@ class TaskSubscriber:
         except Exception as e:
             await self._process_runner_error(
                 msg,
-                HandlerError(from_node, to_node, error=e, type="handler postprocessor"),
-                request_msg.request_id,
+                HandlerError(from_node, to_node, error=e, type="handler postprocessor")
             )
             return
 
@@ -118,7 +116,7 @@ class TaskSubscriber:
         except Exception as e:
             self.logger.error(f"error acknowledging message: {e}")
 
-    async def _process_runner_error(self, msg: Msg, error: Exception, request_id: str) -> None:
+    async def _process_runner_error(self, msg: Msg, error: Exception) -> None:
         error_msg = str(error)
         self.logger.info(f"publishing error message {error_msg}")
 
@@ -127,7 +125,7 @@ class TaskSubscriber:
         except Exception as e:
             self.logger.error(f"error acknowledging message: {e}")
 
-        await self.task_runner.sdk.messaging.send_error(error_msg, request_id)
+        await self.task_runner.sdk.messaging.send_error(error_msg)
 
     def _new_request_msg(self, data: bytes) -> KaiNatsMessage:
         request_msg = KaiNatsMessage()
