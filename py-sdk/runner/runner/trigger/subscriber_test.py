@@ -109,7 +109,7 @@ async def test_process_message_ok(m_getattr, m_msg, m_trigger_subscriber):
     m_trigger_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
     m_trigger_subscriber._process_runner_error = AsyncMock()
     m_trigger_subscriber.trigger_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
-    m_handler = Mock()
+    m_handler = AsyncMock()
     m_getattr.return_value = m_handler
 
     await m_trigger_subscriber._process_message(m_msg)
@@ -177,7 +177,7 @@ async def test_process_message_handler_ko(m_getattr, m_msg, m_trigger_subscriber
     m_trigger_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
     m_trigger_subscriber._process_runner_error = AsyncMock()
     m_trigger_subscriber.trigger_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
-    m_handler = Mock(side_effect=Exception("Handler error"))
+    m_handler = AsyncMock(side_effect=Exception("Handler error"))
     m_getattr.return_value = m_handler
 
     await m_trigger_subscriber._process_message(m_msg)
@@ -203,7 +203,7 @@ async def test_process_message_ack_ko_ok(m_getattr, m_msg, m_trigger_subscriber)
     m_trigger_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
     m_trigger_subscriber._process_runner_error = AsyncMock()
     m_trigger_subscriber.trigger_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
-    m_handler = Mock()
+    m_handler = AsyncMock()
     m_getattr.return_value = m_handler
 
     await m_trigger_subscriber._process_message(m_msg)

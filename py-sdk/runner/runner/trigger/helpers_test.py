@@ -67,6 +67,10 @@ async def m_user_runner_awaitable(runner, sdk):
 def m_user_finalizer(sdk):
     assert sdk is not None
 
+def m_user_response_handler(sdk, response):
+    assert sdk is not None
+    assert response is not None
+
 
 async def test_compose_initializer_with_awaitable_ok(m_sdk):
     v.set(CENTRALIZED_CONFIG, {"key": "value"})
@@ -94,12 +98,13 @@ async def test_compose_runner_ok(m_sdk):
     await compose_runner(m_user_runner_awaitable)(m_trigger_runner, m_sdk)
 
 
-def test_get_response_handler_ok(m_sdk):
-    m_queue = Mock(spec=Queue)
+async def test_get_response_handler_ok(m_sdk):
+    m_queue = AsyncMock(spec=Queue)
+    m_queue.put = AsyncMock()
     m_sdk.get_request_id = Mock(return_value=TEST_REQUEST_ID)
     handlers = {TEST_REQUEST_ID: m_queue}
 
-    get_response_handler(handlers)(m_sdk, Any())
+    await get_response_handler(handlers)(m_sdk, Any())
 
     assert m_queue.put.called
 

@@ -1,4 +1,4 @@
-from queue import Queue
+from asyncio import Queue
 from unittest.mock import AsyncMock, Mock, call, patch
 
 import pytest
@@ -75,19 +75,19 @@ def test_with_finalizer_ok(m_trigger_runner):
     assert m_trigger_runner.finalizer is not None
 
 
-def test_get_response_channel_ok(m_trigger_runner):
-    m_queue = Mock(spec=Queue)
+async def test_get_response_channel_ok(m_trigger_runner):
+    m_queue = AsyncMock(spec=Queue)
     m_trigger_runner.response_channels = {"test-request-id": m_queue}
 
-    m_trigger_runner.get_response_channel("test-request-id")
+    await m_trigger_runner.get_response_channel("test-request-id")
 
     assert m_queue.get.called
 
 
-@patch("runner.trigger.trigger_runner.Queue", return_value=Mock(spec=Queue))
-def test_get_response_channel_not_found_ok(m_queue, m_trigger_runner):
+@patch("runner.trigger.trigger_runner.Queue", return_value=AsyncMock(spec=Queue))
+async def test_get_response_channel_not_found_ok(m_queue, m_trigger_runner):
     assert "test-request-id" not in m_trigger_runner.response_channels
-    m_trigger_runner.get_response_channel("test-request-id")
+    await m_trigger_runner.get_response_channel("test-request-id")
 
     assert "test-request-id" in m_trigger_runner.response_channels
     assert m_queue.called

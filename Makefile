@@ -33,6 +33,10 @@ pytidy: ## Run black, isort and codespell
 	&& poetry --directory py-sdk run isort py-sdk \
 	&& poetry --directory py-sdk run codespell py-sdk -I py-sdk/dictionary.txt \
 	--skip="*.git,*.json,kai_nats_msg_pb2.py,.venv,*.lock,__init__.py" \
+	&& poetry --directory py-sdk run black demo \
+	&& poetry --directory py-sdk run isort demo \
+	&& poetry --directory py-sdk run codespell demo -I py-sdk/dictionary.txt \
+	--skip="*.git,*.json,kai_nats_msg_pb2.py,.venv,*.lock,__init__.py" \
 
 .PHONY: mypy
 mypy: ## Run mypy

@@ -4,8 +4,8 @@ import asyncio
 import signal
 import sys
 import threading
-from dataclasses import dataclass, field
 from asyncio import Queue
+from dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable, Optional
 
 import loguru

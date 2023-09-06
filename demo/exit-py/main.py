@@ -1,8 +1,7 @@
 import asyncio
 
-from google.protobuf.wrappers_pb2 import StringValue
 from google.protobuf.any_pb2 import Any
-
+from google.protobuf.wrappers_pb2 import StringValue
 from runner.runner import Runner
 from sdk import kai_sdk as sdk
 from sdk.centralized_config.centralized_config import Scope
@@ -37,25 +36,33 @@ async def handler(sdk: sdk.KaiSDK, response: Any):
     await sdk.messaging.send_output(StringValue(value=composed_string))
 
 
-async def preprocesor(sdk: sdk.KaiSDK, response: Any):
+async def preprocessor(sdk: sdk.KaiSDK, response: Any):
     logger = sdk.logger.bind(context="[EXIT PREPROCESSOR]")
     logger.info("I am an async preprocessor")
     await asyncio.sleep(0.0000001)
     logger.info("I am an async preprocessor, after sleep")
 
-def postprocesor(sdk: sdk.KaiSDK, response: Any):
+
+def postprocessor(sdk: sdk.KaiSDK, response: Any):
     logger = sdk.logger.bind(context="[EXIT POSTPROCESSOR]")
     logger.info("I am a sync postprocessor")
 
+
 async def finalizer(sdk: sdk.KaiSDK):
     logger = sdk.logger.bind(context="[EXIT FINALIZER]")
-    logger.info("finalizing example asyncronously...")
+    logger.info("finalizing example asynchronously...")
     await asyncio.sleep(0.0000001)
-    logger.info("finalizing example asyncronously, after sleep...")
+    logger.info("finalizing example asynchronously, after sleep...")
+
 
 async def init():
     runner = await Runner().initialize()
-    await runner.exit_runner().with_initializer(initializer).with_handler(handler).with_finalizer(finalizer).with_preprocessor(preprocesor).with_postprocessor(postprocesor).run()
+    await runner.exit_runner().with_initializer(initializer).with_handler(
+        handler
+    ).with_finalizer(finalizer).with_preprocessor(preprocessor).with_postprocessor(
+        postprocessor
+    ).run()
+
 
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
