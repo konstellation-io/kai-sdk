@@ -30,6 +30,7 @@ type messaging interface {
 	SendAny(response *anypb.Any, channelOpt ...string)
 	SendEarlyReply(response proto.Message, channelOpt ...string) error
 	SendEarlyExit(response proto.Message, channelOpt ...string) error
+	GetErrorMessage() string
 
 	IsMessageOK() bool
 	IsMessageError() bool
