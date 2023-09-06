@@ -71,7 +71,7 @@ class ExitRunner:
         self.logger.error(f"caught exception: {msg}")
         asyncio.create_task(self._shutdown_handler(loop))
 
-    async def _shutdown_handler(self, loop: asyncio.AbstractEventLoop, signal: int = None) -> None:
+    async def _shutdown_handler(self, loop: asyncio.AbstractEventLoop, signal: Optional[int] = None) -> None:
         if signal:
             self.logger.info(f"received exit signal {signal.name}...")
         self.logger.info("shutting down runner...")
