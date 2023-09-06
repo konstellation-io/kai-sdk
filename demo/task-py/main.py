@@ -12,10 +12,16 @@ async def initializer(sdk: sdk.KaiSDK):
     logger = sdk.logger.bind(context="[TASK INITIALIZER]")
     logger.info("starting example...")
     value, _ = await sdk.centralized_config.get_config("test")
-    logger.info(f"config value retrieved! {value}")
+    if value is None:
+        logger.info("config value not found")
+    else:
+        logger.info(f"config value retrieved! {value}")
 
     value, _ = await sdk.object_store.get("test")
-    logger.info(f"object store value retrieved! {value.decode('utf-8')}")
+    if value is None:
+        logger.info("object store value not found")
+    else:
+        logger.info(f"object store value retrieved! {value.decode('utf-8')}")
 
 
 async def handler(sdk: sdk.KaiSDK, response: Any):
@@ -27,21 +33,23 @@ async def handler(sdk: sdk.KaiSDK, response: Any):
     logger.info(f"received message {message}")
 
     composed_string = f"{message}, processed by the task process!"
+    logger.info(f"sending message {composed_string}")
     await sdk.messaging.send_output(StringValue(value=composed_string))
 
 
 def preprocesor(sdk: sdk.KaiSDK, response: Any):
     logger = sdk.logger.bind(context="[TASK PREPROCESSOR]")
-    logger.info("I'm a sync preprocessor")
+    logger.info("I am a sync preprocessor")
 
 async def postprocesor(sdk: sdk.KaiSDK, response: Any):
     logger = sdk.logger.bind(context="[TASK POSTPROCESSOR]")
-    logger.info("I'm an async postprocessor")
-    asyncio.sleep(0.0000001)
+    logger.info("I am an async postprocessor")
+    await asyncio.sleep(0.0000001)
+    logger.info("I am an async postprocessor, after sleep")
 
 def finalizer(sdk: sdk.KaiSDK):
     logger = sdk.logger.bind(context="[TASK FINALIZER]")
-    logger.info("finalizing example...")
+    logger.info("finalizing example syncronously...")
 
 async def init():
     runner = await Runner().initialize()
