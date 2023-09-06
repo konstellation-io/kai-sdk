@@ -63,7 +63,6 @@ class TaskSubscriber:
         if len(self.subscriptions) > 0:
             self.logger.info("runner successfully subscribed")
 
-
     async def _process_message(self, msg: Msg) -> None:
         self.logger.info("new message received")
         try:
@@ -80,9 +79,7 @@ class TaskSubscriber:
         to_node = self.task_runner.sdk.metadata.get_process()
 
         if handler is None:
-            await self._process_runner_error(
-                msg, Exception(f"no handler defined for {from_node}")
-            )
+            await self._process_runner_error(msg, Exception(f"no handler defined for {from_node}"))
             return
 
         try:
@@ -90,8 +87,7 @@ class TaskSubscriber:
                 await self.task_runner.preprocessor(self.task_runner.sdk, request_msg.payload)
         except Exception as e:
             await self._process_runner_error(
-                msg,
-                HandlerError(from_node, to_node, error=e, type="handler preprocessor")
+                msg, HandlerError(from_node, to_node, error=e, type="handler preprocessor")
             )
             return
 
@@ -106,8 +102,7 @@ class TaskSubscriber:
                 await self.task_runner.postprocessor(self.task_runner.sdk, request_msg.payload)
         except Exception as e:
             await self._process_runner_error(
-                msg,
-                HandlerError(from_node, to_node, error=e, type="handler postprocessor")
+                msg, HandlerError(from_node, to_node, error=e, type="handler postprocessor")
             )
             return
 

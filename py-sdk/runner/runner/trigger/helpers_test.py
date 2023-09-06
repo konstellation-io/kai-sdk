@@ -104,9 +104,9 @@ def test_get_response_handler_ok(m_sdk):
     assert m_queue.put.called
 
 
-def test_compose_finalizer_ok(m_sdk):
-    compose_finalizer(m_user_finalizer)(m_sdk)
+async def test_compose_finalizer_ok(m_sdk):
+    await compose_finalizer(m_user_finalizer)(m_sdk)
 
 
-def test_compose_finalizer_with_none_ok(m_sdk):
-    compose_finalizer()(m_sdk)
+async def test_compose_finalizer_with_none_ok(m_sdk):
+    await compose_finalizer()(m_sdk)

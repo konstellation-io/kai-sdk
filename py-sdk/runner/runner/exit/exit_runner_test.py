@@ -57,7 +57,7 @@ def test_with_initializer_ok(m_exit_runner):
 
 
 def test_with_prepocessor_ok(m_exit_runner):
-    m_exit_runner.with_preprocessor(Mock(spec=Preprocessor))
+    m_exit_runner.with_preprocessor(AsyncMock(spec=Preprocessor))
 
     assert m_exit_runner.preprocessor is not None
 
@@ -75,7 +75,7 @@ def test_with_custom_handler_ok(m_exit_runner):
 
 
 def test_with_postprocessor_ok(m_exit_runner):
-    m_exit_runner.with_postprocessor(Mock(spec=Postprocessor))
+    m_exit_runner.with_postprocessor(AsyncMock(spec=Postprocessor))
 
     assert m_exit_runner.postprocessor is not None
 
@@ -88,7 +88,7 @@ def test_with_finalizer_ok(m_exit_runner):
 
 async def test_run_ok(m_exit_runner):
     m_exit_runner.initializer = AsyncMock(spec=Initializer)
-    m_exit_runner.finalizer = Mock(spec=Finalizer)
+    m_exit_runner.finalizer = AsyncMock(spec=Finalizer)
     m_exit_runner.with_handler(Mock(spec=Handler))
 
     await m_exit_runner.run()
@@ -96,8 +96,7 @@ async def test_run_ok(m_exit_runner):
     assert m_exit_runner.initializer.called
     assert m_exit_runner.initializer.call_args == call(m_exit_runner.sdk)
     assert m_exit_runner.subscriber.start.called
-    assert m_exit_runner.finalizer.called
-    assert m_exit_runner.finalizer.call_args == call(m_exit_runner.sdk)
+    assert not m_exit_runner.finalizer.called
 
 
 async def test_run_undefined_runner_ko(m_exit_runner):
@@ -106,7 +105,7 @@ async def test_run_undefined_runner_ko(m_exit_runner):
 
 
 @patch("runner.exit.exit_runner.compose_initializer", return_value=AsyncMock(spec=Initializer))
-@patch("runner.exit.exit_runner.compose_finalizer", return_value=Mock(spec=Finalizer))
+@patch("runner.exit.exit_runner.compose_finalizer", return_value=AsyncMock(spec=Finalizer))
 async def test_run_undefined_initializer_finalizer_ok(m_finalizer, m_initializer, m_exit_runner):
     m_exit_runner.with_handler(Mock(spec=Handler))
 
@@ -115,5 +114,4 @@ async def test_run_undefined_initializer_finalizer_ok(m_finalizer, m_initializer
     assert m_exit_runner.initializer.called
     assert m_exit_runner.initializer.call_args == call(m_exit_runner.sdk)
     assert m_exit_runner.subscriber.start.called
-    assert m_exit_runner.finalizer.called
-    assert m_exit_runner.finalizer.call_args == call(m_exit_runner.sdk)
+    assert not m_exit_runner.finalizer.called

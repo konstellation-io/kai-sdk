@@ -85,17 +85,17 @@ async def test_compose_preprocessor_ok(m_sdk):
     await compose_preprocessor(m_user_preprocessor_awaitable)(m_sdk, Any())
 
 
-def test_compose_handler_ok(m_sdk):
-    compose_handler(m_user_handler)(m_sdk, Any())
+async def test_compose_handler_ok(m_sdk):
+    await compose_handler(m_user_handler)(m_sdk, Any())
 
 
 async def test_compose_postprocessor_ok(m_sdk):
     await compose_postprocessor(m_user_postprocessor_awaitable)(m_sdk, Any())
 
 
-def test_compose_finalizer_ok(m_sdk):
-    compose_finalizer(m_user_finalizer)(m_sdk)
+async def test_compose_finalizer_ok(m_sdk):
+    await compose_finalizer(m_user_finalizer)(m_sdk)
 
 
-def test_compose_finalizer_with_none_ok(m_sdk):
-    compose_finalizer()(m_sdk)
+async def test_compose_finalizer_with_none_ok(m_sdk):
+    await compose_finalizer()(m_sdk)

@@ -64,9 +64,7 @@ def m_msg() -> Msg:
 
 async def test_start_ok(m_exit_subscriber):
     v.set(NATS_INPUT, [SUBJECT])
-    stream = "test-stream"
     consumer_name = f"{SUBJECT.replace('.', '-')}-test-process-id"
-    v.set("nats.stream", stream)
     m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test process id")
     cb_mock = m_exit_subscriber._process_message = AsyncMock()
     m_exit_subscriber.exit_runner.js.subscribe = AsyncMock()
@@ -75,7 +73,6 @@ async def test_start_ok(m_exit_subscriber):
 
     assert m_exit_subscriber.exit_runner.js.subscribe.called
     assert m_exit_subscriber.exit_runner.js.subscribe.call_args == call(
-        stream=stream,
         subject=SUBJECT,
         queue=consumer_name,
         durable=consumer_name,
@@ -108,9 +105,9 @@ async def test_process_message_ok(m_msg, m_exit_subscriber):
     m_msg.data = expected_response_msg.SerializeToString()
     m_exit_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
     m_exit_subscriber._process_runner_error = AsyncMock()
-    m_handler = Mock()
+    m_handler = AsyncMock()
     m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
-    m_exit_subscriber._get_response_handler = m_handler
+    m_exit_subscriber._get_response_handler = Mock(return_value=m_handler)
 
     await m_exit_subscriber._process_message(m_msg)
 
@@ -200,7 +197,7 @@ async def test_process_message_handler_ko(m_msg, m_exit_subscriber):
     m_exit_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
     m_exit_subscriber._process_runner_error = AsyncMock()
     m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
-    m_handler = Mock(side_effect=Exception("Handler error"))
+    m_handler = AsyncMock(side_effect=Exception("Handler error"))
     m_exit_subscriber._get_response_handler = Mock(return_value=m_handler)
 
     await m_exit_subscriber._process_message(m_msg)
@@ -224,8 +221,8 @@ async def test_process_message_postprocessor_ko(m_msg, m_exit_subscriber):
     m_exit_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
     m_exit_subscriber._process_runner_error = AsyncMock()
     m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
-    m_handler = Mock()
-    m_exit_subscriber._get_response_handler = m_handler
+    m_handler = AsyncMock()
+    m_exit_subscriber._get_response_handler = Mock(return_value=m_handler)
     m_exit_subscriber.exit_runner.postprocessor = Mock(side_effect=Exception("Postprocessor error"))
 
     await m_exit_subscriber._process_message(m_msg)
@@ -251,8 +248,8 @@ async def test_process_message_ack_ko_ok(m_msg, m_exit_subscriber):
     m_exit_subscriber._new_request_msg = Mock(return_value=expected_response_msg)
     m_exit_subscriber._process_runner_error = AsyncMock()
     m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test_process_id")
-    m_handler = Mock()
-    m_exit_subscriber._get_response_handler = m_handler
+    m_handler = AsyncMock()
+    m_exit_subscriber._get_response_handler = Mock(return_value=m_handler)
 
     await m_exit_subscriber._process_message(m_msg)
 
@@ -267,13 +264,11 @@ async def test_process_runner_error_ok(m_msg, m_exit_subscriber):
     m_msg.data = b"wrong bytes test"
     m_exit_subscriber.exit_runner.sdk.messaging.send_error = AsyncMock()
 
-    await m_exit_subscriber._process_runner_error(m_msg, Exception("process runner error"), "test_request_id")
+    await m_exit_subscriber._process_runner_error(m_msg, Exception("process runner error"))
 
     assert m_msg.ack.called
     assert m_exit_subscriber.exit_runner.sdk.messaging.send_error.called
-    assert m_exit_subscriber.exit_runner.sdk.messaging.send_error.call_args == call(
-        "process runner error", "test_request_id"
-    )
+    assert m_exit_subscriber.exit_runner.sdk.messaging.send_error.call_args == call("process runner error")
 
 
 async def test_process_runner_error_ack_ko_ok(m_msg, m_exit_subscriber):
@@ -281,12 +276,10 @@ async def test_process_runner_error_ack_ko_ok(m_msg, m_exit_subscriber):
     m_msg.ack.side_effect = Exception("Ack error")
     m_exit_subscriber.exit_runner.sdk.messaging.send_error = AsyncMock()
 
-    await m_exit_subscriber._process_runner_error(m_msg, Exception("process runner error ack"), "test_request_id")
+    await m_exit_subscriber._process_runner_error(m_msg, Exception("process runner error ack"))
 
     assert m_exit_subscriber.exit_runner.sdk.messaging.send_error.called
-    assert m_exit_subscriber.exit_runner.sdk.messaging.send_error.call_args == call(
-        "process runner error ack", "test_request_id"
-    )
+    assert m_exit_subscriber.exit_runner.sdk.messaging.send_error.call_args == call("process runner error ack")
 
 
 def test_new_request_msg_ok(m_exit_subscriber):

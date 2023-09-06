@@ -25,6 +25,7 @@ from sdk.kai_sdk import KaiSDK
 
 Preprocessor = Postprocessor = Task
 
+
 @dataclass
 class ExitRunner:
     sdk: KaiSDK = field(init=False)

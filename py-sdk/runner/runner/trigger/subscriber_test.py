@@ -66,9 +66,7 @@ def m_msg() -> Msg:
 
 async def test_start_ok(m_trigger_subscriber):
     v.set(NATS_INPUT, [SUBJECT])
-    stream = "test-stream"
     consumer_name = f"{SUBJECT.replace('.', '-')}-test-process-id"
-    v.set("nats.stream", stream)
     m_trigger_subscriber.trigger_runner.sdk.metadata.get_process = Mock(return_value="test process id")
     cb_mock = m_trigger_subscriber._process_message = AsyncMock()
     m_trigger_subscriber.trigger_runner.js.subscribe = AsyncMock()
@@ -77,7 +75,6 @@ async def test_start_ok(m_trigger_subscriber):
 
     assert m_trigger_subscriber.trigger_runner.js.subscribe.called
     assert m_trigger_subscriber.trigger_runner.js.subscribe.call_args == call(
-        stream=stream,
         subject=SUBJECT,
         queue=consumer_name,
         durable=consumer_name,
@@ -222,13 +219,11 @@ async def test_process_runner_error_ok(m_msg, m_trigger_subscriber):
     m_msg.data = b"wrong bytes test"
     m_trigger_subscriber.trigger_runner.sdk.messaging.send_error = AsyncMock()
 
-    await m_trigger_subscriber._process_runner_error(m_msg, Exception("process runner error"), "test_request_id")
+    await m_trigger_subscriber._process_runner_error(m_msg, Exception("process runner error"))
 
     assert m_msg.ack.called
     assert m_trigger_subscriber.trigger_runner.sdk.messaging.send_error.called
-    assert m_trigger_subscriber.trigger_runner.sdk.messaging.send_error.call_args == call(
-        "process runner error", "test_request_id"
-    )
+    assert m_trigger_subscriber.trigger_runner.sdk.messaging.send_error.call_args == call("process runner error")
 
 
 async def test_process_runner_error_ack_ko_ok(m_msg, m_trigger_subscriber):
@@ -236,12 +231,10 @@ async def test_process_runner_error_ack_ko_ok(m_msg, m_trigger_subscriber):
     m_msg.ack.side_effect = Exception("Ack error")
     m_trigger_subscriber.trigger_runner.sdk.messaging.send_error = AsyncMock()
 
-    await m_trigger_subscriber._process_runner_error(m_msg, Exception("process runner ack error"), "test_request_id")
+    await m_trigger_subscriber._process_runner_error(m_msg, Exception("process runner ack error"))
 
     assert m_trigger_subscriber.trigger_runner.sdk.messaging.send_error.called
-    assert m_trigger_subscriber.trigger_runner.sdk.messaging.send_error.call_args == call(
-        "process runner ack error", "test_request_id"
-    )
+    assert m_trigger_subscriber.trigger_runner.sdk.messaging.send_error.call_args == call("process runner ack error")
 
 
 def test_new_request_msg_ok(m_trigger_subscriber):
