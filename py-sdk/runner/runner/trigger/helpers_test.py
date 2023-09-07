@@ -67,6 +67,7 @@ async def m_user_runner_awaitable(runner, sdk):
 def m_user_finalizer(sdk):
     assert sdk is not None
 
+
 def m_user_response_handler(sdk, response):
     assert sdk is not None
     assert response is not None

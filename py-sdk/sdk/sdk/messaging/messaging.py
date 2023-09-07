@@ -49,6 +49,10 @@ class MessagingABC(ABC):
         pass
 
     @abstractmethod
+    def get_error_message(self) -> str:
+        pass
+
+    @abstractmethod
     def is_message_ok(self) -> bool:
         pass
 

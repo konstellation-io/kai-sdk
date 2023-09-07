@@ -6,6 +6,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.1
 	github.com/konstellation-io/kai-sdk/go-sdk v1.1.0
+	github.com/robfig/cron/v3 v3.0.1
 )
 
 require (
