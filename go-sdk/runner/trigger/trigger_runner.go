@@ -42,7 +42,7 @@ func (tr *Runner) WithInitializer(initializer common.Initializer) *Runner {
 }
 
 func (tr *Runner) WithRunner(runner RunnerFunc) *Runner {
-	tr.runner = composeRunner(tr, runner)
+	tr.runner = composeRunner(runner)
 	return tr
 }
 

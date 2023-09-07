@@ -31,7 +31,9 @@ It is necessary to set the following environment variables in order to use the r
 
 ## Development
 
-Install the dependencies 
+- Build the proto files with `make protos`
+
+- Install the dependencies with `poetry install --group dev`
 
 If you don't have poetry installed (you must have python 3.11 installed in your system):
 
@@ -40,3 +42,17 @@ If you don't have poetry installed (you must have python 3.11 installed in your 
 ## Unit tests
 
 Just run `make pytest` from the root folder
+
+
+## Proto
+
+### Golang
+
+- `go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28`
+- `go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2`
+
+### Python
+
+- `wget https://github.com/protocolbuffers/protobuf/releases/download/v23.4/protoc-23.4-linux-x86_64.zip`
+- `unzip -o protoc-23.4-linux-x86_64.zip -d /usr/local bin/protoc`
+- `unzip -o protoc-23.4-linux-x86_64.zip -d /usr/local 'include/*'`
