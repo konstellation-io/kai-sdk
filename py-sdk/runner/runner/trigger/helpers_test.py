@@ -1,5 +1,5 @@
 import asyncio
-from queue import Queue
+from typing import Callable
 from unittest.mock import AsyncMock, Mock, call
 
 import pytest
@@ -14,7 +14,6 @@ from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
 from sdk.metadata.metadata import Metadata
-from typing import Callable
 
 CENTRALIZED_CONFIG = "centralized_configuration.process.config"
 TEST_REQUEST_ID = "test-request-id"
@@ -48,7 +47,7 @@ def m_trigger_runner(m_sdk: KaiSDK) -> TriggerRunner:
 
 
 class MockEvent:
-    def __init__(self):
+    def __init__(self) -> None:
         self.is_set = Mock()
         self.set = Mock()
         self.wait = Mock()
@@ -104,7 +103,7 @@ async def test_compose_runner_ok(m_sdk):
 
 
 async def test_get_response_handler_ok(m_sdk):
-    m_queue = AsyncMock(spec=Queue)
+    m_queue = AsyncMock(spec=asyncio.Queue)
     m_queue.put = AsyncMock()
     m_sdk.get_request_id = Mock(return_value=TEST_REQUEST_ID)
     handlers = {TEST_REQUEST_ID: m_queue}

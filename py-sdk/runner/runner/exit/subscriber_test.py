@@ -330,7 +330,7 @@ def test_new_request_msg_compressed_ko(_, m_exit_subscriber):
 
 
 class MockKaiNatsMessage:
-    def __init__(self):
+    def __init__(self) -> None:
         self.data = None
         self.ParseFromString = Mock()  # NOSONAR
 

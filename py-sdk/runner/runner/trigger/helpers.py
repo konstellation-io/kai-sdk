@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from queue import Queue
+import asyncio
 from typing import TYPE_CHECKING, Optional
 
 from google.protobuf.any_pb2 import Any
@@ -51,7 +51,7 @@ def compose_runner(user_runner: RunnerFunc) -> RunnerFunc:
     return runner_func
 
 
-def get_response_handler(handlers: [str, Queue]) -> ResponseHandler:
+def get_response_handler(handlers: dict[str, asyncio.Queue]) -> ResponseHandler:
     async def response_handler_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
         logger = sdk.logger.bind(context="[RESPONSE HANDLER]")

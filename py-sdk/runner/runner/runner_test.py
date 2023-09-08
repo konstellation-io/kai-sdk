@@ -148,7 +148,7 @@ def test_get_runner_ok(runner_type, runner_method, m_runner):
 
 
 class MockVyper:
-    def __init__(self):
+    def __init__(self) -> None:
         self.automatic_env = Mock()
         self.is_set = Mock()
         self.add_config_path = Mock()

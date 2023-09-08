@@ -53,7 +53,7 @@ class TriggerRunner:
         self.finalizer = compose_finalizer(finalizer)
         return self
 
-    async def get_response_channel(self, request_id: str) -> Any:
+    async def get_response_channel(self, request_id: str) -> str | None:
         if request_id not in self.response_channels:
             self.response_channels[request_id] = Queue(maxsize=1)
         response = await self.response_channels[request_id].get()
@@ -98,7 +98,7 @@ class TriggerRunner:
 
         loop.stop()
 
-    def _exception_handler(self, loop, context) -> None:
+    def _exception_handler(self, loop: asyncio.AbstractEventLoop, context: dict[str, Any]) -> None:
         msg = context.get("exception", context["message"])
         self.logger.error(f"caught exception: {msg}")
         if not loop.is_closed():

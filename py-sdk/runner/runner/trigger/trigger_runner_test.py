@@ -1,13 +1,12 @@
-from asyncio import Queue
-from unittest.mock import AsyncMock, Mock, call, patch
+import asyncio
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 
 from runner.common.common import Finalizer, Initializer
-from runner.trigger.exceptions import UndefinedRunnerFunctionError
-from runner.trigger.trigger_runner import ResponseHandler, RunnerFunc, TriggerRunner
+from runner.trigger.trigger_runner import ResponseHandler, TriggerRunner
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
 from sdk.metadata.metadata import Metadata
@@ -41,7 +40,7 @@ def m_trigger_runner(m_sdk: KaiSDK) -> TriggerRunner:
 
 
 class MockAsyncio:
-    def __init__(self):
+    def __init__(self) -> None:
         self.get_event_loop = Mock()
         self.run_in_executor = Mock()
         self.gather = AsyncMock()
@@ -76,7 +75,7 @@ def test_with_finalizer_ok(m_trigger_runner):
 
 
 async def test_get_response_channel_ok(m_trigger_runner):
-    m_queue = AsyncMock(spec=Queue)
+    m_queue = AsyncMock(spec=asyncio.Queue)
     m_trigger_runner.response_channels = {"test-request-id": m_queue}
 
     await m_trigger_runner.get_response_channel("test-request-id")
@@ -84,7 +83,7 @@ async def test_get_response_channel_ok(m_trigger_runner):
     assert m_queue.get.called
 
 
-@patch("runner.trigger.trigger_runner.Queue", return_value=AsyncMock(spec=Queue))
+@patch("runner.trigger.trigger_runner.Queue", return_value=AsyncMock(spec=asyncio.Queue))
 async def test_get_response_channel_not_found_ok(m_queue, m_trigger_runner):
     assert "test-request-id" not in m_trigger_runner.response_channels
     await m_trigger_runner.get_response_channel("test-request-id")

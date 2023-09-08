@@ -1,4 +1,5 @@
 import asyncio
+from typing import Callable
 from unittest.mock import AsyncMock, Mock, call
 
 import pytest
@@ -17,7 +18,6 @@ from runner.exit.helpers import (
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
-from typing import Callable
 
 CENTRALIZED_CONFIG = "centralized_configuration.process.config"
 
@@ -88,6 +88,7 @@ async def test_compose_preprocessor_ok(m_sdk):
     preprocessor: Callable = compose_preprocessor(m_user_preprocessor_awaitable)
     await preprocessor(m_sdk, Any())
 
+
 async def test_compose_handler_ok(m_sdk):
     handler: Callable = compose_handler(m_user_handler)
     await handler(m_sdk, Any())
@@ -101,6 +102,7 @@ async def test_compose_postprocessor_ok(m_sdk):
 async def test_compose_finalizer_ok(m_sdk):
     finalizer: Callable = compose_finalizer(m_user_finalizer)
     await finalizer(m_sdk)
+
 
 async def test_compose_finalizer_with_none_ok(m_sdk):
     finalizer: Callable = compose_finalizer()
