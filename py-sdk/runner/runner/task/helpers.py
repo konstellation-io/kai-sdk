@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING, Optional
 
 from google.protobuf.any_pb2 import Any
 
-from runner.common.common import Finalizer, Initializer, initialize_process_configuration
+from runner.common.common import Finalizer, Handler, Initializer, initialize_process_configuration
 
 if TYPE_CHECKING:
-    from runner.task.task_runner import Preprocessor, Handler, Postprocessor
+    from runner.task.task_runner import Preprocessor, Postprocessor
 
 import inspect
 
