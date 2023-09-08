@@ -14,6 +14,7 @@ from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
 from sdk.metadata.metadata import Metadata
+from typing import Callable
 
 CENTRALIZED_CONFIG = "centralized_configuration.process.config"
 TEST_REQUEST_ID = "test-request-id"
@@ -77,8 +78,9 @@ async def test_compose_initializer_with_awaitable_ok(m_sdk):
     v.set(CENTRALIZED_CONFIG, {"key": "value"})
     m_sdk.centralized_config = Mock(spec=CentralizedConfig)
     m_sdk.centralized_config.set_config = AsyncMock()
+    initializer: Callable = compose_initializer(m_user_initializer_awaitable)
 
-    await compose_initializer(m_user_initializer_awaitable)(m_sdk)
+    await initializer(m_sdk)
 
     assert m_sdk.centralized_config.set_config.called
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
@@ -88,15 +90,17 @@ async def test_compose_initializer_with_none_ok(m_sdk):
     v.set(CENTRALIZED_CONFIG, {"key": "value"})
     m_sdk.centralized_config = Mock(spec=CentralizedConfig)
     m_sdk.centralized_config.set_config = AsyncMock()
+    initializer: Callable = compose_initializer()
 
-    await compose_initializer()(m_sdk)
+    await initializer(m_sdk)
 
     assert m_sdk.centralized_config.set_config.called
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
 
 
 async def test_compose_runner_ok(m_sdk):
-    await compose_runner(m_user_runner_awaitable)(m_trigger_runner, m_sdk)
+    runner: Callable = compose_runner(m_user_runner_awaitable)
+    await runner(m_trigger_runner, m_sdk)
 
 
 async def test_get_response_handler_ok(m_sdk):
@@ -104,15 +108,18 @@ async def test_get_response_handler_ok(m_sdk):
     m_queue.put = AsyncMock()
     m_sdk.get_request_id = Mock(return_value=TEST_REQUEST_ID)
     handlers = {TEST_REQUEST_ID: m_queue}
+    response_handler: Callable = get_response_handler(handlers)
 
-    await get_response_handler(handlers)(m_sdk, Any())
+    await response_handler(m_sdk, Any())
 
     assert m_queue.put.called
 
 
 async def test_compose_finalizer_ok(m_sdk):
-    await compose_finalizer(m_user_finalizer)(m_sdk)
+    finalizer: Callable = compose_finalizer(m_user_finalizer)
+    await finalizer(m_sdk)
 
 
 async def test_compose_finalizer_with_none_ok(m_sdk):
-    await compose_finalizer()(m_sdk)
+    finalizer: Callable = compose_finalizer()
+    await finalizer(m_sdk)
