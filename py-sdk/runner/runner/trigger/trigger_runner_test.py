@@ -6,6 +6,7 @@ from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 
 from runner.common.common import Finalizer, Initializer
+from runner.trigger.exceptions import UndefinedRunnerFunctionError
 from runner.trigger.trigger_runner import ResponseHandler, TriggerRunner
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
@@ -91,3 +92,8 @@ async def test_get_response_channel_not_found_ok(m_queue, m_trigger_runner):
     assert "test-request-id" in m_trigger_runner.response_channels
     assert m_queue.called
     assert m_queue.return_value.get.called
+
+
+async def test_run_undefined_runner_function_ko(m_trigger_runner):
+    with pytest.raises(UndefinedRunnerFunctionError):
+        await m_trigger_runner.run()
