@@ -128,7 +128,7 @@ async def test_process_message_not_valid_protobuf_ko(m_msg, m_exit_subscriber):
         payload=Any(),
     )
     m_msg.data = expected_response_msg.SerializeToString()
-    m_exit_subscriber._new_request_msg = Mock(side_effect=Exception(NewRequestMsgError("New request message error")))
+    m_exit_subscriber._new_request_msg = Mock(side_effect=NewRequestMsgError(Exception("New request message error")))
     m_exit_subscriber._process_runner_error = AsyncMock()
 
     await m_exit_subscriber._process_message(m_msg)

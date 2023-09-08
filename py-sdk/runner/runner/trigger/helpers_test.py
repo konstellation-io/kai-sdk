@@ -106,11 +106,12 @@ async def test_get_response_handler_ok(m_sdk):
     m_queue = AsyncMock(spec=asyncio.Queue)
     m_queue.put = AsyncMock()
     m_sdk.get_request_id = Mock(return_value=TEST_REQUEST_ID)
-    handlers = {TEST_REQUEST_ID: m_queue}
+    handlers: dict[str, asyncio.Queue[Any]] = {TEST_REQUEST_ID: m_queue}
     response_handler: Callable = get_response_handler(handlers)
 
     await response_handler(m_sdk, Any())
 
+    assert m_sdk.get_request_id.called
     assert m_queue.put.called
 
 

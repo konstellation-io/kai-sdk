@@ -104,7 +104,7 @@ class Messaging(MessagingABC):
 
     async def send_error(self, error: str) -> None:
         request_id = self.request_msg.request_id if self.request_msg else None
-        await self._publish_error(err_msg=error, request_id=request_id)
+        await self._publish_error(err_msg=error, request_id=request_id or "")
 
     def get_error_message(self) -> str:
         return self.request_msg.error if self.is_message_error() else ""
