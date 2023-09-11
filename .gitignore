@@ -20,3 +20,6 @@ build
 __pycache__/
 .pytest_cache
 .mypy_cache
+
+# OS
+.DS_Store
