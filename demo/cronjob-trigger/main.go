@@ -7,7 +7,6 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/trigger"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 	"github.com/robfig/cron/v3"
-
 	"os"
 	"os/signal"
 	"syscall"
@@ -78,4 +77,6 @@ func cronjobRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
 	termChan := make(chan os.Signal, 1)
 	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM)
 	<-termChan
+
+	c.Stop()
 }

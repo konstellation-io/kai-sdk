@@ -20,7 +20,7 @@ import (
 
 func (tr *Runner) startSubscriber() {
 	inputSubjects := viper.GetStringSlice("nats.inputs")
-	subscriptions := make([]*nats.Subscription, len(inputSubjects))
+	subscriptions := make([]*nats.Subscription, 0, len(inputSubjects))
 
 	for _, subject := range inputSubjects {
 		consumerName := fmt.Sprintf("%s-%s", strings.ReplaceAll(subject, ".", "-"),
@@ -71,9 +71,12 @@ func (tr *Runner) startSubscriber() {
 		if err != nil {
 			tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error unsubscribing from the NATS subject",
 				"Subject", s.Subject)
+			wg.Done()
 			os.Exit(1)
 		}
 	}
+
+	tr.sdk.Logger.WithName("[SUBSCRIBER]").Info("Unsubscribed from all subjects")
 }
 
 func (tr *Runner) processMessage(msg *nats.Msg) {
