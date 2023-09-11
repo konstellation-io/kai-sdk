@@ -4,7 +4,7 @@ import asyncio
 import signal
 import sys
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Any, Optional
 
 import loguru
 from loguru import logger
@@ -66,7 +66,7 @@ class TaskRunner:
         self.finalizer = compose_finalizer(finalizer)
         return self
 
-    def _exception_handler(self, loop, context) -> None:
+    def _exception_handler(self, loop: asyncio.AbstractEventLoop, context: dict[str, Any]) -> None:
         msg = context.get("exception", context["message"])
         self.logger.error(f"caught exception: {msg}")
         asyncio.create_task(self._shutdown_handler(loop))

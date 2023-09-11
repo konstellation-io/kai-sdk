@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, Mock, call, patch
 import pytest
 from google.protobuf.any_pb2 import Any
 from nats.aio.client import Client as NatsClient
-from nats.aio.client import Msg
+from nats.aio.msg import Msg
 from nats.js import JetStreamContext
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
@@ -285,7 +285,7 @@ def test_new_request_msg_compressed_ko(_, m_trigger_subscriber):
 
 
 class MockKaiNatsMessage:
-    def __init__(self):
+    def __init__(self) -> None:
         self.data = None
         self.ParseFromString = Mock()  # NOSONAR
 

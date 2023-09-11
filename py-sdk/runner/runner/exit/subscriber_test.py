@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, Mock, call, patch
 import pytest
 from google.protobuf.any_pb2 import Any
 from nats.aio.client import Client as NatsClient
-from nats.aio.client import Msg
+from nats.aio.msg import Msg
 from nats.js import JetStreamContext
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
@@ -128,7 +128,7 @@ async def test_process_message_not_valid_protobuf_ko(m_msg, m_exit_subscriber):
         payload=Any(),
     )
     m_msg.data = expected_response_msg.SerializeToString()
-    m_exit_subscriber._new_request_msg = Mock(side_effect=Exception(NewRequestMsgError("New request message error")))
+    m_exit_subscriber._new_request_msg = Mock(side_effect=NewRequestMsgError(Exception("New request message error")))
     m_exit_subscriber._process_runner_error = AsyncMock()
 
     await m_exit_subscriber._process_message(m_msg)
@@ -330,7 +330,7 @@ def test_new_request_msg_compressed_ko(_, m_exit_subscriber):
 
 
 class MockKaiNatsMessage:
-    def __init__(self):
+    def __init__(self) -> None:
         self.data = None
         self.ParseFromString = Mock()  # NOSONAR
 

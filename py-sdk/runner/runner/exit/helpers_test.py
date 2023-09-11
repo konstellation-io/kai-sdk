@@ -1,4 +1,5 @@
 import asyncio
+from typing import Callable
 from unittest.mock import AsyncMock, Mock, call
 
 import pytest
@@ -38,15 +39,30 @@ async def m_user_initializer_awaitable(sdk):
     await asyncio.sleep(0.00001)
 
 
+def m_user_initializer(sdk):
+    assert sdk is not None
+
+
 async def m_user_preprocessor_awaitable(sdk, response):
     assert sdk is not None
     assert response is not None
     await asyncio.sleep(0.00001)
 
 
+def m_user_preprocessor(sdk, response):
+    assert sdk is not None
+    assert response is not None
+
+
 def m_user_handler(sdk, response):
     assert sdk is not None
     assert response is not None
+
+
+async def m_user_handler_awaitable(sdk, response):
+    assert sdk is not None
+    assert response is not None
+    await asyncio.sleep(0.00001)
 
 
 async def m_user_postprocessor_awaitable(sdk, response):
@@ -55,16 +71,39 @@ async def m_user_postprocessor_awaitable(sdk, response):
     await asyncio.sleep(0.00001)
 
 
+def m_user_postprocessor(sdk, response):
+    assert sdk is not None
+    assert response is not None
+
+
 def m_user_finalizer(sdk):
     assert sdk is not None
+
+
+async def m_user_finalizer_awaitable(sdk):
+    assert sdk is not None
+    await asyncio.sleep(0.00001)
+
+
+async def test_compose_initializer_ok(m_sdk):
+    v.set(CENTRALIZED_CONFIG, {"key": "value"})
+    m_sdk.centralized_config = Mock(spec=CentralizedConfig)
+    m_sdk.centralized_config.set_config = AsyncMock()
+    initializer: Callable = compose_initializer(m_user_initializer)
+
+    await initializer(m_sdk)
+
+    assert m_sdk.centralized_config.set_config.called
+    assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
 
 
 async def test_compose_initializer_with_awaitable_ok(m_sdk):
     v.set(CENTRALIZED_CONFIG, {"key": "value"})
     m_sdk.centralized_config = Mock(spec=CentralizedConfig)
     m_sdk.centralized_config.set_config = AsyncMock()
+    initializer: Callable = compose_initializer(m_user_initializer_awaitable)
 
-    await compose_initializer(m_user_initializer_awaitable)(m_sdk)
+    await initializer(m_sdk)
 
     assert m_sdk.centralized_config.set_config.called
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
@@ -74,28 +113,54 @@ async def test_compose_initializer_with_none_ok(m_sdk):
     v.set(CENTRALIZED_CONFIG, {"key": "value"})
     m_sdk.centralized_config = Mock(spec=CentralizedConfig)
     m_sdk.centralized_config.set_config = AsyncMock()
+    initializer: Callable = compose_initializer()
 
-    await compose_initializer()(m_sdk)
+    await initializer(m_sdk)
 
     assert m_sdk.centralized_config.set_config.called
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
 
 
 async def test_compose_preprocessor_ok(m_sdk):
-    await compose_preprocessor(m_user_preprocessor_awaitable)(m_sdk, Any())
+    preprocessor: Callable = compose_preprocessor(m_user_preprocessor)
+    await preprocessor(m_sdk, Any())
+
+
+async def test_compose_preprocessor_with_awaitable_ok(m_sdk):
+    preprocessor: Callable = compose_preprocessor(m_user_preprocessor_awaitable)
+    await preprocessor(m_sdk, Any())
 
 
 async def test_compose_handler_ok(m_sdk):
-    await compose_handler(m_user_handler)(m_sdk, Any())
+    handler: Callable = compose_handler(m_user_handler)
+    await handler(m_sdk, Any())
+
+
+async def test_compose_handler_with_awaitable_ok(m_sdk):
+    handler: Callable = compose_handler(m_user_handler_awaitable)
+    await handler(m_sdk, Any())
 
 
 async def test_compose_postprocessor_ok(m_sdk):
-    await compose_postprocessor(m_user_postprocessor_awaitable)(m_sdk, Any())
+    postprocessor: Callable = compose_postprocessor(m_user_postprocessor)
+    await postprocessor(m_sdk, Any())
+
+
+async def test_compose_postprocessor_with_awaitable_ok(m_sdk):
+    postprocessor: Callable = compose_postprocessor(m_user_postprocessor_awaitable)
+    await postprocessor(m_sdk, Any())
 
 
 async def test_compose_finalizer_ok(m_sdk):
-    await compose_finalizer(m_user_finalizer)(m_sdk)
+    finalizer: Callable = compose_finalizer(m_user_finalizer)
+    await finalizer(m_sdk)
+
+
+async def test_compose_finalizer_with_awaitable_ok(m_sdk):
+    finalizer: Callable = compose_finalizer(m_user_finalizer_awaitable)
+    await finalizer(m_sdk)
 
 
 async def test_compose_finalizer_with_none_ok(m_sdk):
-    await compose_finalizer()(m_sdk)
+    finalizer: Callable = compose_finalizer()
+    await finalizer(m_sdk)

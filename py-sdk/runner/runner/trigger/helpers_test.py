@@ -1,5 +1,5 @@
 import asyncio
-from queue import Queue
+from typing import Callable
 from unittest.mock import AsyncMock, Mock, call
 
 import pytest
@@ -47,7 +47,7 @@ def m_trigger_runner(m_sdk: KaiSDK) -> TriggerRunner:
 
 
 class MockEvent:
-    def __init__(self):
+    def __init__(self) -> None:
         self.is_set = Mock()
         self.set = Mock()
         self.wait = Mock()
@@ -58,9 +58,18 @@ async def m_user_initializer_awaitable(sdk):
     await asyncio.sleep(0.00001)
 
 
+def m_user_initializer(sdk):
+    assert sdk is not None
+
+
 async def m_user_runner_awaitable(runner, sdk):
     assert sdk is not None
     assert runner is not None
+    await asyncio.sleep(0.00001)
+
+
+async def m_user_finalizer_awaitable(sdk):
+    assert sdk is not None
     await asyncio.sleep(0.00001)
 
 
@@ -77,8 +86,9 @@ async def test_compose_initializer_with_awaitable_ok(m_sdk):
     v.set(CENTRALIZED_CONFIG, {"key": "value"})
     m_sdk.centralized_config = Mock(spec=CentralizedConfig)
     m_sdk.centralized_config.set_config = AsyncMock()
+    initializer: Callable = compose_initializer(m_user_initializer_awaitable)
 
-    await compose_initializer(m_user_initializer_awaitable)(m_sdk)
+    await initializer(m_sdk)
 
     assert m_sdk.centralized_config.set_config.called
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
@@ -88,31 +98,54 @@ async def test_compose_initializer_with_none_ok(m_sdk):
     v.set(CENTRALIZED_CONFIG, {"key": "value"})
     m_sdk.centralized_config = Mock(spec=CentralizedConfig)
     m_sdk.centralized_config.set_config = AsyncMock()
+    initializer: Callable = compose_initializer()
 
-    await compose_initializer()(m_sdk)
+    await initializer(m_sdk)
+
+    assert m_sdk.centralized_config.set_config.called
+    assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
+
+
+async def test_compose_initializer_ok(m_sdk):
+    v.set(CENTRALIZED_CONFIG, {"key": "value"})
+    m_sdk.centralized_config = Mock(spec=CentralizedConfig)
+    m_sdk.centralized_config.set_config = AsyncMock()
+    initializer: Callable = compose_initializer(m_user_initializer)
+
+    await initializer(m_sdk)
 
     assert m_sdk.centralized_config.set_config.called
     assert m_sdk.centralized_config.set_config.call_args == call("key", "value")
 
 
 async def test_compose_runner_ok(m_sdk):
-    await compose_runner(m_user_runner_awaitable)(m_trigger_runner, m_sdk)
+    runner: Callable = compose_runner(m_user_runner_awaitable)
+    await runner(m_trigger_runner, m_sdk)
 
 
 async def test_get_response_handler_ok(m_sdk):
-    m_queue = AsyncMock(spec=Queue)
+    m_queue = AsyncMock(spec=asyncio.Queue)
     m_queue.put = AsyncMock()
     m_sdk.get_request_id = Mock(return_value=TEST_REQUEST_ID)
-    handlers = {TEST_REQUEST_ID: m_queue}
+    handlers: dict[str, asyncio.Queue[Any]] = {TEST_REQUEST_ID: m_queue}
+    response_handler: Callable = get_response_handler(handlers)
 
-    await get_response_handler(handlers)(m_sdk, Any())
+    await response_handler(m_sdk, Any())
 
+    assert m_sdk.get_request_id.called
     assert m_queue.put.called
 
 
+async def test_compose_finalizer_with_awaitable_ok(m_sdk):
+    finalizer: Callable = compose_finalizer(m_user_finalizer_awaitable)
+    await finalizer(m_sdk)
+
+
 async def test_compose_finalizer_ok(m_sdk):
-    await compose_finalizer(m_user_finalizer)(m_sdk)
+    finalizer: Callable = compose_finalizer(m_user_initializer)
+    await finalizer(m_sdk)
 
 
 async def test_compose_finalizer_with_none_ok(m_sdk):
-    await compose_finalizer()(m_sdk)
+    finalizer: Callable = compose_finalizer()
+    await finalizer(m_sdk)

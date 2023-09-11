@@ -5,15 +5,8 @@ from nats.js.api import StreamConfig, StreamInfo, StreamState
 from nats.js.client import JetStreamContext
 from vyper import v
 
-from sdk.messaging.messaging_utils import (
-    FailedGettingMaxMessageSizeError,
-    MessagingUtils,
-    compress,
-    is_compressed,
-    size_in_kb,
-    size_in_mb,
-    uncompress,
-)
+from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError
+from sdk.messaging.messaging_utils import MessagingUtils, compress, is_compressed, size_in_kb, size_in_mb, uncompress
 
 
 async def test_ok():

@@ -10,7 +10,7 @@ from vyper import v
 
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
 from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
-from sdk.messaging.messaging import Messaging
+from sdk.messaging.messaging import Messaging, _message_type_converter
 from sdk.messaging.messaging_utils import compress, is_compressed
 
 NATS_OUTPUT = "subscription.output"
@@ -323,3 +323,11 @@ async def test__prepare_output_message_too_large_ko(m_messaging):
 
     with pytest.raises(MessageTooLargeError):
         await m_messaging._prepare_output_message(ANY_BYTE)
+
+
+def test_message_type_converter_ok():
+    assert _message_type_converter(MessageType.OK) == "ok"
+    assert _message_type_converter(MessageType.ERROR) == "error"
+    assert _message_type_converter(MessageType.EARLY_REPLY) == "early reply"
+    assert _message_type_converter(MessageType.EARLY_EXIT) == "early exit"
+    assert _message_type_converter(MessageType.UNDEFINED) == "undefined"

@@ -11,7 +11,8 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK, MeasurementsABC, StorageABC
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
-from sdk.object_store.object_store import FailedObjectStoreInitializationError, ObjectStore
+from sdk.object_store.exceptions import FailedObjectStoreInitializationError
+from sdk.object_store.object_store import ObjectStore
 from sdk.path_utils.path_utils import PathUtils
 
 PRODUCT_BUCKET = "centralized_configuration.product.bucket"

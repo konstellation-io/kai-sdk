@@ -6,15 +6,16 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 import loguru
-from nats.aio.subscription import Msg
+from nats.aio.msg import Msg
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 from vyper import v
 
+from runner.common.common import Handler
 from sdk.messaging.messaging_utils import is_compressed, uncompress
 
 if TYPE_CHECKING:
-    from runner.exit.exit_runner import ExitRunner, Handler
+    from runner.exit.exit_runner import ExitRunner
 
 from runner.exit.exceptions import HandlerError, NewRequestMsgError, NotValidProtobuf
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
