@@ -30,17 +30,19 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 func composeRunner(userRunner RunnerFunc) RunnerFunc {
 	return func(runner *Runner, sdk sdk.KaiSDK) {
 		sdk.Logger.WithName("[RUNNER]").V(1).Info("Running TriggerRunner...")
-
 		if userRunner != nil {
 			sdk.Logger.WithName("[RUNNER]").V(3).Info("Executing user runner...")
-			userRunner(runner, sdk)
-			sdk.Logger.WithName("[RUNNER]").V(3).Info("User runner executed")
+			go userRunner(runner, sdk)
 		}
+
+		defer wg.Done()
 
 		// Handle sigterm and await termChan signal
 		termChan := make(chan os.Signal, 1)
 		signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM)
 		<-termChan
+
+		sdk.Logger.WithName("[RUNNER]").V(3).Info("User runner executed")
 
 		// Handle shutdown
 		sdk.Logger.WithName("[RUNNER]").Info("Shutting down runner...")
@@ -52,7 +54,6 @@ func composeRunner(userRunner RunnerFunc) RunnerFunc {
 			return true
 		})
 
-		wg.Done()
 		sdk.Logger.WithName("[RUNNER]").Info("RunnerFunc shutdown")
 	}
 }

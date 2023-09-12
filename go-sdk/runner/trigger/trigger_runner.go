@@ -76,12 +76,13 @@ func (tr *Runner) Run() {
 
 	tr.initializer(tr.sdk)
 
+	delta := 2
+	wg.Add(delta)
+
 	go tr.runner(tr, tr.sdk)
 
 	go tr.startSubscriber()
 
-	delta := 2
-	wg.Add(delta)
 	wg.Wait()
 
 	tr.finalizer(tr.sdk)

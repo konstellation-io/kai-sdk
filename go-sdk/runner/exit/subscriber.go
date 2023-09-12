@@ -20,7 +20,7 @@ import (
 
 func (er *Runner) startSubscriber() {
 	inputSubjects := viper.GetStringSlice("nats.inputs")
-	subscriptions := make([]*nats.Subscription, len(inputSubjects))
+	subscriptions := make([]*nats.Subscription, 0, len(inputSubjects))
 
 	for _, subject := range inputSubjects {
 		consumerName := fmt.Sprintf("%s-%s", strings.ReplaceAll(subject, ".", "-"),
