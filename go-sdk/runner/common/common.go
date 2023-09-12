@@ -4,18 +4,18 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
+	kaisdk "github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 )
 
-type Task func(sdk sdk.KaiSDK)
+type Task func(sdk kaisdk.KaiSDK)
 
 type Initializer Task
 
 type Finalizer Task
 
-type Handler func(sdk sdk.KaiSDK, response *anypb.Any) error
+type Handler func(sdk kaisdk.KaiSDK, response *anypb.Any) error
 
-func InitializeProcessConfiguration(sdk sdk.KaiSDK) {
+func InitializeProcessConfiguration(sdk kaisdk.KaiSDK) {
 	values := viper.GetStringMapString("centralized_configuration.process.config")
 
 	sdk.Logger.WithName("[CONFIG INITIALIZER]").V(1).Info("Initializing process configuration")

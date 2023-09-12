@@ -12,56 +12,64 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 )
 
+const (
+	_initializerLoggerName     = "[INITIALIZER]"
+	_runnerLoggerName          = "[RUNNER]"
+	_responseHandlerLoggerName = "[RESPONSE HANDLER]"
+	_finalizerLoggerName       = "[FINALIZER]"
+)
+
 func composeInitializer(initializer common.Initializer) common.Initializer {
 	return func(sdk sdk.KaiSDK) {
-		sdk.Logger.WithName("[RUNNER]").V(1).Info("Initializing TriggerRunner...")
+		sdk.Logger.WithName(_initializerLoggerName).V(1).Info("Initializing TriggerRunner...")
 		common.InitializeProcessConfiguration(sdk)
 
 		if initializer != nil {
-			sdk.Logger.WithName("[RUNNER]").V(3).Info("Executing user initializer...")
+			sdk.Logger.WithName(_initializerLoggerName).V(3).Info("Executing user initializer...")
 			initializer(sdk)
-			sdk.Logger.WithName("[RUNNER]").V(3).Info("User initializer executed")
+			sdk.Logger.WithName(_initializerLoggerName).V(3).Info("User initializer executed")
 		}
 
-		sdk.Logger.WithName("[RUNNER]").V(1).Info("TriggerRunner initialized")
+		sdk.Logger.WithName(_initializerLoggerName).V(1).Info("TriggerRunner initialized")
 	}
 }
 
 func composeRunner(userRunner RunnerFunc) RunnerFunc {
 	return func(runner *Runner, sdk sdk.KaiSDK) {
-		sdk.Logger.WithName("[RUNNER]").V(1).Info("Running TriggerRunner...")
+		sdk.Logger.WithName(_runnerLoggerName).V(1).Info("Running TriggerRunner...")
+
 		if userRunner != nil {
-			sdk.Logger.WithName("[RUNNER]").V(3).Info("Executing user runner...")
+			sdk.Logger.WithName(_runnerLoggerName).V(3).Info("Executing user runner...")
+
 			go userRunner(runner, sdk)
 		}
-
-		defer wg.Done()
 
 		// Handle sigterm and await termChan signal
 		termChan := make(chan os.Signal, 1)
 		signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM)
 		<-termChan
 
-		sdk.Logger.WithName("[RUNNER]").V(3).Info("User runner executed")
+		sdk.Logger.WithName(_runnerLoggerName).V(3).Info("User runner executed")
 
 		// Handle shutdown
-		sdk.Logger.WithName("[RUNNER]").Info("Shutting down runner...")
-		sdk.Logger.WithName("[RUNNER]").V(1).Info("Closing opened channels...")
+		sdk.Logger.WithName(_runnerLoggerName).Info("Shutting down runner...")
+		sdk.Logger.WithName(_runnerLoggerName).V(1).Info("Closing opened channels...")
 		runner.responseChannels.Range(func(key, value interface{}) bool {
 			close(value.(chan *anypb.Any))
-			sdk.Logger.V(1).WithName("[RUNNER]").Info("Channel closed for requestID",
+			sdk.Logger.V(1).WithName(_runnerLoggerName).Info("Channel closed for requestID",
 				"RequestID", key)
 			return true
 		})
 
-		sdk.Logger.WithName("[RUNNER]").Info("RunnerFunc shutdown")
+		sdk.Logger.WithName(_runnerLoggerName).Info("RunnerFunc shutdown")
+		wg.Done()
 	}
 }
 
 func getResponseHandler(handlers *sync.Map) ResponseHandler {
 	return func(sdk sdk.KaiSDK, response *anypb.Any) error {
 		// Unmarshal response to a KaiNatsMessage type
-		sdk.Logger.WithName("[RESPONSE HANDLER]").Info("Message received", "RequestID", sdk.GetRequestID())
+		sdk.Logger.WithName(_responseHandlerLoggerName).Info("Message received", "RequestID", sdk.GetRequestID())
 
 		responseHandler, ok := handlers.LoadAndDelete(sdk.GetRequestID())
 
@@ -70,7 +78,7 @@ func getResponseHandler(handlers *sync.Map) ResponseHandler {
 			return nil
 		}
 
-		sdk.Logger.V(1).WithName("[RESPONSE HANDLER]").Info("No handler found for the message",
+		sdk.Logger.V(1).WithName(_responseHandlerLoggerName).Info("No handler found for the message",
 			"RequestID", sdk.GetRequestID())
 
 		return nil
@@ -79,14 +87,14 @@ func getResponseHandler(handlers *sync.Map) ResponseHandler {
 
 func composeFinalizer(userFinalizer common.Finalizer) common.Finalizer {
 	return func(sdk sdk.KaiSDK) {
-		sdk.Logger.V(1).WithName("[FINALIZER]").Info("Finalizing TriggerRunner...")
+		sdk.Logger.V(1).WithName(_finalizerLoggerName).Info("Finalizing TriggerRunner...")
 
 		if userFinalizer != nil {
-			sdk.Logger.V(3).WithName("[FINALIZER]").Info("Executing user finalizer...")
+			sdk.Logger.V(3).WithName(_finalizerLoggerName).Info("Executing user finalizer...")
 			userFinalizer(sdk)
-			sdk.Logger.V(3).WithName("[FINALIZER]").Info("User finalizer executed")
+			sdk.Logger.V(3).WithName(_finalizerLoggerName).Info("User finalizer executed")
 		}
 
-		sdk.Logger.V(1).WithName("[FINALIZER]").Info("TriggerRunner finalized")
+		sdk.Logger.V(1).WithName(_finalizerLoggerName).Info("TriggerRunner finalized")
 	}
 }

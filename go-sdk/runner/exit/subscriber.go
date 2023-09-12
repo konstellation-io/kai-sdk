@@ -18,6 +18,8 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 )
 
+const _subscriberLoggerName = "[SUBSCRIBER]"
+
 func (er *Runner) startSubscriber() {
 	inputSubjects := viper.GetStringSlice("nats.inputs")
 	subscriptions := make([]*nats.Subscription, 0, len(inputSubjects))
@@ -26,7 +28,7 @@ func (er *Runner) startSubscriber() {
 		consumerName := fmt.Sprintf("%s-%s", strings.ReplaceAll(subject, ".", "-"),
 			strings.ReplaceAll(strings.ReplaceAll(er.sdk.Metadata.GetProcess(), ".", "-"), " ", "-"))
 
-		er.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Subscribing to subject",
+		er.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info("Subscribing to subject",
 			"Subject", subject, "Queue group", consumerName)
 
 		ackWaitTime := 22 * time.Hour
@@ -41,14 +43,14 @@ func (er *Runner) startSubscriber() {
 			nats.AckWait(ackWaitTime),
 		)
 		if err != nil {
-			er.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error subscribing to NATS subject",
+			er.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error subscribing to NATS subject",
 				"Subject", subject)
 			os.Exit(1)
 		}
 
 		subscriptions = append(subscriptions, s)
 
-		er.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Listening to subject",
+		er.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info("Listening to subject",
 			"Subject", subject, "Queue group", consumerName)
 	}
 
@@ -58,12 +60,12 @@ func (er *Runner) startSubscriber() {
 	<-termChan
 
 	// Handle shutdown
-	er.sdk.Logger.WithName("[SUBSCRIBER]").Info("Shutdown signal received")
+	er.sdk.Logger.WithName(_subscriberLoggerName).Info("Shutdown signal received")
 
 	for _, s := range subscriptions {
 		err := s.Unsubscribe()
 		if err != nil {
-			er.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error unsubscribing from the NATS subject",
+			er.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error unsubscribing from the NATS subject",
 				"Subject", s.Subject)
 			os.Exit(1)
 		}
@@ -80,7 +82,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 		return
 	}
 
-	er.sdk.Logger.WithName("[SUBSCRIBER]").Info("New message received",
+	er.sdk.Logger.WithName(_subscriberLoggerName).Info("New message received",
 		"Subject", msg.Subject, "Request ID", requestMsg.RequestId)
 
 	handler := er.getResponseHandler(strings.ToLower(requestMsg.FromNode))
@@ -128,17 +130,17 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 	// Tell NATS we don't need to receive the message anymore, and we are done processing it.
 	ackErr := msg.Ack()
 	if ackErr != nil {
-		er.sdk.Logger.WithName("[SUBSCRIBER]").Error(ackErr, errors.ErrMsgAck)
+		er.sdk.Logger.WithName(_subscriberLoggerName).Error(ackErr, errors.ErrMsgAck)
 	}
 }
 
 func (er *Runner) processRunnerError(msg *nats.Msg, errMsg, requestID string) {
 	ackErr := msg.Ack()
 	if ackErr != nil {
-		er.sdk.Logger.WithName("[SUBSCRIBER]").Error(ackErr, errors.ErrMsgAck)
+		er.sdk.Logger.WithName(_subscriberLoggerName).Error(ackErr, errors.ErrMsgAck)
 	}
 
-	er.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info(errMsg)
+	er.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info(errMsg)
 	er.publishError(requestID, errMsg)
 }
 
@@ -149,7 +151,7 @@ func (er *Runner) newRequestMessage(data []byte) (*kai.KaiNatsMessage, error) {
 	if common.IsCompressed(data) {
 		data, err = common.UncompressData(data)
 		if err != nil {
-			er.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error reading compressed message")
+			er.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error reading compressed message")
 			return nil, err
 		}
 	}
@@ -174,23 +176,23 @@ func (er *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel strin
 
 	outputMsg, err := proto.Marshal(responseMsg)
 	if err != nil {
-		er.sdk.Logger.WithName("[SUBSCRIBER]").
+		er.sdk.Logger.WithName(_subscriberLoggerName).
 			Error(err, "Error generating output result because handler result is not a serializable Protobuf")
 		return
 	}
 
 	outputMsg, err = er.prepareOutputMessage(outputMsg)
 	if err != nil {
-		er.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error preparing output message")
+		er.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error preparing output message")
 		return
 	}
 
-	er.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Publishing response",
+	er.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info("Publishing response",
 		"Subject", outputSubject)
 
 	_, err = er.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
-		er.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error publishing output")
+		er.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error publishing output")
 	}
 }
 
@@ -208,7 +210,7 @@ func (er *Runner) getOutputSubject(channel string) string {
 func (er *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 	maxSize, err := er.getMaxMessageSize()
 	if err != nil {
-		return nil, fmt.Errorf("error getting max message size: %s", err)
+		return nil, fmt.Errorf("error getting max message size: %s", err) //nolint:goerr113 // error is wrapped
 	}
 
 	lenMsg := int64(len(msg))
@@ -223,7 +225,7 @@ func (er *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 
 	lenOutMsg := int64(len(outMsg))
 	if lenOutMsg > maxSize {
-		er.sdk.Logger.WithName("[SUBSCRIBER]").V(1).
+		er.sdk.Logger.WithName(_subscriberLoggerName).V(1).
 			Info("Compressed message exceeds maximum size allowed",
 				"Current message size", sizeInMB(lenOutMsg),
 				"Compressed message size", sizeInMB(maxSize))
@@ -231,7 +233,7 @@ func (er *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 		return nil, errors.ErrMessageToBig
 	}
 
-	er.sdk.Logger.WithName("[SUBSCRIBER]").Info("Message prepared",
+	er.sdk.Logger.WithName(_subscriberLoggerName).Info("Message prepared",
 		"Current message size", sizeInMB(lenOutMsg),
 		"Compressed message size", sizeInMB(maxSize))
 

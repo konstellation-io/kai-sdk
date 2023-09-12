@@ -10,6 +10,8 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
+const _triggerLoggerName = "[TRIGGER]"
+
 type RunnerFunc func(tr *Runner, sdk sdk.KaiSDK)
 
 type ResponseHandler func(sdk sdk.KaiSDK, response *anypb.Any) error
@@ -25,11 +27,11 @@ type Runner struct {
 	finalizer        common.Finalizer
 }
 
-var wg sync.WaitGroup
+var wg sync.WaitGroup //nolint:gochecknoglobals // WaitGroup is used to wait for goroutines to finish
 
 func NewTriggerRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
 	return &Runner{
-		sdk:              sdk.NewKaiSDK(logger.WithName("[TRIGGER]"), ns, js),
+		sdk:              sdk.NewKaiSDK(logger.WithName(_triggerLoggerName), ns, js),
 		nats:             ns,
 		jetstream:        js,
 		responseChannels: sync.Map{},

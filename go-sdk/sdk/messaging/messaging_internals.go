@@ -3,13 +3,14 @@ package messaging
 import (
 	"fmt"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
 	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
 )
 
@@ -28,7 +29,7 @@ func (ms Messaging) getOptionalString(values []string) string {
 func (ms Messaging) publishMsg(msg proto.Message, requestID string, msgType kai.MessageType, channel string) error {
 	payload, err := anypb.New(msg)
 	if err != nil {
-		return fmt.Errorf("the handler result is not a valid protobuf: %s", err)
+		return fmt.Errorf("the handler result is not a valid protobuf: %s", err) //nolint:goerr113 // error is wrapped
 	}
 
 	if requestID == "" {
@@ -111,7 +112,7 @@ func (ms Messaging) getOutputSubject(channel string) string {
 func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 	maxSize, err := ms.messagingUtils.GetMaxMessageSize()
 	if err != nil {
-		return nil, fmt.Errorf("error getting max message size: %s", err)
+		return nil, fmt.Errorf("error getting max message size: %s", err) //nolint:goerr113 // error is wrapped
 	}
 
 	lenMsg := int64(len(msg))

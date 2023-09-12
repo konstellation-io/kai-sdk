@@ -16,8 +16,3 @@ func NewCentralizedConfigurationBuilder(logger logr.Logger,
 		processKv:  processKv,
 	}, nil
 }
-
-func InitKvStoresFunc(logger logr.Logger, js nats.JetStreamContext) (nats.KeyValue,
-	nats.KeyValue, nats.KeyValue, error) {
-	return initKVStores(logger, js)
-}

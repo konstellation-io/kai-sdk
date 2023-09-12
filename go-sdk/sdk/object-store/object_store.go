@@ -79,7 +79,6 @@ func (ob ObjectStore) List(regexp ...string) ([]string, error) {
 		}
 	}
 
-	//nolint: gomnd
 	ob.logger.V(2).Info("Files successfully listed", "Object store", ob.objectStoreName)
 
 	return response, nil
@@ -166,7 +165,6 @@ func (ob ObjectStore) Purge(regexp ...string) error {
 		}
 	}
 
-	//nolint: gomnd
 	ob.logger.V(2).Info("Files successfully purged", "Object Store", ob.objectStoreName)
 
 	return nil
