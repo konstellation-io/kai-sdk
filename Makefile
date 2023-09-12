@@ -17,7 +17,7 @@ generate_mocks: ## Generate mocks
 
 .PHONY: gotidy
 gotidy: ## Run golangci-lint, goimports and gofmt
-	cd go-sdk && golangci-lint run ./... && goimports -w  . && gofmt -s -w . && cd -
+	cd go-sdk && golangci-lint run ./... && goimports -w  . && gofmt -s -w -e -d . && cd -
 
 .PHONY: gotest
 gotest: ## Run tests
