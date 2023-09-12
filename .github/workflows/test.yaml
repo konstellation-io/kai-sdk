@@ -61,8 +61,11 @@ jobs:
           go-version: 1.20.x
       - name: Run linters Go
         if: matrix.changes == 'true' && matrix.component == 'go-sdk'
-        run: make gotidy
-        working-directory: .
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          working-directory: ./${{ matrix.component }}
+          args: --timeout=5m
       - name: Install Python
         if: matrix.changes == 'true' && matrix.component == 'py-sdk'
         uses: actions/setup-python@v4
