@@ -61,7 +61,7 @@ jobs:
           go-version: 1.20.x
       - name: Run linters Go
         if: matrix.changes == 'true' && matrix.component == 'go-sdk'
-        run: make golint
+        run: make gotidy
         working-directory: .
       - name: Install Python
         if: matrix.changes == 'true' && matrix.component == 'py-sdk'
