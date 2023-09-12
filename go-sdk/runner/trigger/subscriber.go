@@ -53,8 +53,6 @@ func (tr *Runner) startSubscriber() {
 			"Subject", subject, "Queue group", consumerName)
 	}
 
-	defer wg.Done()
-
 	// Handle sigterm and await termChan signal
 	termChan := make(chan os.Signal, 1)
 	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM)
@@ -77,6 +75,7 @@ func (tr *Runner) startSubscriber() {
 	}
 
 	tr.sdk.Logger.WithName("[SUBSCRIBER]").Info("Unsubscribed from all subjects")
+	wg.Done()
 }
 
 func (tr *Runner) processMessage(msg *nats.Msg) {
