@@ -66,13 +66,15 @@ type centralizedConfig interface {
 	DeleteConfig(key string, scope msg.Scope) error
 }
 
-// TODO add metrics interface
-//
+//nolint:godox // Task to be done.
+// TODO add metrics interface.
+
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock
 type measurements interface{}
 
-// TODO add storage interface
-//
+//nolint:godox // Task to be done.
+// TODO add storage interface.
+
 //go:generate mockery --name storage --output ../mocks --filename storage_mock.go --structname StorageMock
 type storage interface{}
 

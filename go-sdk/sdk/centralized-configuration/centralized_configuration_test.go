@@ -55,7 +55,7 @@ func (s *SdkCentralizedConfigurationTestSuite) SetupTest() {
 	s.processKv = *mocks.NewKeyValueMock(s.T())
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ExpectOK() {
+func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfig_InitializeConfigurationScopes_ExpectOK() {
 	// Given
 	viper.SetDefault(productBucketProp, productBucketVal)
 	viper.SetDefault(workflowBucketProp, workflowBucketVal)
@@ -73,7 +73,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Init
 	s.NotNil(conf)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ProductConfigNotExist_ExpectError() {
+func (s *SdkCentralizedConfigurationTestSuite) InitializeConfigScopes_ProductConfigNotExist_ExpectError() {
 	// Given
 	viper.SetDefault(productBucketProp, wrongProductBucketVal)
 	viper.SetDefault(workflowBucketProp, wrongWorkflowBucketVal)
@@ -90,7 +90,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Init
 	s.Nil(config)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_WorkflowConfigNotExist_ExpectError() {
+func (s *SdkCentralizedConfigurationTestSuite) InitializeConfigScopes_WorkflowConfigNotExist_ExpectError() {
 	// Given
 	viper.SetDefault(productBucketProp, wrongProductBucketVal)
 	viper.SetDefault(workflowBucketProp, wrongWorkflowBucketVal)
@@ -108,7 +108,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Init
 	s.Nil(config)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ProcessConfigNotExist_ExpectError() {
+func (s *SdkCentralizedConfigurationTestSuite) InitializeConfigScopes_ProcessConfigNotExist_ExpectError() {
 	// Given
 	viper.SetDefault(productBucketProp, wrongProductBucketVal)
 	viper.SetDefault(workflowBucketProp, wrongWorkflowBucketVal)
@@ -126,7 +126,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Init
 	s.Nil(config)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_DeleteConfigOnProductScope_ExpectOK() {
+func (s *SdkCentralizedConfigurationTestSuite) DeleteConfigOnProductScope_ExpectOK() {
 	// Given
 	s.productKv.On("Delete", "key1").Return(nil)
 
@@ -147,6 +147,6 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 	s.productKv.AssertNumberOfCalls(s.T(), "Delete", 1)
 }
 
-func TestSdkCentralizedConfigurationTestSuite(t *testing.T) {
+func TestSdkCentralizedConfigTestSuite(t *testing.T) {
 	suite.Run(t, new(SdkCentralizedConfigurationTestSuite))
 }

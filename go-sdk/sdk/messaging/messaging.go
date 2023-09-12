@@ -53,11 +53,15 @@ func (ms Messaging) SendAnyWithRequestID(response *anypb.Any, requestID string, 
 }
 
 // TODO remove this.
+//
+//nolint:godox // Task to be done.
 func (ms Messaging) SendEarlyReply(response proto.Message, channelOpt ...string) error {
 	return ms.publishMsg(response, ms.requestMessage.GetRequestId(), kai.MessageType_EARLY_REPLY, ms.getOptionalString(channelOpt))
 }
 
 // TODO remove this.
+//
+//nolint:godox // Task to be done.
 func (ms Messaging) SendEarlyExit(response proto.Message, channelOpt ...string) error {
 	return ms.publishMsg(response, ms.requestMessage.GetRequestId(), kai.MessageType_EARLY_EXIT, ms.getOptionalString(channelOpt))
 }
@@ -79,11 +83,15 @@ func (ms Messaging) IsMessageError() bool {
 }
 
 // TODO remove this.
+//
+//nolint:godox // Task to be done.
 func (ms Messaging) IsMessageEarlyReply() bool {
 	return ms.requestMessage.MessageType == kai.MessageType_EARLY_REPLY
 }
 
 // TODO remove this.
+//
+//nolint:godox // Task to be done.
 func (ms Messaging) IsMessageEarlyExit() bool {
 	return ms.requestMessage.MessageType == kai.MessageType_EARLY_EXIT
 }

@@ -75,12 +75,13 @@ func generateRandomString(sizeInBytes int) string {
 	randomBytes := make([]byte, sizeInBytes)
 
 	for i := 0; i < sizeInBytes; i++ {
-		randomBytes[i] = validChars[rand.Intn(validCharCount)] //nolint:gosec
+		randomBytes[i] = validChars[rand.Intn(validCharCount)]
 	}
 
 	return string(randomBytes)
 }
 
+//nolint:unparam // false positive
 func getOutputMessage(requestID string, msg interface{},
 	errorMessage, fromNode string, messageType kai.MessageType) []byte {
 	var payload *anypb.Any

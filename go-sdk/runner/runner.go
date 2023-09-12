@@ -54,7 +54,7 @@ func initializeConfiguration() {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 
-	err := viper.ReadInConfig()
+	err := viper.ReadInConfig() //nolint:ineffassign,staticcheck // err is used in the next if
 
 	viper.SetConfigName("app")
 	viper.SetConfigType("yaml")
@@ -118,7 +118,7 @@ func getLogger() logr.Logger {
 		panic("The logger could not be initialized")
 	}
 
-	defer logger.Sync() //nolint: errcheck
+	defer logger.Sync() //nolint:errcheck // Ignore error
 
 	log = zapr.NewLogger(logger)
 
