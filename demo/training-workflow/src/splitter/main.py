@@ -6,6 +6,15 @@ from runner.runner import Runner
 from sdk import kai_sdk as sdk
 from proto.training_pb2 import Splitter
 
+
+import random
+import string
+
+def get_random_string(length: int) -> str:
+    letters = string.ascii_lowercase
+    return (''.join(random.choice(letters) for _ in range(length)))
+
+
 async def initializer(sdk: sdk.KaiSDK):
     logger = sdk.logger.bind(context="[SPLITTER INITIALIZER]")
     logger.info("starting process...")
@@ -14,13 +23,13 @@ async def initializer(sdk: sdk.KaiSDK):
 async def handler(sdk: sdk.KaiSDK, response: Any):
     logger = sdk.logger.bind(context="[SPLITTER HANDLER]")
     logger.info("splitting task received")
-    input_proto = Splitter()
+    input_proto = Splitter() # TODO 
 
     response.Unpack(input_proto)
     logger.info(f"received repo url {input_proto.repo_url}")
 
     output = Splitter(
-        training_id=input_proto.training_id,
+        training_id=get_random_string(random.randint(10, 20)),
         repo_url=input_proto.repo_url,
     )
     logger.info(f"sending message {output}")

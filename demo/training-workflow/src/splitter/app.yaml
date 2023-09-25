@@ -7,8 +7,8 @@ metadata:
 
 nats:
   url: "nats://localhost:4222"
-  stream: task
-  inputs: 
+  stream: splitter
+  inputs:
     - github-trigger
   output: splitter.py
 
@@ -19,3 +19,5 @@ centralized_configuration:
     bucket: workflow
   process:
     bucket: process
+    config:
+      test1: value1
