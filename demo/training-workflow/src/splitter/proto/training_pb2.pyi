@@ -30,7 +30,12 @@ class Splitter(google.protobuf.message.Message):
         training_id: builtins.str = ...,
         repo_url: builtins.str = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["repo_url", b"repo_url", "training_id", b"training_id"]) -> None: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "repo_url", b"repo_url", "training_id", b"training_id"
+        ],
+    ) -> None: ...
 
 global___Splitter = Splitter
 
@@ -48,7 +53,12 @@ class Training(google.protobuf.message.Message):
         training_id: builtins.str = ...,
         model_id: builtins.str = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["model_id", b"model_id", "training_id", b"training_id"]) -> None: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "model_id", b"model_id", "training_id", b"training_id"
+        ],
+    ) -> None: ...
 
 global___Training = Training
 
@@ -60,14 +70,23 @@ class Validation(google.protobuf.message.Message):
     MODELS_SCORES_FIELD_NUMBER: builtins.int
     training_id: builtins.str
     @property
-    def models_scores(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ModelScore]: ...
+    def models_scores(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[
+        global___ModelScore
+    ]: ...
     def __init__(
         self,
         *,
         training_id: builtins.str = ...,
         models_scores: collections.abc.Iterable[global___ModelScore] | None = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["models_scores", b"models_scores", "training_id", b"training_id"]) -> None: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "models_scores", b"models_scores", "training_id", b"training_id"
+        ],
+    ) -> None: ...
 
 global___Validation = Validation
 
@@ -85,6 +104,11 @@ class ModelScore(google.protobuf.message.Message):
         model_id: builtins.str = ...,
         score: builtins.str = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["model_id", b"model_id", "score", b"score"]) -> None: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "model_id", b"model_id", "score", b"score"
+        ],
+    ) -> None: ...
 
 global___ModelScore = ModelScore

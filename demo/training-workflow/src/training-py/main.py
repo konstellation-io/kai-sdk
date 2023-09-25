@@ -1,18 +1,17 @@
 import asyncio
-
-from google.protobuf.any_pb2 import Any
-from google.protobuf.wrappers_pb2 import StringValue
-from runner.runner import Runner
-from sdk import kai_sdk as sdk
-from proto.training_pb2 import Splitter, Training
-
-
 import random
 import string
 
+from google.protobuf.any_pb2 import Any
+from google.protobuf.wrappers_pb2 import StringValue
+from proto.training_pb2 import Splitter, Training
+from runner.runner import Runner
+from sdk import kai_sdk as sdk
+
+
 def get_random_string(length: int) -> str:
     letters = string.ascii_lowercase
-    return (''.join(random.choice(letters) for _ in range(length)))
+    return "".join(random.choice(letters) for _ in range(length))
 
 
 async def initializer(sdk: sdk.KaiSDK):
@@ -30,7 +29,7 @@ async def handler(sdk: sdk.KaiSDK, response: Any):
 
     output = Training(
         training_id=input_proto.training_id,
-        model_id=get_random_string(random.randint(10, 20))
+        model_id=get_random_string(random.randint(10, 20)),
     )
     logger.info(f"sending message {output}")
 
@@ -45,7 +44,9 @@ def finalizer(sdk: sdk.KaiSDK):
 
 async def init():
     runner = await Runner().initialize()
-    await runner.task_runner().with_initializer(initializer).with_handler(handler).with_finalizer(finalizer).run()
+    await runner.task_runner().with_initializer(initializer).with_handler(
+        handler
+    ).with_finalizer(finalizer).run()
 
 
 if __name__ == "__main__":

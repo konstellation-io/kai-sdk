@@ -1,18 +1,17 @@
 import asyncio
-
-from google.protobuf.any_pb2 import Any
-from google.protobuf.wrappers_pb2 import StringValue
-from runner.runner import Runner
-from sdk import kai_sdk as sdk
-from proto.training_pb2 import Splitter
-
-
 import random
 import string
 
+from google.protobuf.any_pb2 import Any
+from google.protobuf.wrappers_pb2 import StringValue
+from proto.training_pb2 import Splitter
+from runner.runner import Runner
+from sdk import kai_sdk as sdk
+
+
 def get_random_string(length: int) -> str:
     letters = string.ascii_lowercase
-    return (''.join(random.choice(letters) for _ in range(length)))
+    return "".join(random.choice(letters) for _ in range(length))
 
 
 async def initializer(sdk: sdk.KaiSDK):
@@ -23,7 +22,7 @@ async def initializer(sdk: sdk.KaiSDK):
 async def handler(sdk: sdk.KaiSDK, response: Any):
     logger = sdk.logger.bind(context="[SPLITTER HANDLER]")
     logger.info("splitting task received")
-    input_proto = Splitter() # TODO 
+    input_proto = Splitter()  # TODO
 
     response.Unpack(input_proto)
     logger.info(f"received repo url {input_proto.repo_url}")
@@ -45,7 +44,9 @@ def finalizer(sdk: sdk.KaiSDK):
 
 async def init():
     runner = await Runner().initialize()
-    await runner.task_runner().with_initializer(initializer).with_handler(handler).with_finalizer(finalizer).run()
+    await runner.task_runner().with_initializer(initializer).with_handler(
+        handler
+    ).with_finalizer(finalizer).run()
 
 
 if __name__ == "__main__":
