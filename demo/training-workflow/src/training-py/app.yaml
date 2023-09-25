@@ -8,7 +8,8 @@ metadata:
 nats:
   url: "nats://localhost:4222"
   stream: task
-  inputs: splitter.py
+  inputs: 
+    - splitter.py
   output: training-py
 
 centralized_configuration:
