@@ -1,0 +1,18 @@
+version: 'v1.0.0'
+description: 'Product for training porpouses'
+workflows:
+  - name: 'training-workflow'
+    type: training
+    processes:
+      - name: 'validation'
+        image: 'konstellation/training-validation:latest'
+        type: 'trigger'
+        resourceLimits:
+          CPU:
+            request: 100m
+            limit: 200m
+          memory:
+            request: 100M
+            limit: 200M
+        subscriptions:
+          - 'TODO'
