@@ -1,0 +1,20 @@
+metadata:
+  product_id: Task process
+  workflow_id: Task workflow
+  process_id: Task process
+  version_id: Task version v1.0.0
+  base_path: "/Some/Path"
+
+nats:
+  url: "nats://localhost:4222"
+  stream: task
+  inputs: github-trigger
+  output: splitter.py
+
+centralized_configuration:
+  product:
+    bucket: product
+  workflow:
+    bucket: workflow
+  process:
+    bucket: process
