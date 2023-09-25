@@ -4,16 +4,7 @@ from google.protobuf.any_pb2 import Any
 from google.protobuf.wrappers_pb2 import StringValue
 from runner.runner import Runner
 from sdk import kai_sdk as sdk
-from proto.training_pb2 import Training, Splitter
-
-
-import random
-import string
-
-def get_random_string(length: int) -> str:
-    letters = string.ascii_lowercase
-    return (''.join(random.choice(letters) for _ in range(length)))
-
+from proto.training_pb2 import Splitter
 
 async def initializer(sdk: sdk.KaiSDK):
     logger = sdk.logger.bind(context="[SPLITTER INITIALIZER]")
@@ -22,19 +13,20 @@ async def initializer(sdk: sdk.KaiSDK):
 
 async def handler(sdk: sdk.KaiSDK, response: Any):
     logger = sdk.logger.bind(context="[SPLITTER HANDLER]")
+    logger.info("splitting task received")
     input_proto = Splitter()
 
     response.Unpack(input_proto)
-    logger.info(f"received message {input_proto.repo_url}")
+    logger.info(f"received repo url {input_proto.repo_url}")
 
-    output = Training(
+    output = Splitter(
         training_id=input_proto.training_id,
-        model_id=get_random_string(random.randint(10, 20))
+        repo_url=input_proto.repo_url,
     )
     logger.info(f"sending message {output}")
 
     await sdk.messaging.send_output(StringValue(value=output))
-    logger.info("splitted task received")
+    logger.info("splitting task done")
 
 
 def finalizer(sdk: sdk.KaiSDK):
