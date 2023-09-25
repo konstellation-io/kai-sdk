@@ -21,5 +21,5 @@ message Validation {
 
 message ModelScore {
   string model_id = 1;
-  string score = 2;
+  int32 score = 2;
 }

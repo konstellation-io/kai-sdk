@@ -78,12 +78,12 @@ class ModelScore(google.protobuf.message.Message):
     MODEL_ID_FIELD_NUMBER: builtins.int
     SCORE_FIELD_NUMBER: builtins.int
     model_id: builtins.str
-    score: builtins.str
+    score: builtins.int
     def __init__(
         self,
         *,
         model_id: builtins.str = ...,
-        score: builtins.str = ...,
+        score: builtins.int = ...,
     ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["model_id", b"model_id", "score", b"score"]) -> None: ...
 
