@@ -3,6 +3,7 @@ import random
 import string
 
 from google.protobuf.any_pb2 import Any
+from google.protobuf.struct_pb2 import Struct
 from google.protobuf.wrappers_pb2 import StringValue
 from proto.training_pb2 import Splitter
 from runner.runner import Runner
@@ -22,18 +23,18 @@ async def initializer(sdk: sdk.KaiSDK):
 async def handler(sdk: sdk.KaiSDK, response: Any):
     logger = sdk.logger.bind(context="[SPLITTER HANDLER]")
     logger.info("splitting task received")
-    input_proto = Splitter()  # TODO
+    input_proto = Struct()
 
     response.Unpack(input_proto)
-    logger.info(f"received repo url {input_proto.repo_url}")
+    logger.info(f"received github trigger event {input_proto}")
 
     output = Splitter(
         training_id=get_random_string(random.randint(10, 20)),
-        repo_url=input_proto.repo_url,
+        repo_url=input_proto.eventUrl,
     )
     logger.info(f"sending message {output}")
 
-    await sdk.messaging.send_output(StringValue(value=output))
+    await sdk.messaging.send_output(StringValue(value=output.SerializeToString()))
     logger.info("splitting task done")
 
 

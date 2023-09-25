@@ -33,7 +33,7 @@ async def handler(sdk: sdk.KaiSDK, response: Any):
     )
     logger.info(f"sending message {output}")
 
-    await sdk.messaging.send_output(StringValue(value=output))
+    await sdk.messaging.send_output(StringValue(value=output.SerializeToString()))
     logger.info("training task done")
 
 
