@@ -1,11 +1,11 @@
 version: 'v1.0.0'
-description: 'Product for training porpouses'
+description: 'Training workflow github event based'
 workflows:
   - name: 'training-workflow'
     type: training
     processes:
-      - name: 'validation'
-        image: 'konstellation/training-validation:latest'
+      - name: 'github-trigger'
+        image: 'konstellation/github-trigger:latest'
         type: 'trigger'
         resourceLimits:
           CPU:
@@ -14,5 +14,69 @@ workflows:
           memory:
             request: 100M
             limit: 200M
+
+      - name: 'splitter'
+        image: 'konstellation/splitter:latest'
+        type: 'task'
+        resourceLimits:
+          CPU:
+            request: 100m
+            limit: 200m
+          memory:
+            request: 100M
+            limit: 200M
         subscriptions:
-          - 'TODO'
+          - github-trigger
+
+      - name: 'training-go'
+        image: 'konstellation/training-go:latest'
+        type: 'task'
+        resourceLimits:
+          CPU:
+            request: 100m
+            limit: 200m
+          memory:
+            request: 100M
+            limit: 200M
+        subscriptions:
+          - splitter.go
+
+      - name: 'training-py'
+        image: 'konstellation/training-py:latest'
+        type: 'task'
+        resourceLimits:
+          CPU:
+            request: 100m
+            limit: 200m
+          memory:
+            request: 100M
+            limit: 200M
+        subscriptions:
+          - splitter.py
+
+      - name: 'validation'
+        image: 'konstellation/training-validation:latest'
+        type: 'task'
+        resourceLimits:
+          CPU:
+            request: 100m
+            limit: 200m
+          memory:
+            request: 100M
+            limit: 200M
+        subscriptions:
+          - 'training-go'
+          - 'training-py'
+
+      - name: 'exit'
+        image: 'konstellation/training-exit:latest'
+        type: 'task'
+        resourceLimits:
+          CPU:
+            request: 100m
+            limit: 200m
+          memory:
+            request: 100M
+            limit: 200M
+        subscriptions:
+          - 'validation'
