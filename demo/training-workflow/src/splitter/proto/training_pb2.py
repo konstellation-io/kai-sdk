@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0etraining.proto\x12\x04main\"1\n\x08Splitter\x12\x13\n\x0btraining_id\x18\x01 \x01(\t\x12\x10\n\x08repo_url\x18\x02 \x01(\t\"1\n\x08Training\x12\x13\n\x0btraining_id\x18\x01 \x01(\t\x12\x10\n\x08model_id\x18\x02 \x01(\t\"J\n\nValidation\x12\x13\n\x0btraining_id\x18\x01 \x01(\t\x12\'\n\rmodels_scores\x18\x02 \x03(\x0b\x32\x10.main.ModelScore\"-\n\nModelScore\x12\x10\n\x08model_id\x18\x01 \x01(\t\x12\r\n\x05score\x18\x02 \x01(\tB\tZ\x07./protob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0etraining.proto\x12\x04main\"1\n\x08Splitter\x12\x13\n\x0btraining_id\x18\x01 \x01(\t\x12\x10\n\x08repo_url\x18\x02 \x01(\t\"1\n\x08Training\x12\x13\n\x0btraining_id\x18\x01 \x01(\t\x12\x10\n\x08model_id\x18\x02 \x01(\t\"J\n\nValidation\x12\x13\n\x0btraining_id\x18\x01 \x01(\t\x12\'\n\rmodels_scores\x18\x02 \x03(\x0b\x32\x10.main.ModelScore\"-\n\nModelScore\x12\x10\n\x08model_id\x18\x01 \x01(\t\x12\r\n\x05score\x18\x02 \x01(\x05\x42\tZ\x07./protob\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'training_pb2', globals())
