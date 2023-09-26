@@ -36,10 +36,12 @@ class TriggerSubscriber:
         process = self.trigger_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
         ack_wait_time = timedelta(hours=ACK_TIME)
+        if isinstance(input_subjects, str):
+            input_subjects = input_subjects.replace(" ", "").split(",")
         if isinstance(input_subjects, list):
             for subject in input_subjects:
                 subject_ = subject.replace(".", "-")
-                consumer_name = f"{subject_}-{process}"
+                consumer_name = f"{subject_}-{process}" if process else subject_
 
                 self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
                 try:
