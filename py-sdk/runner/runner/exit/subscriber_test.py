@@ -19,6 +19,8 @@ from sdk.metadata.metadata import Metadata
 
 NATS_INPUT = "nats.inputs"
 SUBJECT = "test.subject"
+SUBJECT_LIST = [SUBJECT, "test.subject2"]
+SUBJECT_LIST_STR = ",".join(SUBJECT_LIST)
 
 
 @pytest.fixture(scope="function")
@@ -62,8 +64,8 @@ def m_msg() -> Msg:
     return m_msg
 
 
-async def test_start_ok(m_exit_subscriber):
-    v.set(NATS_INPUT, [SUBJECT])
+async def test_start_ok_str_input(m_exit_subscriber):
+    v.set(NATS_INPUT, SUBJECT)
     consumer_name = f"{SUBJECT.replace('.', '-')}-test-process-id"
     m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test process id")
     cb_mock = m_exit_subscriber._process_message = AsyncMock()
@@ -81,6 +83,77 @@ async def test_start_ok(m_exit_subscriber):
         manual_ack=True,
     )
     assert m_exit_subscriber.subscriptions == [m_exit_subscriber.exit_runner.js.subscribe.return_value]
+
+
+async def test_start_ok_list_input(m_exit_subscriber):
+    v.set(NATS_INPUT, SUBJECT_LIST)
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test process id")
+    cb_mock = m_exit_subscriber._process_message = AsyncMock()
+    m_exit_subscriber.exit_runner.js.subscribe = AsyncMock()
+
+    await m_exit_subscriber.start()
+
+    assert m_exit_subscriber.exit_runner.js.subscribe.called
+    consumer_name = f"{SUBJECT_LIST[0].replace('.', '-')}-test-process-id"
+    consumer_name2 = f"{SUBJECT_LIST[1].replace('.', '-')}-test-process-id"
+    assert m_exit_subscriber.exit_runner.js.subscribe.call_args_list == [
+        call(
+            subject=SUBJECT_LIST[0],
+            queue=consumer_name,
+            durable=consumer_name,
+            cb=cb_mock,
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            manual_ack=True,
+        ),
+        call(
+            subject=SUBJECT_LIST[1],
+            queue=consumer_name2,
+            durable=consumer_name2,
+            cb=cb_mock,
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            manual_ack=True,
+        ),
+    ]
+    assert m_exit_subscriber.subscriptions == [
+        m_exit_subscriber.exit_runner.js.subscribe.return_value,
+        m_exit_subscriber.exit_runner.js.subscribe.return_value,
+    ]
+
+
+async def test_start_ok_str_list_input(m_exit_subscriber):
+    v.set(NATS_INPUT, SUBJECT_LIST_STR)
+    input_subjects = SUBJECT_LIST_STR.replace(" ", "").split(",")
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test process id")
+    cb_mock = m_exit_subscriber._process_message = AsyncMock()
+    m_exit_subscriber.exit_runner.js.subscribe = AsyncMock()
+
+    await m_exit_subscriber.start()
+
+    assert m_exit_subscriber.exit_runner.js.subscribe.called
+    consumer_name = f"{input_subjects[0].replace('.', '-')}-test-process-id"
+    consumer_name2 = f"{input_subjects[1].replace('.', '-')}-test-process-id"
+    assert m_exit_subscriber.exit_runner.js.subscribe.call_args_list == [
+        call(
+            subject=input_subjects[0],
+            queue=consumer_name,
+            durable=consumer_name,
+            cb=cb_mock,
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            manual_ack=True,
+        ),
+        call(
+            subject=input_subjects[1],
+            queue=consumer_name2,
+            durable=consumer_name2,
+            cb=cb_mock,
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            manual_ack=True,
+        ),
+    ]
+    assert m_exit_subscriber.subscriptions == [
+        m_exit_subscriber.exit_runner.js.subscribe.return_value,
+        m_exit_subscriber.exit_runner.js.subscribe.return_value,
+    ]
 
 
 async def test_start_nats_subscribing_ko(m_exit_subscriber):

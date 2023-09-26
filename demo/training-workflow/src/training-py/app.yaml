@@ -1,0 +1,13 @@
+nats:
+  url: "nats://localhost:4222"
+  stream: training-py
+  inputs: splitter.py
+  output: training.py
+
+centralized_configuration:
+  product:
+    bucket: product
+  workflow:
+    bucket: workflow
+  process:
+    bucket: process

@@ -30,10 +30,11 @@ class MessagingUtils(MessagingUtilsABC):
     logger: loguru.Logger = logger.bind(context="[MESSAGING UTILS]")
 
     async def get_max_message_size(self) -> int:
+        stream_name = v.get_string("nats.stream")
         try:
-            stream_info = await self.js.stream_info(v.get_string("nats.stream"))
+            stream_info = await self.js.stream_info(stream_name)
         except Exception as e:
-            self.logger.warning(f"failed getting stream info: {e}")
+            self.logger.warning(f"failed getting info from stream {stream_name}: {e}")
             raise FailedGettingMaxMessageSizeError(error=e)
 
         stream_max_size = stream_info.config.max_msg_size
