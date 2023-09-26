@@ -44,7 +44,6 @@ class ExitSubscriber:
                 subject_ = subject.replace(".", "-")
                 consumer_name = f"{subject_}-{process}" if process else subject_
 
-
                 self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
                 try:
                     sub = await self.exit_runner.js.subscribe(
