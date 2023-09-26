@@ -26,5 +26,7 @@ USER ${USER}
 WORKDIR /app
 
 COPY main.py process/main.py
+COPY proto/training_pb2.py process/proto/training_pb2.py
+COPY proto/training_pb2.pyi process/proto/training_pb2.pyi
 
 CMD ["python","/app/process/main.py"]
