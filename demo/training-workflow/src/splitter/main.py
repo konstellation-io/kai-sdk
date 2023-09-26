@@ -30,11 +30,11 @@ async def handler(sdk: sdk.KaiSDK, response: Any):
 
     output = Splitter(
         training_id=get_random_string(random.randint(10, 20)),
-        repo_url=input_proto.eventUrl,
+        repo_url=input_proto.fields["eventUrl"].string_value,
     )
     logger.info(f"sending message {output}")
 
-    await sdk.messaging.send_output(StringValue(value=output.SerializeToString()))
+    await sdk.messaging.send_output(output)
     logger.info("splitting task done")
 
 
