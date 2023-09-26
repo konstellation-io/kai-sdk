@@ -2,8 +2,8 @@ nats:
   url: "nats://localhost:4222"
   stream: training
   inputs:
-    - splitter-py
-  output: training-py
+    - splitter.py
+  output: training.py
 
 centralized_configuration:
   product:
