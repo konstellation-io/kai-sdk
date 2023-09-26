@@ -40,7 +40,7 @@ class TaskSubscriber:
         if isinstance(input_subjects, list):
             for subject in input_subjects:
                 subject_ = subject.replace(".", "-")
-                consumer_name = f"{subject_}-{process}"
+                consumer_name = f"{subject_}-{process}" if process else subject_
 
                 self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
                 try:
