@@ -1,6 +1,6 @@
 module validation
 
-go 1.18
+go 1.20
 
 require (
 	github.com/konstellation-io/kai-sdk/go-sdk v1.1.0
