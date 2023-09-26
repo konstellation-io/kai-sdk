@@ -768,7 +768,7 @@ description = "KAI SDK's implementation in Python"
 optional = false
 python-versions = "3.11.5"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 loguru = "0.7.0"
@@ -777,8 +777,11 @@ protobuf = "4.23.4"
 vyper-config = "1.1.1"
 
 [package.source]
-type = "directory"
-url = "../sdk"
+type = "git"
+url = "https://github.com/konstellation-io/kai-sdk.git"
+reference = "HEAD"
+resolved_reference = "1db8536b73da11837a351e220cfac9404b96c4b8"
+subdirectory = "py-sdk/sdk"
 
 [[package]]
 name = "six"
@@ -952,4 +955,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.5"
-content-hash = "36b487bcdbeecae7f3aab36747e25e49eef64e605eded03917bbc7363c208602"
+content-hash = "38a568db5f1864766b15de8a3825653fb1696714623b50eb3a3167fa5b481364"
