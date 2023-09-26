@@ -131,7 +131,6 @@ class Messaging(MessagingABC):
             self.logger.debug(f"failed packing message: {e}")
             return
 
-        request_id = request_id if request_id else self.request_msg.request_id
         if not request_id:
             request_id = str(uuid.uuid4())
 
