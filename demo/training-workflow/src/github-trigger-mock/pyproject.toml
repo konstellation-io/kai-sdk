@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "github-trigger-mock"
+version = "0.1.0"
+description = ""
+authors = ["Intelygenz - AIO Team"]
+maintainers = ["Intelygenz - AIO Team"]
+
+[tool.poetry.dependencies]
+python = "3.11.5"
+nats-py = "2.3.0"
+protobuf = "4.23.4"
+loguru = "0.7.0"
+vyper-config = "1.1.1"
+sdk = {path = "../../../../py-sdk/sdk", develop = true}
+runner = {path = "../../../../py-sdk/runner", develop = true}
+
+[tool.poetry.group.dev.dependencies]
+ipdb = "0.13.13"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
