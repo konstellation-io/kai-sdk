@@ -1,25 +1,32 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"math/rand"
+	"strconv"
+	"strings"
 	localProto "validation/proto"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
+	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
-)
-
-var (
-	modelScores map[string][]*localProto.ModelScore
 )
 
 func main() {
 	runner.
 		NewRunner().
 		TaskRunner().
+		WithInitializer(initializer).
 		WithHandler(defaultHandler).
 		Run()
+}
+
+func initializer(sdk sdk.KaiSDK) {
+	sdk.Logger.Info("Go validation is ready!")
 }
 
 func defaultHandler(sdk sdk.KaiSDK, response *anypb.Any) error {
@@ -31,21 +38,31 @@ func defaultHandler(sdk sdk.KaiSDK, response *anypb.Any) error {
 		return err
 	}
 
+	sdk.Logger.Info("Received message", "trainingID", trainingResult.TrainingId)
+
 	result := validateModel(&sdk, trainingResult.ModelId)
 
-	ok, scores := mergeScore(trainingResult.TrainingId, result)
+	scores, err := mergeScore(&sdk, trainingResult.TrainingId, result)
+	if err != nil {
+		sdk.Logger.Error(err, "Error merging scores")
+		return err
+	}
 
-	if ok {
+	if scores != nil {
+		sdk.Logger.Info("Recieved 2 results for same training, sending output", "trainingID", trainingResult.TrainingId)
+
 		result := &localProto.Validation{
 			TrainingId:   trainingResult.TrainingId,
 			ModelsScores: scores,
 		}
+
 		err = sdk.Messaging.SendOutput(result)
 		if err != nil {
 			sdk.Logger.Error(err, "Error sending output")
 			return err
 		}
-
+	} else {
+		sdk.Logger.Info("Waiting for second result", "trainingID", trainingResult.TrainingId)
 	}
 
 	return nil
@@ -68,19 +85,47 @@ func validateModel(sdk *sdk.KaiSDK, modelID string) *localProto.ModelScore {
 	}
 }
 
-func mergeScore(trainingID string, score *localProto.ModelScore) (bool, []*localProto.ModelScore) {
-	scores, ok := modelScores[trainingID]
-	if !ok {
-		scores = []*localProto.ModelScore{}
+func mergeScore(sdk *sdk.KaiSDK, trainingID string, score *localProto.ModelScore) ([]*localProto.ModelScore, error) {
+
+	modelScoreString, err := sdk.CentralizedConfig.GetConfig(trainingID, messaging.ProcessScope)
+	if err != nil && !errors.Is(err, centralizedconfiguration.ErrKeyNotFound) {
+		return nil, err
 	}
 
-	scores = append(scores, score)
+	if modelScoreString == "" {
+		sdk.Logger.Info("Model Score not found", "trainingID", trainingID)
 
-	if len(scores) == 2 {
-		delete(modelScores, trainingID)
-		return true, scores
-	} else {
-		modelScores[trainingID] = scores
-		return false, scores
+		newConfig := fmt.Sprintf("%s,%d", score.ModelId, score.Score)
+		err = sdk.CentralizedConfig.SetConfig(trainingID, newConfig, messaging.ProcessScope)
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
 	}
+
+	sdk.Logger.Info("Model Score found", "trainingID", trainingID)
+
+	configArray := strings.Split(modelScoreString, ",")
+
+	parsedScore, err := strconv.Atoi(configArray[1])
+	if err != nil {
+		return nil, err
+	}
+
+	secondModelScore := &localProto.ModelScore{
+		ModelId: configArray[0],
+		Score:   int32(parsedScore),
+	}
+
+	scores := []*localProto.ModelScore{
+		score,
+		secondModelScore,
+	}
+
+	err = sdk.CentralizedConfig.DeleteConfig(trainingID, messaging.ProcessScope)
+	if err != nil {
+		return nil, err
+	}
+
+	return scores, nil
 }

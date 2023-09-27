@@ -7,7 +7,7 @@ nats:
   url: 'nats://localhost:4222'
   stream: validation
   output: validation
-  inputs: [training-py, trainig-go]
+  inputs: [training-py, training-go]
 
 centralized_configuration:
   product:
