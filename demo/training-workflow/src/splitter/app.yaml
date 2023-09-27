@@ -2,7 +2,7 @@ nats:
   url: "nats://localhost:4222"
   stream: splitter
   inputs: github-trigger
-  output: splitter.py
+  output: splitter
 
 centralized_configuration:
   product:

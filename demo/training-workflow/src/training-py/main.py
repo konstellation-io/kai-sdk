@@ -3,7 +3,6 @@ import random
 import string
 
 from google.protobuf.any_pb2 import Any
-from google.protobuf.wrappers_pb2 import StringValue
 from proto.training_pb2 import Splitter, Training
 from runner.runner import Runner
 from sdk import kai_sdk as sdk
@@ -33,7 +32,7 @@ async def handler(sdk: sdk.KaiSDK, response: Any):
     )
     logger.info(f"sending message {output}")
 
-    await sdk.messaging.send_output(output)
+    await sdk.messaging.send_output(output, "py")
     logger.info("training task done")
 
 
