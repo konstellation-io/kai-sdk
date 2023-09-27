@@ -763,7 +763,7 @@ files = [
 
 [[package]]
 name = "sdk"
-version = "0.1.0"
+version = "0.2.0"
 description = "KAI SDK's implementation in Python"
 optional = false
 python-versions = "3.11.5"
@@ -780,7 +780,7 @@ vyper-config = "1.1.1"
 type = "git"
 url = "https://github.com/konstellation-io/kai-sdk.git"
 reference = "HEAD"
-resolved_reference = "c53b9554690d3163b5f6624dde651661ac833b94"
+resolved_reference = "28afe05a6820b631f7df50e74a9d2aa3137875b6"
 subdirectory = "py-sdk/sdk"
 
 [[package]]
