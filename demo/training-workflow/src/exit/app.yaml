@@ -1,0 +1,17 @@
+metadata:
+  product_id: Demo training product
+  workflow_id: Training workflow
+  process_id: exit
+
+nats:
+  url: 'nats://localhost:4222'
+  stream: exit
+  inputs: [validation]
+
+centralized_configuration:
+  product:
+    bucket: product
+  workflow:
+    bucket: workflow
+  process:
+    bucket: process

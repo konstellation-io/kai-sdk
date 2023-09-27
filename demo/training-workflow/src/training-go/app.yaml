@@ -1,0 +1,18 @@
+metadata:
+  product_id: Demo training product
+  workflow_id: Training workflow
+  process_id: training-go
+
+nats:
+  url: 'nats://localhost:4222'
+  stream: training-go
+  output: training-go
+  inputs: [splitter.go]
+
+centralized_configuration:
+  product:
+    bucket: product
+  workflow:
+    bucket: workflow
+  process:
+    bucket: process
