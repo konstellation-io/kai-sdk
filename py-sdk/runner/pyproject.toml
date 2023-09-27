@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "runner"
-version = "0.2.0"
+version = "0.3.0"
 description = "KAI Runner's implementation in Python"
 authors = ["Intelygenz - AIO Team"]
 maintainers = ["Intelygenz - AIO Team"]
