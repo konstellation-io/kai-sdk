@@ -28,5 +28,7 @@ WORKDIR /app
 COPY main.py process/main.py
 COPY proto/training_pb2.py process/proto/training_pb2.py
 COPY proto/training_pb2.pyi process/proto/training_pb2.pyi
+COPY app.yaml process/app.yaml
+COPY config.yaml process/config.yaml
 
 CMD ["python","/app/process/main.py"]
