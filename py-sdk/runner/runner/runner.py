@@ -43,7 +43,7 @@ class Runner:
         return self
 
     def initialize_config(self) -> None:
-        v.SetEnvPrefix("KAI")
+        v.set_env_prefix("KAI")
         v.automatic_env()
 
         if v.is_set("APP_CONFIG_PATH"):
