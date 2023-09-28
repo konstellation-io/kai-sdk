@@ -1,3 +1,8 @@
+metadata:
+  product_id: Demo training product
+  workflow_id: Training workflow
+  process_id: github-trigger-mock
+
 nats:
   url: "nats://localhost:4222"
   stream: github-trigger
