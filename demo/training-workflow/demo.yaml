@@ -5,7 +5,7 @@ workflows:
     type: training
     processes:
       - name: 'github-trigger'
-        image: 'kai-local-registry:5000/demo_github-trigger-mock:v1'
+        image: 'registry.kai.local/demo_github-trigger-mock:v1'
         type: 'trigger'
         resourceLimits:
           CPU:
@@ -21,7 +21,7 @@ workflows:
           - exit
 
       - name: 'splitter'
-        image: 'kai-local-registry:5000/demo_splitter:v1'
+        image: 'registry.kai.local/demo_splitter:v1'
         type: 'task'
         resourceLimits:
           CPU:
@@ -34,7 +34,7 @@ workflows:
           - github-trigger
 
       - name: 'training-go'
-        image: 'kai-local-registry:5000/demo_training-go:v1'
+        image: 'registry.kai.local/demo_training-go:v1'
         type: 'task'
         resourceLimits:
           CPU:
@@ -47,7 +47,7 @@ workflows:
           - splitter.go
 
       - name: 'training-py'
-        image: 'kai-local-registry:5000/demo_training-py:v1'
+        image: 'registry.kai.local/demo_training-py:v1'
         type: 'task'
         resourceLimits:
           CPU:
@@ -60,7 +60,7 @@ workflows:
           - splitter.py
 
       - name: 'validation'
-        image: 'kai-local-registry:5000/demo_validation:v1'
+        image: 'registry.kai.local/demo_validation:v1'
         type: 'task'
         resourceLimits:
           CPU:
@@ -74,7 +74,7 @@ workflows:
           - 'training-py'
 
       - name: 'exit'
-        image: 'kai-local-registry:5000/demo_exit:v1'
+        image: 'registry.kai.local/demo_exit:v1'
         type: 'exit'
         resourceLimits:
           CPU:

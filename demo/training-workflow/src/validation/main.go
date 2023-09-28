@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"validation/coord"
 	localProto "validation/proto"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner"
@@ -86,6 +87,8 @@ func validateModel(sdk *sdk.KaiSDK, modelID string) *localProto.ModelScore {
 }
 
 func mergeScore(sdk *sdk.KaiSDK, trainingID string, score *localProto.ModelScore) ([]*localProto.ModelScore, error) {
+	coord.GetInstance().GetMutex().Lock()
+	defer coord.GetInstance().GetMutex().Unlock()
 
 	modelScoreString, err := sdk.CentralizedConfig.GetConfig(trainingID, messaging.ProcessScope)
 	if err != nil && !errors.Is(err, centralizedconfiguration.ErrKeyNotFound) {
