@@ -18,7 +18,7 @@ type SdkRunnerTestSuite struct {
 }
 
 func (s *SdkRunnerTestSuite) SetupSuite() {
-	viper.SetConfigName("config")
+	viper.SetConfigName("config") // includes config and app config files
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("../../testdata")
 
@@ -105,6 +105,19 @@ func (s *SdkRunnerTestSuite) TestNewExitRunner_WithoutDefaultHandler_ExpectPanic
 			ExitRunner().
 			Run()
 	}, "Undefined default handler")
+}
+
+func (s *SdkRunnerTestSuite) TestNewRunner_MissingMandatoryKey() {
+	// Given
+	natsURL := viper.GetString("nats.url")
+	viper.Set("nats", nil)
+
+	// Then
+	s.Panicsf(func() {
+		// When
+		runner.NewTestRunner(nil, &s.js)
+	}, "Missing mandatory key 'nats'")
+	viper.Set("nats.url", natsURL)
 }
 
 func TestRunnerTestSuite(t *testing.T) {

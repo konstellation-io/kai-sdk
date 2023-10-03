@@ -11,7 +11,22 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 )
+
+var _mandatoryConfigKeys = []string{
+	"metadata.product_id",
+	"metadata.workflow_id",
+	"metadata.process_id",
+	"metadata.version_id",
+	"metadata.base_path",
+	"nats.url",
+	"nats.stream",
+	"nats.output",
+	"centralized_configuration.product.bucket",
+	"centralized_configuration.workflow.bucket",
+	"centralized_configuration.process.bucket",
+}
 
 type Runner struct {
 	logger    logr.Logger
@@ -41,6 +56,15 @@ func NewRunner() *Runner {
 	}
 }
 
+func validateConfig(keys []string) error {
+	for _, key := range _mandatoryConfigKeys {
+		if !slices.Contains(keys, key) {
+			panic(fmt.Errorf("missing mandatory configuration key: %s", key))
+		}
+	}
+	return nil
+}
+
 func initializeConfiguration() {
 	// Load environment variables
 	viper.SetEnvPrefix("KAI")
@@ -66,9 +90,12 @@ func initializeConfiguration() {
 
 	err = viper.MergeInConfig()
 
-	if len(viper.AllKeys()) == 0 {
+	keys := viper.AllKeys()
+	if len(keys) == 0 {
 		panic(fmt.Errorf("configuration could not be loaded: %w", err))
 	}
+
+	validateConfig(keys)
 
 	// Set viper default values
 	viper.SetDefault("metadata.base_path", "/")
