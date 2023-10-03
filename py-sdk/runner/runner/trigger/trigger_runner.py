@@ -97,6 +97,7 @@ class TriggerRunner:
             await self.nc.close()
 
         loop.stop()
+        sys.exit(0)
 
     def _exception_handler(self, loop: asyncio.AbstractEventLoop, context: dict[str, Any]) -> None:
         msg = context.get("exception", context["message"])
