@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass, field
+from functools import reduce
 
 import loguru
 from loguru import logger
@@ -57,10 +58,12 @@ class Runner:
 
         return self
 
-    def _validate_config(self, keys: list[str]) -> None:
+    def _validate_config(self, keys: dict[str]) -> None:
         for key in MANDATORY_CONFIG_KEYS:
-            if key not in keys:
-                raise FailedLoadingConfigError(f"incomplete configuration missing key: {key}")
+            try:
+                _ = reduce(lambda d, k: d[k], key.split("."), keys)
+            except Exception:
+                raise FailedLoadingConfigError(f"missing mandatory configuration key: {key}")
 
     def initialize_config(self) -> None:
         v.set_env_prefix("KAI")
@@ -91,11 +94,10 @@ class Runner:
         except Exception as e:
             error = e
 
-        keys = v.all_keys()
-        if len(keys) == 0:
+        if len(v.all_keys()) == 0:
             raise FailedLoadingConfigError(error)
 
-        self._validate_config(keys)
+        self._validate_config(v.all_settings())
 
         v.set_default("metadata.base_path", "/")
         v.set_default("runner.logger.level", "INFO")
