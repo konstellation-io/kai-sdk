@@ -377,32 +377,35 @@ files = [
 
 [[package]]
 name = "runner"
-version = "0.1.0"
+version = "0.3.0"
 description = "KAI Runner's implementation in Python"
 optional = false
 python-versions = "3.11.5"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 loguru = "0.7.0"
 nats-py = "2.3.0"
 protobuf = "4.23.4"
-sdk = {path = "../sdk", develop = true}
+sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/sdk"}
 vyper-config = "1.1.1"
 
 [package.source]
-type = "directory"
-url = "../../py-sdk/runner"
+type = "git"
+url = "https://github.com/konstellation-io/kai-sdk.git"
+reference = "HEAD"
+resolved_reference = "5c66fa52600d291310c0829de8ba4c729c5fb12b"
+subdirectory = "py-sdk/runner"
 
 [[package]]
 name = "sdk"
-version = "0.1.0"
+version = "0.2.0"
 description = "KAI SDK's implementation in Python"
 optional = false
 python-versions = "3.11.5"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 loguru = "0.7.0"
@@ -411,8 +414,11 @@ protobuf = "4.23.4"
 vyper-config = "1.1.1"
 
 [package.source]
-type = "directory"
-url = "../../py-sdk/sdk"
+type = "git"
+url = "https://github.com/konstellation-io/kai-sdk.git"
+reference = "HEAD"
+resolved_reference = "5c66fa52600d291310c0829de8ba4c729c5fb12b"
+subdirectory = "py-sdk/sdk"
 
 [[package]]
 name = "six"
@@ -457,18 +463,18 @@ files = [
 
 [[package]]
 name = "traitlets"
-version = "5.9.0"
+version = "5.10.1"
 description = "Traitlets Python configuration system"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "traitlets-5.9.0-py3-none-any.whl", hash = "sha256:9e6ec080259b9a5940c797d58b613b5e31441c2257b87c2e795c5228ae80d2d8"},
-    {file = "traitlets-5.9.0.tar.gz", hash = "sha256:f6cde21a9c68cf756af02035f72d5a723bf607e862e7be33ece505abf4a3bad9"},
+    {file = "traitlets-5.10.1-py3-none-any.whl", hash = "sha256:07ab9c5bf8a0499fd7b088ba51be899c90ffc936ffc797d7b6907fc516bcd116"},
+    {file = "traitlets-5.10.1.tar.gz", hash = "sha256:db9c4aa58139c3ba850101913915c042bdba86f7c8a0dda1c6f7f92c5da8e542"},
 ]
 
 [package.extras]
 docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
-test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
+test = ["argcomplete (>=3.0.3)", "mypy (>=1.5.1)", "pre-commit", "pytest (>=7.0,<7.5)", "pytest-mock", "pytest-mypy-testing"]
 
 [[package]]
 name = "vyper-config"
@@ -553,4 +559,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.5"
-content-hash = "f2907d3e1ce75135efa3dd83bf66ff13a2a16ff688e2f5f4280edf780649e4e2"
+content-hash = "ed501b59d599ebd9c33aa56789d5fa83d5ac3da77ae2830e7c4e03e23d82cc4b"

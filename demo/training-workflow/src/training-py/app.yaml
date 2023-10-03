@@ -1,8 +1,13 @@
+metadata:
+  product_id: Demo training product
+  workflow_id: Training workflow
+  process_id: training-py
+
 nats:
-  url: "nats://localhost:4222"
+  url: 'nats://localhost:4222'
   stream: training-py
   inputs: splitter.py
-  output: training.py
+  output: training-py
 
 centralized_configuration:
   product:

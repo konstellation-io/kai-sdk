@@ -15,8 +15,13 @@ func main() {
 	runner.
 		NewRunner().
 		TaskRunner().
+		WithInitializer(initializer).
 		WithHandler(defaultHandler).
 		Run()
+}
+
+func initializer(sdk sdk.KaiSDK) {
+	sdk.Logger.Info("Go trainer is ready!")
 }
 
 func defaultHandler(sdk sdk.KaiSDK, response *anypb.Any) error {

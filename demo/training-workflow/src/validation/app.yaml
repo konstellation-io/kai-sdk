@@ -1,12 +1,13 @@
 metadata:
   product_id: Demo training product
   workflow_id: Training workflow
-  process_id: github-trigger-mock
+  process_id: validation
 
 nats:
-  url: "nats://localhost:4222"
-  stream: github-trigger
-  output: github-trigger
+  url: 'nats://localhost:4222'
+  stream: validation
+  output: validation
+  inputs: [training-py, training-go]
 
 centralized_configuration:
   product:
