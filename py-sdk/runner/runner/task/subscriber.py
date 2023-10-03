@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import signal
 from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import TYPE_CHECKING
@@ -57,13 +56,13 @@ class TaskSubscriber:
                     )
                 except Exception as e:
                     self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")
-                    await self.task_runner._shutdown_handler(asyncio.get_event_loop(), signal=signal.SIGTERM)
+                    await self.task_runner._shutdown_handler(asyncio.get_event_loop())
 
                 self.subscriptions.append(sub)
                 self.logger.info(f"listening to {subject} from queue group {consumer_name}")
         else:
             self.logger.debug("input subjects undefined")
-            await self.task_runner._shutdown_handler(asyncio.get_event_loop(), signal=signal.SIGTERM)
+            await self.task_runner._shutdown_handler(asyncio.get_event_loop())
 
         if len(self.subscriptions) > 0:
             self.logger.info("runner successfully subscribed")

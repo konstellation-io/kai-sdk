@@ -86,7 +86,8 @@ class ExitRunner:
                 self.logger.error(f"error unsubscribing from the NATS subject {sub.subject}: {e}")
                 sys.exit(1)
 
-        await self.finalizer(self.sdk)
+        if signal:
+            await self.finalizer(self.sdk)
         self.logger.info("successfully shutdown exit runner")
 
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
@@ -101,7 +102,7 @@ class ExitRunner:
             await self.nc.close()
 
         loop.stop()
-        sys.exit(0)
+        sys.exit(0) if signal else sys.exit(1)
 
     async def run(self) -> None:
         if "default" not in self.response_handlers:

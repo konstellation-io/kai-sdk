@@ -82,7 +82,9 @@ class TriggerRunner:
                 self.logger.error(f"error unsubscribing from the NATS subject {sub.subject}: {e}")
                 sys.exit(1)
 
-        await self.finalizer(self.sdk)
+        if signal:
+            await self.finalizer(self.sdk)
+
         self.logger.info("successfully shutdown trigger runner")
 
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
@@ -97,7 +99,7 @@ class TriggerRunner:
             await self.nc.close()
 
         loop.stop()
-        sys.exit(0)
+        sys.exit(0) if signal else sys.exit(1)
 
     def _exception_handler(self, loop: asyncio.AbstractEventLoop, context: dict[str, Any]) -> None:
         msg = context.get("exception", context["message"])
