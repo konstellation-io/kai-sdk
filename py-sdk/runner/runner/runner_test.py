@@ -162,7 +162,8 @@ class MockVyper:
 
 
 @patch("runner.runner.v", return_value=MockVyper())
-def test_initialize_config_ok(m_vyper, m_runner):
+@patch("runner.runner.Runner._validate_config", return_value=None)
+def test_initialize_config_ok(m_validate, m_vyper, m_runner):
     m_vyper.is_set.side_effect = [True, True]
     m_vyper.get_string.side_effect = ["test_url", "test_path"]
     m_vyper.all_keys.return_value = [NATS_URL, "app.config_path", "app.other_config_path"]
@@ -220,7 +221,8 @@ def test_initialize_config_read_in_config_merge_in_config_ko(m_vyper, m_runner):
 
 
 @patch("runner.runner.v", return_value=MockVyper())
-def test_initialize_config_read_one_exception_ok(m_vyper, m_runner):
+@patch("runner.runner.Runner._validate_config", return_value=None)
+def test_initialize_config_read_one_exception_ok(m_validate, m_vyper, m_runner):
     m_vyper.is_set.side_effect = [False, False]
     m_vyper.all_keys.return_value = [NATS_URL]
     m_vyper.read_in_config.side_effect = Exception("read exception")
@@ -236,3 +238,23 @@ def test_initialize_config_read_one_exception_ok(m_vyper, m_runner):
     assert m_vyper.merge_in_config.called
     assert m_vyper.all_keys.call_count == 1
     assert m_vyper.set_default.call_count == 4
+
+
+@patch("runner.runner.v", return_value=MockVyper())
+def test_missing_configuration_key_ko(m_vyper, m_runner):
+    m_vyper.is_set.side_effect = [False, False]
+    m_vyper.all_keys.return_value = [NATS_URL, "app.config_path"]
+
+    with pytest.raises(FailedLoadingConfigError):
+        m_runner.initialize_config()
+
+        assert m_vyper.automatic_env.called
+        assert m_vyper.is_set.call_count == 2
+        assert m_vyper.add_config_path.call_count == 2
+        assert m_vyper.set_config_name.call_count == 2
+        assert m_vyper.set_config_type.call_count == 2
+        assert m_vyper.read_in_config.called
+        assert m_vyper.merge_in_config.called
+        assert m_vyper.all_keys.call_count == 1
+        assert m_runner._validate_config.call_count == 1
+        assert m_vyper.set_default.call_count == 0

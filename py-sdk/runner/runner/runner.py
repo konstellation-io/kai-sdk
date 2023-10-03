@@ -17,6 +17,21 @@ from runner.trigger.trigger_runner import TriggerRunner
 LOGGER_FORMAT = "<green>{time}</green> <level>{extra[context]} {message}</level>"
 
 
+MANDATORY_CONFIG_KEYS = [
+    "metadata.product_id",
+    "metadata.workflow_id",
+    "metadata.process_id",
+    "metadata.version_id",
+    "metadata.base_path",
+    "nats.url",
+    "nats.stream",
+    "nats.output",
+    "centralized_configuration.product.bucket",
+    "centralized_configuration.workflow.bucket",
+    "centralized_configuration.process.bucket",
+]
+
+
 @dataclass
 class Runner:
     nc: NatsClient = NatsClient()
@@ -41,6 +56,11 @@ class Runner:
             raise NATSConnectionError(e)
 
         return self
+
+    def _validate_config(self, keys: list[str]) -> None:
+        for key in MANDATORY_CONFIG_KEYS:
+            if key not in keys:
+                raise FailedLoadingConfigError(f"incomplete configuration missing key: {key}")
 
     def initialize_config(self) -> None:
         v.set_env_prefix("KAI")
@@ -71,8 +91,11 @@ class Runner:
         except Exception as e:
             error = e
 
-        if len(v.all_keys()) == 0:
+        keys = v.all_keys()
+        if len(keys) == 0:
             raise FailedLoadingConfigError(error)
+
+        self._validate_config(keys)
 
         v.set_default("metadata.base_path", "/")
         v.set_default("runner.logger.level", "INFO")
