@@ -42,7 +42,7 @@ class ExitSubscriber:
         if isinstance(input_subjects, list):
             for subject in input_subjects:
                 subject_ = subject.replace(".", "-")
-                consumer_name = f"{subject_}-{process}" if process else subject_
+                consumer_name = f"{subject_}-{process}"
 
                 self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
                 try:
@@ -61,7 +61,8 @@ class ExitSubscriber:
                 self.subscriptions.append(sub)
                 self.logger.info(f"listening to {subject} from queue group {consumer_name}")
         else:
-            self.logger.debug("input subjects undefined, skipping subscription")
+            self.logger.debug("input subjects undefined")
+            sys.exit(1)
 
         if len(self.subscriptions) > 0:
             self.logger.info("runner successfully subscribed")
