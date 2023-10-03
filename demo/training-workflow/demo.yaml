@@ -16,9 +16,10 @@ workflows:
             limit: 200M
         config:
           webhook_events: push
-          github_secret: dummy
-        subscriptions:
-          - exit
+          github_secret: secret
+        networking:
+          targetPort: 3000
+          destinationPort: 3000
 
       - name: 'splitter'
         image: 'registry.kai.local/demo_splitter:v1'
