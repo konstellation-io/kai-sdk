@@ -5,7 +5,7 @@ workflows:
     type: training
     processes:
       - name: 'github-trigger'
-        image: 'konstellation/github-trigger:latest'
+        image: 'registry.kai.local/demo_github-trigger-mock:v1'
         type: 'trigger'
         resourceLimits:
           CPU:
@@ -14,9 +14,15 @@ workflows:
           memory:
             request: 100M
             limit: 200M
+        config:
+          webhook_events: push
+          github_secret: secret
+        networking:
+          targetPort: 3000
+          destinationPort: 3000
 
       - name: 'splitter'
-        image: 'konstellation/splitter:latest'
+        image: 'registry.kai.local/demo_splitter:v1'
         type: 'task'
         resourceLimits:
           CPU:
@@ -29,7 +35,7 @@ workflows:
           - github-trigger
 
       - name: 'training-go'
-        image: 'konstellation/training-go:latest'
+        image: 'registry.kai.local/demo_training-go:v1'
         type: 'task'
         resourceLimits:
           CPU:
@@ -42,7 +48,7 @@ workflows:
           - splitter.go
 
       - name: 'training-py'
-        image: 'konstellation/training-py:latest'
+        image: 'registry.kai.local/demo_training-py:v1'
         type: 'task'
         resourceLimits:
           CPU:
@@ -55,7 +61,7 @@ workflows:
           - splitter.py
 
       - name: 'validation'
-        image: 'konstellation/training-validation:latest'
+        image: 'registry.kai.local/demo_validation:v1'
         type: 'task'
         resourceLimits:
           CPU:
@@ -69,8 +75,8 @@ workflows:
           - 'training-py'
 
       - name: 'exit'
-        image: 'konstellation/training-exit:latest'
-        type: 'task'
+        image: 'registry.kai.local/demo_exit:v1'
+        type: 'exit'
         resourceLimits:
           CPU:
             request: 100m

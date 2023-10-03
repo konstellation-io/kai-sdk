@@ -377,32 +377,35 @@ files = [
 
 [[package]]
 name = "runner"
-version = "0.1.0"
+version = "0.3.0"
 description = "KAI Runner's implementation in Python"
 optional = false
 python-versions = "3.11.5"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 loguru = "0.7.0"
 nats-py = "2.3.0"
 protobuf = "4.23.4"
-sdk = {path = "../sdk", develop = true}
+sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/sdk"}
 vyper-config = "1.1.1"
 
 [package.source]
-type = "directory"
-url = "../../../../py-sdk/runner"
+type = "git"
+url = "https://github.com/konstellation-io/kai-sdk.git"
+reference = "HEAD"
+resolved_reference = "5c66fa52600d291310c0829de8ba4c729c5fb12b"
+subdirectory = "py-sdk/runner"
 
 [[package]]
 name = "sdk"
-version = "0.1.0"
+version = "0.2.0"
 description = "KAI SDK's implementation in Python"
 optional = false
 python-versions = "3.11.5"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 loguru = "0.7.0"
@@ -411,8 +414,11 @@ protobuf = "4.23.4"
 vyper-config = "1.1.1"
 
 [package.source]
-type = "directory"
-url = "../../../../py-sdk/sdk"
+type = "git"
+url = "https://github.com/konstellation-io/kai-sdk.git"
+reference = "HEAD"
+resolved_reference = "5c66fa52600d291310c0829de8ba4c729c5fb12b"
+subdirectory = "py-sdk/sdk"
 
 [[package]]
 name = "six"
@@ -457,13 +463,13 @@ files = [
 
 [[package]]
 name = "traitlets"
-version = "5.10.0"
+version = "5.10.1"
 description = "Traitlets Python configuration system"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "traitlets-5.10.0-py3-none-any.whl", hash = "sha256:417745a96681fbb358e723d5346a547521f36e9bd0d50ba7ab368fff5d67aa54"},
-    {file = "traitlets-5.10.0.tar.gz", hash = "sha256:f584ea209240466e66e91f3c81aa7d004ba4cf794990b0c775938a1544217cd1"},
+    {file = "traitlets-5.10.1-py3-none-any.whl", hash = "sha256:07ab9c5bf8a0499fd7b088ba51be899c90ffc936ffc797d7b6907fc516bcd116"},
+    {file = "traitlets-5.10.1.tar.gz", hash = "sha256:db9c4aa58139c3ba850101913915c042bdba86f7c8a0dda1c6f7f92c5da8e542"},
 ]
 
 [package.extras]
@@ -553,4 +559,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.5"
-content-hash = "881d51ae58612b307e0dc828416c5d8b2a24a01e81fa79b5acd1cef7daf914e1"
+content-hash = "ed501b59d599ebd9c33aa56789d5fa83d5ac3da77ae2830e7c4e03e23d82cc4b"
