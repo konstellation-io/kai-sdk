@@ -14,20 +14,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var _mandatoryConfigKeys = []string{
-	"metadata.product_id",
-	"metadata.workflow_id",
-	"metadata.process_id",
-	"metadata.version_id",
-	"metadata.base_path",
-	"nats.url",
-	"nats.stream",
-	"nats.output",
-	"centralized_configuration.product.bucket",
-	"centralized_configuration.workflow.bucket",
-	"centralized_configuration.process.bucket",
-}
-
 type Runner struct {
 	logger    logr.Logger
 	nats      *nats.Conn
@@ -56,13 +42,26 @@ func NewRunner() *Runner {
 	}
 }
 
-func validateConfig(keys []string) error {
-	for _, key := range _mandatoryConfigKeys {
+func validateConfig(keys []string) {
+	var mandatoryConfigKeys = []string{
+		"metadata.product_id",
+		"metadata.workflow_id",
+		"metadata.process_id",
+		"metadata.version_id",
+		"metadata.base_path",
+		"nats.url",
+		"nats.stream",
+		"nats.output",
+		"centralized_configuration.product.bucket",
+		"centralized_configuration.workflow.bucket",
+		"centralized_configuration.process.bucket",
+	}
+
+	for _, key := range mandatoryConfigKeys {
 		if !slices.Contains(keys, key) {
-			panic(fmt.Errorf("missing mandatory configuration key: %s", key))
+			panic(fmt.Sprintf("missing mandatory configuration key: %s", key))
 		}
 	}
-	return nil
 }
 
 func initializeConfiguration() {
