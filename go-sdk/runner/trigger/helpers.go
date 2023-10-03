@@ -78,7 +78,7 @@ func getResponseHandler(handlers *sync.Map) ResponseHandler {
 			return nil
 		}
 
-		sdk.Logger.V(1).WithName(_responseHandlerLoggerName).Info("No handler found for the message",
+		sdk.Logger.V(1).WithName(_responseHandlerLoggerName).Info("Undefined handler for the message",
 			"RequestID", sdk.GetRequestID())
 
 		return nil
