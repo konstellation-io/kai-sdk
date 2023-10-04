@@ -63,7 +63,7 @@ func (tr *Runner) GetResponseChannel(requestID string) <-chan *anypb.Any {
 func (tr *Runner) Run() {
 	// Check required fields are initialized
 	if tr.runner == nil {
-		panic("No runner function defined")
+		panic("Undefined runner function")
 	}
 
 	if tr.initializer == nil {

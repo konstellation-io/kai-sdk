@@ -68,7 +68,7 @@ func (er *Runner) WithFinalizer(finalizer common.Finalizer) *Runner {
 
 func (er *Runner) Run() {
 	if er.responseHandlers["default"] == nil {
-		panic("No default handler defined")
+		panic("Undefined default handler")
 	}
 
 	if er.initializer == nil {
