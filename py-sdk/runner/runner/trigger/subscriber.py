@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import sys
+import asyncio
 from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import TYPE_CHECKING
@@ -41,7 +41,7 @@ class TriggerSubscriber:
         if isinstance(input_subjects, list):
             for subject in input_subjects:
                 subject_ = subject.replace(".", "-")
-                consumer_name = f"{subject_}-{process}" if process else subject_
+                consumer_name = f"{subject_}-{process}"
 
                 self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
                 try:
@@ -55,7 +55,7 @@ class TriggerSubscriber:
                     )
                 except Exception as e:
                     self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")
-                    sys.exit(1)
+                    await self.trigger_runner._shutdown_handler(asyncio.get_event_loop())
 
                 self.subscriptions.append(sub)
                 self.logger.info(f"listening to {subject} from queue group {consumer_name}")

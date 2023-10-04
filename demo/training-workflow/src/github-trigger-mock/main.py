@@ -17,7 +17,7 @@ async def basic_runner(trigger_runner: trigger_runner, sdk: sdk.KaiSDK):
 
     output = Struct()
     output.update({"eventUrl": "repo_url", "event": "event"})
-    
+
     logger.info(f"sending message {output}")
 
     await sdk.messaging.send_output(output)

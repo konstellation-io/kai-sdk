@@ -22,6 +22,12 @@ const _subscriberLoggerName = "[SUBSCRIBER]"
 
 func (er *Runner) startSubscriber() {
 	inputSubjects := viper.GetStringSlice("nats.inputs")
+
+	if len(inputSubjects) == 0 {
+		er.sdk.Logger.WithName(_subscriberLoggerName).Info("Undefined input subjects")
+		os.Exit(1)
+	}
+
 	subscriptions := make([]*nats.Subscription, 0, len(inputSubjects))
 
 	for _, subject := range inputSubjects {

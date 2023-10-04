@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass, field
+from functools import reduce
 
 import loguru
 from loguru import logger
@@ -15,6 +16,21 @@ from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
 
 LOGGER_FORMAT = "<green>{time}</green> <level>{extra[context]} {message}</level>"
+
+
+MANDATORY_CONFIG_KEYS = [
+    "metadata.product_id",
+    "metadata.workflow_id",
+    "metadata.process_id",
+    "metadata.version_id",
+    "metadata.base_path",
+    "nats.url",
+    "nats.stream",
+    "nats.output",
+    "centralized_configuration.product.bucket",
+    "centralized_configuration.workflow.bucket",
+    "centralized_configuration.process.bucket",
+]
 
 
 @dataclass
@@ -41,6 +57,13 @@ class Runner:
             raise NATSConnectionError(e)
 
         return self
+
+    def _validate_config(self, keys: dict[str]) -> None:
+        for key in MANDATORY_CONFIG_KEYS:
+            try:
+                _ = reduce(lambda d, k: d[k], key.split("."), keys)
+            except Exception:
+                raise FailedLoadingConfigError(f"missing mandatory configuration key: {key}")
 
     def initialize_config(self) -> None:
         v.set_env_prefix("KAI")
@@ -73,6 +96,8 @@ class Runner:
 
         if len(v.all_keys()) == 0:
             raise FailedLoadingConfigError(error)
+
+        self._validate_config(v.all_settings())
 
         v.set_default("metadata.base_path", "/")
         v.set_default("runner.logger.level", "INFO")

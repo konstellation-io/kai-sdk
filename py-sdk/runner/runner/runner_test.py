@@ -26,7 +26,8 @@ NATS_URL = "nats.url"
 
 
 @pytest.fixture(scope="function")
-def m_runner() -> Runner:
+@patch("runner.runner.Runner._validate_config")
+def m_runner(_) -> Runner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     v.set(NATS_URL, "test_url")
@@ -82,7 +83,8 @@ async def test_sdk_import_ok(_):
     assert isinstance(sdk.storage, StorageABC)
 
 
-async def test_runner_ok():
+@patch("runner.runner.Runner._validate_config")
+async def test_runner_ok(_):
     nc = NatsClient()
     v.set(NATS_URL, "test_url")
     v.set("APP_CONFIG_PATH", "test_path")
@@ -97,7 +99,8 @@ async def test_runner_ok():
     assert runner.logger is not None
 
 
-async def test_runner_initialize_ok():
+@patch("runner.runner.Runner._validate_config")
+async def test_runner_initialize_ok(_):
     nc = AsyncMock(spec=NatsClient)
     nc.connect.return_value = None
     v.set(NATS_URL, "test_url")
@@ -111,7 +114,8 @@ async def test_runner_initialize_ok():
     assert runner.js is m_js
 
 
-async def test_runner_initialize_nats_ko():
+@patch("runner.runner.Runner._validate_config")
+async def test_runner_initialize_nats_ko(_):
     nc = AsyncMock(spec=NatsClient)
     nc.connect.side_effect = Exception("test exception")
     v.set(NATS_URL, "test_url")
@@ -123,7 +127,8 @@ async def test_runner_initialize_nats_ko():
         await runner.initialize()
 
 
-async def test_runner_initialize_jetstream_ko():
+@patch("runner.runner.Runner._validate_config")
+async def test_runner_initialize_jetstream_ko(_):
     nc = AsyncMock(spec=NatsClient)
     nc.connect.return_value = None
     v.set(NATS_URL, "test_url")
@@ -159,6 +164,7 @@ class MockVyper:
         self.all_keys = Mock()
         self.get_string = Mock()
         self.set_default = Mock()
+        self.all_settings = Mock()
 
 
 @patch("runner.runner.v", return_value=MockVyper())
@@ -178,6 +184,7 @@ def test_initialize_config_ok(m_vyper, m_runner):
     assert m_vyper.merge_in_config.called
     assert m_vyper.get_string.call_count == 2
     assert m_vyper.all_keys.call_count == 1
+    assert m_vyper.all_settings.call_count == 1
     assert m_vyper.set_default.call_count == 4
 
 
@@ -197,6 +204,7 @@ def test_initialize_config_no_config_ko(m_vyper, m_runner):
         assert m_vyper.merge_in_config.called
         assert m_vyper.get_string.call_count == 2
         assert m_vyper.all_keys.call_count == 1
+        assert m_vyper.all_settings.call_count == 0
 
 
 @patch("runner.runner.v", return_value=MockVyper())
@@ -217,6 +225,7 @@ def test_initialize_config_read_in_config_merge_in_config_ko(m_vyper, m_runner):
         assert m_vyper.read_in_config.called
         assert m_vyper.merge_in_config.called
         assert m_vyper.all_keys.call_count == 1
+        assert m_vyper.all_settings.call_count == 0
 
 
 @patch("runner.runner.v", return_value=MockVyper())
@@ -235,4 +244,26 @@ def test_initialize_config_read_one_exception_ok(m_vyper, m_runner):
     assert m_vyper.read_in_config.called
     assert m_vyper.merge_in_config.called
     assert m_vyper.all_keys.call_count == 1
+    assert m_vyper.all_settings.call_count == 1
     assert m_vyper.set_default.call_count == 4
+
+
+@patch("runner.runner.v", return_value=MockVyper())
+@patch("runner.runner.reduce", side_effect=Exception("reduce exception"))
+def test_missing_configuration_key_ko(_, m_vyper, m_runner):
+    m_vyper.is_set.side_effect = [False, False]
+    m_vyper.all_keys.return_value = [NATS_URL, "app.config_path"]
+
+    with pytest.raises(FailedLoadingConfigError):
+        m_runner.initialize_config()
+
+        assert m_vyper.automatic_env.called
+        assert m_vyper.is_set.call_count == 2
+        assert m_vyper.add_config_path.call_count == 2
+        assert m_vyper.set_config_name.call_count == 2
+        assert m_vyper.set_config_type.call_count == 2
+        assert m_vyper.read_in_config.called
+        assert m_vyper.merge_in_config.called
+        assert m_vyper.all_keys.call_count == 1
+        assert m_vyper.all_settings.call_count == 1
+        assert m_vyper.set_default.call_count == 0
