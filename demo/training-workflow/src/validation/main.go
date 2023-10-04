@@ -50,7 +50,7 @@ func defaultHandler(sdk sdk.KaiSDK, response *anypb.Any) error {
 	}
 
 	if scores != nil {
-		sdk.Logger.Info("Recieved 2 results for same training, sending output", "trainingID", trainingResult.TrainingId)
+		sdk.Logger.Info("Received 2 results for same training, sending output", "trainingID", trainingResult.TrainingId)
 
 		result := &localProto.Validation{
 			TrainingId:   trainingResult.TrainingId,

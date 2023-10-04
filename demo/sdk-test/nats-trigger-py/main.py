@@ -1,17 +1,16 @@
 import asyncio
 import uuid
+from datetime import timedelta
 
 from google.protobuf.wrappers_pb2 import StringValue
+from nats.aio.client import Client as NatsClient
+from nats.aio.msg import Msg
+from nats.js.api import ConsumerConfig, DeliverPolicy
+from nats.js.client import JetStreamContext
 from runner.runner import Runner
 from runner.trigger import trigger_runner
 from sdk import kai_sdk as sdk
 from sdk.centralized_config.centralized_config import Scope
-from nats.aio.client import Client as NatsClient
-from nats.js.client import JetStreamContext
-from nats.aio.msg import Msg
-from nats.js.api import ConsumerConfig, DeliverPolicy
-from nats.js.client import JetStreamContext
-from datetime import timedelta
 
 
 async def initializer(sdk: sdk.KaiSDK):
@@ -41,7 +40,9 @@ async def initializer(sdk: sdk.KaiSDK):
     value2 = await sdk.centralized_config.get_config("test2")
 
     await sdk.centralized_config.set_config("test", "value", Scope.WorkflowScope)
-    await sdk.centralized_config.set_config("nats.url", "nats://localhost:4222", Scope.ProcessScope)
+    await sdk.centralized_config.set_config(
+        "nats.url", "nats://localhost:4222", Scope.ProcessScope
+    )
 
     await sdk.object_store.save("test", bytes("value-obj", "utf-8"))
 
@@ -49,7 +50,10 @@ async def initializer(sdk: sdk.KaiSDK):
         f"config values from comfig.yaml test1: {value1} test2: {value2}"
     )
 
-async def nats_subscriber_runner(trigger_runner: trigger_runner.TriggerRunner, sdk: sdk.KaiSDK):
+
+async def nats_subscriber_runner(
+    trigger_runner: trigger_runner.TriggerRunner, sdk: sdk.KaiSDK
+):
     logger = sdk.logger.bind(context="[NATS SUBSCRIBER RUNNER]")
     logger.info("executing example...")
 
@@ -66,8 +70,7 @@ async def nats_subscriber_runner(trigger_runner: trigger_runner.TriggerRunner, s
 
         request_id = str(uuid.uuid4())
         await sdk.messaging.send_output_with_request_id(
-            StringValue(value="Hi there, I'm a NATS subscriber!"),
-            request_id
+            StringValue(value="Hi there, I'm a NATS subscriber!"), request_id
         )
 
         response_channel = await trigger_runner.get_response_channel(request_id)
@@ -78,7 +81,7 @@ async def nats_subscriber_runner(trigger_runner: trigger_runner.TriggerRunner, s
             await msg.ack()
         except Exception as e:
             logger.error(f"error acknowledging message: {e}")
-   
+
     logger.info("subscribing to nats-trigger...")
     try:
         await js.subscribe(
@@ -92,6 +95,7 @@ async def nats_subscriber_runner(trigger_runner: trigger_runner.TriggerRunner, s
     except Exception as e:
         logger.error(f"error subscribing to the NATS subject nats-trigger: {e}")
         sys.exit(1)
+
 
 def finalizer(sdk: sdk.KaiSDK):
     logger = sdk.logger.bind(context="[NATS SUBSCRIBER FINALIZER]")
