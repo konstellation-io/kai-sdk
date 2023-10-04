@@ -46,13 +46,6 @@ def m_trigger_runner(m_sdk: KaiSDK) -> TriggerRunner:
     return trigger_runner
 
 
-class MockEvent:
-    def __init__(self) -> None:
-        self.is_set = Mock()
-        self.set = Mock()
-        self.wait = Mock()
-
-
 async def m_user_initializer_awaitable(sdk):
     assert sdk is not None
     await asyncio.sleep(0.00001)
