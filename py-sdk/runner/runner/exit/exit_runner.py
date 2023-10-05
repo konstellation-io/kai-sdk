@@ -102,7 +102,6 @@ class ExitRunner:
             await self.nc.close()
 
         loop.stop()
-        sys.exit(0) if signal else sys.exit(1)
 
     async def run(self) -> None:
         if "default" not in self.response_handlers:
