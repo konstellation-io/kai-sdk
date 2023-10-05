@@ -10,6 +10,8 @@ nats:
   stream: exit
   inputs:
     - task-output
+    - rest-trigger-output
+    - nats-trigger-output
   output: exit-output
   object_store: object-store
 
@@ -20,6 +22,3 @@ centralized_configuration:
     bucket: workflow
   process:
     bucket: process
-    config:
-      test1: value1
-      test2: value2

@@ -395,7 +395,7 @@ vyper-config = "1.1.1"
 type = "git"
 url = "https://github.com/konstellation-io/kai-sdk.git"
 reference = "HEAD"
-resolved_reference = "d935549e8190012f94309b0440708e3e4b8047db"
+resolved_reference = "7511672512194d940cb7ac6af9da01cbef952702"
 subdirectory = "py-sdk/runner"
 
 [[package]]
@@ -417,7 +417,7 @@ vyper-config = "1.1.1"
 type = "git"
 url = "https://github.com/konstellation-io/kai-sdk.git"
 reference = "HEAD"
-resolved_reference = "d935549e8190012f94309b0440708e3e4b8047db"
+resolved_reference = "7511672512194d940cb7ac6af9da01cbef952702"
 subdirectory = "py-sdk/sdk"
 
 [[package]]
