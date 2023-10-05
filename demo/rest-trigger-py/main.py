@@ -68,7 +68,7 @@ def compose_handler(sdk_: sdk.KaiSDK, trigger_runner: trigger_runner.TriggerRunn
 
         sdk_.logger.info(f"response handler returning {response=}")
 
-        await sdk_.messaging.send_output(response)
+        await sdk_.messaging.send_output_with_request_id(response, request_id)
         logger.info(f"waiting response for request id {request_id}...")
 
         response = await trigger_runner.get_response_channel(request_id)
