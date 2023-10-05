@@ -11,21 +11,21 @@ from runner.trigger import trigger_runner
 from sdk import kai_sdk as sdk
 import sys
 app = FastAPI()
-import contextvars
-
-sdk_instance = contextvars.ContextVar("sdk_instance")
 
 
-async def initializer(sdk: sdk.KaiSDK):
+async def initializer(sdk_: sdk.KaiSDK):
     logger = sdk.logger.bind(context="[REST SERVER INITIALIZER]")
     logger.info("starting example...")
-    sdk_instance.set(sdk)
 
 
 async def rest_server_runner(
-    trigger_runner: trigger_runner.TriggerRunner, sdk: sdk.KaiSDK
+    trigger_runner: trigger_runner.TriggerRunner, sdk_: sdk.KaiSDK
 ):
-    logger = sdk.logger.bind(context="[REST SERVER RUNNER]")
+    @app.get("/hello", response_model=dict)
+    async def hello(name: str = Depends(compose_handler(sdk_, trigger_runner))):
+        return {"message": name.split(",")}
+
+    logger = sdk_.logger.bind(context="[REST SERVER RUNNER]")
     logger.info("executing example...")
 
     logger.info("starting rest server port 8080")
@@ -45,44 +45,41 @@ async def rest_server_runner(
     future.result()  # This blocks until the server is stopped
 
 
-def finalizer(sdk: sdk.KaiSDK):
-    logger = sdk.logger.bind(context="[REST SERVER FINALIZER]")
+def finalizer(sdk_: sdk.KaiSDK):
+    logger = sdk_.logger.bind(context="[REST SERVER FINALIZER]")
     logger.info("finalizing example...")
 
 
 async def init():
     runner = await Runner().initialize()
+
     await runner.trigger_runner().with_initializer(initializer).with_runner(
         rest_server_runner
     ).with_finalizer(finalizer).run()
 
 
-async def response_handler(name: str) -> str:
-    sdk_: sdk = sdk_instance.get()
-    logger = sdk.logger.bind(context="[RESPONSE HANDLER]")
-    logger.info(f"response handler received {name=}")
+def compose_handler(sdk_: sdk.KaiSDK, trigger_runner: trigger_runner.TriggerRunner):
+    async def response_handler(name: str) -> str:
+        logger = sdk_.logger.bind(context="[RESPONSE HANDLER]")
+        logger.info(f"response handler received {name=}")
 
-    response = StringValue(value=f"Hello {name}")
-    request_id = str(uuid.uuid4())
+        response = StringValue(value=f"Hello {name}")
+        request_id = str(uuid.uuid4())
 
-    sdk_.logger.info(f"response handler returning {response=}")
+        sdk_.logger.info(f"response handler returning {response=}")
 
-    await sdk_.messaging.send_output_with_request_id(response, request_id)
-    logger.info(f"waiting response for request id {request_id}...")
+        await sdk_.messaging.send_output(response)
+        logger.info(f"waiting response for request id {request_id}...")
 
-    response = await sdk_.trigger_runner.get_response_channel(request_id)
-    logger.info(f"response: {response}")
+        response = await trigger_runner.get_response_channel(request_id)
+        logger.info(f"response: {response}")
 
-    return response
+        return response
+    return response_handler
 
 
 def init_server():
     uvicorn.run(app, host="0.0.0.0", port=8080)
-
-
-@app.get("/hello", response_model=dict)
-async def hello(name: str = Depends(response_handler)):
-    return {"message": name.split(",")}
 
 
 if __name__ == "__main__":
