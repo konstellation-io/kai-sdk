@@ -66,12 +66,6 @@ class ExitRunner:
         self.finalizer = compose_finalizer(finalizer)
         return self
 
-    def _exception_handler(self, loop: asyncio.AbstractEventLoop, context: dict[str, Any]) -> None:
-        self.logger.info(f"type: {type(context)}")
-        msg = context.get("exception", context["message"])
-        self.logger.error(f"caught exception: {msg}")
-        asyncio.create_task(self._shutdown_handler(loop))
-
     async def _shutdown_handler(self, loop: asyncio.AbstractEventLoop, signal: Optional[signal.Signals] = None) -> None:
         if signal:
             self.logger.info(f"received exit signal {signal.name}...")
@@ -102,6 +96,8 @@ class ExitRunner:
             await self.nc.close()
 
         loop.stop()
+        if not signal:
+            sys.exit(1)
 
     async def run(self) -> None:
         if "default" not in self.response_handlers:
@@ -122,6 +118,9 @@ class ExitRunner:
                 s,
                 lambda s=s: asyncio.create_task(self._shutdown_handler(loop, signal=s)),
             )
-        loop.set_exception_handler(self._exception_handler)
 
-        await self.subscriber.start()
+        try:
+            await self.subscriber.start()
+        except Exception as e:
+            self.logger.error(f"error starting subscriber: {e}")
+            await self._shutdown_handler(loop)

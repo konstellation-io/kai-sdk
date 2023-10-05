@@ -57,7 +57,6 @@ class ExitSubscriber:
                 except Exception as e:
                     self.logger.error(f"error subscribing to the NATS subject {subject}: {e}")
                     await self.exit_runner._shutdown_handler(asyncio.get_event_loop())
-                    return
 
                 self.subscriptions.append(sub)
                 self.logger.info(f"listening to {subject} from queue group {consumer_name}")

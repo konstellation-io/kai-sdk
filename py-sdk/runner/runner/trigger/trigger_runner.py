@@ -99,12 +99,8 @@ class TriggerRunner:
             await self.nc.close()
 
         loop.stop()
-
-    def _exception_handler(self, loop: asyncio.AbstractEventLoop, context: dict[str, Any]) -> None:
-        msg = context.get("exception", context["message"])
-        self.logger.error(f"caught exception: {msg}")
-        if not loop.is_closed():
-            asyncio.create_task(self._shutdown_handler(loop))
+        if not signal:
+            sys.exit(1)
 
     async def run(self) -> None:
         if getattr(self, "runner", None) is None:
@@ -127,10 +123,13 @@ class TriggerRunner:
                 s,
                 lambda s=s: asyncio.create_task(self._shutdown_handler(loop, signal=s)),
             )
-        loop.set_exception_handler(self._exception_handler)
 
-        await self.subscriber.start()
-        asyncio.create_task(self.runner(self, self.sdk))
+        try:
+            await self.subscriber.start()
+            asyncio.create_task(self.runner(self, self.sdk))
+        except Exception as e:
+            self.logger.error(f"error starting subscriber: {e}")
+            await self._shutdown_handler(loop)
 
 
 RunnerFunc = Callable[[TriggerRunner, KaiSDK], Awaitable[None]]
