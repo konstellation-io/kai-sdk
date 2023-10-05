@@ -58,7 +58,7 @@ async def nats_subscriber_runner(
         )
     except Exception as e:
         logger.error(f"error subscribing to the NATS subject demo-trigger: {e}")
-        exit(1)
+        return
 
 
 def finalizer(sdk: sdk.KaiSDK):

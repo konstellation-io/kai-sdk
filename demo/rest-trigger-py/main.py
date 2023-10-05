@@ -9,7 +9,7 @@ from google.protobuf.wrappers_pb2 import StringValue
 from runner.runner import Runner
 from runner.trigger import trigger_runner
 from sdk import kai_sdk as sdk
-
+import sys
 app = FastAPI()
 import contextvars
 
@@ -37,15 +37,12 @@ async def rest_server_runner(
         print("Shutting down server...")
         executor.shutdown(wait=False)
         loop.stop()
-        exit(0)
+        sys.exit(0)
 
     signal.signal(signal.SIGINT, lambda s, f: shutdown())
     signal.signal(signal.SIGTERM, lambda s, f: shutdown())
 
-    try:
-        future.result()  # This blocks until the server is stopped
-    except KeyboardInterrupt:
-        shutdown()
+    future.result()  # This blocks until the server is stopped
 
 
 def finalizer(sdk: sdk.KaiSDK):
