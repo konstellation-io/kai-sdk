@@ -10,8 +10,6 @@ nats:
   stream: exit
   inputs:
     - task-output
-    - rest-trigger-output
-    - nats-trigger-output
   output: exit-output
   object_store: object-store
 
