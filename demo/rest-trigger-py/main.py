@@ -31,7 +31,8 @@ async def rest_server_runner(
     logger.info("starting rest server port 8080")
 
     executor = ThreadPoolExecutor(max_workers=1)
-    future = executor.submit(init_server)
+    loop = asyncio.get_event_loop()
+    future = loop.run_in_executor(executor, init_server)
 
     def shutdown():
         print("Shutting down server...")
@@ -42,7 +43,7 @@ async def rest_server_runner(
     signal.signal(signal.SIGINT, lambda s, f: shutdown())
     signal.signal(signal.SIGTERM, lambda s, f: shutdown())
 
-    future.result()  # This blocks until the server is stopped
+    await future  # This blocks until the server is stopped
 
 
 def finalizer(sdk_: sdk.KaiSDK):
@@ -79,7 +80,7 @@ def compose_handler(sdk_: sdk.KaiSDK, trigger_runner: trigger_runner.TriggerRunn
 
 
 def init_server():
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(app, host="127.0.0.1", port=8080)
 
 
 if __name__ == "__main__":
