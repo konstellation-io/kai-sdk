@@ -34,7 +34,7 @@ func initializer(sdk sdk.KaiSDK) {
 	}
 	sdk.Logger.Info("Config value retrieved!", "value", value)
 
-	obj, err := sdk.ObjectStore.Get("test")
+	obj, err := sdk.Storage.Ephemeral.Get("test")
 	if err != nil {
 		sdk.Logger.Error(err, "Error getting Obj Store values")
 		return

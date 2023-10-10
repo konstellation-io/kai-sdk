@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	objectStore2 "github.com/konstellation-io/kai-sdk/go-sdk/sdk/object-store"
+	ephemeralStorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
@@ -16,8 +16,8 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
 )
 
-//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.26.0 --output ../../mocks --name JetStreamContext --structname JetStreamContextMock --filename jetstream_context_mock.go
-//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.26.0 --output ../../mocks --name ObjectStore --structname NatsObjectStoreMock --filename nats_object_store_mock.go
+//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.28.0 --output ../../mocks --name JetStreamContext --structname JetStreamContextMock --filename jetstream_context_mock.go
+//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.28.0 --output ../../mocks --name ObjectStore --structname NatsObjectStoreMock --filename nats_object_store_mock.go
 type SdkObjectStoreTestSuite struct {
 	suite.Suite
 	logger      logr.Logger
@@ -44,7 +44,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_ExpectOK
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
 	// When
-	objectStore, err := objectStore2.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, err := ephemeralStorage.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	// Then
 	s.NoError(err)
@@ -58,13 +58,13 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_EmptyOsN
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
 	// When
-	objectStore, osErr := objectStore2.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, osErr := ephemeralStorage.NewEphemeralStorage(s.logger, &s.jetstream)
 	_, getErr := objectStore.Get("key")
 
 	// Then
 	s.NoError(osErr)
 	s.NotNil(objectStore)
-	s.ErrorIs(getErr, errors.ErrUndefinedObjectStore)
+	s.ErrorIs(getErr, errors.ErrUndefinedEphemeralStorage)
 }
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_ErrorOnOsReturn_ExpectError() {
@@ -74,7 +74,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_ErrorOnO
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(nil, fmt.Errorf("not found"))
 
 	// When
-	objectStore, err := objectStore2.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, err := ephemeralStorage.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	// Then
 	s.Error(err)

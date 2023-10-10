@@ -19,7 +19,7 @@ nats:
   stream: test-stream
   inputs: test-input
   output: test-output
-  object_store: object-store
+  object_store: ephemeral-storage
 
 centralized_configuration:
   product:
