@@ -18,6 +18,7 @@ from sdk.metadata.metadata import Metadata
 from sdk.object_store.object_store import ObjectStore
 from sdk.path_utils.path_utils import PathUtils
 
+GLOBAL_BUCKET = "centralized_configuration.global.bucket"
 PRODUCT_BUCKET = "centralized_configuration.product.bucket"
 WORKFLOW_BUCKET = "centralized_configuration.workflow.bucket"
 PROCESS_BUCKET = "centralized_configuration.process.bucket"
@@ -45,13 +46,19 @@ def m_runner(_) -> Runner:
 @patch.object(
     CentralizedConfig,
     "_init_kv_stores",
-    return_value=(AsyncMock(spec=KeyValue), AsyncMock(spec=KeyValue), AsyncMock(spec=KeyValue)),
+    return_value=(
+        AsyncMock(spec=KeyValue),
+        AsyncMock(spec=KeyValue),
+        AsyncMock(spec=KeyValue),
+        AsyncMock(spec=KeyValue),
+    ),
 )
 async def test_sdk_import_ok(_):
     nc = NatsClient()
     js = nc.jetstream()
     request_msg = KaiNatsMessage()
     v.set(NATS_OBJECT_STORE, None)
+    v.set(GLOBAL_BUCKET, "test_global")
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
@@ -75,9 +82,10 @@ async def test_sdk_import_ok(_):
     assert sdk.object_store.object_store_name == ""
     assert sdk.object_store.object_store is None
     assert sdk.centralized_config is not None
-    assert isinstance(sdk.centralized_config.process_kv, KeyValue)
+    assert isinstance(sdk.centralized_config.global_kv, KeyValue)
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
+    assert isinstance(sdk.centralized_config.process_kv, KeyValue)
     assert sdk.path_utils is not None
     assert isinstance(sdk.measurements, MeasurementsABC)
     assert isinstance(sdk.storage, StorageABC)
