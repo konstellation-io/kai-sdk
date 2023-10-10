@@ -20,6 +20,3 @@ centralized_configuration:
     bucket: workflow
   process:
     bucket: process
-    config:
-      test1: value1
-      test2: value2

@@ -60,12 +60,12 @@ class TaskSubscriber:
 
                 self.subscriptions.append(sub)
                 self.logger.info(f"listening to {subject} from queue group {consumer_name}")
-        else:
-            self.logger.debug("input subjects undefined")
-            await self.task_runner._shutdown_handler(asyncio.get_event_loop())
 
-        if len(self.subscriptions) > 0:
-            self.logger.info("runner successfully subscribed")
+            if len(self.subscriptions) > 0:
+                self.logger.info("runner successfully subscribed")
+        else:
+            self.logger.error("input subjects undefined")
+            await self.task_runner._shutdown_handler(asyncio.get_event_loop())
 
     async def _process_message(self, msg: Msg) -> None:
         self.logger.info("new message received")
