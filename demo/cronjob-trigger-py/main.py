@@ -43,7 +43,9 @@ async def initializer(sdk_: sdk.KaiSDK):
     )
 
 
-async def cronjob_runner(trigger_runner: trigger_runner.TriggerRunner, sdk_: sdk.KaiSDK):
+async def cronjob_runner(
+    trigger_runner: trigger_runner.TriggerRunner, sdk_: sdk.KaiSDK
+):
     while True:
         logger = sdk_.logger.bind(context="[CRONJOB RUNNER]")
         logger.info("executing example...")

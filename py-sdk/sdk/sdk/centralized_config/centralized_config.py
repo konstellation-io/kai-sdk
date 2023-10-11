@@ -24,6 +24,7 @@ class Scope(Enum):
     ProcessScope = "process"
     WorkflowScope = "workflow"
     ProductScope = "product"
+    GlobalScope = "global"
 
 
 @dataclass
@@ -48,21 +49,28 @@ class CentralizedConfigABC(ABC):
 @dataclass
 class CentralizedConfig(CentralizedConfigABC):
     js: JetStreamContext
+    global_kv: KeyValue = field(init=False)
     product_kv: KeyValue = field(init=False)
     workflow_kv: KeyValue = field(init=False)
     process_kv: KeyValue = field(init=False)
     logger: loguru.Logger = logger.bind(context="[CENTRALIZED CONFIGURATION]")
 
     def __post_init__(self) -> None:
+        self.global_kv = None
         self.product_kv = None
         self.workflow_kv = None
         self.process_kv = None
 
     async def initialize(self) -> None:
-        self.product_kv, self.workflow_kv, self.process_kv = await self._init_kv_stores()
+        self.global_kv, self.product_kv, self.workflow_kv, self.process_kv = await self._init_kv_stores()
 
-    async def _init_kv_stores(self) -> tuple[KeyValue, KeyValue, KeyValue]:
+    async def _init_kv_stores(self) -> tuple[KeyValue, KeyValue, KeyValue, KeyValue]:
         try:
+            name = v.get_string("centralized_configuration.global.bucket")
+            self.logger.debug(f"initializing global key-value store {name}...")
+            global_kv = await self.js.key_value(bucket=name)
+            self.logger.debug("global key-value store initialized")
+
             name = v.get_string("centralized_configuration.product.bucket")
             self.logger.debug(f"initializing product key-value store {name}...")
             product_kv = await self.js.key_value(bucket=name)
@@ -78,7 +86,7 @@ class CentralizedConfig(CentralizedConfigABC):
             process_kv = await self.js.key_value(bucket=name)
             self.logger.debug("process key-value store initialized")
 
-            return product_kv, workflow_kv, process_kv
+            return global_kv, product_kv, workflow_kv, process_kv
         except Exception as e:
             self.logger.warning(f"failed initializing configuration: {e}")
             raise FailedInitializingConfigError(error=e)
@@ -139,7 +147,9 @@ class CentralizedConfig(CentralizedConfigABC):
         return entry.value.decode("utf-8")
 
     def _get_scoped_config(self, scope: Scope) -> KeyValue:
-        if scope == Scope.ProductScope:
+        if scope == Scope.GlobalScope:
+            return self.global_kv
+        elif scope == Scope.ProductScope:
             return self.product_kv
         elif scope == Scope.WorkflowScope:
             return self.workflow_kv
