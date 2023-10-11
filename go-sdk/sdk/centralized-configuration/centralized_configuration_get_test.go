@@ -2,6 +2,7 @@ package centralizedconfiguration_test
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
 	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
@@ -359,6 +360,29 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetNonExistingConfigOnProcessScope_ExpectError() {
 	// Given
 	s.processKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
+
+	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
+		s.logger,
+		&s.globalKv,
+		&s.productKv,
+		&s.workflowKv,
+		&s.processKv,
+	)
+	s.Require().NoError(err)
+
+	// When
+	key1Value, err := config.GetConfig("key1", messaging.ProcessScope)
+
+	// Then
+	s.Error(err)
+	s.NotNil(config)
+	s.Empty(key1Value)
+	s.processKv.AssertNumberOfCalls(s.T(), "Get", 1)
+}
+
+func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetConfigOnProcessScope_ExpectError() {
+	// Given
+	s.processKv.On("Get", "key1").Return(nil, fmt.Errorf("unexpected error"))
 
 	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
 		s.logger,
