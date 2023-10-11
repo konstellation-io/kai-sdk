@@ -80,7 +80,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfig_InitializeC
 	s.NotNil(conf)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) InitializeConfigScopes_GlobalConfigNotExist_ExpectError() {
+func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_GlobalConfigNotExist_ExpectError() {
 	// Given
 	viper.SetDefault(globalBucketProp, wrongGlobalBucketVal)
 	viper.SetDefault(productBucketProp, wrongProductBucketVal)
@@ -99,7 +99,7 @@ func (s *SdkCentralizedConfigurationTestSuite) InitializeConfigScopes_GlobalConf
 	s.Nil(config)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) InitializeConfigScopes_ProductConfigNotExist_ExpectError() {
+func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_ProductConfigNotExist_ExpectError() {
 	// Given
 	viper.SetDefault(globalBucketProp, wrongGlobalBucketVal)
 	viper.SetDefault(productBucketProp, wrongProductBucketVal)
@@ -118,7 +118,7 @@ func (s *SdkCentralizedConfigurationTestSuite) InitializeConfigScopes_ProductCon
 	s.Nil(config)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) InitializeConfigScopes_WorkflowConfigNotExist_ExpectError() {
+func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_WorkflowConfigNotExist_ExpectError() {
 	// Given
 	viper.SetDefault(globalBucketProp, wrongGlobalBucketVal)
 	viper.SetDefault(productBucketProp, wrongProductBucketVal)
@@ -138,7 +138,7 @@ func (s *SdkCentralizedConfigurationTestSuite) InitializeConfigScopes_WorkflowCo
 	s.Nil(config)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) InitializeConfigScopes_ProcessConfigNotExist_ExpectError() {
+func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_ProcessConfigNotExist_ExpectError() {
 	// Given
 	viper.SetDefault(globalBucketProp, wrongGlobalBucketVal)
 	viper.SetDefault(productBucketProp, wrongProductBucketVal)
@@ -158,7 +158,7 @@ func (s *SdkCentralizedConfigurationTestSuite) InitializeConfigScopes_ProcessCon
 	s.Nil(config)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) DeleteConfigOnProductScope_ExpectOK() {
+func (s *SdkCentralizedConfigurationTestSuite) TestDeleteConfigOnProductScope_ExpectOK() {
 	// Given
 	s.productKv.On("Delete", "key1").Return(nil)
 
