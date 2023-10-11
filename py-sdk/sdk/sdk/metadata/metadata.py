@@ -12,6 +12,11 @@ from vyper import v
 class MetadataABC(ABC):
     @staticmethod
     @abstractmethod
+    def get_global() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
     def get_product() -> str:
         pass
 
@@ -33,6 +38,11 @@ class MetadataABC(ABC):
     @staticmethod
     @abstractmethod
     def get_object_store_name() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_key_value_global_name() -> str:
         pass
 
     @staticmethod
@@ -56,6 +66,10 @@ class Metadata(MetadataABC):
     logger: loguru.Logger = logger.bind(context="[METADATA]")
 
     @staticmethod
+    def get_global() -> str:
+        return v.get_string("metadata.global_id")
+
+    @staticmethod
     def get_product() -> str:
         return v.get_string("metadata.product_id")
 
@@ -74,6 +88,10 @@ class Metadata(MetadataABC):
     @staticmethod
     def get_object_store_name() -> str:
         return v.get_string("nats.object_store")
+
+    @staticmethod
+    def get_key_value_global_name() -> str:
+        return v.get_string("centralized_configuration.global.bucket")
 
     @staticmethod
     def get_key_value_store_product_name() -> str:

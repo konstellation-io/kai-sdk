@@ -15,6 +15,10 @@ func NewMetadata(logger logr.Logger) *Metadata {
 	}
 }
 
+func (md Metadata) GetGlobal() string {
+	return viper.GetString("metadata.global_id")
+}
+
 func (md Metadata) GetProduct() string {
 	return viper.GetString("metadata.product_id")
 }
@@ -33,6 +37,10 @@ func (md Metadata) GetVersion() string {
 
 func (md Metadata) GetObjectStoreName() string {
 	return viper.GetString("nats.object_store")
+}
+
+func (md Metadata) GetKeyValueStoreGlobalName() string {
+	return viper.GetString("centralized_configuration.global.bucket")
 }
 
 func (md Metadata) GetKeyValueStoreProductName() string {
