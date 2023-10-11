@@ -52,6 +52,7 @@ func validateConfig(keys []string) {
 		"nats.url",
 		"nats.stream",
 		"nats.output",
+		"centralized_configuration.global.bucket",
 		"centralized_configuration.product.bucket",
 		"centralized_configuration.workflow.bucket",
 		"centralized_configuration.process.bucket",
