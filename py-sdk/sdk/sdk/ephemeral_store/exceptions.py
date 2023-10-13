@@ -1,14 +1,14 @@
 from typing import Optional
 
 
-class UndefinedEphemeralStorageError(Exception):
+class UndefinedObjectStoreError(Exception):
     def __init__(self):
-        super().__init__("undefined ephemeral storage")
+        super().__init__("undefined object store")
 
 
-class FailedEphemeralStorageInitializationError(Exception):
+class FailedObjectStoreInitializationError(Exception):
     def __init__(self, error: Optional[Exception] = None):
-        message = "failed ephemeral storage initialization"
+        message = "failed object store initialization"
         super().__init__(f"{message}: {error}" if error else message)
 
 
@@ -20,29 +20,29 @@ class FailedCompilingRegexpError(Exception):
 
 class FailedListingFilesError(Exception):
     def __init__(self, error: Optional[Exception] = None):
-        message = "failed listing objects from the ephemeral storage"
+        message = "failed listing objects from the object store"
         super().__init__(f"{message}: {error}" if error else message)
 
 
 class FailedGettingFileError(Exception):
     def __init__(self, key: str, error: Optional[Exception] = None):
-        message = f"failed getting file {key} from the ephemeral storage"
+        message = f"failed getting file {key} from the object store"
         super().__init__(f"{message}: {error}" if error else message)
 
 
 class FailedSavingFileError(Exception):
     def __init__(self, key: str, error: Optional[Exception] = None):
-        message = f"failed saving file {key} to the ephemeral storage"
+        message = f"failed saving file {key} to the object store"
         super().__init__(f"{message}: {error}" if error else message)
 
 
 class FailedDeletingFileError(Exception):
     def __init__(self, key: str, error: Optional[Exception] = None):
-        message = f"failed deleting file {key} from the ephemeral storage"
+        message = f"failed deleting file {key} from the object store"
         super().__init__(f"{message}: {error}" if error else message)
 
 
 class FailedPurgingFilesError(Exception):
     def __init__(self, error: Optional[Exception] = None):
-        message = "failed purging objects from the ephemeral storage"
+        message = "failed purging objects from the object store"
         super().__init__(f"{message}: {error}" if error else message)
