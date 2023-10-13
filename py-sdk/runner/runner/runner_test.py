@@ -12,10 +12,9 @@ from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
-from sdk.kai_sdk import KaiSDK, MeasurementsABC, StorageABC
+from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
-from sdk.object_store.object_store import ObjectStore
 from sdk.path_utils.path_utils import PathUtils
 
 PRODUCT_BUCKET = "centralized_configuration.product.bucket"
@@ -62,7 +61,7 @@ async def test_sdk_import_ok(_):
 
     assert isinstance(sdk.metadata, Metadata)
     assert isinstance(sdk.messaging, Messaging)
-    assert isinstance(sdk.object_store, ObjectStore)
+    assert isinstance(sdk.storage, Storage)
     assert isinstance(sdk.centralized_config, CentralizedConfig)
     assert isinstance(sdk.path_utils, PathUtils)
     assert sdk.nc is not None
@@ -72,15 +71,13 @@ async def test_sdk_import_ok(_):
     assert sdk.metadata is not None
     assert sdk.messaging is not None
     assert sdk.messaging.request_msg == request_msg
-    assert sdk.object_store.object_store_name == ""
-    assert sdk.object_store.object_store is None
+    assert sdk.storage is not None
     assert sdk.centralized_config is not None
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert sdk.path_utils is not None
     assert isinstance(sdk.measurements, MeasurementsABC)
-    assert isinstance(sdk.storage, StorageABC)
 
 
 @patch("runner.runner.Runner._validate_config")

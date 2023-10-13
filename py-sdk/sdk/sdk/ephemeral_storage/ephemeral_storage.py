@@ -12,15 +12,15 @@ from nats.js.errors import NotFoundError, ObjectNotFoundError
 from nats.js.object_store import ObjectStore as NatsObjectStore
 from vyper import v
 
-from sdk.object_store.exceptions import (
+from sdk.ephemeral_storage.exceptions import (
     FailedCompilingRegexpError,
     FailedDeletingFileError,
     FailedGettingFileError,
     FailedListingFilesError,
-    FailedObjectStoreInitializationError,
+    FailedEphemeralStorageInitializationError,
     FailedPurgingFilesError,
     FailedSavingFileError,
-    UndefinedObjectStoreError,
+    UndefinedEphemeralStorageError,
 )
 
 UNDEFINED_OBJECT_STORE = "ephemeral storage not defined"
@@ -67,6 +67,7 @@ class EphemeralStorage(EphemeralStorageABC):
 
     async def initialize(self) -> None:
         if self.ephemeral_storage_name:
+            self.logger.info(f"initializing ephemeral storage {self.ephemeral_storage_name}...")
             self.object_store = await self._init_object_store()
         else:
             self.logger.info("ephemeral storage not defined [skipped]")
@@ -78,13 +79,13 @@ class EphemeralStorage(EphemeralStorageABC):
             self.logger.debug(f"ephemeral storage {self.ephemeral_storage_name} successfully initialized")
             return object_store
         except Exception as e:
-            self.logger.warning(f"failed initializing ephemeral storage {self.ephemeral_storage_name}: {e}")
-            raise FailedObjectStoreInitializationError(error=e)
+            self.logger.warning(f"failed initializing ephemeral storage '{self.ephemeral_storage_name}': {e}")
+            raise FailedEphemeralStorageInitializationError(error=e)
 
     async def list(self, regexp: Optional[str] = None) -> list[str]:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
-            raise UndefinedObjectStoreError
+            raise UndefinedEphemeralStorageError
 
         try:
             objects = await self.object_store.list(ignore_deletes=True)
@@ -115,7 +116,7 @@ class EphemeralStorage(EphemeralStorageABC):
     async def get(self, key: str) -> tuple[Optional[bytes], bool]:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
-            raise UndefinedObjectStoreError
+            raise UndefinedEphemeralStorageError
 
         try:
             response = await self.object_store.get(key)
@@ -131,7 +132,7 @@ class EphemeralStorage(EphemeralStorageABC):
     async def save(self, key: str, payload: bytes) -> None:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
-            raise UndefinedObjectStoreError
+            raise UndefinedEphemeralStorageError
 
         try:
             await self.object_store.put(key, payload)
@@ -143,7 +144,7 @@ class EphemeralStorage(EphemeralStorageABC):
     async def delete(self, key: str) -> bool:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
-            raise UndefinedObjectStoreError
+            raise UndefinedEphemeralStorageError
 
         try:
             info_ = await self.object_store.delete(key)
@@ -158,7 +159,7 @@ class EphemeralStorage(EphemeralStorageABC):
     async def purge(self, regexp: Optional[str] = None) -> None:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
-            raise UndefinedObjectStoreError
+            raise UndefinedEphemeralStorageError
 
         pattern = None
         if regexp:
@@ -178,9 +179,13 @@ class EphemeralStorage(EphemeralStorageABC):
                     info_ = await self.object_store.delete(name)
                     if info_.info.deleted:
                         deleted += 1
-                        self.logger.info(f"file {name} successfully deleted from ephemeral storage {self.ephemeral_storage_name}")
+                        self.logger.info(
+                            f"file {name} successfully deleted from ephemeral storage " f"{self.ephemeral_storage_name}"
+                        )
                 except Exception as e:
-                    self.logger.warning(f"failed deleting file {name} from ephemeral storage {self.ephemeral_storage_name}: {e}")
+                    self.logger.warning(
+                        f"failed deleting file {name} from ephemeral storage " f"{self.ephemeral_storage_name}: {e}"
+                    )
                     raise FailedPurgingFilesError(error=e)
 
         self.logger.info(f"{deleted} files successfully purged from ephemeral storage {self.ephemeral_storage_name}")

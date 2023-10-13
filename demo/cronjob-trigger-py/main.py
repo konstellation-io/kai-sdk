@@ -24,7 +24,9 @@ async def initializer(sdk: sdk.KaiSDK):
     sdk.metadata.logger.info(
         f"kv_process {sdk.metadata.get_key_value_store_process_name()}"
     )
-    sdk.metadata.logger.info(f"object-store {sdk.metadata.get_object_store_name()}")
+    sdk.metadata.logger.info(
+        f"object-store {sdk.metadata.get_ephemeral_storage_name()}"
+    )
 
     sdk.path_utils.logger.info(f"base path {sdk.path_utils.get_base_path()}")
     sdk.path_utils.logger.info(

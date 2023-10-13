@@ -32,7 +32,7 @@ class MetadataABC(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_object_store_name() -> str:
+    def get_ephemeral_storage_name() -> str:
         pass
 
     @staticmethod
@@ -72,7 +72,7 @@ class Metadata(MetadataABC):
         return v.get_string("metadata.version_id")
 
     @staticmethod
-    def get_object_store_name() -> str:
+    def get_ephemeral_storage_name() -> str:
         return v.get_string("nats.object_store")
 
     @staticmethod
