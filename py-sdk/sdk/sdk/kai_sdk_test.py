@@ -7,14 +7,14 @@ from vyper import v
 
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.centralized_config.exceptions import FailedInitializingConfigError
-from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorageABC, EphemeralStorage
-from sdk.persistent_storage.persistent_storage import PersistentStorageABC, PersistentStorage
+from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage, EphemeralStorageABC
 from sdk.ephemeral_storage.exceptions import FailedEphemeralStorageInitializationError
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
 from sdk.path_utils.path_utils import PathUtils
+from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
 
 GLOBAL_BUCKET = "centralized_configuration.global.bucket"
 PRODUCT_BUCKET = "centralized_configuration.product.bucket"

@@ -39,7 +39,7 @@ func initializer(sdk sdk.KaiSDK) {
 		sdk.Logger.Error(err, "Error getting Obj Store values")
 		return
 	}
-	sdk.Logger.Info("ObjectStore value retrieved!", "object", string(obj))
+	sdk.Logger.Info("Ephemeral storage value retrieved!", "object", string(obj))
 }
 
 func defaultHandler(sdk sdk.KaiSDK, response *anypb.Any) error {

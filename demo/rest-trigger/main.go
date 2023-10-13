@@ -2,6 +2,7 @@ package main
 
 import (
 	context2 "context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os/signal"
@@ -77,7 +78,7 @@ func restServerRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			sdk.Logger.Error(err, "Error running http server")
 		}
 	}()

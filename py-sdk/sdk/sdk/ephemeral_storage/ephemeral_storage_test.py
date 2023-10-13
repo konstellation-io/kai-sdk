@@ -7,7 +7,6 @@ from nats.js.api import ObjectInfo
 from nats.js.client import JetStreamContext
 from nats.js.errors import NotFoundError, ObjectNotFoundError
 from nats.js.object_store import ObjectStore as NatsObjectStore
-
 from vyper import v
 
 from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage, EphemeralStorageABC

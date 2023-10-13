@@ -15,9 +15,9 @@ from vyper import v
 from sdk.ephemeral_storage.exceptions import (
     FailedCompilingRegexpError,
     FailedDeletingFileError,
+    FailedEphemeralStorageInitializationError,
     FailedGettingFileError,
     FailedListingFilesError,
-    FailedEphemeralStorageInitializationError,
     FailedPurgingFilesError,
     FailedSavingFileError,
     UndefinedEphemeralStorageError,
