@@ -64,7 +64,7 @@ func (es EphemeralStorage) Save(key string, payload []byte, overwrite ...bool) e
 		return errors.ErrEmptyPayload
 	}
 
-	if _, err := es.ephemeralStorage.GetInfo(key); err == nil && overwriteValue == false {
+	if _, err := es.ephemeralStorage.GetInfo(key); err == nil && !overwriteValue {
 		return errors.ErrObjectAlreadyExists
 	}
 
