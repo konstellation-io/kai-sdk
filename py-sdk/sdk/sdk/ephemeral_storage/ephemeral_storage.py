@@ -180,11 +180,11 @@ class EphemeralStorage(EphemeralStorageABC):
                     if info_.info.deleted:
                         deleted += 1
                         self.logger.info(
-                            f"file {name} successfully deleted from ephemeral storage " f"{self.ephemeral_storage_name}"
+                            f"file {name} successfully deleted from ephemeral storage {self.ephemeral_storage_name}"
                         )
                 except Exception as e:
                     self.logger.warning(
-                        f"failed deleting file {name} from ephemeral storage " f"{self.ephemeral_storage_name}: {e}"
+                        f"failed deleting file {name} from ephemeral storage {self.ephemeral_storage_name}: {e}"
                     )
                     raise FailedPurgingFilesError(error=e)
 
