@@ -21,7 +21,7 @@ gotidy: ## Run golangci-lint, goimports and gofmt
 
 .PHONY: gotest
 gotest: ## Run tests
-	cd go-sdk && go test ./... -cover -coverpkg=./... -coverprofile=coverage-unit.out --tags=unit
+	cd go-sdk && go test ./... -cover -coverpkg=./... -coverprofile=coverage-unit.out
 
 .PHONY: pytest
 pytest: ## Run tests

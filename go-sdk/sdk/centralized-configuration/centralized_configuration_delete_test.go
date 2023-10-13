@@ -12,6 +12,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 
 	config, err := centralizedConfiguration.NewCentralizedConfigurationBuilder(
 		s.logger,
+		&s.globalKv,
 		&s.productKv,
 		&s.workflowKv,
 		&s.processKv,
@@ -33,6 +34,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 
 	config, err := centralizedConfiguration.NewCentralizedConfigurationBuilder(
 		s.logger,
+		&s.globalKv,
 		&s.productKv,
 		&s.workflowKv,
 		&s.processKv,
@@ -50,12 +52,14 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 
 func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_DeleteNonExistingConfigOnAllScope_ExpectError() {
 	// Given
+	s.globalKv.On("Delete", "key1").Return(nats.ErrKeyNotFound)
 	s.productKv.On("Delete", "key1").Return(nats.ErrKeyNotFound)
 	s.workflowKv.On("Delete", "key1").Return(nats.ErrKeyNotFound)
 	s.processKv.On("Delete", "key1").Return(nats.ErrKeyNotFound)
 
 	config, err := centralizedConfiguration.NewCentralizedConfigurationBuilder(
 		s.logger,
+		&s.globalKv,
 		&s.productKv,
 		&s.workflowKv,
 		&s.processKv,
@@ -63,6 +67,8 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 	s.Require().NoError(err)
 
 	// When
+	err = config.DeleteConfig("key1", messaging.GlobalScope)
+	s.Error(err)
 	err = config.DeleteConfig("key1", messaging.ProductScope)
 	s.Error(err)
 	err = config.DeleteConfig("key1", messaging.WorkflowScope)
@@ -72,6 +78,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 
 	// Then
 	s.NotNil(config)
+	s.globalKv.AssertNumberOfCalls(s.T(), "Delete", 1)
 	s.productKv.AssertNumberOfCalls(s.T(), "Delete", 1)
 	s.workflowKv.AssertNumberOfCalls(s.T(), "Delete", 1)
 	s.processKv.AssertNumberOfCalls(s.T(), "Delete", 1)

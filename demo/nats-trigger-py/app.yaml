@@ -1,17 +1,16 @@
 metadata:
-  product_id: Task process
-  workflow_id: Task workflow
-  process_id: Task process
-  version_id: Task version v1.0.0
+  product_id: Nats trigger process
+  workflow_id: Nats trigger workflow
+  process_id: Nats trigger process
+  version_id: Nats trigger version v1.0.0
   base_path: "/Some/Path"
 
 nats:
   url: "nats://localhost:4222"
-  stream: exit
+  stream: nats-trigger
   inputs:
-    - task-output
-  output: exit-output
-  object_store: ephemeral-storage
+    - exit-output
+  output: nats-trigger-output
 
 centralized_configuration:
   global:

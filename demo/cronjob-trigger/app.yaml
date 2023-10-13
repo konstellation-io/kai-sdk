@@ -12,6 +12,8 @@ nats:
   object_store: ephemeral-storage
 
 centralized_configuration:
+  global:
+    bucket: global
   product:
     bucket: product
   workflow:

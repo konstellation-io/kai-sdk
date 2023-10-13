@@ -14,12 +14,11 @@ nats:
   object_store: ephemeral-storage
 
 centralized_configuration:
+  global:
+    bucket: global
   product:
     bucket: product
   workflow:
     bucket: workflow
   process:
     bucket: process
-    config:
-      test1: value1
-      test2: value2

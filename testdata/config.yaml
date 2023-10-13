@@ -10,7 +10,7 @@ runner:
 metadata:
   product_id: Product ID
   workflow_id: Workflow ID
-  process_id: Proces ID
+  process_id: Process ID
   version_id: Version v1.0.0
   base_path: "/Some/Path"
 
@@ -22,6 +22,8 @@ nats:
   object_store: ephemeral-storage
 
 centralized_configuration:
+  global:
+    bucket: global
   product:
     bucket: product
   workflow:

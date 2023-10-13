@@ -15,11 +15,13 @@ from sdk.kai_sdk import KaiSDK
 @pytest.fixture(scope="function")
 def m_centralized_config() -> CentralizedConfig:
     js = Mock(spec=JetStreamContext)
+    global_kv = AsyncMock(spec=KeyValue)
     product_kv = AsyncMock(spec=KeyValue)
     workflow_kv = AsyncMock(spec=KeyValue)
     process_kv = AsyncMock(spec=KeyValue)
 
     centralized_config = CentralizedConfig(js=js)
+    centralized_config.global_kv = global_kv
     centralized_config.product_kv = product_kv
     centralized_config.workflow_kv = workflow_kv
     centralized_config.process_kv = process_kv

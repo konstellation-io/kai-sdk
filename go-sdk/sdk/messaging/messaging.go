@@ -11,6 +11,7 @@ import (
 type Scope string
 
 const (
+	GlobalScope   Scope = "global"
 	ProductScope  Scope = "product"
 	WorkflowScope Scope = "workflow"
 	ProcessScope  Scope = "process"

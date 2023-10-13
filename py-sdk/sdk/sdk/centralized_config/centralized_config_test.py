@@ -20,11 +20,13 @@ from sdk.centralized_config.exceptions import (
 @pytest.fixture(scope="function")
 def m_centralized_config() -> CentralizedConfig:
     js = Mock(spec=JetStreamContext)
+    global_kv = AsyncMock(spec=KeyValue)
     product_kv = AsyncMock(spec=KeyValue)
     workflow_kv = AsyncMock(spec=KeyValue)
     process_kv = AsyncMock(spec=KeyValue)
 
     centralized_config = CentralizedConfig(js=js)
+    centralized_config.global_kv = global_kv
     centralized_config.product_kv = product_kv
     centralized_config.workflow_kv = workflow_kv
     centralized_config.process_kv = process_kv
@@ -39,25 +41,30 @@ def test_ok():
     centralized_config = CentralizedConfig(js=js)
 
     assert centralized_config.js is not None
+    assert getattr(centralized_config, "global_kv", None) is None
     assert getattr(centralized_config, "product_kv", None) is None
     assert getattr(centralized_config, "workflow_kv", None) is None
     assert getattr(centralized_config, "process_kv", None) is None
 
 
 async def test_initialize_ok(m_centralized_config):
+    m_centralized_config.global_kv = None
     m_centralized_config.product_kv = None
     m_centralized_config.workflow_kv = None
     m_centralized_config.process_kv = None
+    fake_global_kv = AsyncMock(spec=KeyValue)
     fake_product_kv = AsyncMock(spec=KeyValue)
     fake_workflow_kv = AsyncMock(spec=KeyValue)
     fake_process_kv = AsyncMock(spec=KeyValue)
+    v.set("centralized_configuration.global.bucket", "test_global_bucket")
     v.set("centralized_configuration.product.bucket", "test_product_bucket")
     v.set("centralized_configuration.workflow.bucket", "test_workflow_bucket")
     v.set("centralized_configuration.process.bucket", "test_process_bucket")
-    m_centralized_config.js.key_value.side_effect = [fake_product_kv, fake_workflow_kv, fake_process_kv]
+    m_centralized_config.js.key_value.side_effect = [fake_global_kv, fake_product_kv, fake_workflow_kv, fake_process_kv]
 
     await m_centralized_config.initialize()
 
+    assert m_centralized_config.global_kv == fake_global_kv
     assert m_centralized_config.product_kv == fake_product_kv
     assert m_centralized_config.workflow_kv == fake_workflow_kv
     assert m_centralized_config.process_kv == fake_process_kv
@@ -115,7 +122,7 @@ async def test_get_config_with_scope_ko(m_centralized_config):
 
 async def test_get_config_without_scope_not_found(m_centralized_config):
     m_centralized_config._get_config_from_scope = AsyncMock(
-        side_effect=[KeyNotFoundError, KeyNotFoundError, KeyNotFoundError]
+        side_effect=[KeyNotFoundError, KeyNotFoundError, KeyNotFoundError, KeyNotFoundError]
     )
 
     config, found = await m_centralized_config.get_config("test_key")
@@ -125,6 +132,7 @@ async def test_get_config_without_scope_not_found(m_centralized_config):
         call("test_key", Scope.ProcessScope),
         call("test_key", Scope.WorkflowScope),
         call("test_key", Scope.ProductScope),
+        call("test_key", Scope.GlobalScope),
     ]
     assert config is None
     assert not found

@@ -27,11 +27,13 @@ func (s *SdkMetadataTestSuite) SetupTest() {
 
 func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	// Given
+	viper.SetDefault("metadata.global_id", "global-name")
 	viper.SetDefault("metadata.product_id", "product-name")
 	viper.SetDefault("metadata.workflow_id", "workflow-name")
 	viper.SetDefault("metadata.process_id", "process-name")
 	viper.SetDefault("metadata.version_id", "version-name")
 	viper.SetDefault("nats.object_store", "my-ephemeral-storage")
+	viper.SetDefault("centralized_configuration.global.bucket", "global-bucket")
 	viper.SetDefault("centralized_configuration.product.bucket", "product-bucket")
 	viper.SetDefault("centralized_configuration.workflow.bucket", "workflow-bucket")
 	viper.SetDefault("centralized_configuration.process.bucket", "process-bucket")
@@ -39,22 +41,26 @@ func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	// When
 	sdkMetadata := metadata.NewMetadata(s.logger)
 
+	globalName := sdkMetadata.GetGlobal()
 	productName := sdkMetadata.GetProduct()
 	workflowName := sdkMetadata.GetWorkflow()
 	processName := sdkMetadata.GetProcess()
 	versionName := sdkMetadata.GetVersion()
 	objectStoreName := sdkMetadata.GetEphemeralStorageName()
+	globalKvName := sdkMetadata.GetKeyValueStoreGlobalName()
 	productKvName := sdkMetadata.GetKeyValueStoreProductName()
 	workflowKvName := sdkMetadata.GetKeyValueStoreWorkflowName()
 	processKvName := sdkMetadata.GetKeyValueStoreProcessName()
 
 	// Then
 	s.NotNil(sdkMetadata)
+	s.Equal("global-name", globalName)
 	s.Equal("product-name", productName)
 	s.Equal("workflow-name", workflowName)
 	s.Equal("process-name", processName)
 	s.Equal("version-name", versionName)
 	s.Equal("my-ephemeral-storage", objectStoreName)
+	s.Equal("global-bucket", globalKvName)
 	s.Equal("product-bucket", productKvName)
 	s.Equal("workflow-bucket", workflowKvName)
 	s.Equal("process-bucket", processKvName)
