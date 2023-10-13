@@ -115,8 +115,8 @@ async def test_nats_initialize_ok(centralized_config_initialize_mock, object_sto
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
-    assert sdk.object_store.object_store is not None
-    assert sdk.object_store.object_store_name == "test_object_store"
+    assert sdk.storage.ephemeral.object_store is not None
+    assert sdk.storage.ephemeral.ephemeral_storage_name == "test_object_store"
 
 
 @patch.object(EphemeralStorage, "_init_object_store", side_effect=Exception)
