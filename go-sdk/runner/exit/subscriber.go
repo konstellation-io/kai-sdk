@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -37,8 +36,6 @@ func (er *Runner) startSubscriber() {
 		er.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info("Subscribing to subject",
 			"Subject", subject, "Queue group", consumerName)
 
-		ackWaitTime := 22 * time.Hour
-
 		s, err := er.jetstream.QueueSubscribe(
 			subject,
 			consumerName,
@@ -46,7 +43,7 @@ func (er *Runner) startSubscriber() {
 			nats.DeliverNew(),
 			nats.Durable(consumerName),
 			nats.ManualAck(),
-			nats.AckWait(ackWaitTime),
+			nats.AckWait(viper.GetDuration("runner.subscriber.ack_wait_time")),
 		)
 		if err != nil {
 			er.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error subscribing to NATS subject",

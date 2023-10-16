@@ -101,6 +101,7 @@ class Runner:
         self._validate_config(v.all_settings())
 
         v.set_default("metadata.base_path", "/")
+        v.set_default("runner.subscriber.ack_wait_time", 22)
         v.set_default("runner.logger.level", "INFO")
         v.set_default("runner.logger.output_paths", ["stdout"])
         v.set_default("runner.logger.error_output_paths", ["stderr"])

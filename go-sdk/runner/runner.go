@@ -2,6 +2,7 @@ package runner
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
@@ -99,6 +100,7 @@ func initializeConfiguration() {
 
 	// Set viper default values
 	viper.SetDefault("metadata.base_path", "/")
+	viper.SetDefault("runner.subscriber.ack_wait_time", 22*time.Hour)
 	viper.SetDefault("runner.logger.level", "InfoLevel")
 	viper.SetDefault("runner.logger.encoding", "console")
 	viper.SetDefault("runner.logger.output_paths", []string{"stdout"})

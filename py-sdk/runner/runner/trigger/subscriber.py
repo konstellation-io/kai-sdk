@@ -19,8 +19,6 @@ if TYPE_CHECKING:
 from runner.trigger.exceptions import HandlerError, NewRequestMsgError, NotValidProtobuf, UndefinedResponseHandlerError
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 
-ACK_TIME = 22  # hours
-
 
 @dataclass
 class TriggerSubscriber:
@@ -35,7 +33,7 @@ class TriggerSubscriber:
         input_subjects = v.get("nats.inputs")
         process = self.trigger_runner.sdk.metadata.get_process().replace(".", "-").replace(" ", "-")
 
-        ack_wait_time = timedelta(hours=ACK_TIME)
+        ack_wait_time = timedelta(hours=v.get_int("runner.subscriber.ack_wait_time"))
         if isinstance(input_subjects, str):
             input_subjects = input_subjects.replace(" ", "").split(",")
         if isinstance(input_subjects, list):
