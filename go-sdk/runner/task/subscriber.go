@@ -2,11 +2,12 @@ package task
 
 import (
 	"fmt"
-	"github.com/go-logr/logr"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+
+	"github.com/go-logr/logr"
 
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"

@@ -32,6 +32,7 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 	}
 }
 
+//nolint:dupl //Needed duplicated code
 func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	return func(sdk sdk.KaiSDK, response *anypb.Any) error {
 		sdk.Logger = sdk.Logger.
@@ -49,6 +50,7 @@ func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 			sdk.Logger.
 				V(3).
 				Info("Executing user preprocessor...")
+
 			return preprocessor(sdk, response)
 		}
 
@@ -56,6 +58,7 @@ func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	}
 }
 
+//nolint:dupl //Needed duplicated code
 func composeHandler(handler Handler) Handler {
 	return func(sdk sdk.KaiSDK, response *anypb.Any) error {
 		sdk.Logger = sdk.Logger.
@@ -79,6 +82,7 @@ func composeHandler(handler Handler) Handler {
 	}
 }
 
+//nolint:dupl //Needed duplicated code
 func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 	return func(sdk sdk.KaiSDK, response *anypb.Any) error {
 		sdk.Logger = sdk.Logger.

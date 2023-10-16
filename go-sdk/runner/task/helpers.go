@@ -17,7 +17,6 @@ const (
 
 func composeInitializer(initializer common.Initializer) common.Initializer {
 	return func(sdk sdk.KaiSDK) {
-
 		sdk.Logger = sdk.Logger.WithName(_initializerLoggerName)
 
 		sdk.Logger.V(1).Info("Initializing TaskRunner...")
@@ -33,6 +32,7 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 	}
 }
 
+//nolint:dupl //Needed duplicated code
 func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	return func(sdk sdk.KaiSDK, response *anypb.Any) error {
 		sdk.Logger = sdk.Logger.
@@ -56,6 +56,7 @@ func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	}
 }
 
+//nolint:dupl //Needed duplicated code
 func composeHandler(handler Handler) Handler {
 	return func(sdk sdk.KaiSDK, response *anypb.Any) error {
 		sdk.Logger = sdk.Logger.
@@ -79,6 +80,7 @@ func composeHandler(handler Handler) Handler {
 	}
 }
 
+//nolint:dupl //Needed duplicated code
 func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 	return func(sdk sdk.KaiSDK, response *anypb.Any) error {
 		sdk.Logger = sdk.Logger.

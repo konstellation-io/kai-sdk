@@ -1,11 +1,12 @@
 package trigger
 
 import (
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/kaiconstants"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/kaiconstants"
 
 	"google.golang.org/protobuf/types/known/anypb"
 

@@ -2,6 +2,7 @@ package messaging
 
 import (
 	"fmt"
+
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/kaiconstants"
 

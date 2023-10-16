@@ -1,9 +1,10 @@
 package sdk
 
 import (
+	"os"
+
 	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	pathutils "github.com/konstellation-io/kai-sdk/go-sdk/sdk/path-utils"
-	"os"
 
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/object-store"
 
