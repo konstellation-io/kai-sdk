@@ -1,5 +1,7 @@
+import uuid
 from unittest.mock import AsyncMock, Mock, call, patch
 
+import mock
 import pytest
 from google.protobuf.any_pb2 import Any
 from nats.aio.client import Client as NatsClient
@@ -78,12 +80,13 @@ async def test_start_ok_str_input(m_trigger_subscriber):
     assert m_trigger_subscriber.trigger_runner.js.subscribe.called
     assert m_trigger_subscriber.trigger_runner.js.subscribe.call_args == call(
         subject=SUBJECT,
-        queue=consumer_name,
-        durable=consumer_name,
+        durable=mock.ANY,
         cb=cb_mock,
         config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
         manual_ack=True,
     )
+    assert (isinstance(m_trigger_subscriber.trigger_runner.js.subscribe.call_args[1]['durable'], str)
+            and m_trigger_subscriber.trigger_runner.js.subscribe.call_args[1]['durable'].startswith(consumer_name))
     assert m_trigger_subscriber.subscriptions == [m_trigger_subscriber.trigger_runner.js.subscribe.return_value]
 
 
@@ -101,21 +104,25 @@ async def test_start_ok_list_input(m_trigger_subscriber):
     assert m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list == [
         call(
             subject=SUBJECT_LIST[0],
-            queue=consumer_name,
-            durable=consumer_name,
+            durable=mock.ANY,
             cb=cb_mock,
             config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
             manual_ack=True,
         ),
         call(
             subject=SUBJECT_LIST[1],
-            queue=consumer_name2,
-            durable=consumer_name2,
+            durable=mock.ANY,
             cb=cb_mock,
             config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
             manual_ack=True,
         ),
     ]
+    assert (isinstance(m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]['durable'], str)
+            and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]['durable'].startswith(
+                consumer_name))
+    assert (isinstance(m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]['durable'], str)
+            and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]['durable'].startswith(
+                consumer_name2))
     assert m_trigger_subscriber.subscriptions == [
         m_trigger_subscriber.trigger_runner.js.subscribe.return_value,
         m_trigger_subscriber.trigger_runner.js.subscribe.return_value,
@@ -137,21 +144,25 @@ async def test_start_ok_str_list_input(m_trigger_subscriber):
     assert m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list == [
         call(
             subject=input_subjects[0],
-            queue=consumer_name,
-            durable=consumer_name,
+            durable=mock.ANY,
             cb=cb_mock,
             config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
             manual_ack=True,
         ),
         call(
             subject=input_subjects[1],
-            queue=consumer_name2,
-            durable=consumer_name2,
+            durable=mock.ANY,
             cb=cb_mock,
             config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
             manual_ack=True,
         ),
     ]
+    assert (isinstance(m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]['durable'], str)
+            and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]['durable'].startswith(
+                consumer_name))
+    assert (isinstance(m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]['durable'], str)
+            and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]['durable'].startswith(
+                consumer_name2))
     assert m_trigger_subscriber.subscriptions == [
         m_trigger_subscriber.trigger_runner.js.subscribe.return_value,
         m_trigger_subscriber.trigger_runner.js.subscribe.return_value,

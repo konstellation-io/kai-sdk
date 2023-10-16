@@ -2,6 +2,7 @@ package trigger
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"os"
 	"os/signal"
 	"strings"
@@ -33,12 +34,11 @@ func (tr *Runner) startSubscriber() {
 
 		ackWaitTime := 22 * time.Hour
 
-		s, err := tr.jetstream.QueueSubscribe(
+		s, err := tr.jetstream.Subscribe(
 			subject,
-			consumerName,
 			tr.processMessage,
 			nats.DeliverNew(),
-			nats.Durable(consumerName),
+			nats.Durable(fmt.Sprintf("%s-%s", consumerName, uuid.New().String())),
 			nats.ManualAck(),
 			nats.AckWait(ackWaitTime),
 		)
