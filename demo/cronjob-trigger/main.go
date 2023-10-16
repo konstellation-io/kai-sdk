@@ -6,6 +6,7 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/trigger"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/kaiconstants"
 	"github.com/robfig/cron/v3"
 	"os"
 	"os/signal"
@@ -49,12 +50,12 @@ func cronjobRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
 	sdk.Logger.Info("Starting cronjob runner")
 
 	c := cron.New(
-		cron.WithLogger(sdk.Logger),
+		cron.WithLogger(sdk.Logger.WithName("[CRONJOB]")),
 	)
 
 	_, err := c.AddFunc("@every 30s", func() {
 		requestID := uuid.New().String()
-		sdk.Logger.Info("Cronjob triggered, new message sent", "requestID", requestID)
+		sdk.Logger.Info("Cronjob triggered, new message sent", kaiconstants.LoggerRequestID, requestID)
 
 		val := wrappers.StringValue{
 			Value: "Hi there, I'm a cronjob!",
@@ -62,7 +63,7 @@ func cronjobRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
 
 		err := sdk.Messaging.SendOutputWithRequestID(&val, requestID)
 		if err != nil {
-			sdk.Logger.Error(err, "Error sending output")
+			sdk.Logger.Error(err, "Error sending output", kaiconstants.LoggerRequestID, requestID)
 			return
 		}
 	})

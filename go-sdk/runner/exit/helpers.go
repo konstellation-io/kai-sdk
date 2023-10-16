@@ -3,6 +3,7 @@ package exit
 import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/kaiconstants"
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
@@ -16,25 +17,38 @@ const (
 
 func composeInitializer(initializer common.Initializer) common.Initializer {
 	return func(sdk sdk.KaiSDK) {
-		sdk.Logger.WithName(_initializerLoggerName).V(1).Info("Initializing ExitRunner...")
+		sdk.Logger = sdk.Logger.WithName(_initializerLoggerName)
+
+		sdk.Logger.V(1).Info("Initializing ExitRunner...")
 		common.InitializeProcessConfiguration(sdk)
 
 		if initializer != nil {
-			sdk.Logger.WithName(_initializerLoggerName).V(3).Info("Executing user initializer...")
+			sdk.Logger.V(3).Info("Executing user initializer...")
 			initializer(sdk)
-			sdk.Logger.WithName(_initializerLoggerName).V(3).Info("User initializer executed")
+			sdk.Logger.V(3).Info("User initializer executed")
 		}
 
-		sdk.Logger.WithName(_initializerLoggerName).V(1).Info("ExitRunner initialized")
+		sdk.Logger.V(1).Info("ExitRunner initialized")
 	}
 }
 
 func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	return func(sdk sdk.KaiSDK, response *anypb.Any) error {
-		sdk.Logger.WithName(_preprocessorLoggerName).V(1).Info("Preprocessing ExitRunner...")
+		sdk.Logger = sdk.Logger.
+			WithName(_preprocessorLoggerName).
+			WithValues(
+				kaiconstants.LoggerRequestID, sdk.GetRequestID(),
+				kaiconstants.LoggerProductID, sdk.Metadata.GetProduct(),
+				kaiconstants.LoggerVersionID, sdk.Metadata.GetVersion(),
+				kaiconstants.LoggerWorkflowID, sdk.Metadata.GetWorkflow(),
+				kaiconstants.LoggerProcessID, sdk.Metadata.GetProcess(),
+			)
+		sdk.Logger.V(1).Info("Preprocessing ExitRunner...")
 
 		if preprocessor != nil {
-			sdk.Logger.WithName(_preprocessorLoggerName).V(3).Info("Executing user preprocessor...")
+			sdk.Logger.
+				V(3).
+				Info("Executing user preprocessor...")
 			return preprocessor(sdk, response)
 		}
 
@@ -44,10 +58,20 @@ func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 
 func composeHandler(handler Handler) Handler {
 	return func(sdk sdk.KaiSDK, response *anypb.Any) error {
-		sdk.Logger.WithName(_handlerLoggerName).V(1).Info("Handling ExitRunner...")
+		sdk.Logger = sdk.Logger.
+			WithName(_handlerLoggerName).
+			WithValues(
+				kaiconstants.LoggerRequestID, sdk.GetRequestID(),
+				kaiconstants.LoggerProductID, sdk.Metadata.GetProduct(),
+				kaiconstants.LoggerVersionID, sdk.Metadata.GetVersion(),
+				kaiconstants.LoggerWorkflowID, sdk.Metadata.GetWorkflow(),
+				kaiconstants.LoggerProcessID, sdk.Metadata.GetProcess(),
+			)
+
+		sdk.Logger.V(1).Info("Handling ExitRunner...")
 
 		if handler != nil {
-			sdk.Logger.WithName(_handlerLoggerName).V(3).Info("Executing user handler...")
+			sdk.Logger.V(3).Info("Executing user handler...")
 			return handler(sdk, response)
 		}
 
@@ -57,10 +81,20 @@ func composeHandler(handler Handler) Handler {
 
 func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 	return func(sdk sdk.KaiSDK, response *anypb.Any) error {
-		sdk.Logger.WithName(_postprocessorLoggerName).V(1).Info("Postprocessing ExitRunner...")
+		sdk.Logger = sdk.Logger.
+			WithName(_postprocessorLoggerName).
+			WithValues(
+				kaiconstants.LoggerRequestID, sdk.GetRequestID(),
+				kaiconstants.LoggerProductID, sdk.Metadata.GetProduct(),
+				kaiconstants.LoggerVersionID, sdk.Metadata.GetVersion(),
+				kaiconstants.LoggerWorkflowID, sdk.Metadata.GetWorkflow(),
+				kaiconstants.LoggerProcessID, sdk.Metadata.GetProcess(),
+			)
+
+		sdk.Logger.V(1).Info("Postprocessing ExitRunner...")
 
 		if postprocessor != nil {
-			sdk.Logger.WithName(_postprocessorLoggerName).V(3).Info("Executing user postprocessor...")
+			sdk.Logger.V(3).Info("Executing user postprocessor...")
 			return postprocessor(sdk, response)
 		}
 
@@ -70,12 +104,14 @@ func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 
 func composeFinalizer(finalizer common.Finalizer) common.Finalizer {
 	return func(sdk sdk.KaiSDK) {
-		sdk.Logger.WithName(_finalizerLoggerName).V(1).Info("Finalizing ExitRunner...")
+		sdk.Logger = sdk.Logger.WithName(_finalizerLoggerName)
+
+		sdk.Logger.V(1).Info("Finalizing ExitRunner...")
 
 		if finalizer != nil {
-			sdk.Logger.WithName(_finalizerLoggerName).V(3).Info("Executing user finalizer...")
+			sdk.Logger.V(3).Info("Executing user finalizer...")
 			finalizer(sdk)
-			sdk.Logger.WithName(_finalizerLoggerName).V(3).Info("User finalizer executed")
+			sdk.Logger.V(3).Info("User finalizer executed")
 		}
 	}
 }

@@ -2,8 +2,8 @@ package messaging
 
 import (
 	"fmt"
-
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/kaiconstants"
 
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
@@ -66,7 +66,7 @@ func (ms Messaging) newResponseMsg(payload *anypb.Any, requestID string,
 	msgType kai.MessageType,
 ) *kai.KaiNatsMessage {
 	ms.logger.V(1).Info("Preparing response message",
-		"requestID", requestID, "msgType", msgType)
+		kaiconstants.LoggerRequestID, requestID, "msgType", msgType)
 
 	return &kai.KaiNatsMessage{
 		RequestId:   requestID,
@@ -82,21 +82,22 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 	outputMsg, err := proto.Marshal(responseMsg)
 	if err != nil {
 		ms.logger.Error(err, "Error generating output result because handler result is not "+
-			"a serializable Protobuf")
+			"a serializable Protobuf", kaiconstants.LoggerRequestID, responseMsg.RequestId)
 		return
 	}
 
 	outputMsg, err = ms.prepareOutputMessage(outputMsg)
 	if err != nil {
-		ms.logger.Error(err, "Error preparing output msg")
+		ms.logger.Error(err, "Error preparing output msg", kaiconstants.LoggerRequestID, responseMsg.RequestId)
 		return
 	}
 
-	ms.logger.Info("Publishing response", "subject", outputSubject)
+	ms.logger.Info("Publishing response", "subject", outputSubject,
+		kaiconstants.LoggerRequestID, responseMsg.RequestId)
 
 	_, err = ms.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
-		ms.logger.Error(err, "Error publishing output")
+		ms.logger.Error(err, "Error publishing output", kaiconstants.LoggerRequestID, responseMsg.RequestId)
 	}
 }
 

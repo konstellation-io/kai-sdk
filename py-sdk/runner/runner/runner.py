@@ -15,7 +15,7 @@ from runner.exit.exit_runner import ExitRunner
 from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
 
-LOGGER_FORMAT = "<green>{time}</green> <level>{extra[context]} {message}</level>"
+LOGGER_FORMAT = "<green>{time}</green> <level>{extra[context]}: {message}</level>"
 
 
 MANDATORY_CONFIG_KEYS = [
