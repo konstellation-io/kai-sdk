@@ -2,12 +2,13 @@ package trigger
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"

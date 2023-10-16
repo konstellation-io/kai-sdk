@@ -85,8 +85,9 @@ async def test_start_ok_str_input(m_trigger_subscriber):
         config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
         manual_ack=True,
     )
-    assert (isinstance(m_trigger_subscriber.trigger_runner.js.subscribe.call_args[1]['durable'], str)
-            and m_trigger_subscriber.trigger_runner.js.subscribe.call_args[1]['durable'].startswith(consumer_name))
+    assert isinstance(
+        m_trigger_subscriber.trigger_runner.js.subscribe.call_args[1]["durable"], str
+    ) and m_trigger_subscriber.trigger_runner.js.subscribe.call_args[1]["durable"].startswith(consumer_name)
     assert m_trigger_subscriber.subscriptions == [m_trigger_subscriber.trigger_runner.js.subscribe.return_value]
 
 
@@ -117,12 +118,12 @@ async def test_start_ok_list_input(m_trigger_subscriber):
             manual_ack=True,
         ),
     ]
-    assert (isinstance(m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]['durable'], str)
-            and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]['durable'].startswith(
-                consumer_name))
-    assert (isinstance(m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]['durable'], str)
-            and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]['durable'].startswith(
-                consumer_name2))
+    assert isinstance(
+        m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]["durable"], str
+    ) and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]["durable"].startswith(consumer_name)
+    assert isinstance(
+        m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]["durable"], str
+    ) and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]["durable"].startswith(consumer_name2)
     assert m_trigger_subscriber.subscriptions == [
         m_trigger_subscriber.trigger_runner.js.subscribe.return_value,
         m_trigger_subscriber.trigger_runner.js.subscribe.return_value,
@@ -157,12 +158,12 @@ async def test_start_ok_str_list_input(m_trigger_subscriber):
             manual_ack=True,
         ),
     ]
-    assert (isinstance(m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]['durable'], str)
-            and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]['durable'].startswith(
-                consumer_name))
-    assert (isinstance(m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]['durable'], str)
-            and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]['durable'].startswith(
-                consumer_name2))
+    assert isinstance(
+        m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]["durable"], str
+    ) and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[0][1]["durable"].startswith(consumer_name)
+    assert isinstance(
+        m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]["durable"], str
+    ) and m_trigger_subscriber.trigger_runner.js.subscribe.call_args_list[1][1]["durable"].startswith(consumer_name2)
     assert m_trigger_subscriber.subscriptions == [
         m_trigger_subscriber.trigger_runner.js.subscribe.return_value,
         m_trigger_subscriber.trigger_runner.js.subscribe.return_value,
