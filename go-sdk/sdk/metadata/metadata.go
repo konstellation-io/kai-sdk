@@ -15,10 +15,6 @@ func NewMetadata(logger logr.Logger) *Metadata {
 	}
 }
 
-func (md Metadata) GetGlobal() string {
-	return viper.GetString("metadata.global_id")
-}
-
 func (md Metadata) GetProduct() string {
 	return viper.GetString("metadata.product_id")
 }

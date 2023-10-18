@@ -1,10 +1,6 @@
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-import loguru
-from loguru import logger
 from vyper import v
 
 
@@ -63,12 +59,6 @@ class MetadataABC(ABC):
 
 @dataclass
 class Metadata(MetadataABC):
-    logger: loguru.Logger = logger.bind(context="[METADATA]")
-
-    @staticmethod
-    def get_global() -> str:
-        return v.get_string("metadata.global_id")
-
     @staticmethod
     def get_product() -> str:
         return v.get_string("metadata.product_id")
