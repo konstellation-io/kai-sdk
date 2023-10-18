@@ -54,7 +54,7 @@ class KaiSDK:
             workflow_id = self.metadata.get_workflow()
             process_id = self.metadata.get_process()
             metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=}"
-            self.logger = self.logger.configure(extra={"context": "[KAI SDK]", "metadata_info": metadata_info})
+            self.logger.configure(extra={"context": "[KAI SDK]", "metadata_info": metadata_info})
 
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
