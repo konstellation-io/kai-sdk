@@ -102,7 +102,7 @@ class KaiSDK:
         workflow_id = self.metadata.get_workflow()
         process_id = self.metadata.get_process()
         metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=}"
-        logger.configure(extra={"context": "[UNKNOW]", "metadata_info": metadata_info})
+        logger.configure(extra={"context": "[UNKNOWN]", "metadata_info": metadata_info})
 
         self.logger = logger.bind(context="[KAI SDK]")
         self.logger.debug("logger initialized")
