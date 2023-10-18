@@ -4,7 +4,6 @@ from sdk.metadata.metadata import Metadata
 
 
 def test_ok():
-    v.set("metadata.global_id", "test_global_id")
     v.set("metadata.product_id", "test_product_id")
     v.set("metadata.workflow_id", "test_workflow_id")
     v.set("metadata.process_id", "test_process_id")
@@ -17,8 +16,6 @@ def test_ok():
 
     metadata = Metadata()
 
-    assert metadata.logger is not None
-    assert metadata.get_global() == "test_global_id"
     assert metadata.get_product() == "test_product_id"
     assert metadata.get_workflow() == "test_workflow_id"
     assert metadata.get_process() == "test_process_id"

@@ -8,11 +8,6 @@ from vyper import v
 class MetadataABC(ABC):
     @staticmethod
     @abstractmethod
-    def get_global() -> str:
-        pass
-
-    @staticmethod
-    @abstractmethod
     def get_product() -> str:
         pass
 

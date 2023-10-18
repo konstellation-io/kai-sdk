@@ -27,7 +27,6 @@ func (s *SdkMetadataTestSuite) SetupTest() {
 
 func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	// Given
-	viper.SetDefault("metadata.global_id", "global-name")
 	viper.SetDefault("metadata.product_id", "product-name")
 	viper.SetDefault("metadata.workflow_id", "workflow-name")
 	viper.SetDefault("metadata.process_id", "process-name")
@@ -41,7 +40,6 @@ func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	// When
 	sdkMetadata := metadata.NewMetadata(s.logger)
 
-	globalName := sdkMetadata.GetGlobal()
 	productName := sdkMetadata.GetProduct()
 	workflowName := sdkMetadata.GetWorkflow()
 	processName := sdkMetadata.GetProcess()
@@ -54,7 +52,6 @@ func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 
 	// Then
 	s.NotNil(sdkMetadata)
-	s.Equal("global-name", globalName)
 	s.Equal("product-name", productName)
 	s.Equal("workflow-name", workflowName)
 	s.Equal("process-name", processName)
