@@ -39,7 +39,14 @@ def compose_initializer(initializer: Optional[Initializer] = None) -> Initialize
 def compose_runner(user_runner: RunnerFunc) -> RunnerFunc:
     async def runner_func(trigger_runner: TriggerRunner, sdk: KaiSDK) -> None:
         assert sdk.logger is not None
-        logger = sdk.logger.bind(context="[RUNNER]")
+
+        product_id = sdk.metadata.get_product()
+        version_id = sdk.metadata.get_version()
+        workflow_id = sdk.metadata.get_workflow()
+        process_id = sdk.metadata.get_process()
+        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=}"
+
+        logger = sdk.logger.bind(context="[RUNNER]", metadata_info=metadata_info)
         logger.info("executing TriggerRunner...")
 
         logger.info("executing user runner...")
