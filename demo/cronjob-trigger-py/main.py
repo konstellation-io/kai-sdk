@@ -14,15 +14,19 @@ async def initializer(sdk_: sdk.KaiSDK):
     sdk_.metadata.logger.info(f"process {sdk_.metadata.get_process()}")
     sdk_.metadata.logger.info(f"product {sdk_.metadata.get_product()}")
     sdk_.metadata.logger.info(f"workflow {sdk_.metadata.get_workflow()}")
+    sdk_.metadata.logger.info(f"global {sdk_.metadata.get_global()}")
     sdk_.metadata.logger.info(f"version {sdk_.metadata.get_version()}")
     sdk_.metadata.logger.info(
-        f"kv_product {sdk_.metadata.get_key_value_store_product_name()}"
+        f"kv_product {sdk_.metadata.get_product_centralized_configuration_name()}"
     )
     sdk_.metadata.logger.info(
-        f"kv_workflow {sdk_.metadata.get_key_value_store_workflow_name()}"
+        f"kv_workflow {sdk_.metadata.get_workflow_centralized_configuration_name()}"
     )
     sdk_.metadata.logger.info(
-        f"kv_process {sdk_.metadata.get_key_value_store_process_name()}"
+        f"kv_process {sdk_.metadata.get_process_centralized_configuration_name()}"
+    )
+    sdk_.metadata.logger.info(
+        f"kv_global {sdk_.metadata.get_global_centralized_configuration_name()}"
     )
     sdk_.metadata.logger.info(f"object-store {sdk_.metadata.get_object_store_name()}")
 
