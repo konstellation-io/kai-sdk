@@ -6,7 +6,6 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/trigger"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/kaiconstants"
 	"github.com/robfig/cron/v3"
 	"os"
 	"os/signal"
@@ -25,50 +24,50 @@ func main() {
 		Run()
 }
 
-func initializer(sdk sdk.KaiSDK) {
-	sdk.Logger.V(1).Info("Metadata",
-		"process", sdk.Metadata.GetProcess(),
-		"product", sdk.Metadata.GetProduct(),
-		"workflow", sdk.Metadata.GetWorkflow(),
-		"version", sdk.Metadata.GetVersion(),
-		"kv_product", sdk.Metadata.GetKeyValueStoreProductName(),
-		"kv_workflow", sdk.Metadata.GetKeyValueStoreWorkflowName(),
-		"kv_process", sdk.Metadata.GetKeyValueStoreProcessName(),
-		"object-store", sdk.Metadata.GetObjectStoreName(),
+func initializer(kaiSDK sdk.KaiSDK) {
+	kaiSDK.Logger.V(1).Info("Metadata",
+		"process", kaiSDK.Metadata.GetProcess(),
+		"product", kaiSDK.Metadata.GetProduct(),
+		"workflow", kaiSDK.Metadata.GetWorkflow(),
+		"version", kaiSDK.Metadata.GetVersion(),
+		"kv_product", kaiSDK.Metadata.GetKeyValueStoreProductName(),
+		"kv_workflow", kaiSDK.Metadata.GetKeyValueStoreWorkflowName(),
+		"kv_process", kaiSDK.Metadata.GetKeyValueStoreProcessName(),
+		"object-store", kaiSDK.Metadata.GetObjectStoreName(),
 	)
 
-	sdk.Logger.V(1).Info("PathUtils",
-		"getBasePath", sdk.PathUtils.GetBasePath(),
-		"composeBasePath", sdk.PathUtils.ComposePath("test"))
+	kaiSDK.Logger.V(1).Info("PathUtils",
+		"getBasePath", kaiSDK.PathUtils.GetBasePath(),
+		"composeBasePath", kaiSDK.PathUtils.ComposePath("test"))
 
-	value1, _ := sdk.CentralizedConfig.GetConfig("test1")
-	value2, _ := sdk.CentralizedConfig.GetConfig("test2")
-	sdk.Logger.Info("Config values from config.yaml", "test1", value1, "test2", value2)
+	value1, _ := kaiSDK.CentralizedConfig.GetConfig("test1")
+	value2, _ := kaiSDK.CentralizedConfig.GetConfig("test2")
+	kaiSDK.Logger.Info("Config values from config.yaml", "test1", value1, "test2", value2)
 }
 
-func cronjobRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
-	sdk.Logger.Info("Starting cronjob runner")
+func cronjobRunner(tr *trigger.Runner, kaiSDK sdk.KaiSDK) {
+	kaiSDK.Logger.Info("Starting cronjob runner")
 
 	c := cron.New(
-		cron.WithLogger(sdk.Logger.WithName("[CRONJOB]")),
+		cron.WithLogger(kaiSDK.Logger.WithName("[CRONJOB]")),
 	)
 
 	_, err := c.AddFunc("@every 30s", func() {
 		requestID := uuid.New().String()
-		sdk.Logger.Info("Cronjob triggered, new message sent", kaiconstants.LoggerRequestID, requestID)
+		kaiSDK.Logger.Info("Cronjob triggered, new message sent", sdk.LoggerRequestID, requestID)
 
 		val := wrappers.StringValue{
 			Value: "Hi there, I'm a cronjob!",
 		}
 
-		err := sdk.Messaging.SendOutputWithRequestID(&val, requestID)
+		err := kaiSDK.Messaging.SendOutputWithRequestID(&val, requestID)
 		if err != nil {
-			sdk.Logger.Error(err, "Error sending output", kaiconstants.LoggerRequestID, requestID)
+			kaiSDK.Logger.Error(err, "Error sending output", sdk.LoggerRequestID, requestID)
 			return
 		}
 	})
 	if err != nil {
-		sdk.Logger.Error(err, "Error adding cronjob")
+		kaiSDK.Logger.Error(err, "Error adding cronjob")
 		return
 	}
 
