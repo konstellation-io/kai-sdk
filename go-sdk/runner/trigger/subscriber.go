@@ -9,6 +9,8 @@ import (
 
 	"github.com/go-logr/logr"
 
+	"github.com/google/uuid"
+
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/proto"
@@ -36,12 +38,11 @@ func (tr *Runner) startSubscriber() {
 		tr.getLoggerWithName().V(1).Info("Subscribing to subject",
 			"Subject", subject, "Queue group", consumerName)
 
-		s, err := tr.jetstream.QueueSubscribe(
+		s, err := tr.jetstream.Subscribe(
 			subject,
-			consumerName,
 			tr.processMessage,
 			nats.DeliverNew(),
-			nats.Durable(consumerName),
+			nats.Durable(fmt.Sprintf("%s-%s", consumerName, uuid.New().String())),
 			nats.ManualAck(),
 			nats.AckWait(viper.GetDuration("runner.subscriber.ack_wait_time")),
 		)

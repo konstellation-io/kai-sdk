@@ -4,6 +4,7 @@ import asyncio
 from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import TYPE_CHECKING
+from uuid import uuid4
 
 import loguru
 from nats.aio.msg import Msg
@@ -45,8 +46,7 @@ class TriggerSubscriber:
                 try:
                     sub = await self.trigger_runner.js.subscribe(
                         subject=subject,
-                        queue=consumer_name,
-                        durable=consumer_name,
+                        durable=consumer_name + str(uuid4()),
                         cb=self._process_message,
                         config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ack_wait_time.total_seconds()),
                         manual_ack=True,
