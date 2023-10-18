@@ -12,15 +12,15 @@ from runner.trigger import trigger_runner
 from sdk import kai_sdk as sdk
 
 
-async def initializer(kaiSDK: sdk.KaiSDK):
-    logger = kaiSDK.logger.bind(context="[NATS SUBSCRIBER INITIALIZER]")
+async def initializer(kai_sdk: sdk.KaiSDK):
+    logger = kai_sdk.logger.bind(context="[NATS SUBSCRIBER INITIALIZER]")
     logger.info("starting example...")
 
 
 async def nats_subscriber_runner(
-    trigger_runner: trigger_runner.TriggerRunner, kaiSDK: sdk.KaiSDK
+    trigger_runner: trigger_runner.TriggerRunner, kai_sdk: sdk.KaiSDK
 ):
-    logger = kaiSDK.logger.bind(context="[NATS SUBSCRIBER RUNNER]")
+    logger = kai_sdk.logger.bind(context="[NATS SUBSCRIBER RUNNER]")
     logger.info("executing example...")
 
     nc: NatsClient = NatsClient()
@@ -29,11 +29,11 @@ async def nats_subscriber_runner(
     ack_time = timedelta(hours=22).total_seconds()
 
     async def process_message(msg: Msg):
-        logger = kaiSDK.logger.bind(context="[NATS SUBSCRIBER CALLBACK]")
+        logger = kai_sdk.logger.bind(context="[NATS SUBSCRIBER CALLBACK]")
         logger.info("processing message...")
 
         request_id = str(uuid.uuid4())
-        await kaiSDK.messaging.send_output_with_request_id(
+        await kai_sdk.messaging.send_output_with_request_id(
             StringValue(value="Hi there, I'm a NATS subscriber!"), request_id
         )
 
@@ -61,8 +61,8 @@ async def nats_subscriber_runner(
         return
 
 
-def finalizer(kaiSDK: sdk.KaiSDK):
-    logger = kaiSDK.logger.bind(context="[NATS SUBSCRIBER FINALIZER]")
+def finalizer(kai_sdk: sdk.KaiSDK):
+    logger = kai_sdk.logger.bind(context="[NATS SUBSCRIBER FINALIZER]")
     logger.info("finalizing example...")
 
 

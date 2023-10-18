@@ -8,53 +8,53 @@ from sdk import kai_sdk as sdk
 from sdk.centralized_config.centralized_config import Scope
 
 
-async def initializer(kaiSDK: sdk.KaiSDK):
-    logger = kaiSDK.logger.bind(context="[CRONJOB INITIALIZER]")
+async def initializer(kai_sdk: sdk.KaiSDK):
+    logger = kai_sdk.logger.bind(context="[CRONJOB INITIALIZER]")
     logger.info("starting example...")
-    kaiSDK.logger.info(f"process {kaiSDK.get_process()}")
-    kaiSDK.logger.info(f"product {kaiSDK.get_product()}")
-    kaiSDK.logger.info(f"workflow {kaiSDK.get_workflow()}")
-    kaiSDK.logger.info(f"global {kaiSDK.get_global()}")
-    kaiSDK.logger.info(f"version {kaiSDK.get_version()}")
-    kaiSDK.logger.info(
-        f"kv_product {kaiSDK.get_product_centralized_configuration_name()}"
+    kai_sdk.logger.info(f"process {kai_sdk.get_process()}")
+    kai_sdk.logger.info(f"product {kai_sdk.get_product()}")
+    kai_sdk.logger.info(f"workflow {kai_sdk.get_workflow()}")
+    kai_sdk.logger.info(f"global {kai_sdk.get_global()}")
+    kai_sdk.logger.info(f"version {kai_sdk.get_version()}")
+    kai_sdk.logger.info(
+        f"kv_product {kai_sdk.get_product_centralized_configuration_name()}"
     )
-    kaiSDK.logger.info(
-        f"kv_workflow {kaiSDK.get_workflow_centralized_configuration_name()}"
+    kai_sdk.logger.info(
+        f"kv_workflow {kai_sdk.get_workflow_centralized_configuration_name()}"
     )
-    kaiSDK.logger.info(
-        f"kv_process {kaiSDK.get_process_centralized_configuration_name()}"
+    kai_sdk.logger.info(
+        f"kv_process {kai_sdk.get_process_centralized_configuration_name()}"
     )
-    kaiSDK.logger.info(
-        f"kv_global {kaiSDK.get_global_centralized_configuration_name()}"
+    kai_sdk.logger.info(
+        f"kv_global {kai_sdk.get_global_centralized_configuration_name()}"
     )
-    kaiSDK.logger.info(f"object-store {kaiSDK.get_object_store_name()}")
+    kai_sdk.logger.info(f"object-store {kai_sdk.get_object_store_name()}")
 
-    kaiSDK.path_utils.logger.info(f"base path {kaiSDK.path_utils.get_base_path()}")
-    kaiSDK.path_utils.logger.info(
-        f"compose base path {kaiSDK.path_utils.compose_path('test')}"
+    kai_sdk.path_utils.logger.info(f"base path {kai_sdk.path_utils.get_base_path()}")
+    kai_sdk.path_utils.logger.info(
+        f"compose base path {kai_sdk.path_utils.compose_path('test')}"
     )
 
-    value1 = await kaiSDK.centralized_config.get_config("test1")
-    value2 = await kaiSDK.centralized_config.get_config("test2")
+    value1 = await kai_sdk.centralized_config.get_config("test1")
+    value2 = await kai_sdk.centralized_config.get_config("test2")
 
-    await kaiSDK.centralized_config.set_config("test", "value", Scope.WorkflowScope)
+    await kai_sdk.centralized_config.set_config("test", "value", Scope.WorkflowScope)
 
-    await kaiSDK.object_store.save("test", bytes("value-obj", "utf-8"))
+    await kai_sdk.object_store.save("test", bytes("value-obj", "utf-8"))
 
-    kaiSDK.centralized_config.logger.info(
+    kai_sdk.centralized_config.logger.info(
         f"config values from comfig.yaml test1: {value1} test2: {value2}"
     )
 
 
 async def cronjob_runner(
-    trigger_runner: trigger_runner.TriggerRunner, kaiSDK: sdk.KaiSDK
+    trigger_runner: trigger_runner.TriggerRunner, kai_sdk: sdk.KaiSDK
 ):
     while True:
-        logger = kaiSDK.logger.bind(context="[CRONJOB RUNNER]")
+        logger = kai_sdk.logger.bind(context="[CRONJOB RUNNER]")
         logger.info("executing example...")
         request_id = str(uuid.uuid4())
-        await kaiSDK.messaging.send_output_with_request_id(
+        await kai_sdk.messaging.send_output_with_request_id(
             StringValue(value="hello world"), request_id
         )
         logger.info(f"waiting response for request id {request_id}...")
@@ -63,8 +63,8 @@ async def cronjob_runner(
         await asyncio.sleep(3)
 
 
-def finalizer(kaiSDK: sdk.KaiSDK):
-    logger = kaiSDK.logger.bind(context="[CRONJOB FINALIZER]")
+def finalizer(kai_sdk: sdk.KaiSDK):
+    logger = kai_sdk.logger.bind(context="[CRONJOB FINALIZER]")
     logger.info("finalizing example...")
 
 
