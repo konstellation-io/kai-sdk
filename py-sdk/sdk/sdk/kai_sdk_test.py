@@ -59,6 +59,8 @@ async def test_initialize_ok(centralized_config_initialize_mock):
     assert sdk.metadata is not None
     assert sdk.messaging is not None
     assert getattr(sdk.messaging, "request_msg", None) is None
+    assert sdk.storage.ephemeral is not None
+    assert sdk.storage.ephemeral.ephemeral_storage_name == ""
     assert sdk.storage is not None
     assert sdk.centralized_config is not None
     assert isinstance(sdk.centralized_config.global_kv, KeyValue)

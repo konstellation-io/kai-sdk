@@ -79,6 +79,8 @@ async def test_sdk_import_ok(_):
     assert sdk.messaging is not None
     assert sdk.messaging.request_msg == request_msg
     assert sdk.storage is not None
+    assert sdk.storage.ephemeral.ephemeral_storage_name == ""
+    assert sdk.storage.ephemeral.object_store is None
     assert sdk.centralized_config is not None
     assert isinstance(sdk.centralized_config.global_kv, KeyValue)
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
