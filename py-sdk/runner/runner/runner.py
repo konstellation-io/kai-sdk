@@ -15,8 +15,11 @@ from runner.exit.exit_runner import ExitRunner
 from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
 
-LOGGER_FORMAT = "<green>{time}</green> <level>{extra[context]} {message}</level>"
-
+LOGGER_FORMAT = (
+    "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+    "{extra[context]}: <level>{message}</level> - {extra[metadata_info]}"
+)
 
 MANDATORY_CONFIG_KEYS = [
     "metadata.product_id",
@@ -135,6 +138,13 @@ class Runner:
                 diagnose=True,
                 level="ERROR",
             )
+
+        product_id = self.metadata.get_product()
+        version_id = self.metadata.get_version()
+        workflow_id = self.metadata.get_workflow()
+        process_id = self.metadata.get_process()
+        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=}"
+        logger.configure(extra={"context": "[UNKNOW]", "metadata_info": metadata_info})
 
         self.logger = logger.bind(context="[RUNNER CONFIG]")
         self.logger.info("logger initialized")
