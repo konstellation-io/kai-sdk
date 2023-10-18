@@ -138,13 +138,7 @@ class Runner:
                 diagnose=True,
                 level="ERROR",
             )
-
-        product_id = self.metadata.get_product()
-        version_id = self.metadata.get_version()
-        workflow_id = self.metadata.get_workflow()
-        process_id = self.metadata.get_process()
-        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=}"
-        logger.configure(extra={"context": "[UNKNOWN]", "metadata_info": metadata_info})
+        logger.configure(extra={"context": "[UNKNOWN]", "metadata_info": ""})
 
         self.logger = logger.bind(context="[RUNNER CONFIG]")
         self.logger.info("logger initialized")
