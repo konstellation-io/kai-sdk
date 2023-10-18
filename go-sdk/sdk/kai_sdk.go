@@ -18,11 +18,7 @@ import (
 )
 
 const (
-	LoggerRequestID  = "request_id"
-	LoggerProductID  = "product_id"
-	LoggerVersionID  = "version_id"
-	LoggerWorkflowID = "workflow_id"
-	LoggerProcessID  = "process_id"
+	LoggerRequestID = "request_id"
 )
 
 //go:generate mockery --name pathUtils --output ../mocks --filename path_utils_mock.go --structname PathUtilsMock

@@ -1,6 +1,7 @@
 package exit
 
 import (
+	kaiCommon "github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -37,11 +38,11 @@ func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 		kaiSDK.Logger = kaiSDK.Logger.
 			WithName(_preprocessorLoggerName).
 			WithValues(
-				sdk.LoggerRequestID, kaiSDK.GetRequestID(),
-				sdk.LoggerProductID, kaiSDK.Metadata.GetProduct(),
-				sdk.LoggerVersionID, kaiSDK.Metadata.GetVersion(),
-				sdk.LoggerWorkflowID, kaiSDK.Metadata.GetWorkflow(),
-				sdk.LoggerProcessID, kaiSDK.Metadata.GetProcess(),
+				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
+				kaiCommon.LoggerProductID, kaiSDK.Metadata.GetProduct(),
+				kaiCommon.LoggerVersionID, kaiSDK.Metadata.GetVersion(),
+				kaiCommon.LoggerWorkflowID, kaiSDK.Metadata.GetWorkflow(),
+				kaiCommon.LoggerProcessID, kaiSDK.Metadata.GetProcess(),
 			)
 		kaiSDK.Logger.V(1).Info("Preprocessing ExitRunner...")
 
@@ -63,11 +64,11 @@ func composeHandler(handler Handler) Handler {
 		kaiSDK.Logger = kaiSDK.Logger.
 			WithName(_handlerLoggerName).
 			WithValues(
-				sdk.LoggerRequestID, kaiSDK.GetRequestID(),
-				sdk.LoggerProductID, kaiSDK.Metadata.GetProduct(),
-				sdk.LoggerVersionID, kaiSDK.Metadata.GetVersion(),
-				sdk.LoggerWorkflowID, kaiSDK.Metadata.GetWorkflow(),
-				sdk.LoggerProcessID, kaiSDK.Metadata.GetProcess(),
+				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
+				kaiCommon.LoggerProductID, kaiSDK.Metadata.GetProduct(),
+				kaiCommon.LoggerVersionID, kaiSDK.Metadata.GetVersion(),
+				kaiCommon.LoggerWorkflowID, kaiSDK.Metadata.GetWorkflow(),
+				kaiCommon.LoggerProcessID, kaiSDK.Metadata.GetProcess(),
 			)
 
 		kaiSDK.Logger.V(1).Info("Handling ExitRunner...")
@@ -87,11 +88,11 @@ func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 		kaiSDK.Logger = kaiSDK.Logger.
 			WithName(_postprocessorLoggerName).
 			WithValues(
-				sdk.LoggerRequestID, kaiSDK.GetRequestID(),
-				sdk.LoggerProductID, kaiSDK.Metadata.GetProduct(),
-				sdk.LoggerVersionID, kaiSDK.Metadata.GetVersion(),
-				sdk.LoggerWorkflowID, kaiSDK.Metadata.GetWorkflow(),
-				sdk.LoggerProcessID, kaiSDK.Metadata.GetProcess(),
+				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
+				kaiCommon.LoggerProductID, kaiSDK.Metadata.GetProduct(),
+				kaiCommon.LoggerVersionID, kaiSDK.Metadata.GetVersion(),
+				kaiCommon.LoggerWorkflowID, kaiSDK.Metadata.GetWorkflow(),
+				kaiCommon.LoggerProcessID, kaiSDK.Metadata.GetProcess(),
 			)
 
 		kaiSDK.Logger.V(1).Info("Postprocessing ExitRunner...")
