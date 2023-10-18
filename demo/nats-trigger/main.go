@@ -20,44 +20,44 @@ func main() {
 		TriggerRunner().
 		WithInitializer(initializer).
 		WithRunner(natsSubscriberRunner).
-		WithFinalizer(func(sdk sdk.KaiSDK) {
-			sdk.Logger.Info("Finalizer")
+		WithFinalizer(func(kaiSDK sdk.KaiSDK) {
+			kaiSDK.Logger.Info("Finalizer")
 		}).
 		Run()
 }
 
-func initializer(sdk sdk.KaiSDK) {
-	sdk.Logger.Info("Writing test value to the object store", "value", "testValue")
-	err := sdk.ObjectStore.Save("test", []byte("testValue"))
+func initializer(kaiSDK sdk.KaiSDK) {
+	kaiSDK.Logger.Info("Writing test value to the object store", "value", "testValue")
+	err := kaiSDK.ObjectStore.Save("test", []byte("testValue"))
 	if err != nil {
-		sdk.Logger.Error(err, "Error saving object")
+		kaiSDK.Logger.Error(err, "Error saving object")
 	}
 
-	sdk.Logger.Info("Writing test value to the centralized config",
+	kaiSDK.Logger.Info("Writing test value to the centralized config",
 		"value", "testConfigValue")
-	err = sdk.CentralizedConfig.SetConfig("test", "testConfigValue")
+	err = kaiSDK.CentralizedConfig.SetConfig("test", "testConfigValue")
 	if err != nil {
-		sdk.Logger.Error(err, "Error setting config")
+		kaiSDK.Logger.Error(err, "Error setting config")
 	}
 
-	sdk.Logger.V(1).Info("Metadata",
-		"process", sdk.Metadata.GetProcess(),
-		"product", sdk.Metadata.GetProduct(),
-		"workflow", sdk.Metadata.GetWorkflow(),
-		"version", sdk.Metadata.GetVersion(),
-		"kv_product", sdk.Metadata.GetProductCentralizedConfigurationName(),
-		"kv_workflow", sdk.Metadata.GetWorkflowCentralizedConfigurationName(),
-		"kv_process", sdk.Metadata.GetProcessCentralizedConfigurationName(),
-		"object-store", sdk.Metadata.GetObjectStoreName(),
+	kaiSDK.Logger.V(1).Info("Metadata",
+		"process", kaiSDK.Metadata.GetProcess(),
+		"product", kaiSDK.Metadata.GetProduct(),
+		"workflow", kaiSDK.Metadata.GetWorkflow(),
+		"version", kaiSDK.Metadata.GetVersion(),
+		"kv_product", kaiSDK.Metadata.GetProductCentralizedConfigurationName(),
+		"kv_workflow", kaiSDK.Metadata.GetWorkflowCentralizedConfigurationName(),
+		"kv_process", kaiSDK.Metadata.GetProcessCentralizedConfigurationName(),
+		"object-store", kaiSDK.Metadata.GetObjectStoreName(),
 	)
 
-	sdk.Logger.V(1).Info("PathUtils",
-		"getBasePath", sdk.PathUtils.GetBasePath(),
-		"composeBasePath", sdk.PathUtils.ComposePath("test"))
+	kaiSDK.Logger.V(1).Info("PathUtils",
+		"getBasePath", kaiSDK.PathUtils.GetBasePath(),
+		"composeBasePath", kaiSDK.PathUtils.ComposePath("test"))
 }
 
-func natsSubscriberRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
-	sdk.Logger.Info("Starting nats subscriber")
+func natsSubscriberRunner(tr *trigger.Runner, kaiSDK sdk.KaiSDK) {
+	kaiSDK.Logger.Info("Starting nats subscriber")
 
 	nc, _ := nats.Connect("nats://localhost:4222")
 	js, err := nc.JetStream()
@@ -77,20 +77,20 @@ func natsSubscriberRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
 
 			responseChannel := tr.GetResponseChannel(requestID)
 
-			err = sdk.Messaging.SendOutputWithRequestID(val, requestID)
+			err = kaiSDK.Messaging.SendOutputWithRequestID(val, requestID)
 			if err != nil {
-				sdk.Logger.Error(err, "Error sending output")
+				kaiSDK.Logger.Error(err, "Error sending output")
 				return
 			}
 
 			// Wait for the response before ACKing the message
 			<-responseChannel
 
-			sdk.Logger.Info("Message received, acking message")
+			kaiSDK.Logger.Info("Message received, acking message")
 
 			err = msg.Ack()
 			if err != nil {
-				sdk.Logger.Error(err, "Error acking message")
+				kaiSDK.Logger.Error(err, "Error acking message")
 				return
 			}
 		},
@@ -107,7 +107,7 @@ func natsSubscriberRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
 
 	err = s.Unsubscribe()
 	if err != nil {
-		sdk.Logger.Error(err, "Error unsubscribing")
+		kaiSDK.Logger.Error(err, "Error unsubscribing")
 		return
 	}
 }

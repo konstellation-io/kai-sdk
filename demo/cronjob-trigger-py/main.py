@@ -8,53 +8,53 @@ from sdk import kai_sdk as sdk
 from sdk.centralized_config.centralized_config import Scope
 
 
-async def initializer(sdk_: sdk.KaiSDK):
-    logger = sdk_.logger.bind(context="[CRONJOB INITIALIZER]")
+async def initializer(kaiSDK: sdk.KaiSDK):
+    logger = kaiSDK.logger.bind(context="[CRONJOB INITIALIZER]")
     logger.info("starting example...")
-    sdk_.metadata.logger.info(f"process {sdk_.metadata.get_process()}")
-    sdk_.metadata.logger.info(f"product {sdk_.metadata.get_product()}")
-    sdk_.metadata.logger.info(f"workflow {sdk_.metadata.get_workflow()}")
-    sdk_.metadata.logger.info(f"global {sdk_.metadata.get_global()}")
-    sdk_.metadata.logger.info(f"version {sdk_.metadata.get_version()}")
-    sdk_.metadata.logger.info(
-        f"kv_product {sdk_.metadata.get_product_centralized_configuration_name()}"
+    kaiSDK.logger.info(f"process {kaiSDK.get_process()}")
+    kaiSDK.logger.info(f"product {kaiSDK.get_product()}")
+    kaiSDK.logger.info(f"workflow {kaiSDK.get_workflow()}")
+    kaiSDK.logger.info(f"global {kaiSDK.get_global()}")
+    kaiSDK.logger.info(f"version {kaiSDK.get_version()}")
+    kaiSDK.logger.info(
+        f"kv_product {kaiSDK.get_product_centralized_configuration_name()}"
     )
-    sdk_.metadata.logger.info(
-        f"kv_workflow {sdk_.metadata.get_workflow_centralized_configuration_name()}"
+    kaiSDK.logger.info(
+        f"kv_workflow {kaiSDK.get_workflow_centralized_configuration_name()}"
     )
-    sdk_.metadata.logger.info(
-        f"kv_process {sdk_.metadata.get_process_centralized_configuration_name()}"
+    kaiSDK.logger.info(
+        f"kv_process {kaiSDK.get_process_centralized_configuration_name()}"
     )
-    sdk_.metadata.logger.info(
-        f"kv_global {sdk_.metadata.get_global_centralized_configuration_name()}"
+    kaiSDK.logger.info(
+        f"kv_global {kaiSDK.get_global_centralized_configuration_name()}"
     )
-    sdk_.metadata.logger.info(f"object-store {sdk_.metadata.get_object_store_name()}")
+    kaiSDK.logger.info(f"object-store {kaiSDK.get_object_store_name()}")
 
-    sdk_.path_utils.logger.info(f"base path {sdk_.path_utils.get_base_path()}")
-    sdk_.path_utils.logger.info(
-        f"compose base path {sdk_.path_utils.compose_path('test')}"
+    kaiSDK.path_utils.logger.info(f"base path {kaiSDK.path_utils.get_base_path()}")
+    kaiSDK.path_utils.logger.info(
+        f"compose base path {kaiSDK.path_utils.compose_path('test')}"
     )
 
-    value1 = await sdk_.centralized_config.get_config("test1")
-    value2 = await sdk_.centralized_config.get_config("test2")
+    value1 = await kaiSDK.centralized_config.get_config("test1")
+    value2 = await kaiSDK.centralized_config.get_config("test2")
 
-    await sdk_.centralized_config.set_config("test", "value", Scope.WorkflowScope)
+    await kaiSDK.centralized_config.set_config("test", "value", Scope.WorkflowScope)
 
-    await sdk_.object_store.save("test", bytes("value-obj", "utf-8"))
+    await kaiSDK.object_store.save("test", bytes("value-obj", "utf-8"))
 
-    sdk_.centralized_config.logger.info(
+    kaiSDK.centralized_config.logger.info(
         f"config values from comfig.yaml test1: {value1} test2: {value2}"
     )
 
 
 async def cronjob_runner(
-    trigger_runner: trigger_runner.TriggerRunner, sdk_: sdk.KaiSDK
+    trigger_runner: trigger_runner.TriggerRunner, kaiSDK: sdk.KaiSDK
 ):
     while True:
-        logger = sdk_.logger.bind(context="[CRONJOB RUNNER]")
+        logger = kaiSDK.logger.bind(context="[CRONJOB RUNNER]")
         logger.info("executing example...")
         request_id = str(uuid.uuid4())
-        await sdk_.messaging.send_output_with_request_id(
+        await kaiSDK.messaging.send_output_with_request_id(
             StringValue(value="hello world"), request_id
         )
         logger.info(f"waiting response for request id {request_id}...")
@@ -63,8 +63,8 @@ async def cronjob_runner(
         await asyncio.sleep(3)
 
 
-def finalizer(sdk_: sdk.KaiSDK):
-    logger = sdk_.logger.bind(context="[CRONJOB FINALIZER]")
+def finalizer(kaiSDK: sdk.KaiSDK):
+    logger = kaiSDK.logger.bind(context="[CRONJOB FINALIZER]")
     logger.info("finalizing example...")
 
 
