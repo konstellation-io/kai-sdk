@@ -8,6 +8,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/proto"
@@ -33,12 +35,11 @@ func (tr *Runner) startSubscriber() {
 
 		ackWaitTime := 22 * time.Hour
 
-		s, err := tr.jetstream.QueueSubscribe(
+		s, err := tr.jetstream.Subscribe(
 			subject,
-			consumerName,
 			tr.processMessage,
 			nats.DeliverNew(),
-			nats.Durable(consumerName),
+			nats.Durable(fmt.Sprintf("%s-%s", consumerName, uuid.New().String())),
 			nats.ManualAck(),
 			nats.AckWait(ackWaitTime),
 		)
