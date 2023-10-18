@@ -45,10 +45,10 @@ func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	processName := sdkMetadata.GetProcess()
 	versionName := sdkMetadata.GetVersion()
 	objectStoreName := sdkMetadata.GetObjectStoreName()
-	globalKvName := sdkMetadata.GetKeyValueStoreGlobalName()
-	productKvName := sdkMetadata.GetKeyValueStoreProductName()
-	workflowKvName := sdkMetadata.GetKeyValueStoreWorkflowName()
-	processKvName := sdkMetadata.GetKeyValueStoreProcessName()
+	globalKvName := sdkMetadata.GetGlobalCentralizedConfigurationName()
+	productKvName := sdkMetadata.GetProductCentralizedConfigurationName()
+	workflowKvName := sdkMetadata.GetWorkflowCentralizedConfigurationName()
+	processKvName := sdkMetadata.GetProcessCentralizedConfigurationName()
 
 	// Then
 	s.NotNil(sdkMetadata)

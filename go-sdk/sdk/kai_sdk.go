@@ -45,9 +45,10 @@ type metadata interface {
 	GetProduct() string
 	GetVersion() string
 	GetObjectStoreName() string
-	GetKeyValueStoreProductName() string
-	GetKeyValueStoreWorkflowName() string
-	GetKeyValueStoreProcessName() string
+	GetGlobalCentralizedConfigurationName() string
+	GetProductCentralizedConfigurationName() string
+	GetWorkflowCentralizedConfigurationName() string
+	GetProcessCentralizedConfigurationName() string
 }
 
 //go:generate mockery --name objectStore --output ../mocks --filename object_store_mock.go --structname ObjectStoreMock

@@ -1,15 +1,16 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/trigger"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 	"github.com/robfig/cron/v3"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func main() {
@@ -30,9 +31,9 @@ func initializer(sdk sdk.KaiSDK) {
 		"product", sdk.Metadata.GetProduct(),
 		"workflow", sdk.Metadata.GetWorkflow(),
 		"version", sdk.Metadata.GetVersion(),
-		"kv_product", sdk.Metadata.GetKeyValueStoreProductName(),
-		"kv_workflow", sdk.Metadata.GetKeyValueStoreWorkflowName(),
-		"kv_process", sdk.Metadata.GetKeyValueStoreProcessName(),
+		"kv_product", sdk.Metadata.GetProductCentralizedConfigurationName(),
+		"kv_workflow", sdk.Metadata.GetWorkflowCentralizedConfigurationName(),
+		"kv_process", sdk.Metadata.GetProcessCentralizedConfigurationName(),
 		"object-store", sdk.Metadata.GetObjectStoreName(),
 	)
 

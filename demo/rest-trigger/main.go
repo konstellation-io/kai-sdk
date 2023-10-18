@@ -52,9 +52,9 @@ func initializer(sdk sdk.KaiSDK) {
 		"product", sdk.Metadata.GetProduct(),
 		"workflow", sdk.Metadata.GetWorkflow(),
 		"version", sdk.Metadata.GetVersion(),
-		"kv_product", sdk.Metadata.GetKeyValueStoreProductName(),
-		"kv_workflow", sdk.Metadata.GetKeyValueStoreWorkflowName(),
-		"kv_process", sdk.Metadata.GetKeyValueStoreProcessName(),
+		"kv_product", sdk.Metadata.GetProductCentralizedConfigurationName(),
+		"kv_workflow", sdk.Metadata.GetWorkflowCentralizedConfigurationName(),
+		"kv_process", sdk.Metadata.GetProcessCentralizedConfigurationName(),
 		"object_store", sdk.Metadata.GetObjectStoreName(),
 	)
 
