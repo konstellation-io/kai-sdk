@@ -38,14 +38,14 @@ def compose_initializer(initializer: Optional[Initializer] = None) -> Initialize
 def compose_preprocessor(preprocessor: Preprocessor) -> Preprocessor:
     async def preprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
-        
+
         product_id = sdk.metadata.get_product()
         version_id = sdk.metadata.get_version()
         workflow_id = sdk.metadata.get_workflow()
         process_id = sdk.metadata.get_process()
         request_id = sdk.get_request_id()
         metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=} {request_id=}"
-        
+
         logger = sdk.logger.bind(context="[PREPROCESSOR]", metadata_info=metadata_info)
         logger.info("preprocessing ExitRunner...")
 
@@ -84,14 +84,14 @@ def compose_handler(handler: Handler) -> Handler:
 def compose_postprocessor(postprocessor: Postprocessor) -> Postprocessor:
     async def postprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
-        
+
         product_id = sdk.metadata.get_product()
         version_id = sdk.metadata.get_version()
         workflow_id = sdk.metadata.get_workflow()
         process_id = sdk.metadata.get_process()
         request_id = sdk.get_request_id()
         metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=} {request_id=}"
-        
+
         logger = sdk.logger.bind(context="[POSTPROCESSOR]", metadata_info=metadata_info)
         logger.info("postprocessing ExitRunner...")
 

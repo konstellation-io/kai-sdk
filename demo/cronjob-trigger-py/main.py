@@ -11,24 +11,23 @@ from sdk.centralized_config.centralized_config import Scope
 async def initializer(kai_sdk: sdk.KaiSDK):
     logger = kai_sdk.logger.bind(context="[CRONJOB INITIALIZER]")
     logger.info("starting example...")
-    kai_sdk.logger.info(f"process {kai_sdk.get_process()}")
-    kai_sdk.logger.info(f"product {kai_sdk.get_product()}")
-    kai_sdk.logger.info(f"workflow {kai_sdk.get_workflow()}")
-    kai_sdk.logger.info(f"global {kai_sdk.get_global()}")
-    kai_sdk.logger.info(f"version {kai_sdk.get_version()}")
+    kai_sdk.logger.info(f"process {kai_sdk.metadata.get_process()}")
+    kai_sdk.logger.info(f"product {kai_sdk.metadata.get_product()}")
+    kai_sdk.logger.info(f"workflow {kai_sdk.metadata.get_workflow()}")
+    kai_sdk.logger.info(f"version {kai_sdk.metadata.get_version()}")
     kai_sdk.logger.info(
-        f"kv_product {kai_sdk.get_product_centralized_configuration_name()}"
+        f"kv_product {kai_sdk.metadata.get_product_centralized_configuration_name()}"
     )
     kai_sdk.logger.info(
-        f"kv_workflow {kai_sdk.get_workflow_centralized_configuration_name()}"
+        f"kv_workflow {kai_sdk.metadata.get_workflow_centralized_configuration_name()}"
     )
     kai_sdk.logger.info(
-        f"kv_process {kai_sdk.get_process_centralized_configuration_name()}"
+        f"kv_process {kai_sdk.metadata.get_process_centralized_configuration_name()}"
     )
     kai_sdk.logger.info(
-        f"kv_global {kai_sdk.get_global_centralized_configuration_name()}"
+        f"kv_global {kai_sdk.metadata.get_global_centralized_configuration_name()}"
     )
-    kai_sdk.logger.info(f"object-store {kai_sdk.get_object_store_name()}")
+    kai_sdk.logger.info(f"object-store {kai_sdk.metadata.get_object_store_name()}")
 
     kai_sdk.path_utils.logger.info(f"base path {kai_sdk.path_utils.get_base_path()}")
     kai_sdk.path_utils.logger.info(
