@@ -2,6 +2,7 @@ package main
 
 import (
 	context2 "context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os/signal"
@@ -34,8 +35,8 @@ func main() {
 }
 
 func initializer(kaiSDK sdk.KaiSDK) {
-	kaiSDK.Logger.Info("Writing test value to the object store", "value", "testValue")
-	err := kaiSDK.ObjectStore.Save("test", []byte("testValue"))
+	kaiSDK.Logger.Info("Writing test value to the ephemeral store", "value", "testValue")
+	err := kaiSDK.Storage.Ephemeral.Save("test", []byte("testValue"))
 	if err != nil {
 		kaiSDK.Logger.Error(err, "Error saving object")
 	}
@@ -55,7 +56,7 @@ func initializer(kaiSDK sdk.KaiSDK) {
 		"kv_product", kaiSDK.Metadata.GetProductCentralizedConfigurationName(),
 		"kv_workflow", kaiSDK.Metadata.GetWorkflowCentralizedConfigurationName(),
 		"kv_process", kaiSDK.Metadata.GetProcessCentralizedConfigurationName(),
-		"object_store", kaiSDK.Metadata.GetObjectStoreName(),
+		"ephemeral_store", kaiSDK.Metadata.GetEphemeralStorageName(),
 	)
 
 	kaiSDK.Logger.V(1).Info("PathUtils",
@@ -77,7 +78,7 @@ func restServerRunner(tr *trigger.Runner, kaiSDK sdk.KaiSDK) {
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			kaiSDK.Logger.Error(err, "Error running http server")
 		}
 	}()

@@ -34,7 +34,7 @@ func initializer(kaiSDK sdk.KaiSDK) {
 		"kv_product", kaiSDK.Metadata.GetProductCentralizedConfigurationName(),
 		"kv_workflow", kaiSDK.Metadata.GetWorkflowCentralizedConfigurationName(),
 		"kv_process", kaiSDK.Metadata.GetProcessCentralizedConfigurationName(),
-		"object-store", kaiSDK.Metadata.GetObjectStoreName(),
+		"ephemeral-storage", kaiSDK.Metadata.GetEphemeralStorageName(),
 	)
 
 	kaiSDK.Logger.V(1).Info("PathUtils",

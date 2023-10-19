@@ -4,7 +4,6 @@ from google.protobuf.any_pb2 import Any
 from google.protobuf.wrappers_pb2 import StringValue
 from runner.runner import Runner
 from sdk import kai_sdk as sdk
-from sdk.centralized_config.centralized_config import Scope
 
 
 async def initializer(kai_sdk: sdk.KaiSDK):
@@ -16,11 +15,11 @@ async def initializer(kai_sdk: sdk.KaiSDK):
     else:
         logger.info(f"config value retrieved! {value}")
 
-    value, _ = await kai_sdk.object_store.get("test")
+    value, _ = await kai_sdk.storage.ephemeral.get("test")
     if value is None:
-        logger.info("object store value not found")
+        logger.info("ephemeral storage value not found")
     else:
-        logger.info(f"object store value retrieved! {value.decode('utf-8')}")
+        logger.info(f"ephemeral storage value retrieved! {value.decode('utf-8')}")
 
 
 async def handler(kai_sdk: sdk.KaiSDK, response: Any):

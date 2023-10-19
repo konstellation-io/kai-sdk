@@ -27,7 +27,7 @@ async def initializer(kai_sdk: sdk.KaiSDK):
     kai_sdk.logger.info(
         f"kv_global {kai_sdk.metadata.get_global_centralized_configuration_name()}"
     )
-    kai_sdk.logger.info(f"object-store {kai_sdk.metadata.get_object_store_name()}")
+    kai_sdk.logger.info(f"object-store {kai_sdk.metadata.get_ephemeral_storage_name()}")
 
     kai_sdk.path_utils.logger.info(f"base path {kai_sdk.path_utils.get_base_path()}")
     kai_sdk.path_utils.logger.info(
@@ -39,9 +39,9 @@ async def initializer(kai_sdk: sdk.KaiSDK):
 
     await kai_sdk.centralized_config.set_config("test", "value", Scope.WorkflowScope)
 
-    await kai_sdk.object_store.save("test", bytes("value-obj", "utf-8"))
+    await kai_sdk.storage.ephemeral.save("test", bytes("value-obj", "utf-8"))
 
-    kai_sdk.centralized_config.logger.info(
+    kai_sdk.storage.ephemeral.logger.info(
         f"config values from comfig.yaml test1: {value1} test2: {value2}"
     )
 

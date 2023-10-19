@@ -31,7 +31,7 @@ func (md Metadata) GetVersion() string {
 	return viper.GetString("metadata.version_id")
 }
 
-func (md Metadata) GetObjectStoreName() string {
+func (md Metadata) GetEphemeralStorageName() string {
 	return viper.GetString("nats.object_store")
 }
 

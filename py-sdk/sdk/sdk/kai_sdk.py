@@ -12,11 +12,12 @@ from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 
 from sdk.centralized_config.centralized_config import CentralizedConfig, CentralizedConfigABC
+from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage, EphemeralStorageABC
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.messaging.messaging import Messaging, MessagingABC
 from sdk.metadata.metadata import Metadata, MetadataABC
-from sdk.object_store.object_store import ObjectStore, ObjectStoreABC
 from sdk.path_utils.path_utils import PathUtils, PathUtilsABC
+from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
 
 
 @dataclass
@@ -25,8 +26,9 @@ class MeasurementsABC(ABC):
 
 
 @dataclass
-class StorageABC(ABC):
-    pass
+class Storage:
+    persistent: PersistentStorageABC
+    ephemeral: EphemeralStorageABC = field(default=None)
 
 
 @dataclass
@@ -37,11 +39,10 @@ class KaiSDK:
     request_msg: KaiNatsMessage = field(init=False, default=None)
     metadata: MetadataABC = field(init=False)
     messaging: MessagingABC = field(init=False)
-    object_store: ObjectStoreABC = field(init=False)
     centralized_config: CentralizedConfigABC = field(init=False)
     path_utils: PathUtilsABC = field(init=False)
     measurements: MeasurementsABC = field(init=False)
-    storage: StorageABC = field(init=False)
+    storage: Storage = field(init=False)
 
     def __post_init__(self) -> None:
         self.metadata = Metadata()
@@ -58,14 +59,13 @@ class KaiSDK:
 
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
-        self.object_store = ObjectStore(js=self.js)
         self.path_utils = PathUtils()
         self.measurements = MeasurementsABC()
-        self.storage = StorageABC()
+        self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
 
     async def initialize(self) -> None:
         try:
-            await self.object_store.initialize()
+            await self.storage.ephemeral.initialize()
         except Exception as e:
             assert self.logger is not None
             self.logger.error(f"error initializing object store: {e}")

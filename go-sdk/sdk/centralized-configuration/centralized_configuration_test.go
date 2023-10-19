@@ -32,9 +32,9 @@ const (
 	notExistMessage        = "not exist"
 )
 
-//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.26.0 --output ../../mocks --name KeyValue --structname KeyValueMock --filename key_value_mock.go
-//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.26.0 --output ../../mocks --name KeyValueEntry --structname KeyValueEntryMock --filename key_value_entry_mock.go
-//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.26.0 --output ../../mocks --name JetStreamContext --structname JetStreamContextMock --filename jetstream_context_mock.go
+//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.28.0 --output ../../mocks --name KeyValue --structname KeyValueMock --filename key_value_mock.go
+//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.28.0 --output ../../mocks --name KeyValueEntry --structname KeyValueEntryMock --filename key_value_entry_mock.go
+//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.28.0 --output ../../mocks --name JetStreamContext --structname JetStreamContextMock --filename jetstream_context_mock.go
 type SdkCentralizedConfigurationTestSuite struct {
 	suite.Suite
 	logger     logr.Logger

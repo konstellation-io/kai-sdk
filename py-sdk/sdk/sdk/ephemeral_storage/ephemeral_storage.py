@@ -12,22 +12,22 @@ from nats.js.errors import NotFoundError, ObjectNotFoundError
 from nats.js.object_store import ObjectStore as NatsObjectStore
 from vyper import v
 
-from sdk.object_store.exceptions import (
+from sdk.ephemeral_storage.exceptions import (
     FailedCompilingRegexpError,
     FailedDeletingFileError,
+    FailedEphemeralStorageInitializationError,
     FailedGettingFileError,
     FailedListingFilesError,
-    FailedObjectStoreInitializationError,
     FailedPurgingFilesError,
     FailedSavingFileError,
-    UndefinedObjectStoreError,
+    UndefinedEphemeralStorageError,
 )
 
-UNDEFINED_OBJECT_STORE = "object store not defined"
+UNDEFINED_OBJECT_STORE = "ephemeral storage not defined"
 
 
 @dataclass
-class ObjectStoreABC(ABC):
+class EphemeralStorageABC(ABC):
     @abstractmethod
     async def initialize(self) -> None:
         pass
@@ -54,45 +54,46 @@ class ObjectStoreABC(ABC):
 
 
 @dataclass
-class ObjectStore(ObjectStoreABC):
+class EphemeralStorage(EphemeralStorageABC):
     js: JetStreamContext
-    object_store_name: Optional[str] = None
+    ephemeral_storage_name: Optional[str] = None
     object_store: Optional[NatsObjectStore] = None
-    logger: loguru.Logger = logger.bind(context="[OBJECT STORE]")
+    logger: loguru.Logger = logger.bind(context="[EPHEMERAL STORAGE]")
 
     def __post_init__(self) -> None:
-        self.object_store_name = v.get_string("nats.object_store")
-        if self.object_store_name:
-            self.logger = logger.bind(context=f"[OBJECT STORE: {self.object_store_name}]")
+        self.ephemeral_storage_name = v.get_string("nats.object_store")
+        if self.ephemeral_storage_name:
+            self.logger = logger.bind(context=f"[EPHEMERAL STORAGE: {self.ephemeral_storage_name}]")
 
     async def initialize(self) -> None:
-        if self.object_store_name:
+        if self.ephemeral_storage_name:
+            self.logger.info(f"initializing ephemeral storage {self.ephemeral_storage_name}...")
             self.object_store = await self._init_object_store()
         else:
-            self.logger.info("object store not defined [skipped]")
+            self.logger.info("ephemeral storage not defined [skipped]")
 
     async def _init_object_store(self) -> NatsObjectStore:
         try:
-            assert isinstance(self.object_store_name, str)
-            object_store = await self.js.object_store(self.object_store_name)
-            self.logger.debug(f"object store {self.object_store_name} successfully initialized")
+            assert isinstance(self.ephemeral_storage_name, str)
+            object_store = await self.js.object_store(self.ephemeral_storage_name)
+            self.logger.debug(f"ephemeral storage {self.ephemeral_storage_name} successfully initialized")
             return object_store
         except Exception as e:
-            self.logger.warning(f"failed initializing object store {self.object_store_name}: {e}")
-            raise FailedObjectStoreInitializationError(error=e)
+            self.logger.warning(f"failed initializing ephemeral storage '{self.ephemeral_storage_name}': {e}")
+            raise FailedEphemeralStorageInitializationError(error=e)
 
     async def list(self, regexp: Optional[str] = None) -> list[str]:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
-            raise UndefinedObjectStoreError
+            raise UndefinedEphemeralStorageError
 
         try:
             objects = await self.object_store.list(ignore_deletes=True)
         except NotFoundError as e:
-            self.logger.debug(f"no files found in object store {self.object_store_name}: {e}")
+            self.logger.debug(f"no files found in ephemeral storage {self.ephemeral_storage_name}: {e}")
             return []
         except Exception as e:
-            self.logger.warning(f"failed listing files from object store {self.object_store_name}: {e}")
+            self.logger.warning(f"failed listing files from ephemeral storage {self.ephemeral_storage_name}: {e}")
             raise FailedListingFilesError(error=e)
 
         pattern = None
@@ -109,56 +110,56 @@ class ObjectStore(ObjectStoreABC):
             if not pattern or pattern.match(obj_name):
                 response.append(obj_name)
 
-        self.logger.info(f"files successfully listed from object store {self.object_store_name}")
+        self.logger.info(f"files successfully listed from ephemeral storage {self.ephemeral_storage_name}")
         return response
 
     async def get(self, key: str) -> tuple[Optional[bytes], bool]:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
-            raise UndefinedObjectStoreError
+            raise UndefinedEphemeralStorageError
 
         try:
             response = await self.object_store.get(key)
-            self.logger.info(f"file {key} successfully retrieved from object store {self.object_store_name}")
+            self.logger.info(f"file {key} successfully retrieved from ephemeral storage {self.ephemeral_storage_name}")
             return response.data, True
         except ObjectNotFoundError as e:
-            self.logger.debug(f"file {key} not found in object store {self.object_store_name}: {e}")
+            self.logger.debug(f"file {key} not found in ephemeral storage {self.ephemeral_storage_name}: {e}")
             return None, False
         except Exception as e:
-            self.logger.warning(f"failed getting file {key} from object store {self.object_store_name}: {e}")
+            self.logger.warning(f"failed getting file {key} from ephemeral storage {self.ephemeral_storage_name}: {e}")
             raise FailedGettingFileError(key=key, error=e)
 
     async def save(self, key: str, payload: bytes) -> None:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
-            raise UndefinedObjectStoreError
+            raise UndefinedEphemeralStorageError
 
         try:
             await self.object_store.put(key, payload)
-            self.logger.info(f"file {key} successfully saved in object store {self.object_store_name}")
+            self.logger.info(f"file {key} successfully saved in ephemeral storage {self.ephemeral_storage_name}")
         except Exception as e:
-            self.logger.warning(f"failed saving file {key} in object store {self.object_store_name}: {e}")
+            self.logger.warning(f"failed saving file {key} in ephemeral storage {self.ephemeral_storage_name}: {e}")
             raise FailedSavingFileError(key=key, error=e)
 
     async def delete(self, key: str) -> bool:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
-            raise UndefinedObjectStoreError
+            raise UndefinedEphemeralStorageError
 
         try:
             info_ = await self.object_store.delete(key)
             return info_.info.deleted if info_.info.deleted else False
         except ObjectNotFoundError as e:
-            self.logger.debug(f"file {key} not found in object store {self.object_store_name}: {e}")
+            self.logger.debug(f"file {key} not found in ephemeral storage {self.ephemeral_storage_name}: {e}")
             return False
         except Exception as e:
-            self.logger.warning(f"failed deleting file {key} from object store {self.object_store_name}: {e}")
+            self.logger.warning(f"failed deleting file {key} from ephemeral storage {self.ephemeral_storage_name}: {e}")
             raise FailedDeletingFileError(key=key, error=e)
 
     async def purge(self, regexp: Optional[str] = None) -> None:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
-            raise UndefinedObjectStoreError
+            raise UndefinedEphemeralStorageError
 
         pattern = None
         if regexp:
@@ -172,15 +173,19 @@ class ObjectStore(ObjectStoreABC):
         deleted = 0
         for name in object_names:
             if not pattern or pattern.match(name):
-                self.logger.info(f"deleting file {name} from object store {self.object_store_name}...")
+                self.logger.info(f"deleting file {name} from ephemeral storage {self.ephemeral_storage_name}...")
 
                 try:
                     info_ = await self.object_store.delete(name)
                     if info_.info.deleted:
                         deleted += 1
-                        self.logger.info(f"file {name} successfully deleted from object store {self.object_store_name}")
+                        self.logger.info(
+                            f"file {name} successfully deleted from ephemeral storage {self.ephemeral_storage_name}"
+                        )
                 except Exception as e:
-                    self.logger.warning(f"failed deleting file {name} from object store {self.object_store_name}: {e}")
+                    self.logger.warning(
+                        f"failed deleting file {name} from ephemeral storage {self.ephemeral_storage_name}: {e}"
+                    )
                     raise FailedPurgingFilesError(error=e)
 
-        self.logger.info(f"{deleted} files successfully purged from object store {self.object_store_name}")
+        self.logger.info(f"{deleted} files successfully purged from ephemeral storage {self.ephemeral_storage_name}")

@@ -3,7 +3,7 @@ package objectstore_test
 import (
 	"fmt"
 
-	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/object-store"
+	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
 
 	"github.com/spf13/viper"
 
@@ -12,20 +12,20 @@ import (
 
 const (
 	natsObjectStoreField = "nats.object_store"
-	natsObjectStoreValue = "object-store"
+	natsObjectStoreValue = "ephemeral-storage"
 )
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_DeleteObjectStoreNotInitialized_ExpectError() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, "")
 
-	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	// When
 	err := objectStore.Delete("key")
 
 	// Then
-	s.ErrorIs(err, errors.ErrUndefinedObjectStore)
+	s.ErrorIs(err, errors.ErrUndefinedEphemeralStorage)
 	s.NotNil(objectStore)
 }
 
@@ -33,7 +33,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorDeletingObject_ExpectErro
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	s.objectStore.On("Delete", "key").Return(fmt.Errorf("error saving object"))
 
@@ -50,7 +50,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_DeleteObject_ExpectOK() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	s.objectStore.On("Delete", "key").Return(nil)
 

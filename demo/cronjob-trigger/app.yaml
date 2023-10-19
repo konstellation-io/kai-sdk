@@ -9,7 +9,7 @@ nats:
   url: "nats://localhost:4222"
   stream: trigger
   output: trigger-output
-  object_store: object-store
+  object_store: ephemeral-storage
 
 centralized_configuration:
   global:
