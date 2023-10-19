@@ -14,7 +14,7 @@ async def initializer(kai_sdk: sdk.KaiSDK):
         logger.info("config value not found")
     else:
         logger.info(f"config value retrieved! {value}")
-   
+
     value, _ = await kai_sdk.storage.ephemeral.get("test")
     if value is None:
         logger.info("object store value not found")
