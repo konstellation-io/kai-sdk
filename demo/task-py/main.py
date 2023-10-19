@@ -4,7 +4,6 @@ from google.protobuf.any_pb2 import Any
 from google.protobuf.wrappers_pb2 import StringValue
 from runner.runner import Runner
 from sdk import kai_sdk as sdk
-from sdk.centralized_config.centralized_config import Scope
 
 
 async def initializer(kai_sdk: sdk.KaiSDK):
