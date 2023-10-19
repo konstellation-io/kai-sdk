@@ -1,20 +1,11 @@
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-import loguru
-from loguru import logger
 from vyper import v
 
 
 @dataclass
 class MetadataABC(ABC):
-    @staticmethod
-    @abstractmethod
-    def get_global() -> str:
-        pass
-
     @staticmethod
     @abstractmethod
     def get_product() -> str:
@@ -42,33 +33,27 @@ class MetadataABC(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_key_value_global_name() -> str:
+    def get_global_centralized_configuration_name() -> str:
         pass
 
     @staticmethod
     @abstractmethod
-    def get_key_value_store_product_name() -> str:
+    def get_product_centralized_configuration_name() -> str:
         pass
 
     @staticmethod
     @abstractmethod
-    def get_key_value_store_workflow_name() -> str:
+    def get_workflow_centralized_configuration_name() -> str:
         pass
 
     @staticmethod
     @abstractmethod
-    def get_key_value_store_process_name() -> str:
+    def get_process_centralized_configuration_name() -> str:
         pass
 
 
 @dataclass
 class Metadata(MetadataABC):
-    logger: loguru.Logger = logger.bind(context="[METADATA]")
-
-    @staticmethod
-    def get_global() -> str:
-        return v.get_string("metadata.global_id")
-
     @staticmethod
     def get_product() -> str:
         return v.get_string("metadata.product_id")
@@ -90,17 +75,17 @@ class Metadata(MetadataABC):
         return v.get_string("nats.object_store")
 
     @staticmethod
-    def get_key_value_global_name() -> str:
+    def get_global_centralized_configuration_name() -> str:
         return v.get_string("centralized_configuration.global.bucket")
 
     @staticmethod
-    def get_key_value_store_product_name() -> str:
+    def get_product_centralized_configuration_name() -> str:
         return v.get_string("centralized_configuration.product.bucket")
 
     @staticmethod
-    def get_key_value_store_workflow_name() -> str:
+    def get_workflow_centralized_configuration_name() -> str:
         return v.get_string("centralized_configuration.workflow.bucket")
 
     @staticmethod
-    def get_key_value_store_process_name() -> str:
+    def get_process_centralized_configuration_name() -> str:
         return v.get_string("centralized_configuration.process.bucket")

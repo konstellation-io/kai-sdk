@@ -6,24 +6,24 @@ from runner.runner import Runner
 from sdk import kai_sdk as sdk
 
 
-async def initializer(sdk_: sdk.KaiSDK):
-    logger = sdk_.logger.bind(context="[EXIT INITIALIZER]")
+async def initializer(kai_sdk: sdk.KaiSDK):
+    logger = kai_sdk.logger.bind(context="[EXIT INITIALIZER]")
     logger.info("starting example...")
-    value, _ = await sdk_.centralized_config.get_config("test")
+    value, _ = await kai_sdk.centralized_config.get_config("test")
     if value is None:
         logger.info("config value not found")
     else:
         logger.info(f"config value retrieved! {value}")
 
-    value, _ = await sdk_.storage.ephemeral.get("test")
+    value, _ = await kai_sdk.storage.ephemeral.get("test")
     if value is None:
         logger.info("ephemeral storage value not found")
     else:
         logger.info(f"ephemeral storage value retrieved! {value.decode('utf-8')}")
 
 
-async def handler(sdk_: sdk.KaiSDK, response: Any):
-    logger = sdk_.logger.bind(context="[EXIT HANDLER]")
+async def handler(kai_sdk: sdk.KaiSDK, response: Any):
+    logger = kai_sdk.logger.bind(context="[EXIT HANDLER]")
     string_value = StringValue()
 
     response.Unpack(string_value)
@@ -32,23 +32,23 @@ async def handler(sdk_: sdk.KaiSDK, response: Any):
 
     composed_string = f"{message}, processed by the exit process!"
     logger.info(f"sending message {composed_string}")
-    await sdk_.messaging.send_output(StringValue(value=composed_string))
+    await kai_sdk.messaging.send_output(StringValue(value=composed_string))
 
 
-async def preprocessor(sdk_: sdk.KaiSDK, response: Any):
-    logger = sdk_.logger.bind(context="[EXIT PREPROCESSOR]")
+async def preprocessor(kai_sdk: sdk.KaiSDK, response: Any):
+    logger = kai_sdk.logger.bind(context="[EXIT PREPROCESSOR]")
     logger.info("I am an async preprocessor")
     await asyncio.sleep(0.0000001)
     logger.info("I am an async preprocessor, after sleep")
 
 
-def postprocessor(sdk_: sdk.KaiSDK, response: Any):
-    logger = sdk_.logger.bind(context="[EXIT POSTPROCESSOR]")
+def postprocessor(kai_sdk: sdk.KaiSDK, response: Any):
+    logger = kai_sdk.logger.bind(context="[EXIT POSTPROCESSOR]")
     logger.info("I am a sync postprocessor")
 
 
-async def finalizer(sdk_: sdk.KaiSDK):
-    logger = sdk_.logger.bind(context="[EXIT FINALIZER]")
+async def finalizer(kai_sdk: sdk.KaiSDK):
+    logger = kai_sdk.logger.bind(context="[EXIT FINALIZER]")
     logger.info("finalizing example asynchronously...")
     await asyncio.sleep(0.0000001)
     logger.info("finalizing example asynchronously, after sleep...")

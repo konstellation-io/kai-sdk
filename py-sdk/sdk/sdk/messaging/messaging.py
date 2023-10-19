@@ -172,21 +172,21 @@ class Messaging(MessagingABC):
         try:
             output_msg = response_msg.SerializeToString()  # serialize to bytes
         except Exception as e:
-            self.logger.debug(f"failed serializing response message: {e}")
+            self.logger.debug(f"failed serializing response message: {e} with request_id {response_msg.request_id}")
             return
 
         try:
             output_msg = await self._prepare_output_message(output_msg)
         except (FailedGettingMaxMessageSizeError, MessageTooLargeError) as e:
-            self.logger.debug(f"failed preparing output message: {e}")
+            self.logger.debug(f"failed preparing output message: {e} with request_id {response_msg.request_id}")
             return
 
-        self.logger.info(f"publishing response to subject {output_subject}...")
+        self.logger.info(f"publishing response to subject {output_subject} with request_id {response_msg.request_id}")
 
         try:
             await self.js.publish(output_subject, output_msg)
         except Exception as e:
-            self.logger.debug(f"failed publishing response: {e}")
+            self.logger.debug(f"failed publishing response: {e} with request_id {response_msg.request_id}")
             return
 
     def _get_output_subject(self, chan: Optional[str] = None) -> str:

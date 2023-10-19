@@ -49,9 +49,10 @@ type metadata interface {
 	GetProduct() string
 	GetVersion() string
 	GetEphemeralStorageName() string
-	GetKeyValueStoreProductName() string
-	GetKeyValueStoreWorkflowName() string
-	GetKeyValueStoreProcessName() string
+	GetGlobalCentralizedConfigurationName() string
+	GetProductCentralizedConfigurationName() string
+	GetWorkflowCentralizedConfigurationName() string
+	GetProcessCentralizedConfigurationName() string
 }
 
 //go:generate mockery --name storage --output ../mocks --filename storage_mock.go --structname StorageMock
