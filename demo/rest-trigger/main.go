@@ -2,6 +2,7 @@ package main
 
 import (
 	context2 "context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os/signal"
@@ -35,7 +36,7 @@ func main() {
 
 func initializer(sdk sdk.KaiSDK) {
 	sdk.Logger.Info("Writing test value to the object store", "value", "testValue")
-	err := sdk.ObjectStore.Save("test", []byte("testValue"))
+	err := sdk.Storage.Ephemeral.Save("test", []byte("testValue"))
 	if err != nil {
 		sdk.Logger.Error(err, "Error saving object")
 	}
@@ -55,7 +56,7 @@ func initializer(sdk sdk.KaiSDK) {
 		"kv_product", sdk.Metadata.GetKeyValueStoreProductName(),
 		"kv_workflow", sdk.Metadata.GetKeyValueStoreWorkflowName(),
 		"kv_process", sdk.Metadata.GetKeyValueStoreProcessName(),
-		"object_store", sdk.Metadata.GetObjectStoreName(),
+		"object_store", sdk.Metadata.GetEphemeralStorageName(),
 	)
 
 	sdk.Logger.V(1).Info("PathUtils",
@@ -77,7 +78,7 @@ func restServerRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			sdk.Logger.Error(err, "Error running http server")
 		}
 	}()

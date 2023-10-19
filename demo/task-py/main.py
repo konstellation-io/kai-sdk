@@ -16,7 +16,7 @@ async def initializer(sdk_: sdk.KaiSDK):
     else:
         logger.info(f"config value retrieved! {value}")
 
-    value, _ = await sdk_.object_store.get("test")
+    value, _ = await sdk_.storage.ephemeral.get("test")
     if value is None:
         logger.info("object store value not found")
     else:
