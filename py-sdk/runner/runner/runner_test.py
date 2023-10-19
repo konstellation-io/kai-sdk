@@ -192,7 +192,7 @@ def test_initialize_config_ok(m_vyper, m_runner):
     assert m_vyper.get_string.call_count == 2
     assert m_vyper.all_keys.call_count == 1
     assert m_vyper.all_settings.call_count == 1
-    assert m_vyper.set_default.call_count == 4
+    assert m_vyper.set_default.call_count == 5
 
 
 @patch("runner.runner.v", return_value=MockVyper())
@@ -252,7 +252,7 @@ def test_initialize_config_read_one_exception_ok(m_vyper, m_runner):
     assert m_vyper.merge_in_config.called
     assert m_vyper.all_keys.call_count == 1
     assert m_vyper.all_settings.call_count == 1
-    assert m_vyper.set_default.call_count == 4
+    assert m_vyper.set_default.call_count == 5
 
 
 @patch("runner.runner.v", return_value=MockVyper())
