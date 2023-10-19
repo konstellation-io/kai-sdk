@@ -11,46 +11,34 @@ from sdk.centralized_config.centralized_config import Scope
 async def initializer(sdk_: sdk.KaiSDK):
     logger = sdk_.logger.bind(context="[CRONJOB INITIALIZER]")
     logger.info("starting example...")
-    sdk_.metadata.logger.info(f"process {sdk_.metadata.get_process()}")
-    sdk_.metadata.logger.info(f"product {sdk_.metadata.get_product()}")
-    sdk_.metadata.logger.info(f"workflow {sdk_.metadata.get_workflow()}")
-    sdk_.metadata.logger.info(f"version {sdk_.metadata.get_version()}")
-    sdk_.metadata.logger.info(
-        f"kv_product {sdk_.metadata.get_key_value_store_product_name()}"
-    )
-    sdk_.metadata.logger.info(
-        f"kv_workflow {sdk_.metadata.get_key_value_store_workflow_name()}"
-    )
-    sdk_.metadata.logger.info(
-        f"kv_process {sdk_.metadata.get_key_value_store_process_name()}"
-    )
-    sdk_.metadata.logger.info(f"object-store {sdk_.metadata.get_object_store_name()}")
+    sdk_.logger.info(f"process {sdk_.metadata.get_process()}")
+    sdk_.logger.info(f"product {sdk_.metadata.get_product()}")
+    sdk_.logger.info(f"workflow {sdk_.metadata.get_workflow()}")
+    sdk_.logger.info(f"version {sdk_.metadata.get_version()}")
+    sdk_.logger.info(f"kv_product {sdk_.metadata.get_key_value_store_product_name()}")
+    sdk_.logger.info(f"kv_workflow {sdk_.metadata.get_key_value_store_workflow_name()}")
+    sdk_.logger.info(f"kv_process {sdk_.metadata.get_key_value_store_process_name()}")
+    sdk_.logger.info(f"object-store {sdk_.metadata.get_ephemeral_storage_name()}")
 
-    sdk_.path_utils.logger.info(f"base path {sdk_.path_utils.get_base_path()}")
-    sdk_.path_utils.logger.info(
-        f"compose base path {sdk_.path_utils.compose_path('test')}"
-    )
+    sdk_.logger.info(f"base path {sdk_.path_utils.get_base_path()}")
+    sdk_.logger.info(f"compose base path {sdk_.path_utils.compose_path('test')}")
 
     value1 = await sdk_.centralized_config.get_config("test1")
     value2 = await sdk_.centralized_config.get_config("test2")
 
     await sdk_.centralized_config.set_config("test", "value", Scope.WorkflowScope)
 
-    await sdk_.object_store.save("test", bytes("value-obj", "utf-8"))
+    await sdk_.storage.ephemeral.save("test", bytes("value-obj", "utf-8"))
 
-    sdk_.centralized_config.logger.info(
-        f"config values from comfig.yaml test1: {value1} test2: {value2}"
-    )
+    sdk_.logger.info(f"config values from comfig.yaml test1: {value1} test2: {value2}")
 
 
-async def cronjob_runner(
-    trigger_runner: trigger_runner.TriggerRunner, sdk_: sdk.KaiSDK
-):
+async def cronjob_runner(trigger_runner: trigger_runner.TriggerRunner, sdk: sdk.KaiSDK):
     while True:
-        logger = sdk_.logger.bind(context="[CRONJOB RUNNER]")
+        logger = sdk.logger.bind(context="[CRONJOB RUNNER]")
         logger.info("executing example...")
         request_id = str(uuid.uuid4())
-        await sdk_.messaging.send_output_with_request_id(
+        await sdk.messaging.send_output_with_request_id(
             StringValue(value="hello world"), request_id
         )
         logger.info(f"waiting response for request id {request_id}...")
@@ -59,8 +47,8 @@ async def cronjob_runner(
         await asyncio.sleep(3)
 
 
-def finalizer(sdk_: sdk.KaiSDK):
-    logger = sdk_.logger.bind(context="[CRONJOB FINALIZER]")
+def finalizer(sdk: sdk.KaiSDK):
+    logger = sdk.logger.bind(context="[CRONJOB FINALIZER]")
     logger.info("finalizing example...")
 
 

@@ -11,7 +11,7 @@ nats:
   inputs:
     - trigger-output
   output: task-output
-  object_store: object-store
+  object_store: ephemeral-storage
 
 centralized_configuration:
   global:

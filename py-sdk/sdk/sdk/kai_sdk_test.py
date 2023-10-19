@@ -7,13 +7,14 @@ from vyper import v
 
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.centralized_config.exceptions import FailedInitializingConfigError
+from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage, EphemeralStorageABC
+from sdk.ephemeral_storage.exceptions import FailedEphemeralStorageInitializationError
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
-from sdk.kai_sdk import KaiSDK, MeasurementsABC, StorageABC
+from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
-from sdk.object_store.exceptions import FailedObjectStoreInitializationError
-from sdk.object_store.object_store import ObjectStore
 from sdk.path_utils.path_utils import PathUtils
+from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
 
 GLOBAL_BUCKET = "centralized_configuration.global.bucket"
 PRODUCT_BUCKET = "centralized_configuration.product.bucket"
@@ -46,7 +47,9 @@ async def test_initialize_ok(centralized_config_initialize_mock):
 
     assert isinstance(sdk.metadata, Metadata)
     assert isinstance(sdk.messaging, Messaging)
-    assert isinstance(sdk.object_store, ObjectStore)
+    assert isinstance(sdk.storage, Storage)
+    assert isinstance(sdk.storage.ephemeral, EphemeralStorageABC)
+    assert isinstance(sdk.storage.persistent, PersistentStorageABC)
     assert isinstance(sdk.centralized_config, CentralizedConfig)
     assert isinstance(sdk.path_utils, PathUtils)
     assert sdk.nc is not None
@@ -56,9 +59,9 @@ async def test_initialize_ok(centralized_config_initialize_mock):
     assert sdk.metadata is not None
     assert sdk.messaging is not None
     assert getattr(sdk.messaging, "request_msg", None) is None
-    assert sdk.object_store is not None
-    assert sdk.object_store.object_store_name == ""
-    assert sdk.object_store.object_store is None
+    assert sdk.storage.ephemeral is not None
+    assert sdk.storage.ephemeral.ephemeral_storage_name == ""
+    assert sdk.storage is not None
     assert sdk.centralized_config is not None
     assert isinstance(sdk.centralized_config.global_kv, KeyValue)
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
@@ -66,7 +69,6 @@ async def test_initialize_ok(centralized_config_initialize_mock):
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
     assert sdk.path_utils is not None
     assert isinstance(sdk.measurements, MeasurementsABC)
-    assert isinstance(sdk.storage, StorageABC)
 
 
 @patch.object(CentralizedConfig, "_init_kv_stores", side_effect=Exception)
@@ -85,7 +87,7 @@ async def test_initialize_ko(centralized_config_initialize_mock):
             await sdk.initialize()
 
 
-@patch.object(ObjectStore, "_init_object_store", return_value=Mock(spec=NatsObjectStore))
+@patch.object(EphemeralStorage, "_init_object_store", return_value=Mock(spec=NatsObjectStore))
 @patch.object(
     CentralizedConfig,
     "_init_kv_stores",
@@ -109,23 +111,23 @@ async def test_nats_initialize_ok(centralized_config_initialize_mock, object_sto
     await sdk.initialize()
 
     assert isinstance(sdk.centralized_config, CentralizedConfig)
-    assert isinstance(sdk.object_store, ObjectStore)
+    assert isinstance(sdk.storage, Storage)
     assert sdk.centralized_config is not None
     assert isinstance(sdk.centralized_config.global_kv, KeyValue)
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
-    assert sdk.object_store.object_store is not None
-    assert sdk.object_store.object_store_name == "test_object_store"
+    assert sdk.storage.ephemeral.object_store is not None
+    assert sdk.storage.ephemeral.ephemeral_storage_name == "test_object_store"
 
 
-@patch.object(ObjectStore, "_init_object_store", side_effect=Exception)
+@patch.object(EphemeralStorage, "_init_object_store", side_effect=Exception)
 async def test_nats_initialize_ko(object_store_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
 
     with pytest.raises(SystemExit):
-        with pytest.raises(FailedObjectStoreInitializationError):
+        with pytest.raises(FailedEphemeralStorageInitializationError):
             sdk = KaiSDK(nc=nc, js=js)
             await sdk.initialize()
 

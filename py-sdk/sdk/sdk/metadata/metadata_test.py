@@ -23,7 +23,7 @@ def test_ok():
     assert metadata.get_workflow() == "test_workflow_id"
     assert metadata.get_process() == "test_process_id"
     assert metadata.get_version() == "test_version_id"
-    assert metadata.get_object_store_name() == "test_object_store"
+    assert metadata.get_ephemeral_storage_name() == "test_object_store"
     assert metadata.get_key_value_global_name() == "test_global"
     assert metadata.get_key_value_store_product_name() == "test_product"
     assert metadata.get_key_value_store_workflow_name() == "test_workflow"

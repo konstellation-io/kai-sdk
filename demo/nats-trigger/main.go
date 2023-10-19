@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/nats-io/nats.go"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,7 +12,6 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/trigger"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
-	"github.com/nats-io/nats.go"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 
 func initializer(sdk sdk.KaiSDK) {
 	sdk.Logger.Info("Writing test value to the object store", "value", "testValue")
-	err := sdk.ObjectStore.Save("test", []byte("testValue"))
+	err := sdk.Storage.Ephemeral.Save("test", []byte("testValue"))
 	if err != nil {
 		sdk.Logger.Error(err, "Error saving object")
 	}
@@ -48,7 +48,7 @@ func initializer(sdk sdk.KaiSDK) {
 		"kv_product", sdk.Metadata.GetKeyValueStoreProductName(),
 		"kv_workflow", sdk.Metadata.GetKeyValueStoreWorkflowName(),
 		"kv_process", sdk.Metadata.GetKeyValueStoreProcessName(),
-		"object-store", sdk.Metadata.GetObjectStoreName(),
+		"ephemeral-storage", sdk.Metadata.GetEphemeralStorageName(),
 	)
 
 	sdk.Logger.V(1).Info("PathUtils",

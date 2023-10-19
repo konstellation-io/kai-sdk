@@ -3,7 +3,7 @@ package objectstore_test
 import (
 	"fmt"
 
-	objectStore2 "github.com/konstellation-io/kai-sdk/go-sdk/sdk/object-store"
+	objectStore2 "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
 
 	"github.com/spf13/viper"
 
@@ -14,13 +14,13 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ListObjectStoreNotInitialized_
 	// Given
 	viper.SetDefault(natsObjectStoreField, "")
 
-	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	// When
 	keyList, err := objectStore.List()
 
 	// Then
-	s.ErrorIs(err, errors.ErrUndefinedObjectStore)
+	s.ErrorIs(err, errors.ErrUndefinedEphemeralStorage)
 	s.Empty(keyList)
 	s.NotNil(objectStore)
 }
@@ -29,7 +29,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorListObject_ExpectError() 
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	s.objectStore.On("List").Return(nil, fmt.Errorf("error saving object"))
 
@@ -47,7 +47,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ListObject_ExpectOK() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	keys := []string{"key1", "key2"}
 	objects := generateObjectInfoResponse(keys)
@@ -69,7 +69,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ListObjectWithFilter_ExpectOK(
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	keys := []string{"key1", "key2", "anotherKey3", "anotherKey4"}
 	objects := generateObjectInfoResponse(keys)
@@ -91,7 +91,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ListObjectWithFilter_InvalidRe
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	keys := []string{"key1", "key2", "anotherKey3", "anotherKey4"}
 	objects := generateObjectInfoResponse(keys)
@@ -112,7 +112,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ListObject_ErrorOnList_ExpectE
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, _ := objectStore2.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	s.objectStore.On("List").Return(nil, fmt.Errorf("error listing objects"))
 

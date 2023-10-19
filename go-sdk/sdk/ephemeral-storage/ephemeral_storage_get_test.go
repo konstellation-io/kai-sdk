@@ -3,7 +3,7 @@ package objectstore_test
 import (
 	"fmt"
 
-	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/object-store"
+	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
 
 	"github.com/spf13/viper"
 
@@ -14,13 +14,13 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_GetObjectStoreNotInitialized_E
 	// Given
 	viper.SetDefault(natsObjectStoreField, "")
 
-	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	// When
 	value, err := objectStore.Get("key")
 
 	// Then
-	s.ErrorIs(err, errors.ErrUndefinedObjectStore)
+	s.ErrorIs(err, errors.ErrUndefinedEphemeralStorage)
 	s.NotNil(objectStore)
 	s.Nil(value)
 }
@@ -29,7 +29,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorRetrievingObject_ExpectEr
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	s.objectStore.On("GetBytes", "key").Return(nil, fmt.Errorf("error saving object"))
 
@@ -47,7 +47,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_GetObject_ExpectOK() {
 	// Given
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
-	objectStore, _ := objectstore.NewObjectStore(s.logger, &s.jetstream)
+	objectStore, _ := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
 
 	s.objectStore.On("GetBytes", "key").Return([]byte("value"), nil)
 
