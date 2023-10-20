@@ -8,6 +8,8 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 )
 
+const _taskLoggerName = "[TASK]"
+
 type Preprocessor common.Handler
 
 type Handler common.Handler
@@ -27,7 +29,7 @@ type Runner struct {
 
 func NewTaskRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
 	return &Runner{
-		sdk:              sdk.NewKaiSDK(logger.WithName("[TASK]"), ns, js),
+		sdk:              sdk.NewKaiSDK(logger.WithName(_taskLoggerName), ns, js),
 		nats:             ns,
 		jetstream:        js,
 		responseHandlers: make(map[string]Handler),
@@ -66,11 +68,13 @@ func (tr *Runner) WithFinalizer(finalizer common.Finalizer) *Runner {
 
 func (tr *Runner) Run() {
 	if tr.responseHandlers["default"] == nil {
-		panic("No default handler defined")
+		panic("Undefined default handler")
 	}
+
 	if tr.initializer == nil {
 		tr.initializer = composeInitializer(nil)
 	}
+
 	if tr.finalizer == nil {
 		tr.finalizer = composeFinalizer(nil)
 	}

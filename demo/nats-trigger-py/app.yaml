@@ -1,0 +1,23 @@
+metadata:
+  product_id: Nats trigger process
+  workflow_id: Nats trigger workflow
+  process_id: Nats trigger process
+  version_id: Nats trigger version v1.0.0
+  base_path: "/Some/Path"
+
+nats:
+  url: "nats://localhost:4222"
+  stream: nats-trigger
+  inputs:
+    - exit-output
+  output: nats-trigger-output
+
+centralized_configuration:
+  global:
+    bucket: global
+  product:
+    bucket: product
+  workflow:
+    bucket: workflow
+  process:
+    bucket: process

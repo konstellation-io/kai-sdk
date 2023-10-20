@@ -1,6 +1,6 @@
 runner:
   logger:
-    leve: InfoLevel # DebugLevel, InfoLevel, WarnLevel, ErrorLevel, FatalLevel, PanicLevel
+    level: InfoLevel # DebugLevel, InfoLevel, WarnLevel, ErrorLevel, FatalLevel, PanicLevel
     encoding: console # console, json
     output_paths:
       - stdout

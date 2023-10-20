@@ -13,42 +13,42 @@ func main() {
 		NewRunner().
 		TaskRunner().
 		WithInitializer(initializer).
-		WithPreprocessor(func(ctx sdk.KaiSDK, response *anypb.Any) error {
+		WithPreprocessor(func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 			return nil
 		}).
 		WithHandler(defaultHandler).
-		WithPostprocessor(func(ctx sdk.KaiSDK, response *anypb.Any) error {
+		WithPostprocessor(func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 			return nil
 		}).
-		WithFinalizer(func(sdk sdk.KaiSDK) {
-			sdk.Logger.Info("Finalizer")
+		WithFinalizer(func(kaiSDK sdk.KaiSDK) {
+			kaiSDK.Logger.Info("Finalizer")
 		}).
 		Run()
 }
 
-func initializer(sdk sdk.KaiSDK) {
-	value, err := sdk.CentralizedConfig.GetConfig("test")
+func initializer(kaiSDK sdk.KaiSDK) {
+	value, err := kaiSDK.CentralizedConfig.GetConfig("test")
 	if err != nil {
-		sdk.Logger.Error(err, "Error getting config")
+		kaiSDK.Logger.Error(err, "Error getting config")
 		return
 	}
-	sdk.Logger.Info("Config value retrieved!", "value", value)
-
-	obj, err := sdk.ObjectStore.Get("test")
+	kaiSDK.Logger.Info("Config value retrieved!", "value", value)
+  
+	obj, err := kaiSDK.Storage.Ephemeral.Get("test")
 	if err != nil {
-		sdk.Logger.Error(err, "Error getting Obj Store values")
+		kaiSDK.Logger.Error(err, "Error getting Obj Store values")
 		return
 	}
-	sdk.Logger.Info("ObjectStore value retrieved!", "object", string(obj))
+	kaiSDK.Logger.Info("ObjectStore value retrieved!", "object", string(obj))
 }
 
-func defaultHandler(sdk sdk.KaiSDK, response *anypb.Any) error {
+func defaultHandler(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 	stringValue := &wrappers.StringValue{}
 
 	// Unmarshall response to StringValue
 	err := proto.Unmarshal(response.GetValue(), stringValue)
 	if err != nil {
-		sdk.Logger.Error(err, "Error unmarshalling response")
+		kaiSDK.Logger.Error(err, "Error unmarshalling response")
 		return err
 	}
 
@@ -56,9 +56,9 @@ func defaultHandler(sdk sdk.KaiSDK, response *anypb.Any) error {
 		Value: stringValue.GetValue() + ", Processed by the task process!",
 	}
 
-	err = sdk.Messaging.SendOutput(stringValue)
+	err = kaiSDK.Messaging.SendOutput(stringValue)
 	if err != nil {
-		sdk.Logger.Error(err, "Error sending output")
+		kaiSDK.Logger.Error(err, "Error sending output")
 		return err
 	}
 

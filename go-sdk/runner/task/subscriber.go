@@ -6,7 +6,8 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	"time"
+
+	"github.com/go-logr/logr"
 
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -18,15 +19,27 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 )
 
+const _subscriberLoggerName = "[SUBSCRIBER]"
+
+func (tr *Runner) getLoggerWithName() logr.Logger {
+	return tr.sdk.Logger.WithName(_subscriberLoggerName)
+}
+
 func (tr *Runner) startSubscriber() {
 	inputSubjects := viper.GetStringSlice("nats.inputs")
-	subscriptions := make([]*nats.Subscription, len(inputSubjects))
+
+	if len(inputSubjects) == 0 {
+		tr.getLoggerWithName().Info("Undefined input subjects")
+		os.Exit(1)
+	}
+
+	subscriptions := make([]*nats.Subscription, 0, len(inputSubjects))
 
 	for _, subject := range inputSubjects {
 		consumerName := fmt.Sprintf("%s-%s", strings.ReplaceAll(subject, ".", "-"),
 			strings.ReplaceAll(strings.ReplaceAll(tr.sdk.Metadata.GetProcess(), ".", "-"), " ", "-"))
 
-		tr.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Subscribing to subject",
+		tr.getLoggerWithName().V(1).Info("Subscribing to subject",
 			"Subject", subject, "Queue group", consumerName)
 
 		s, err := tr.jetstream.QueueSubscribe(
@@ -36,17 +49,21 @@ func (tr *Runner) startSubscriber() {
 			nats.DeliverNew(),
 			nats.Durable(consumerName),
 			nats.ManualAck(),
-			nats.AckWait(22*time.Hour),
+			nats.AckWait(viper.GetDuration("runner.subscriber.ack_wait_time")),
 		)
 		if err != nil {
-			tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error subscribing to NATS subject",
+			tr.getLoggerWithName().Error(err, "Error subscribing to NATS subject",
 				"Subject", subject)
 			os.Exit(1)
 		}
+
 		subscriptions = append(subscriptions, s)
-		tr.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Listening to subject",
+
+		tr.getLoggerWithName().V(1).Info("Listening to subject",
 			"Subject", subject, "Queue group", consumerName)
 	}
+
+	tr.sdk.Logger.Info("Subscribed to all subjects", "Subjects", subscriptions)
 
 	// Handle sigterm and await termChan signal
 	termChan := make(chan os.Signal, 1)
@@ -54,15 +71,23 @@ func (tr *Runner) startSubscriber() {
 	<-termChan
 
 	// Handle shutdown
-	tr.sdk.Logger.WithName("[SUBSCRIBER]").Info("Shutdown signal received")
+	tr.getLoggerWithName().Info("Shutdown signal received")
+
+	tr.sdk.Logger.Info("Unsubscribing from all subjects", "Subjects", subscriptions)
+
 	for _, s := range subscriptions {
+		tr.getLoggerWithName().V(1).Info("Unsubscribing from subject",
+			"Subject", s.Subject)
+
 		err := s.Unsubscribe()
 		if err != nil {
-			tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error unsubscribing from the NATS subject",
+			tr.getLoggerWithName().Error(err, "Error unsubscribing from the NATS subject",
 				"Subject", s.Subject)
 			os.Exit(1)
 		}
 	}
+
+	tr.getLoggerWithName().Info("Unsubscribed from all subjects")
 }
 
 func (tr *Runner) processMessage(msg *nats.Msg) {
@@ -70,16 +95,18 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 	if err != nil {
 		errMsg := fmt.Sprintf("Error parsing msg.data coming from subject %s because is not a valid protobuf: %s", msg.Subject, err)
 		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
+
 		return
 	}
 
-	tr.sdk.Logger.WithName("[SUBSCRIBER]").Info("New message received",
+	tr.getLoggerWithName().Info("New message received",
 		"Subject", msg.Subject, "Request ID", requestMsg.RequestId)
 
 	handler := tr.getResponseHandler(strings.ToLower(requestMsg.FromNode))
 	if handler == nil {
 		errMsg := fmt.Sprintf("Error missing handler for node %q", requestMsg.FromNode)
 		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
+
 		return
 	}
 
@@ -92,6 +119,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 			errMsg := fmt.Sprintf("Error in node %q executing handler preprocessor for node %q: %s",
 				tr.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
 			tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
+
 			return
 		}
 	}
@@ -101,6 +129,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 		errMsg := fmt.Sprintf("Error in node %q executing handler for node %q: %s",
 			tr.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
 		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
+
 		return
 	}
 
@@ -110,6 +139,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 			errMsg := fmt.Sprintf("Error in node %q executing handler postprocessor for node %q: %s",
 				tr.sdk.Metadata.GetProcess(), requestMsg.FromNode, err)
 			tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
+
 			return
 		}
 	}
@@ -117,17 +147,17 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 	// Tell NATS we don't need to receive the message anymore, and we are done processing it.
 	ackErr := msg.Ack()
 	if ackErr != nil {
-		tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(ackErr, errors.ErrMsgAck)
+		tr.getLoggerWithName().Error(ackErr, errors.ErrMsgAck)
 	}
 }
 
 func (tr *Runner) processRunnerError(msg *nats.Msg, errMsg, requestID string) {
 	ackErr := msg.Ack()
 	if ackErr != nil {
-		tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(ackErr, errors.ErrMsgAck)
+		tr.getLoggerWithName().Error(ackErr, errors.ErrMsgAck)
 	}
 
-	tr.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info(errMsg)
+	tr.getLoggerWithName().V(1).Info(errMsg)
 	tr.publishError(requestID, errMsg)
 }
 
@@ -138,7 +168,7 @@ func (tr *Runner) newRequestMessage(data []byte) (*kai.KaiNatsMessage, error) {
 	if common.IsCompressed(data) {
 		data, err = common.UncompressData(data)
 		if err != nil {
-			tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error reading compressed message")
+			tr.getLoggerWithName().Error(err, "Error reading compressed message")
 			return nil, err
 		}
 	}
@@ -163,23 +193,24 @@ func (tr *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel strin
 
 	outputMsg, err := proto.Marshal(responseMsg)
 	if err != nil {
-		tr.sdk.Logger.WithName("[SUBSCRIBER]").
+		tr.getLoggerWithName().
 			Error(err, "Error generating output result because handler result is not a serializable Protobuf")
+
 		return
 	}
 
 	outputMsg, err = tr.prepareOutputMessage(outputMsg)
 	if err != nil {
-		tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error preparing output message")
+		tr.getLoggerWithName().Error(err, "Error preparing output message")
 		return
 	}
 
-	tr.sdk.Logger.WithName("[SUBSCRIBER]").V(1).Info("Publishing response",
+	tr.getLoggerWithName().V(1).Info("Publishing response",
 		"Subject", outputSubject)
 
 	_, err = tr.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
-		tr.sdk.Logger.WithName("[SUBSCRIBER]").Error(err, "Error publishing output")
+		tr.getLoggerWithName().Error(err, "Error publishing output")
 	}
 }
 
@@ -188,6 +219,7 @@ func (tr *Runner) getOutputSubject(channel string) string {
 	if channel != "" {
 		return fmt.Sprintf("%s.%s", outputSubject, channel)
 	}
+
 	return outputSubject
 }
 
@@ -196,7 +228,7 @@ func (tr *Runner) getOutputSubject(channel string) string {
 func (tr *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 	maxSize, err := tr.getMaxMessageSize()
 	if err != nil {
-		return nil, fmt.Errorf("error getting max message size: %s", err)
+		return nil, fmt.Errorf("error getting max message size: %s", err) //nolint:goerr113 // error is wrapped
 	}
 
 	lenMsg := int64(len(msg))
@@ -211,14 +243,15 @@ func (tr *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 
 	lenOutMsg := int64(len(outMsg))
 	if lenOutMsg > maxSize {
-		tr.sdk.Logger.WithName("[SUBSCRIBER]").V(1).
+		tr.getLoggerWithName().V(1).
 			Info("Compressed message exceeds maximum size allowed",
 				"Current message size", sizeInMB(lenOutMsg),
 				"Compressed message size", sizeInMB(maxSize))
+
 		return nil, errors.ErrMessageToBig
 	}
 
-	tr.sdk.Logger.WithName("[SUBSCRIBER]").Info("Message prepared",
+	tr.getLoggerWithName().Info("Message prepared",
 		"Current message size", sizeInMB(lenOutMsg),
 		"Compressed message size", sizeInMB(maxSize))
 
@@ -255,5 +288,6 @@ func (tr *Runner) getMaxMessageSize() (int64, error) {
 }
 
 func sizeInMB(size int64) string {
-	return fmt.Sprintf("%.1f MB", float32(size)/1024/1024)
+	mbSize := float32(size) / 1024 / 1024
+	return fmt.Sprintf("%.1f MB", mbSize)
 }
