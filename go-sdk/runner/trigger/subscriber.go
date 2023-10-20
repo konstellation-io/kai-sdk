@@ -6,7 +6,8 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	"time"
+
+	"github.com/go-logr/logr"
 
 	"github.com/google/uuid"
 
@@ -22,6 +23,10 @@ import (
 
 const _subscriberLoggerName = "[SUBSCRIBER]"
 
+func (tr *Runner) getLoggerWithName() logr.Logger {
+	return tr.sdk.Logger.WithName(_subscriberLoggerName)
+}
+
 func (tr *Runner) startSubscriber() {
 	inputSubjects := viper.GetStringSlice("nats.inputs")
 	subscriptions := make([]*nats.Subscription, 0, len(inputSubjects))
@@ -30,10 +35,8 @@ func (tr *Runner) startSubscriber() {
 		consumerName := fmt.Sprintf("%s-%s", strings.ReplaceAll(subject, ".", "-"),
 			strings.ReplaceAll(strings.ReplaceAll(tr.sdk.Metadata.GetProcess(), ".", "-"), " ", "-"))
 
-		tr.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info("Subscribing to subject",
+		tr.getLoggerWithName().V(1).Info("Subscribing to subject",
 			"Subject", subject, "Queue group", consumerName)
-
-		ackWaitTime := 22 * time.Hour
 
 		s, err := tr.jetstream.Subscribe(
 			subject,
@@ -41,10 +44,10 @@ func (tr *Runner) startSubscriber() {
 			nats.DeliverNew(),
 			nats.Durable(fmt.Sprintf("%s-%s", consumerName, uuid.New().String())),
 			nats.ManualAck(),
-			nats.AckWait(ackWaitTime),
+			nats.AckWait(viper.GetDuration("runner.subscriber.ack_wait_time")),
 		)
 		if err != nil {
-			tr.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error subscribing to NATS subject",
+			tr.getLoggerWithName().Error(err, "Error subscribing to NATS subject",
 				"Subject", subject)
 			wg.Done()
 			os.Exit(1)
@@ -52,7 +55,7 @@ func (tr *Runner) startSubscriber() {
 
 		subscriptions = append(subscriptions, s)
 
-		tr.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info("Listening to subject",
+		tr.getLoggerWithName().V(1).Info("Listening to subject",
 			"Subject", subject, "Queue group", consumerName)
 	}
 
@@ -62,27 +65,27 @@ func (tr *Runner) startSubscriber() {
 	<-termChan
 
 	// Handle shutdown
-	tr.sdk.Logger.WithName(_subscriberLoggerName).Info("Shutdown signal received")
+	tr.getLoggerWithName().Info("Shutdown signal received")
 
 	for _, s := range subscriptions {
-		tr.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info("Unsubscribing from subject",
+		tr.getLoggerWithName().V(1).Info("Unsubscribing from subject",
 			"Subject", s.Subject)
 
 		err := s.Unsubscribe()
 		if err != nil {
-			tr.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error unsubscribing from the NATS subject",
+			tr.getLoggerWithName().Error(err, "Error unsubscribing from the NATS subject",
 				"Subject", s.Subject)
 			wg.Done()
 			os.Exit(1)
 		}
 	}
 
-	tr.sdk.Logger.WithName(_subscriberLoggerName).Info("Unsubscribed from all subjects")
+	tr.getLoggerWithName().Info("Unsubscribed from all subjects")
 	wg.Done()
 }
 
 func (tr *Runner) processMessage(msg *nats.Msg) {
-	tr.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info("New message received")
+	tr.getLoggerWithName().V(1).Info("New message received")
 
 	requestMsg, err := tr.newRequestMessage(msg.Data)
 	if err != nil {
@@ -92,7 +95,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 		return
 	}
 
-	tr.sdk.Logger.WithName(_subscriberLoggerName).Info("New message received",
+	tr.getLoggerWithName().Info("New message received",
 		"Subject", msg.Subject, "Request ID", requestMsg.RequestId)
 
 	if tr.responseHandler == nil {
@@ -117,17 +120,17 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 	// Tell NATS we don't need to receive the message anymore, and we are done processing it.
 	ackErr := msg.Ack()
 	if ackErr != nil {
-		tr.sdk.Logger.WithName(_subscriberLoggerName).Error(ackErr, errors.ErrMsgAck)
+		tr.getLoggerWithName().Error(ackErr, errors.ErrMsgAck)
 	}
 }
 
 func (tr *Runner) processRunnerError(msg *nats.Msg, errMsg, requestID string) {
 	ackErr := msg.Ack()
 	if ackErr != nil {
-		tr.sdk.Logger.WithName(_subscriberLoggerName).Error(ackErr, errors.ErrMsgAck)
+		tr.getLoggerWithName().Error(ackErr, errors.ErrMsgAck)
 	}
 
-	tr.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info(errMsg)
+	tr.getLoggerWithName().V(1).Info(errMsg)
 	tr.publishError(requestID, errMsg)
 }
 
@@ -138,7 +141,7 @@ func (tr *Runner) newRequestMessage(data []byte) (*kai.KaiNatsMessage, error) {
 	if common.IsCompressed(data) {
 		data, err = common.UncompressData(data)
 		if err != nil {
-			tr.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error reading compressed message")
+			tr.getLoggerWithName().Error(err, "Error reading compressed message")
 			return nil, err
 		}
 	}
@@ -163,23 +166,23 @@ func (tr *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel strin
 
 	outputMsg, err := proto.Marshal(responseMsg)
 	if err != nil {
-		tr.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error generating output result"+
+		tr.getLoggerWithName().Error(err, "Error generating output result"+
 			" because handler result is not a serializable Protobuf")
 		return
 	}
 
 	outputMsg, err = tr.prepareOutputMessage(outputMsg)
 	if err != nil {
-		tr.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error preparing output message")
+		tr.getLoggerWithName().Error(err, "Error preparing output message")
 		return
 	}
 
-	tr.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info("Publishing response",
+	tr.getLoggerWithName().V(1).Info("Publishing response",
 		"Subject", outputSubject)
 
 	_, err = tr.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
-		tr.sdk.Logger.WithName(_subscriberLoggerName).Error(err, "Error publishing output")
+		tr.getLoggerWithName().Error(err, "Error publishing output")
 	}
 }
 
@@ -212,14 +215,14 @@ func (tr *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 
 	lenOutMsg := int64(len(outMsg))
 	if lenOutMsg > maxSize {
-		tr.sdk.Logger.WithName(_subscriberLoggerName).V(1).Info("Compressed message exceeds maximum size allowed",
+		tr.getLoggerWithName().V(1).Info("Compressed message exceeds maximum size allowed",
 			"Current message size", sizeInMB(lenOutMsg),
 			"Compressed message size", sizeInMB(maxSize))
 
 		return nil, errors.ErrMessageToBig
 	}
 
-	tr.sdk.Logger.WithName(_subscriberLoggerName).Info("Message prepared",
+	tr.getLoggerWithName().Info("Message prepared",
 		"Current message size", sizeInMB(lenOutMsg),
 		"Compressed message size", sizeInMB(maxSize))
 

@@ -16,8 +16,8 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
 )
 
-//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.28.0 --output ../../mocks --name JetStreamContext --structname JetStreamContextMock --filename jetstream_context_mock.go
-//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.28.0 --output ../../mocks --name ObjectStore --structname NatsObjectStoreMock --filename nats_object_store_mock.go
+//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.31.0 --output ../../mocks --name JetStreamContext --structname JetStreamContextMock --filename jetstream_context_mock.go
+//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.31.0 --output ../../mocks --name ObjectStore --structname NatsObjectStoreMock --filename nats_object_store_mock.go
 type SdkObjectStoreTestSuite struct {
 	suite.Suite
 	logger      logr.Logger

@@ -50,12 +50,12 @@ func cronjobRunner(tr *trigger.Runner, kaiSDK sdk.KaiSDK) {
 	kaiSDK.Logger.Info("Starting cronjob runner")
 
 	c := cron.New(
-		cron.WithLogger(kaiSDK.Logger),
+		cron.WithLogger(kaiSDK.Logger.WithName("[CRONJOB]")),
 	)
 
 	_, err := c.AddFunc("@every 30s", func() {
 		requestID := uuid.New().String()
-		kaiSDK.Logger.Info("Cronjob triggered, new message sent", "requestID", requestID)
+		kaiSDK.Logger.Info("Cronjob triggered, new message sent", sdk.LoggerRequestID, requestID)
 
 		val := wrappers.StringValue{
 			Value: "Hi there, I'm a cronjob!",
@@ -63,7 +63,7 @@ func cronjobRunner(tr *trigger.Runner, kaiSDK sdk.KaiSDK) {
 
 		err := kaiSDK.Messaging.SendOutputWithRequestID(&val, requestID)
 		if err != nil {
-			kaiSDK.Logger.Error(err, "Error sending output")
+			kaiSDK.Logger.Error(err, "Error sending output", sdk.LoggerRequestID, requestID)
 			return
 		}
 	})

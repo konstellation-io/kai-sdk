@@ -17,6 +17,10 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
+const (
+	LoggerRequestID = "request_id"
+)
+
 //go:generate mockery --name pathUtils --output ../mocks --filename path_utils_mock.go --structname PathUtilsMock
 type pathUtils interface {
 	GetBasePath() string
@@ -102,7 +106,14 @@ type KaiSDK struct {
 }
 
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
-	logger = logger.WithName("[KAI SDK]")
+	metadata := meta.NewMetadata(logger)
+
+	logger = logger.WithValues(
+		"product_id", metadata.GetProduct(),
+		"version_id", metadata.GetVersion(),
+		"workflow_id", metadata.GetWorkflow(),
+		"process_id", metadata.GetProcess(),
+	)
 
 	centralizedConfigInst, err := centralizedConfiguration.NewCentralizedConfiguration(logger, jetstreamCli)
 	if err != nil {
@@ -128,7 +139,7 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		jetstream:         jetstreamCli,
 		Logger:            logger,
 		PathUtils:         pathutils.NewPathUtils(logger),
-		Metadata:          meta.NewMetadata(logger),
+		Metadata:          metadata,
 		Messaging:         messagingInst,
 		CentralizedConfig: centralizedConfigInst,
 		Measurements:      nil,
