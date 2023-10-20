@@ -8,8 +8,6 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-const _exitLoggerName = "[EXIT]"
-
 type Preprocessor common.Handler
 
 type Handler common.Handler
@@ -29,7 +27,7 @@ type Runner struct {
 
 func NewExitRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
 	return &Runner{
-		sdk:              sdk.NewKaiSDK(logger.WithName(_exitLoggerName), ns, js),
+		sdk:              sdk.NewKaiSDK(logger.WithName("[Exit]"), ns, js),
 		nats:             ns,
 		jetstream:        js,
 		responseHandlers: make(map[string]Handler),
@@ -68,13 +66,11 @@ func (er *Runner) WithFinalizer(finalizer common.Finalizer) *Runner {
 
 func (er *Runner) Run() {
 	if er.responseHandlers["default"] == nil {
-		panic("Undefined default handler")
+		panic("No default handler defined")
 	}
-
 	if er.initializer == nil {
 		er.initializer = composeInitializer(nil)
 	}
-
 	if er.finalizer == nil {
 		er.finalizer = composeFinalizer(nil)
 	}

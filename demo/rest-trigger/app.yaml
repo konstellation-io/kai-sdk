@@ -11,11 +11,9 @@ nats:
   inputs:
     - exit-output
   output: trigger-output
-  object_store: ephemeral-storage
+  object_store: object-store
 
 centralized_configuration:
-  global:
-    bucket: global
   product:
     bucket: product
   workflow:

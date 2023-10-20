@@ -10,20 +10,18 @@ runner:
 metadata:
   product_id: Product ID
   workflow_id: Workflow ID
-  process_id: Process ID
+  process_id: Proces ID
   version_id: Version v1.0.0
   base_path: "/Some/Path"
 
 nats:
-  url: "nats://localhost:4222"
+  #url: "nats://localhost:4222"
   stream: test-stream
   inputs: test-input
   output: test-output
-  object_store: ephemeral-storage
+  object_store: object-store
 
 centralized_configuration:
-  global:
-    bucket: global
   product:
     bucket: product
   workflow:

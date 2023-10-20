@@ -2,7 +2,6 @@ package runner
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
@@ -12,7 +11,6 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 )
 
 type Runner struct {
@@ -43,29 +41,6 @@ func NewRunner() *Runner {
 	}
 }
 
-func validateConfig(keys []string) {
-	var mandatoryConfigKeys = []string{
-		"metadata.product_id",
-		"metadata.workflow_id",
-		"metadata.process_id",
-		"metadata.version_id",
-		"metadata.base_path",
-		"nats.url",
-		"nats.stream",
-		"nats.output",
-		"centralized_configuration.global.bucket",
-		"centralized_configuration.product.bucket",
-		"centralized_configuration.workflow.bucket",
-		"centralized_configuration.process.bucket",
-	}
-
-	for _, key := range mandatoryConfigKeys {
-		if !slices.Contains(keys, key) {
-			panic(fmt.Sprintf("missing mandatory configuration key: %s", key))
-		}
-	}
-}
-
 func initializeConfiguration() {
 	// Load environment variables
 	viper.SetEnvPrefix("KAI")
@@ -79,7 +54,7 @@ func initializeConfiguration() {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 
-	err := viper.ReadInConfig() //nolint:ineffassign,staticcheck // err is used in the next if
+	err := viper.ReadInConfig()
 
 	viper.SetConfigName("app")
 	viper.SetConfigType("yaml")
@@ -88,19 +63,14 @@ func initializeConfiguration() {
 	if viper.IsSet("APP_CONFIG_PATH") {
 		viper.AddConfigPath(viper.GetString("APP_CONFIG_PATH"))
 	}
-
 	err = viper.MergeInConfig()
 
-	keys := viper.AllKeys()
-	if len(keys) == 0 {
+	if len(viper.AllKeys()) == 0 {
 		panic(fmt.Errorf("configuration could not be loaded: %w", err))
 	}
 
-	validateConfig(keys)
-
 	// Set viper default values
 	viper.SetDefault("metadata.base_path", "/")
-	viper.SetDefault("runner.subscriber.ack_wait_time", 22*time.Hour)
 	viper.SetDefault("runner.logger.level", "InfoLevel")
 	viper.SetDefault("runner.logger.encoding", "console")
 	viper.SetDefault("runner.logger.output_paths", []string{"stdout"})
@@ -131,12 +101,10 @@ func getLogger() logr.Logger {
 	var log logr.Logger
 
 	config := zap.NewDevelopmentConfig()
-
 	logLevel, err := zap.ParseAtomicLevel(viper.GetString("runner.logger.level"))
 	if err != nil {
 		logLevel = zap.NewAtomicLevelAt(zap.InfoLevel)
 	}
-
 	config.Level = zap.NewAtomicLevelAt(logLevel.Level())
 	config.OutputPaths = viper.GetStringSlice("runner.logger.output_paths")
 	config.ErrorOutputPaths = viper.GetStringSlice("runner.logger.error_output_paths")
@@ -147,7 +115,7 @@ func getLogger() logr.Logger {
 		panic("The logger could not be initialized")
 	}
 
-	defer logger.Sync() //nolint:errcheck // Ignore error
+	defer logger.Sync() //nolint: errcheck
 
 	log = zapr.NewLogger(logger)
 
