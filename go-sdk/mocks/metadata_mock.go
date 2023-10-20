@@ -58,8 +58,8 @@ func (_c *MetadataMock_GetEphemeralStorageName_Call) RunAndReturn(run func() str
 	return _c
 }
 
-// GetKeyValueStoreProcessName provides a mock function with given fields:
-func (_m *MetadataMock) GetKeyValueStoreProcessName() string {
+// GetGlobalCentralizedConfigurationName provides a mock function with given fields:
+func (_m *MetadataMock) GetGlobalCentralizedConfigurationName() string {
 	ret := _m.Called()
 
 	var r0 string
@@ -72,111 +72,29 @@ func (_m *MetadataMock) GetKeyValueStoreProcessName() string {
 	return r0
 }
 
-// MetadataMock_GetKeyValueStoreProcessName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetKeyValueStoreProcessName'
-type MetadataMock_GetKeyValueStoreProcessName_Call struct {
+// MetadataMock_GetGlobalCentralizedConfigurationName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetGlobalCentralizedConfigurationName'
+type MetadataMock_GetGlobalCentralizedConfigurationName_Call struct {
 	*mock.Call
 }
 
-// GetKeyValueStoreProcessName is a helper method to define mock.On call
-func (_e *MetadataMock_Expecter) GetKeyValueStoreProcessName() *MetadataMock_GetKeyValueStoreProcessName_Call {
-	return &MetadataMock_GetKeyValueStoreProcessName_Call{Call: _e.mock.On("GetKeyValueStoreProcessName")}
+// GetGlobalCentralizedConfigurationName is a helper method to define mock.On call
+func (_e *MetadataMock_Expecter) GetGlobalCentralizedConfigurationName() *MetadataMock_GetGlobalCentralizedConfigurationName_Call {
+	return &MetadataMock_GetGlobalCentralizedConfigurationName_Call{Call: _e.mock.On("GetGlobalCentralizedConfigurationName")}
 }
 
-func (_c *MetadataMock_GetKeyValueStoreProcessName_Call) Run(run func()) *MetadataMock_GetKeyValueStoreProcessName_Call {
+func (_c *MetadataMock_GetGlobalCentralizedConfigurationName_Call) Run(run func()) *MetadataMock_GetGlobalCentralizedConfigurationName_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run()
 	})
 	return _c
 }
 
-func (_c *MetadataMock_GetKeyValueStoreProcessName_Call) Return(_a0 string) *MetadataMock_GetKeyValueStoreProcessName_Call {
+func (_c *MetadataMock_GetGlobalCentralizedConfigurationName_Call) Return(_a0 string) *MetadataMock_GetGlobalCentralizedConfigurationName_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *MetadataMock_GetKeyValueStoreProcessName_Call) RunAndReturn(run func() string) *MetadataMock_GetKeyValueStoreProcessName_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetKeyValueStoreProductName provides a mock function with given fields:
-func (_m *MetadataMock) GetKeyValueStoreProductName() string {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	return r0
-}
-
-// MetadataMock_GetKeyValueStoreProductName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetKeyValueStoreProductName'
-type MetadataMock_GetKeyValueStoreProductName_Call struct {
-	*mock.Call
-}
-
-// GetKeyValueStoreProductName is a helper method to define mock.On call
-func (_e *MetadataMock_Expecter) GetKeyValueStoreProductName() *MetadataMock_GetKeyValueStoreProductName_Call {
-	return &MetadataMock_GetKeyValueStoreProductName_Call{Call: _e.mock.On("GetKeyValueStoreProductName")}
-}
-
-func (_c *MetadataMock_GetKeyValueStoreProductName_Call) Run(run func()) *MetadataMock_GetKeyValueStoreProductName_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *MetadataMock_GetKeyValueStoreProductName_Call) Return(_a0 string) *MetadataMock_GetKeyValueStoreProductName_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *MetadataMock_GetKeyValueStoreProductName_Call) RunAndReturn(run func() string) *MetadataMock_GetKeyValueStoreProductName_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetKeyValueStoreWorkflowName provides a mock function with given fields:
-func (_m *MetadataMock) GetKeyValueStoreWorkflowName() string {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	return r0
-}
-
-// MetadataMock_GetKeyValueStoreWorkflowName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetKeyValueStoreWorkflowName'
-type MetadataMock_GetKeyValueStoreWorkflowName_Call struct {
-	*mock.Call
-}
-
-// GetKeyValueStoreWorkflowName is a helper method to define mock.On call
-func (_e *MetadataMock_Expecter) GetKeyValueStoreWorkflowName() *MetadataMock_GetKeyValueStoreWorkflowName_Call {
-	return &MetadataMock_GetKeyValueStoreWorkflowName_Call{Call: _e.mock.On("GetKeyValueStoreWorkflowName")}
-}
-
-func (_c *MetadataMock_GetKeyValueStoreWorkflowName_Call) Run(run func()) *MetadataMock_GetKeyValueStoreWorkflowName_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *MetadataMock_GetKeyValueStoreWorkflowName_Call) Return(_a0 string) *MetadataMock_GetKeyValueStoreWorkflowName_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *MetadataMock_GetKeyValueStoreWorkflowName_Call) RunAndReturn(run func() string) *MetadataMock_GetKeyValueStoreWorkflowName_Call {
+func (_c *MetadataMock_GetGlobalCentralizedConfigurationName_Call) RunAndReturn(run func() string) *MetadataMock_GetGlobalCentralizedConfigurationName_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -222,6 +140,47 @@ func (_c *MetadataMock_GetProcess_Call) RunAndReturn(run func() string) *Metadat
 	return _c
 }
 
+// GetProcessCentralizedConfigurationName provides a mock function with given fields:
+func (_m *MetadataMock) GetProcessCentralizedConfigurationName() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// MetadataMock_GetProcessCentralizedConfigurationName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetProcessCentralizedConfigurationName'
+type MetadataMock_GetProcessCentralizedConfigurationName_Call struct {
+	*mock.Call
+}
+
+// GetProcessCentralizedConfigurationName is a helper method to define mock.On call
+func (_e *MetadataMock_Expecter) GetProcessCentralizedConfigurationName() *MetadataMock_GetProcessCentralizedConfigurationName_Call {
+	return &MetadataMock_GetProcessCentralizedConfigurationName_Call{Call: _e.mock.On("GetProcessCentralizedConfigurationName")}
+}
+
+func (_c *MetadataMock_GetProcessCentralizedConfigurationName_Call) Run(run func()) *MetadataMock_GetProcessCentralizedConfigurationName_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MetadataMock_GetProcessCentralizedConfigurationName_Call) Return(_a0 string) *MetadataMock_GetProcessCentralizedConfigurationName_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MetadataMock_GetProcessCentralizedConfigurationName_Call) RunAndReturn(run func() string) *MetadataMock_GetProcessCentralizedConfigurationName_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetProduct provides a mock function with given fields:
 func (_m *MetadataMock) GetProduct() string {
 	ret := _m.Called()
@@ -259,6 +218,47 @@ func (_c *MetadataMock_GetProduct_Call) Return(_a0 string) *MetadataMock_GetProd
 }
 
 func (_c *MetadataMock_GetProduct_Call) RunAndReturn(run func() string) *MetadataMock_GetProduct_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetProductCentralizedConfigurationName provides a mock function with given fields:
+func (_m *MetadataMock) GetProductCentralizedConfigurationName() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// MetadataMock_GetProductCentralizedConfigurationName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetProductCentralizedConfigurationName'
+type MetadataMock_GetProductCentralizedConfigurationName_Call struct {
+	*mock.Call
+}
+
+// GetProductCentralizedConfigurationName is a helper method to define mock.On call
+func (_e *MetadataMock_Expecter) GetProductCentralizedConfigurationName() *MetadataMock_GetProductCentralizedConfigurationName_Call {
+	return &MetadataMock_GetProductCentralizedConfigurationName_Call{Call: _e.mock.On("GetProductCentralizedConfigurationName")}
+}
+
+func (_c *MetadataMock_GetProductCentralizedConfigurationName_Call) Run(run func()) *MetadataMock_GetProductCentralizedConfigurationName_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MetadataMock_GetProductCentralizedConfigurationName_Call) Return(_a0 string) *MetadataMock_GetProductCentralizedConfigurationName_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MetadataMock_GetProductCentralizedConfigurationName_Call) RunAndReturn(run func() string) *MetadataMock_GetProductCentralizedConfigurationName_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -341,6 +341,47 @@ func (_c *MetadataMock_GetWorkflow_Call) Return(_a0 string) *MetadataMock_GetWor
 }
 
 func (_c *MetadataMock_GetWorkflow_Call) RunAndReturn(run func() string) *MetadataMock_GetWorkflow_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetWorkflowCentralizedConfigurationName provides a mock function with given fields:
+func (_m *MetadataMock) GetWorkflowCentralizedConfigurationName() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// MetadataMock_GetWorkflowCentralizedConfigurationName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetWorkflowCentralizedConfigurationName'
+type MetadataMock_GetWorkflowCentralizedConfigurationName_Call struct {
+	*mock.Call
+}
+
+// GetWorkflowCentralizedConfigurationName is a helper method to define mock.On call
+func (_e *MetadataMock_Expecter) GetWorkflowCentralizedConfigurationName() *MetadataMock_GetWorkflowCentralizedConfigurationName_Call {
+	return &MetadataMock_GetWorkflowCentralizedConfigurationName_Call{Call: _e.mock.On("GetWorkflowCentralizedConfigurationName")}
+}
+
+func (_c *MetadataMock_GetWorkflowCentralizedConfigurationName_Call) Run(run func()) *MetadataMock_GetWorkflowCentralizedConfigurationName_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MetadataMock_GetWorkflowCentralizedConfigurationName_Call) Return(_a0 string) *MetadataMock_GetWorkflowCentralizedConfigurationName_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MetadataMock_GetWorkflowCentralizedConfigurationName_Call) RunAndReturn(run func() string) *MetadataMock_GetWorkflowCentralizedConfigurationName_Call {
 	_c.Call.Return(run)
 	return _c
 }
