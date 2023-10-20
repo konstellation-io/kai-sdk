@@ -18,10 +18,9 @@ type SdkRunnerTestSuite struct {
 }
 
 func (s *SdkRunnerTestSuite) SetupSuite() {
-	viper.SetConfigName("config") // includes config and app config files
+	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("../../testdata")
-
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("fatal error initializing configuration: %w", err))
@@ -54,7 +53,7 @@ func (s *SdkRunnerTestSuite) TestNewTriggerRunner_WithoutRunner_ExpectPanic() {
 		runner.NewTestRunner(nil, &s.js).
 			TriggerRunner().
 			Run()
-	}, "Undefined runner function")
+	}, "No runner function defined")
 }
 
 func (s *SdkRunnerTestSuite) TestNewTaskRunnerInitialization_ExpectOK() {
@@ -79,7 +78,7 @@ func (s *SdkRunnerTestSuite) TestNewTaskRunner_WithoutDefaultHandler_ExpectPanic
 		runner.NewTestRunner(nil, &s.js).
 			TaskRunner().
 			Run()
-	}, "Undefined default handler")
+	}, "No default handler defined")
 }
 
 func (s *SdkRunnerTestSuite) TestNewExitRunnerInitialization_ExpectOK() {
@@ -104,20 +103,7 @@ func (s *SdkRunnerTestSuite) TestNewExitRunner_WithoutDefaultHandler_ExpectPanic
 		runner.NewTestRunner(nil, &s.js).
 			ExitRunner().
 			Run()
-	}, "Undefined default handler")
-}
-
-func (s *SdkRunnerTestSuite) TestNewRunner_MissingMandatoryKey() {
-	// Given
-	natsURL := viper.GetString("nats.url")
-	viper.Set("nats", nil)
-
-	// Then
-	s.Panicsf(func() {
-		// When
-		runner.NewTestRunner(nil, &s.js)
-	}, "Missing mandatory key 'nats'")
-	viper.Set("nats.url", natsURL)
+	}, "No default handler defined")
 }
 
 func TestRunnerTestSuite(t *testing.T) {

@@ -28,14 +28,11 @@ func (s *RunnerCommonTestSuite) SetupTest() {
 	viper.Reset()
 
 	s.sdk = sdk.KaiSDK{
-		Logger:    s.logger,
-		PathUtils: mocks.NewPathUtilsMock(s.T()),
-		Metadata:  mocks.NewMetadataMock(s.T()),
-		Messaging: mocks.NewMessagingMock(s.T()),
-		Storage: sdk.Storage{
-			Ephemeral:  mocks.NewEphemeralStorageMock(s.T()),
-			Persistent: mocks.NewPersistentStorageMock(s.T()),
-		},
+		Logger:            s.logger,
+		PathUtils:         mocks.NewPathUtilsMock(s.T()),
+		Metadata:          mocks.NewMetadataMock(s.T()),
+		Messaging:         mocks.NewMessagingMock(s.T()),
+		ObjectStore:       mocks.NewObjectStoreMock(s.T()),
 		CentralizedConfig: mocks.NewCentralizedConfigMock(s.T()),
 	}
 }

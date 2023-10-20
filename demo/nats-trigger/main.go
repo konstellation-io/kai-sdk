@@ -6,13 +6,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/nats-io/nats.go"
-
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/trigger"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
+	"github.com/nats-io/nats.go"
 )
 
 func main() {
@@ -21,44 +20,44 @@ func main() {
 		TriggerRunner().
 		WithInitializer(initializer).
 		WithRunner(natsSubscriberRunner).
-		WithFinalizer(func(kaiSDK sdk.KaiSDK) {
-			kaiSDK.Logger.Info("Finalizer")
+		WithFinalizer(func(sdk sdk.KaiSDK) {
+			sdk.Logger.Info("Finalizer")
 		}).
 		Run()
 }
 
-func initializer(kaiSDK sdk.KaiSDK) {
-	kaiSDK.Logger.Info("Writing test value to the ephemeral store", "value", "testValue")
-	err := kaiSDK.Storage.Ephemeral.Save("test", []byte("testValue"))
+func initializer(sdk sdk.KaiSDK) {
+	sdk.Logger.Info("Writing test value to the object store", "value", "testValue")
+	err := sdk.ObjectStore.Save("test", []byte("testValue"))
 	if err != nil {
-		kaiSDK.Logger.Error(err, "Error saving object")
+		sdk.Logger.Error(err, "Error saving object")
 	}
 
-	kaiSDK.Logger.Info("Writing test value to the centralized config",
+	sdk.Logger.Info("Writing test value to the centralized config",
 		"value", "testConfigValue")
-	err = kaiSDK.CentralizedConfig.SetConfig("test", "testConfigValue")
+	err = sdk.CentralizedConfig.SetConfig("test", "testConfigValue")
 	if err != nil {
-		kaiSDK.Logger.Error(err, "Error setting config")
+		sdk.Logger.Error(err, "Error setting config")
 	}
 
-	kaiSDK.Logger.V(1).Info("Metadata",
-		"process", kaiSDK.Metadata.GetProcess(),
-		"product", kaiSDK.Metadata.GetProduct(),
-		"workflow", kaiSDK.Metadata.GetWorkflow(),
-		"version", kaiSDK.Metadata.GetVersion(),
-		"kv_product", kaiSDK.Metadata.GetProductCentralizedConfigurationName(),
-		"kv_workflow", kaiSDK.Metadata.GetWorkflowCentralizedConfigurationName(),
-		"kv_process", kaiSDK.Metadata.GetProcessCentralizedConfigurationName(),
-		"ephemeral-storage", kaiSDK.Metadata.GetEphemeralStorageName(),
+	sdk.Logger.V(1).Info("Metadata",
+		"process", sdk.Metadata.GetProcess(),
+		"product", sdk.Metadata.GetProduct(),
+		"workflow", sdk.Metadata.GetWorkflow(),
+		"version", sdk.Metadata.GetVersion(),
+		"kv_product", sdk.Metadata.GetKeyValueStoreProductName(),
+		"kv_workflow", sdk.Metadata.GetKeyValueStoreWorkflowName(),
+		"kv_process", sdk.Metadata.GetKeyValueStoreProcessName(),
+		"object-store", sdk.Metadata.GetObjectStoreName(),
 	)
 
-	kaiSDK.Logger.V(1).Info("PathUtils",
-		"getBasePath", kaiSDK.PathUtils.GetBasePath(),
-		"composeBasePath", kaiSDK.PathUtils.ComposePath("test"))
+	sdk.Logger.V(1).Info("PathUtils",
+		"getBasePath", sdk.PathUtils.GetBasePath(),
+		"composeBasePath", sdk.PathUtils.ComposePath("test"))
 }
 
-func natsSubscriberRunner(tr *trigger.Runner, kaiSDK sdk.KaiSDK) {
-	kaiSDK.Logger.Info("Starting nats subscriber")
+func natsSubscriberRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
+	sdk.Logger.Info("Starting nats subscriber")
 
 	nc, _ := nats.Connect("nats://localhost:4222")
 	js, err := nc.JetStream()
@@ -78,20 +77,20 @@ func natsSubscriberRunner(tr *trigger.Runner, kaiSDK sdk.KaiSDK) {
 
 			responseChannel := tr.GetResponseChannel(requestID)
 
-			err = kaiSDK.Messaging.SendOutputWithRequestID(val, requestID)
+			err = sdk.Messaging.SendOutputWithRequestID(val, requestID)
 			if err != nil {
-				kaiSDK.Logger.Error(err, "Error sending output")
+				sdk.Logger.Error(err, "Error sending output")
 				return
 			}
 
 			// Wait for the response before ACKing the message
 			<-responseChannel
 
-			kaiSDK.Logger.Info("Message received, acking message")
+			sdk.Logger.Info("Message received, acking message")
 
 			err = msg.Ack()
 			if err != nil {
-				kaiSDK.Logger.Error(err, "Error acking message")
+				sdk.Logger.Error(err, "Error acking message")
 				return
 			}
 		},
@@ -108,7 +107,7 @@ func natsSubscriberRunner(tr *trigger.Runner, kaiSDK sdk.KaiSDK) {
 
 	err = s.Unsubscribe()
 	if err != nil {
-		kaiSDK.Logger.Error(err, "Error unsubscribing")
+		sdk.Logger.Error(err, "Error unsubscribing")
 		return
 	}
 }

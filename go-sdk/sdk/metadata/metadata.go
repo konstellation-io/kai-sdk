@@ -31,22 +31,18 @@ func (md Metadata) GetVersion() string {
 	return viper.GetString("metadata.version_id")
 }
 
-func (md Metadata) GetEphemeralStorageName() string {
+func (md Metadata) GetObjectStoreName() string {
 	return viper.GetString("nats.object_store")
 }
 
-func (md Metadata) GetGlobalCentralizedConfigurationName() string {
-	return viper.GetString("centralized_configuration.global.bucket")
-}
-
-func (md Metadata) GetProductCentralizedConfigurationName() string {
+func (md Metadata) GetKeyValueStoreProductName() string {
 	return viper.GetString("centralized_configuration.product.bucket")
 }
 
-func (md Metadata) GetWorkflowCentralizedConfigurationName() string {
+func (md Metadata) GetKeyValueStoreWorkflowName() string {
 	return viper.GetString("centralized_configuration.workflow.bucket")
 }
 
-func (md Metadata) GetProcessCentralizedConfigurationName() string {
+func (md Metadata) GetKeyValueStoreProcessName() string {
 	return viper.GetString("centralized_configuration.process.bucket")
 }

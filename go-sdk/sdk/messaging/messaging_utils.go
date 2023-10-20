@@ -45,6 +45,5 @@ func (mu MessagingUtilsImpl) GetMaxMessageSize() (int64, error) {
 }
 
 func sizeInMB(size int64) string {
-	mbSize := float32(size) / 1024 / 1024
-	return fmt.Sprintf("%.1f MB", mbSize)
+	return fmt.Sprintf("%.1f MB", float32(size)/1024/1024)
 }

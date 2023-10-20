@@ -2,7 +2,6 @@ package main
 
 import (
 	context2 "context"
-	"errors"
 	"fmt"
 	"net/http"
 	"os/signal"
@@ -28,77 +27,77 @@ func main() {
 		TriggerRunner().
 		WithInitializer(initializer).
 		WithRunner(restServerRunner).
-		WithFinalizer(func(kaiSDK sdk.KaiSDK) {
-			kaiSDK.Logger.Info("Finalizer")
+		WithFinalizer(func(sdk sdk.KaiSDK) {
+			sdk.Logger.Info("Finalizer")
 		}).
 		Run()
 }
 
-func initializer(kaiSDK sdk.KaiSDK) {
-	kaiSDK.Logger.Info("Writing test value to the ephemeral store", "value", "testValue")
-	err := kaiSDK.Storage.Ephemeral.Save("test", []byte("testValue"))
+func initializer(sdk sdk.KaiSDK) {
+	sdk.Logger.Info("Writing test value to the object store", "value", "testValue")
+	err := sdk.ObjectStore.Save("test", []byte("testValue"))
 	if err != nil {
-		kaiSDK.Logger.Error(err, "Error saving object")
+		sdk.Logger.Error(err, "Error saving object")
 	}
 
-	kaiSDK.Logger.Info("Writing test value to the centralized config",
+	sdk.Logger.Info("Writing test value to the centralized config",
 		"value", "testConfigValue")
-	err = kaiSDK.CentralizedConfig.SetConfig("test", "testConfigValue")
+	err = sdk.CentralizedConfig.SetConfig("test", "testConfigValue")
 	if err != nil {
-		kaiSDK.Logger.Error(err, "Error setting config")
+		sdk.Logger.Error(err, "Error setting config")
 	}
 
-	kaiSDK.Logger.V(1).Info("Metadata",
-		"process", kaiSDK.Metadata.GetProcess(),
-		"product", kaiSDK.Metadata.GetProduct(),
-		"workflow", kaiSDK.Metadata.GetWorkflow(),
-		"version", kaiSDK.Metadata.GetVersion(),
-		"kv_product", kaiSDK.Metadata.GetProductCentralizedConfigurationName(),
-		"kv_workflow", kaiSDK.Metadata.GetWorkflowCentralizedConfigurationName(),
-		"kv_process", kaiSDK.Metadata.GetProcessCentralizedConfigurationName(),
-		"ephemeral_store", kaiSDK.Metadata.GetEphemeralStorageName(),
+	sdk.Logger.V(1).Info("Metadata",
+		"process", sdk.Metadata.GetProcess(),
+		"product", sdk.Metadata.GetProduct(),
+		"workflow", sdk.Metadata.GetWorkflow(),
+		"version", sdk.Metadata.GetVersion(),
+		"kv_product", sdk.Metadata.GetKeyValueStoreProductName(),
+		"kv_workflow", sdk.Metadata.GetKeyValueStoreWorkflowName(),
+		"kv_process", sdk.Metadata.GetKeyValueStoreProcessName(),
+		"object_store", sdk.Metadata.GetObjectStoreName(),
 	)
 
-	kaiSDK.Logger.V(1).Info("PathUtils",
-		"getBasePath", kaiSDK.PathUtils.GetBasePath(),
-		"composeBasePath", kaiSDK.PathUtils.ComposePath("test"))
+	sdk.Logger.V(1).Info("PathUtils",
+		"getBasePath", sdk.PathUtils.GetBasePath(),
+		"composeBasePath", sdk.PathUtils.ComposePath("test"))
 }
 
-func restServerRunner(tr *trigger.Runner, kaiSDK sdk.KaiSDK) {
-	kaiSDK.Logger.Info("Starting http server", "port", 8080)
+func restServerRunner(tr *trigger.Runner, sdk sdk.KaiSDK) {
+	sdk.Logger.Info("Starting http server", "port", 8080)
 
 	bgCtx, stop := signal.NotifyContext(context2.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	r := gin.Default()
-	r.GET("/hello", responseHandler(kaiSDK, tr.GetResponseChannel))
+	r.GET("/hello", responseHandler(sdk, tr.GetResponseChannel))
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: r,
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			kaiSDK.Logger.Error(err, "Error running http server")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			sdk.Logger.Error(err, "Error running http server")
 		}
 	}()
 
 	<-bgCtx.Done()
 	stop()
-	kaiSDK.Logger.Info("Shutting down server...")
+	sdk.Logger.Info("Shutting down server...")
 
 	// The sdk is used to inform the server it has 5 seconds to finish
 	// the request it is currently handling
 	bgCtx, cancel := context2.WithTimeout(context2.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(bgCtx); err != nil {
-		kaiSDK.Logger.Error(err, "Error shutting down server")
+		sdk.Logger.Error(err, "Error shutting down server")
 	}
 
-	kaiSDK.Logger.Info("Server stopped")
+	sdk.Logger.Info("Server stopped")
 }
 
-func responseHandler(kaiSDK sdk.KaiSDK, getResponseChannel func(requestID string) <-chan *anypb.Any) func(c *gin.Context) {
+func responseHandler(sdk sdk.KaiSDK, getResponseChannel func(requestID string) <-chan *anypb.Any) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		nameRequest := c.Query("name")
 
@@ -110,13 +109,13 @@ func responseHandler(kaiSDK sdk.KaiSDK, getResponseChannel func(requestID string
 
 		reqID := uuid.New().String()
 
-		kaiSDK.Logger.Info("Sending message to nats",
+		sdk.Logger.Info("Sending message to nats",
 			"execution ID", reqID, "message", anyValue)
 
 		responseChannel := getResponseChannel(reqID)
-		err := kaiSDK.Messaging.SendOutputWithRequestID(anyValue, reqID)
+		err := sdk.Messaging.SendOutputWithRequestID(anyValue, reqID)
 		if err != nil {
-			kaiSDK.Logger.Error(err, "Error sending message to nats")
+			sdk.Logger.Error(err, "Error sending message to nats")
 			return
 		}
 
@@ -127,7 +126,7 @@ func responseHandler(kaiSDK sdk.KaiSDK, getResponseChannel func(requestID string
 		// Unmarshall response to StringValue
 		err = proto.Unmarshal(response.GetValue(), stringValue)
 
-		kaiSDK.Logger.Info("Response received from nats", "response", stringValue.GetValue())
+		sdk.Logger.Info("Response received from nats", "response", stringValue.GetValue())
 
 		c.JSON(http.StatusOK, gin.H{
 			"message": strings.Split(stringValue.GetValue(), ","),
