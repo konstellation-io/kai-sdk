@@ -9,7 +9,6 @@ import (
 func NewTestMessaging(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext,
 	requestMessage *kai.KaiNatsMessage, messagingUtils messagingUtils,
 ) *Messaging {
-	//nolint: gocritic
 	return &Messaging{
 		logger.WithName("[MESSAGING]"),
 		ns,

@@ -16,6 +16,9 @@ import (
 )
 
 const (
+	globalBucketProp       = "centralized_configuration.global.bucket"
+	globalBucketVal        = "global-bucket"
+	wrongGlobalBucketVal   = "some-global-bucket"
 	productBucketProp      = "centralized_configuration.product.bucket"
 	productBucketVal       = "product-bucket"
 	wrongProductBucketVal  = "some-product-bucket"
@@ -29,13 +32,14 @@ const (
 	notExistMessage        = "not exist"
 )
 
-//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.26.0 --output ../../mocks --name KeyValue --structname KeyValueMock --filename key_value_mock.go
-//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.26.0 --output ../../mocks --name KeyValueEntry --structname KeyValueEntryMock --filename key_value_entry_mock.go
-//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.26.0 --output ../../mocks --name JetStreamContext --structname JetStreamContextMock --filename jetstream_context_mock.go
+//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.31.0 --output ../../mocks --name KeyValue --structname KeyValueMock --filename key_value_mock.go
+//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.31.0 --output ../../mocks --name KeyValueEntry --structname KeyValueEntryMock --filename key_value_entry_mock.go
+//go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.31.0 --output ../../mocks --name JetStreamContext --structname JetStreamContextMock --filename jetstream_context_mock.go
 type SdkCentralizedConfigurationTestSuite struct {
 	suite.Suite
 	logger     logr.Logger
 	jetstream  mocks.JetStreamContextMock
+	globalKv   mocks.KeyValueMock
 	productKv  mocks.KeyValueMock
 	workflowKv mocks.KeyValueMock
 	processKv  mocks.KeyValueMock
@@ -50,17 +54,20 @@ func (s *SdkCentralizedConfigurationTestSuite) SetupTest() {
 	viper.Reset()
 
 	s.jetstream = *mocks.NewJetStreamContextMock(s.T())
+	s.globalKv = *mocks.NewKeyValueMock(s.T())
 	s.productKv = *mocks.NewKeyValueMock(s.T())
 	s.workflowKv = *mocks.NewKeyValueMock(s.T())
 	s.processKv = *mocks.NewKeyValueMock(s.T())
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ExpectOK() {
+func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfig_InitializeConfigurationScopes_ExpectOK() {
 	// Given
+	viper.SetDefault(globalBucketProp, globalBucketVal)
 	viper.SetDefault(productBucketProp, productBucketVal)
 	viper.SetDefault(workflowBucketProp, workflowBucketVal)
 	viper.SetDefault(processBucketProp, processBucketVal)
 
+	s.jetstream.On(keyValue, globalBucketVal).Return(&s.globalKv, nil)
 	s.jetstream.On(keyValue, productBucketVal).Return(&s.productKv, nil)
 	s.jetstream.On(keyValue, workflowBucketVal).Return(&s.workflowKv, nil)
 	s.jetstream.On(keyValue, processBucketVal).Return(&s.processKv, nil)
@@ -73,12 +80,33 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Init
 	s.NotNil(conf)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ProductConfigNotExist_ExpectError() {
+func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_GlobalConfigNotExist_ExpectError() {
 	// Given
+	viper.SetDefault(globalBucketProp, wrongGlobalBucketVal)
 	viper.SetDefault(productBucketProp, wrongProductBucketVal)
 	viper.SetDefault(workflowBucketProp, wrongWorkflowBucketVal)
 	viper.SetDefault(processBucketProp, wrongProcessBucketVal)
 
+	s.jetstream.On(keyValue, wrongGlobalBucketVal).Return(nil, errors.New(notExistMessage))
+	s.jetstream.On(keyValue, wrongProductBucketVal).Return(&s.productKv, nil)
+	s.jetstream.On(keyValue, wrongWorkflowBucketVal).Return(&s.workflowKv, nil)
+	s.jetstream.On(keyValue, wrongProcessBucketVal).Return(&s.processKv, nil)
+	// When
+	config, err := centralizedConfiguration.NewCentralizedConfiguration(s.logger, &s.jetstream)
+
+	// Then
+	s.Error(err)
+	s.Nil(config)
+}
+
+func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_ProductConfigNotExist_ExpectError() {
+	// Given
+	viper.SetDefault(globalBucketProp, wrongGlobalBucketVal)
+	viper.SetDefault(productBucketProp, wrongProductBucketVal)
+	viper.SetDefault(workflowBucketProp, wrongWorkflowBucketVal)
+	viper.SetDefault(processBucketProp, wrongProcessBucketVal)
+
+	s.jetstream.On(keyValue, wrongGlobalBucketVal).Return(&s.globalKv, nil)
 	s.jetstream.On(keyValue, wrongProductBucketVal).Return(nil, errors.New(notExistMessage))
 	s.jetstream.On(keyValue, wrongWorkflowBucketVal).Return(&s.workflowKv, nil)
 	s.jetstream.On(keyValue, wrongProcessBucketVal).Return(&s.processKv, nil)
@@ -90,12 +118,14 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Init
 	s.Nil(config)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_WorkflowConfigNotExist_ExpectError() {
+func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_WorkflowConfigNotExist_ExpectError() {
 	// Given
+	viper.SetDefault(globalBucketProp, wrongGlobalBucketVal)
 	viper.SetDefault(productBucketProp, wrongProductBucketVal)
 	viper.SetDefault(workflowBucketProp, wrongWorkflowBucketVal)
 	viper.SetDefault(processBucketProp, wrongProcessBucketVal)
 
+	s.jetstream.On(keyValue, wrongGlobalBucketVal).Return(&s.globalKv, nil)
 	s.jetstream.On(keyValue, wrongProductBucketVal).Return(&s.productKv, nil)
 	s.jetstream.On(keyValue, wrongWorkflowBucketVal).Return(nil, errors.New(notExistMessage))
 	s.jetstream.On(keyValue, wrongProcessBucketVal).Return(&s.processKv, nil)
@@ -108,12 +138,14 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Init
 	s.Nil(config)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_InitializeConfigurationScopes_ProcessConfigNotExist_ExpectError() {
+func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_ProcessConfigNotExist_ExpectError() {
 	// Given
+	viper.SetDefault(globalBucketProp, wrongGlobalBucketVal)
 	viper.SetDefault(productBucketProp, wrongProductBucketVal)
 	viper.SetDefault(workflowBucketProp, wrongWorkflowBucketVal)
 	viper.SetDefault(processBucketProp, wrongProcessBucketVal)
 
+	s.jetstream.On(keyValue, wrongGlobalBucketVal).Return(&s.globalKv, nil)
 	s.jetstream.On(keyValue, wrongProductBucketVal).Return(&s.productKv, nil)
 	s.jetstream.On(keyValue, wrongWorkflowBucketVal).Return(&s.workflowKv, nil)
 	s.jetstream.On(keyValue, wrongProcessBucketVal).Return(nil, errors.New(notExistMessage))
@@ -126,12 +158,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Init
 	s.Nil(config)
 }
 
-func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_DeleteConfigOnProductScope_ExpectOK() {
+func (s *SdkCentralizedConfigurationTestSuite) TestDeleteConfigOnProductScope_ExpectOK() {
 	// Given
 	s.productKv.On("Delete", "key1").Return(nil)
 
 	config, err := centralizedConfiguration.NewCentralizedConfigurationBuilder(
 		s.logger,
+		&s.globalKv,
 		&s.productKv,
 		&s.workflowKv,
 		&s.processKv,
@@ -147,6 +180,6 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 	s.productKv.AssertNumberOfCalls(s.T(), "Delete", 1)
 }
 
-func TestSdkCentralizedConfigurationTestSuite(t *testing.T) {
+func TestSdkCentralizedConfigTestSuite(t *testing.T) {
 	suite.Run(t, new(SdkCentralizedConfigurationTestSuite))
 }
