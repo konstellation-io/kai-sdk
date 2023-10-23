@@ -39,10 +39,10 @@ func (s *SdkMessagingTestSuite) SetupTest() {
 
 func (s *SdkMessagingTestSuite) TestMessaging_InstantiateNewMessaging_ExpectOk() {
 	// When
-	objectStore := messaging.NewMessaging(s.logger, nil, &s.jetstream, nil)
+	messagingInst := messaging.NewMessaging(s.logger, nil, &s.jetstream, nil)
 
 	// Then
-	s.NotNil(objectStore)
+	s.NotNil(messagingInst)
 }
 
 func (s *SdkMessagingTestSuite) TestMessaging_PublishError_ExpectOk() {
@@ -53,16 +53,37 @@ func (s *SdkMessagingTestSuite) TestMessaging_PublishError_ExpectOk() {
 		Return(&nats.PubAck{}, nil)
 	s.messagingUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
 
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
 
 	// When
-	objectStore.SendError("some-request", "some-error")
+	messagingInst.SendError("some-request", "some-error")
 
 	// Then
-	s.NotNil(objectStore)
+	s.NotNil(messagingInst)
 	s.jetstream.AssertCalled(s.T(),
 		"Publish", "test-parent",
 		getOutputMessage("some-request", nil, "some-error", "parent-node", kai.MessageType_ERROR))
+}
+
+func (s *SdkMessagingTestSuite) TestMessaging_UnmarshallMessage_ExpectOk() {
+	// Given
+	msg := &kai.KaiNatsMessage{
+		RequestId:   "some-request",
+		FromNode:    "some-node",
+		MessageType: kai.MessageType_OK,
+	}
+	msgBytes, _ := proto.Marshal(msg)
+
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
+
+	// When
+	outputMsg, err := messagingInst.UnmarshallMessage(msgBytes)
+
+	// Then
+	s.Nil(err)
+	s.Equal(msg.RequestId, outputMsg.RequestId)
+	s.Equal(msg.FromNode, outputMsg.FromNode)
+	s.Equal(msg.MessageType, outputMsg.MessageType)
 }
 
 func TestSdkMessagingTestSuite(t *testing.T) {

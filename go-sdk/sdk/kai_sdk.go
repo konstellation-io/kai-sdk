@@ -35,6 +35,7 @@ type messaging interface {
 	SendEarlyReply(response proto.Message, channelOpt ...string) error
 	SendEarlyExit(response proto.Message, channelOpt ...string) error
 	GetErrorMessage() string
+	UnmarshallMessage(data []byte) (*kai.KaiNatsMessage, error)
 
 	IsMessageOK() bool
 	IsMessageError() bool
