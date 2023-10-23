@@ -154,7 +154,7 @@ func (sdk *KaiSDK) GetRequestID() string {
 	if sdk.requestMessage == nil {
 		return ""
 	}
-	
+
 	return sdk.requestMessage.RequestId
 }
 
