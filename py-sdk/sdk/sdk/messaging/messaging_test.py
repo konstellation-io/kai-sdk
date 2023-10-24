@@ -350,3 +350,14 @@ def test_get_request_id_ko(m_messaging):
 
     assert response[0] == ""
     assert isinstance(response[1], NewRequestMsgError)
+
+
+@patch("sdk.messaging.messaging_utils.is_compressed", return_value=True)
+@patch("sdk.messaging.messaging_utils.uncompress", return_value=Exception)
+def test_get_request_id_uncompress_ko(_, uncompress_mock, m_messaging):
+    message_data = b"compressed"
+
+    response = m_messaging.get_request_id(message_data)
+
+    assert response[0] == ""
+    assert isinstance(response[1], NewRequestMsgError)
