@@ -99,7 +99,6 @@ func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectError() {
 	s.Equal("", requestID)
 }
 
-
 func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ErrorDuringUncompress() {
 	// Given
 	msgBytes := []byte("compressed-data")
