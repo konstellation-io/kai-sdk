@@ -3,10 +3,8 @@
 package mocks
 
 import (
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
-	anypb "google.golang.org/protobuf/types/known/anypb"
-
 	mock "github.com/stretchr/testify/mock"
+	anypb "google.golang.org/protobuf/types/known/anypb"
 
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 )
@@ -61,6 +59,58 @@ func (_c *MessagingMock_GetErrorMessage_Call) Return(_a0 string) *MessagingMock_
 }
 
 func (_c *MessagingMock_GetErrorMessage_Call) RunAndReturn(run func() string) *MessagingMock_GetErrorMessage_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetRequestID provides a mock function with given fields: data
+func (_m *MessagingMock) GetRequestID(data []byte) (string, error) {
+	ret := _m.Called(data)
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func([]byte) (string, error)); ok {
+		return rf(data)
+	}
+	if rf, ok := ret.Get(0).(func([]byte) string); ok {
+		r0 = rf(data)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func([]byte) error); ok {
+		r1 = rf(data)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MessagingMock_GetRequestID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRequestID'
+type MessagingMock_GetRequestID_Call struct {
+	*mock.Call
+}
+
+// GetRequestID is a helper method to define mock.On call
+//   - data []byte
+func (_e *MessagingMock_Expecter) GetRequestID(data interface{}) *MessagingMock_GetRequestID_Call {
+	return &MessagingMock_GetRequestID_Call{Call: _e.mock.On("GetRequestID", data)}
+}
+
+func (_c *MessagingMock_GetRequestID_Call) Run(run func(data []byte)) *MessagingMock_GetRequestID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].([]byte))
+	})
+	return _c
+}
+
+func (_c *MessagingMock_GetRequestID_Call) Return(_a0 string, _a1 error) *MessagingMock_GetRequestID_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MessagingMock_GetRequestID_Call) RunAndReturn(run func([]byte) (string, error)) *MessagingMock_GetRequestID_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -502,60 +552,6 @@ func (_c *MessagingMock_SendOutputWithRequestID_Call) Return(_a0 error) *Messagi
 }
 
 func (_c *MessagingMock_SendOutputWithRequestID_Call) RunAndReturn(run func(protoreflect.ProtoMessage, string, ...string) error) *MessagingMock_SendOutputWithRequestID_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// UnmarshallMessage provides a mock function with given fields: data
-func (_m *MessagingMock) UnmarshallMessage(data []byte) (*kai.KaiNatsMessage, error) {
-	ret := _m.Called(data)
-
-	var r0 *kai.KaiNatsMessage
-	var r1 error
-	if rf, ok := ret.Get(0).(func([]byte) (*kai.KaiNatsMessage, error)); ok {
-		return rf(data)
-	}
-	if rf, ok := ret.Get(0).(func([]byte) *kai.KaiNatsMessage); ok {
-		r0 = rf(data)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*kai.KaiNatsMessage)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func([]byte) error); ok {
-		r1 = rf(data)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// MessagingMock_UnmarshallMessage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UnmarshallMessage'
-type MessagingMock_UnmarshallMessage_Call struct {
-	*mock.Call
-}
-
-// UnmarshallMessage is a helper method to define mock.On call
-//   - data []byte
-func (_e *MessagingMock_Expecter) UnmarshallMessage(data interface{}) *MessagingMock_UnmarshallMessage_Call {
-	return &MessagingMock_UnmarshallMessage_Call{Call: _e.mock.On("UnmarshallMessage", data)}
-}
-
-func (_c *MessagingMock_UnmarshallMessage_Call) Run(run func(data []byte)) *MessagingMock_UnmarshallMessage_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].([]byte))
-	})
-	return _c
-}
-
-func (_c *MessagingMock_UnmarshallMessage_Call) Return(_a0 *kai.KaiNatsMessage, _a1 error) *MessagingMock_UnmarshallMessage_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *MessagingMock_UnmarshallMessage_Call) RunAndReturn(run func([]byte) (*kai.KaiNatsMessage, error)) *MessagingMock_UnmarshallMessage_Call {
 	_c.Call.Return(run)
 	return _c
 }

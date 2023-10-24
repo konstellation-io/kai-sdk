@@ -77,13 +77,44 @@ func (s *SdkMessagingTestSuite) TestMessaging_UnmarshallMessage_ExpectOk() {
 	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
 
 	// When
-	outputMsg, err := messagingInst.UnmarshallMessage(msgBytes)
+	outputMsg, err := messagingInst.GetRequestID(msgBytes)
 
 	// Then
 	s.Nil(err)
-	s.Equal(msg.RequestId, outputMsg.RequestId)
-	s.Equal(msg.FromNode, outputMsg.FromNode)
-	s.Equal(msg.MessageType, outputMsg.MessageType)
+	s.Equal(msg.RequestId, outputMsg)
+}
+
+func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectOk() {
+	// Given
+	msg := &kai.KaiNatsMessage{
+		RequestId:   "some-request",
+		FromNode:    "some-node",
+		MessageType: kai.MessageType_OK,
+	}
+	msgBytes, _ := proto.Marshal(msg)
+
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
+
+	// When
+	requestID, err := messagingInst.GetRequestID(msgBytes)
+
+	// Then
+	s.Nil(err)
+	s.Equal(msg.RequestId, requestID)
+}
+
+func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectError() {
+	// Given
+	msgBytes := []byte("some-invalid-message")
+
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
+
+	// When
+	requestID, err := messagingInst.GetRequestID(msgBytes)
+
+	// Then
+	s.NotNil(err)
+	s.Equal("", requestID)
 }
 
 func TestSdkMessagingTestSuite(t *testing.T) {
