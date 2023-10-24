@@ -35,7 +35,7 @@ type messaging interface {
 	SendEarlyReply(response proto.Message, channelOpt ...string) error
 	SendEarlyExit(response proto.Message, channelOpt ...string) error
 	GetErrorMessage() string
-	UnmarshallMessage(data []byte) (*kai.KaiNatsMessage, error)
+	GetRequestID(data []byte) (string, error)
 
 	IsMessageOK() bool
 	IsMessageError() bool
@@ -155,7 +155,7 @@ func (sdk *KaiSDK) GetRequestID() string {
 		return ""
 	}
 
-	return sdk.requestMessage.RequestId
+	return sdk.requestMessage.GetRequestId()
 }
 
 func ShallowCopyWithRequest(sdk *KaiSDK, requestMsg *kai.KaiNatsMessage) KaiSDK {

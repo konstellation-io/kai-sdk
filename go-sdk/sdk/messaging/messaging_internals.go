@@ -141,7 +141,7 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 	return outMsg, nil
 }
 
-func (ms Messaging) UnmarshallMessage(data []byte) (*kai.KaiNatsMessage, error) {
+func (ms Messaging) GetRequestID(data []byte) (string, error) {
 	requestMsg := &kai.KaiNatsMessage{}
 
 	var err error
@@ -149,11 +149,15 @@ func (ms Messaging) UnmarshallMessage(data []byte) (*kai.KaiNatsMessage, error) 
 		data, err = common.UncompressData(data)
 		if err != nil {
 			ms.logger.Error(err, "Error reading compressed message")
-			return nil, err
+			return "", err
 		}
 	}
 
 	err = proto.Unmarshal(data, requestMsg)
+	if err != nil {
+		ms.logger.Error(err, "Error unmarshalling message")
+		return "", err
+	}
 
-	return requestMsg, err
+	return requestMsg.GetRequestId(), err
 }
