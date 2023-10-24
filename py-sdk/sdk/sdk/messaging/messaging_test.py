@@ -9,7 +9,7 @@ from nats.js.client import JetStreamContext
 from vyper import v
 
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
-from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
+from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError, NewRequestMsgError
 from sdk.messaging.messaging import Messaging, _message_type_converter
 from sdk.messaging.messaging_utils import compress, is_compressed
 
@@ -331,3 +331,22 @@ def test_message_type_converter_ok():
     assert _message_type_converter(MessageType.EARLY_REPLY) == "early reply"
     assert _message_type_converter(MessageType.EARLY_EXIT) == "early exit"
     assert _message_type_converter(MessageType.UNDEFINED) == "undefined"
+
+
+def test_get_request_id_ok(m_messaging):
+    proto_message = KaiNatsMessage(request_id="test_request_id")
+    message_data = proto_message.SerializeToString()
+
+    response = m_messaging.get_request_id(message_data)
+
+    assert response[0] == "test_request_id"
+    assert response[1] == None
+
+
+def test_get_request_id_ko(m_messaging):
+    invalid_data = b"wrong"
+
+    response = m_messaging.get_request_id(invalid_data)
+
+    assert response[0] == ""
+    assert isinstance(response[1], NewRequestMsgError)

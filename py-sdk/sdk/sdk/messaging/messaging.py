@@ -14,8 +14,15 @@ from nats.js.client import JetStreamContext
 from vyper import v
 
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
-from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
-from sdk.messaging.messaging_utils import MessagingUtils, MessagingUtilsABC, compress, size_in_mb
+from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError, NewRequestMsgError
+from sdk.messaging.messaging_utils import (
+    MessagingUtils,
+    MessagingUtilsABC,
+    compress,
+    is_compressed,
+    size_in_mb,
+    uncompress,
+)
 
 
 @dataclass
@@ -165,6 +172,26 @@ class Messaging(MessagingABC):
             from_node=v.get_string("metadata.process_id"),
             message_type=msg_type,
         )
+
+    def get_request_id(self, data: bytes) -> (str, Exception):
+        request_msg = KaiNatsMessage()
+
+        if is_compressed(data):
+            try:
+                data = uncompress(data)
+            except Exception as e:
+                error = NewRequestMsgError(error=e)
+                self.logger.error(f"{error}")
+                return "", error
+
+        try:
+            request_msg.ParseFromString(data)  # deserialize from bytes
+        except Exception as e:
+            error = NewRequestMsgError(error=e)
+            self.logger.error(f"{error}")
+            return "", error
+
+        return request_msg.request_id, None if getattr(request_msg, "request_id", None) else "", NewRequestMsgError()
 
     async def _publish_response(self, response_msg: KaiNatsMessage, chan: Optional[str] = None) -> None:
         output_subject = self._get_output_subject(chan)
