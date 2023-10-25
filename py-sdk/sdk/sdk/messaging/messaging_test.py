@@ -9,7 +9,7 @@ from nats.js.client import JetStreamContext
 from vyper import v
 
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
-from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
+from sdk.messaging.exceptions import FailedToGetMaxMessageSizeError, MessageTooLargeError
 from sdk.messaging.messaging import Messaging, _message_type_converter
 from sdk.messaging.messaging_utils import compress, is_compressed
 
@@ -312,9 +312,9 @@ async def test__prepare_output_message_compressed_ok(m_messaging):
 
 
 async def test__prepare_output_message_getting_max_message_size_ko(m_messaging):
-    m_messaging.messaging_utils.get_max_message_size = AsyncMock(side_effect=FailedGettingMaxMessageSizeError)
+    m_messaging.messaging_utils.get_max_message_size = AsyncMock(side_effect=FailedToGetMaxMessageSizeError)
 
-    with pytest.raises(FailedGettingMaxMessageSizeError):
+    with pytest.raises(FailedToGetMaxMessageSizeError):
         await m_messaging._prepare_output_message(ANY_BYTE)
 
 

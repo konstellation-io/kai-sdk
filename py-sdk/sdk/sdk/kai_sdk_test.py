@@ -6,9 +6,9 @@ from nats.js.object_store import ObjectStore as NatsObjectStore
 from vyper import v
 
 from sdk.centralized_config.centralized_config import CentralizedConfig
-from sdk.centralized_config.exceptions import FailedInitializingConfigError
+from sdk.centralized_config.exceptions import FailedToInitializeConfigError
 from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage, EphemeralStorageABC
-from sdk.ephemeral_storage.exceptions import FailedEphemeralStorageInitializationError
+from sdk.ephemeral_storage.exceptions import FailedToInitializeEphemeralStorageError
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
 from sdk.messaging.messaging import Messaging
@@ -82,7 +82,7 @@ async def test_initialize_ko(centralized_config_initialize_mock):
     v.set(PROCESS_BUCKET, "test_process")
 
     with pytest.raises(SystemExit):
-        with pytest.raises(FailedInitializingConfigError):
+        with pytest.raises(FailedToInitializeConfigError):
             sdk = KaiSDK(nc=nc, js=js)
             await sdk.initialize()
 
@@ -127,7 +127,7 @@ async def test_nats_initialize_ko(object_store_initialize_mock):
     js = nc.jetstream()
 
     with pytest.raises(SystemExit):
-        with pytest.raises(FailedEphemeralStorageInitializationError):
+        with pytest.raises(FailedToInitializeEphemeralStorageError):
             sdk = KaiSDK(nc=nc, js=js)
             await sdk.initialize()
 
