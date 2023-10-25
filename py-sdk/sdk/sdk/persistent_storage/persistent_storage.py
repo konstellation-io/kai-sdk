@@ -2,16 +2,24 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from typing import Optional
 
 import loguru
 from loguru import logger
 from minio import Minio, S3Error
-from minio.retention import Retention, COMPLIANCE
-from sdk.persistent_storage.exceptions import FailedToInitializePersistentStorageError, MissingBucketError, FailedToSaveFileError, FailedToGetFileError, FailedToDeleteFileError, FailedToListFilesError
+from minio.retention import COMPLIANCE, Retention
 from vyper import v
-from datetime import datetime 
-from datetime import timedelta
-from typing import Optional
+
+from sdk.persistent_storage.exceptions import (
+    FailedToDeleteFileError,
+    FailedToGetFileError,
+    FailedToInitializePersistentStorageError,
+    FailedToListFilesError,
+    FailedToSaveFileError,
+    MissingBucketError,
+)
+
 
 @dataclass
 class PersistentStorageABC(ABC):
@@ -54,21 +62,29 @@ class PersistentStorage(PersistentStorageABC):
         except Exception as e:
             self.logger.error(f"failed to initialize persistent storage client: {e}")
             raise FailedToInitializePersistentStorageError(error=e)
-        
+
         self.minio_bucket_name = v.get_string("minio.bucket")
         if not self.minio_client.bucket_exists(self.minio_bucket_name):
             self.logger.error(f"bucket {self.minio_bucket_name} does not exist in persistent storage")
             raise MissingBucketError(self.minio_bucket_name)
-        
+
         self.logger.debug(f"successfully initialized persistent storage with bucket {self.minio_bucket_name}!")
 
     def save(self, key: str, payload: bytes, ttl: int = 30) -> None:
         try:
             expiration_date = datetime.utcnow().replace(
-            hour=0, minute=0, second=0, microsecond=0,
-            )        + timedelta(days=ttl)
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0,
+            ) + timedelta(days=ttl)
             self.minio_client.put_object(
-                self.minio_bucket_name, key, payload, len(payload), retention=Retention(COMPLIANCE, expiration_date), legal_hold=True
+                self.minio_bucket_name,
+                key,
+                payload,
+                len(payload),
+                retention=Retention(COMPLIANCE, expiration_date),
+                legal_hold=True,
             )
             self.logger.info(f"file {key} successfully saved in persistent storage bucket {self.minio_bucket_name}")
         except Exception as e:
@@ -80,13 +96,15 @@ class PersistentStorage(PersistentStorageABC):
         try:
             exist = self._object_exist(key, version)
             if not exist:
-                self.logger.error(f"file {key} with version {version} not found in persistent storage bucket {self.minio_bucket_name}")
+                self.logger.error(
+                    f"file {key} with version {version} not found in persistent storage bucket {self.minio_bucket_name}"
+                )
                 return None, False
-            
-            response = self.minio_client.get_object(
-                self.minio_bucket_name, key, version_id=version
+
+            response = self.minio_client.get_object(self.minio_bucket_name, key, version_id=version)
+            self.logger.info(
+                f"file {key} successfully retrieved from persistent storage bucket {self.minio_bucket_name}"
             )
-            self.logger.info(f"file {key} successfully retrieved from persistent storage bucket {self.minio_bucket_name}")
             return response.read(), True
         except Exception as e:
             error = FailedToGetFileError(key, version, self.minio_bucket_name, e)
@@ -118,12 +136,12 @@ class PersistentStorage(PersistentStorageABC):
         try:
             exist = self._object_exist(key, version)
             if not exist:
-                self.logger.error(f"file {key} with version {version} does not found in persistent storage bucket {self.minio_bucket_name}")
+                self.logger.error(
+                    f"file {key} with version {version} does not found in persistent storage bucket {self.minio_bucket_name}"
+                )
                 return False
 
-            self.minio_client.remove_object(
-                self.minio_bucket_name, key, version_id=version
-            )
+            self.minio_client.remove_object(self.minio_bucket_name, key, version_id=version)
             self.logger.info(f"file {key} successfully deleted from persistent storage bucket {self.minio_bucket_name}")
             return True
         except Exception as e:
@@ -136,7 +154,7 @@ class PersistentStorage(PersistentStorageABC):
             self.minio_client.stat_object(self.minio_bucket_name, key, version_id=version)
             return True
         except Exception as error:
-            if 'code: NoSuchKey' in str(error):
+            if "code: NoSuchKey" in str(error):
                 return False
             else:
                 raise error

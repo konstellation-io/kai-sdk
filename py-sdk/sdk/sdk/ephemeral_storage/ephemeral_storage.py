@@ -15,8 +15,8 @@ from vyper import v
 from sdk.ephemeral_storage.exceptions import (
     FailedToCompileRegexpError,
     FailedToDeleteFileError,
-    FailedToInitializeEphemeralStorageError,
     FailedToGetFileError,
+    FailedToInitializeEphemeralStorageError,
     FailedToListFilesError,
     FailedToPurgeFilesError,
     FailedToSaveFileError,
@@ -153,7 +153,9 @@ class EphemeralStorage(EphemeralStorageABC):
             self.logger.debug(f"file {key} not found in ephemeral storage {self.ephemeral_storage_name}: {e}")
             return False
         except Exception as e:
-            self.logger.warning(f"failed to delete file {key} from ephemeral storage {self.ephemeral_storage_name}: {e}")
+            self.logger.warning(
+                f"failed to delete file {key} from ephemeral storage {self.ephemeral_storage_name}: {e}"
+            )
             raise FailedToDeleteFileError(key=key, error=e)
 
     async def purge(self, regexp: Optional[str] = None) -> None:

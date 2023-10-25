@@ -11,6 +11,7 @@ class MissingBucketError(Exception):
     def __init__(self, bucket: str):
         super().__init__(f"bucket: {bucket} not found in the persistent storage")
 
+
 class FailedToListFilesError(Exception):
     def __init__(self, bucket: str, error: Optional[Exception] = None):
         message = f"failed to list files from the persistent storage bucket {bucket}"

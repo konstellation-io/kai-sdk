@@ -13,8 +13,8 @@ from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage, EphemeralS
 from sdk.ephemeral_storage.exceptions import (
     FailedToCompileRegexpError,
     FailedToDeleteFileError,
-    FailedToInitializeEphemeralStorageError,
     FailedToGetFileError,
+    FailedToInitializeEphemeralStorageError,
     FailedToListFilesError,
     FailedToPurgeFilesError,
     FailedToSaveFileError,
