@@ -39,6 +39,7 @@ MANDATORY_CONFIG_KEYS = [
     "minio.secret_key",
     "minio.region",
     "minio.secure",
+    "minio.bucket",
 ]
 
 

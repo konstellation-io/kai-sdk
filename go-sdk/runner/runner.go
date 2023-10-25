@@ -62,6 +62,7 @@ func validateConfig(keys []string) {
 		"minio.secret_key",
 		"minio.region",
 		"minio.secure",
+		"minio.bucket",
 	}
 
 	for _, key := range mandatoryConfigKeys {

@@ -18,6 +18,7 @@ minio:
   secret_key: "minio123"
   region: "us-east-1"
   secure: false
+  bucket: "test-bucket"
 
 centralized_configuration:
   global:
