@@ -12,7 +12,6 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
 from sdk.metadata.metadata import Metadata
 
-
 @pytest.fixture(scope="function")
 async def m_sdk() -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)

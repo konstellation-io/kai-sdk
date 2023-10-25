@@ -47,8 +47,8 @@ class PersistentStorageABC(ABC):
 @dataclass
 class PersistentStorage(PersistentStorageABC):
     logger: loguru.Logger = logger.bind(context="[PERSISTENT STORAGE]")
-    minio_client: Minio = field(default_factory=Minio, init=False)
-    minio_bucket_name: str = field(default_factory=str, init=False)
+    minio_client: Minio = field(init=False)
+    minio_bucket_name: str = field(init=False)
 
     def __post_init__(self) -> None:
         try:

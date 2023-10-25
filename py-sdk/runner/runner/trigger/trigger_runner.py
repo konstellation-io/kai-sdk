@@ -6,7 +6,7 @@ import sys
 import threading
 from asyncio import Queue
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, Optional
+from typing import Awaitable, Callable, Optional
 
 import loguru
 from google.protobuf import any_pb2
