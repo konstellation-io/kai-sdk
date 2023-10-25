@@ -34,6 +34,11 @@ MANDATORY_CONFIG_KEYS = [
     "centralized_configuration.product.bucket",
     "centralized_configuration.workflow.bucket",
     "centralized_configuration.process.bucket",
+    "minio.endpoint",
+    "minio.access_key",
+    "minio.secret_key",
+    "minio.region",
+    "minio.secure",
 ]
 
 

@@ -13,6 +13,13 @@ nats:
   output: task-output
   object_store: ephemeral-storage
 
+minio:
+  endpoint: "localhost:9000"
+  access_key: "minio"
+  secret_key: "minio123"
+  region: "us-east-1"
+  secure: false
+
 centralized_configuration:
   global:
     bucket: global
