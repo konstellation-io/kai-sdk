@@ -162,7 +162,7 @@ class Messaging(MessagingABC):
         response_msg = KaiNatsMessage(
             request_id=request_id,
             error=err_msg,
-            from_node=v.get_string("metadata.process_id"),
+            from_node=v.get_string("metadata.process_name"),
             message_type=MessageType.ERROR,
         )
         await self._publish_response(response_msg)
@@ -174,7 +174,7 @@ class Messaging(MessagingABC):
         return KaiNatsMessage(
             request_id=request_id,
             payload=payload,
-            from_node=v.get_string("metadata.process_id"),
+            from_node=v.get_string("metadata.process_name"),
             message_type=msg_type,
         )
 

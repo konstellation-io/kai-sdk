@@ -28,9 +28,9 @@ func (s *SdkMetadataTestSuite) SetupTest() {
 func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	// Given
 	viper.SetDefault("metadata.product_id", "product-name")
-	viper.SetDefault("metadata.workflow_id", "workflow-name")
-	viper.SetDefault("metadata.process_id", "process-name")
-	viper.SetDefault("metadata.version_id", "version-name")
+	viper.SetDefault("metadata.workflow_name", "workflow-name")
+	viper.SetDefault("metadata.process_name", "process-name")
+	viper.SetDefault("metadata.version_tag", "version-name")
 	viper.SetDefault("nats.object_store", "my-ephemeral-storage")
 	viper.SetDefault("centralized_configuration.global.bucket", "global-bucket")
 	viper.SetDefault("centralized_configuration.product.bucket", "product-bucket")
