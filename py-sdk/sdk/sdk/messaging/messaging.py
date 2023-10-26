@@ -10,6 +10,7 @@ from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
 from loguru import logger
 from nats.aio.client import Client as NatsClient
+from nats.aio.msg import Msg
 from nats.js.client import JetStreamContext
 from vyper import v
 
@@ -173,9 +174,10 @@ class Messaging(MessagingABC):
             message_type=msg_type,
         )
 
-    def get_request_id(self, data: bytes) -> (str, Exception):
+    def get_request_id(self, msg: Msg) -> (str, Exception):
         request_msg = KaiNatsMessage()
 
+        data = msg.data
         if is_compressed(data):
             try:
                 data = uncompress(data)

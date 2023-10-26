@@ -5,6 +5,7 @@ from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
 from mock import AsyncMock, Mock
 from nats.aio.client import Client as NatsClient
+from nats.aio.msg import Msg
 from nats.js.client import JetStreamContext
 from vyper import v
 
@@ -336,17 +337,20 @@ def test_message_type_converter_ok():
 def test_get_request_id_ok(m_messaging):
     proto_message = KaiNatsMessage(request_id="test_request_id")
     message_data = proto_message.SerializeToString()
+    nats_message = Mock(spec=Msg)
+    nats_message.data = message_data
 
-    response = m_messaging.get_request_id(message_data)
+    response = m_messaging.get_request_id(nats_message)
 
     assert response[0] == "test_request_id"
     assert response[1] == None
 
 
 def test_get_request_id_ko(m_messaging):
-    invalid_data = b"wrong"
+    nats_message = Mock(spec=Msg)
+    nats_message.data = b"invalid_data"
 
-    response = m_messaging.get_request_id(invalid_data)
+    response = m_messaging.get_request_id(nats_message)
 
     assert response[0] == ""
     assert isinstance(response[1], NewRequestMsgError)
@@ -355,9 +359,10 @@ def test_get_request_id_ko(m_messaging):
 @patch("sdk.messaging.messaging_utils.is_compressed", return_value=True)
 @patch("sdk.messaging.messaging_utils.uncompress", return_value=Exception)
 def test_get_request_id_uncompress_ko(_, uncompress_mock, m_messaging):
-    message_data = b"compressed"
+    nats_message = Mock(spec=Msg)
+    nats_message.data = b"compressed"
 
-    response = m_messaging.get_request_id(message_data)
+    response = m_messaging.get_request_id(nats_message)
 
     assert response[0] == ""
     assert isinstance(response[1], NewRequestMsgError)

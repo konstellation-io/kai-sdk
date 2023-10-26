@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/nats-io/nats.go"
 
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
@@ -141,8 +142,10 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 	return outMsg, nil
 }
 
-func (ms Messaging) GetRequestID(data []byte) (string, error) {
+func (ms Messaging) GetRequestID(msg *nats.Msg) (string, error) {
 	requestMsg := &kai.KaiNatsMessage{}
+
+	data := msg.Data
 
 	var err error
 	if common.IsCompressed(data) {

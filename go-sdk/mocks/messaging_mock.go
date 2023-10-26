@@ -6,6 +6,8 @@ import (
 	mock "github.com/stretchr/testify/mock"
 	anypb "google.golang.org/protobuf/types/known/anypb"
 
+	nats "github.com/nats-io/nats.go"
+
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -63,23 +65,23 @@ func (_c *MessagingMock_GetErrorMessage_Call) RunAndReturn(run func() string) *M
 	return _c
 }
 
-// GetRequestID provides a mock function with given fields: data
-func (_m *MessagingMock) GetRequestID(data []byte) (string, error) {
-	ret := _m.Called(data)
+// GetRequestID provides a mock function with given fields: msg
+func (_m *MessagingMock) GetRequestID(msg *nats.Msg) (string, error) {
+	ret := _m.Called(msg)
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func([]byte) (string, error)); ok {
-		return rf(data)
+	if rf, ok := ret.Get(0).(func(*nats.Msg) (string, error)); ok {
+		return rf(msg)
 	}
-	if rf, ok := ret.Get(0).(func([]byte) string); ok {
-		r0 = rf(data)
+	if rf, ok := ret.Get(0).(func(*nats.Msg) string); ok {
+		r0 = rf(msg)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func([]byte) error); ok {
-		r1 = rf(data)
+	if rf, ok := ret.Get(1).(func(*nats.Msg) error); ok {
+		r1 = rf(msg)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -93,14 +95,14 @@ type MessagingMock_GetRequestID_Call struct {
 }
 
 // GetRequestID is a helper method to define mock.On call
-//   - data []byte
-func (_e *MessagingMock_Expecter) GetRequestID(data interface{}) *MessagingMock_GetRequestID_Call {
-	return &MessagingMock_GetRequestID_Call{Call: _e.mock.On("GetRequestID", data)}
+//   - msg *nats.Msg
+func (_e *MessagingMock_Expecter) GetRequestID(msg interface{}) *MessagingMock_GetRequestID_Call {
+	return &MessagingMock_GetRequestID_Call{Call: _e.mock.On("GetRequestID", msg)}
 }
 
-func (_c *MessagingMock_GetRequestID_Call) Run(run func(data []byte)) *MessagingMock_GetRequestID_Call {
+func (_c *MessagingMock_GetRequestID_Call) Run(run func(msg *nats.Msg)) *MessagingMock_GetRequestID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].([]byte))
+		run(args[0].(*nats.Msg))
 	})
 	return _c
 }
@@ -110,7 +112,7 @@ func (_c *MessagingMock_GetRequestID_Call) Return(_a0 string, _a1 error) *Messag
 	return _c
 }
 
-func (_c *MessagingMock_GetRequestID_Call) RunAndReturn(run func([]byte) (string, error)) *MessagingMock_GetRequestID_Call {
+func (_c *MessagingMock_GetRequestID_Call) RunAndReturn(run func(*nats.Msg) (string, error)) *MessagingMock_GetRequestID_Call {
 	_c.Call.Return(run)
 	return _c
 }

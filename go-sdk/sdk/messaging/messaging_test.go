@@ -74,11 +74,16 @@ func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectOk() {
 		MessageType: kai.MessageType_OK,
 	}
 	msgBytes, _ := proto.Marshal(msg)
+	natsMessage := &nats.Msg{
+		Subject: "some-subject",
+		Reply:   "some-reply",
+		Data:    msgBytes,
+	}
 
 	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
 
 	// When
-	requestID, err := messagingInst.GetRequestID(msgBytes)
+	requestID, err := messagingInst.GetRequestID(natsMessage)
 
 	// Then
 	s.Nil(err)
@@ -88,11 +93,16 @@ func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectOk() {
 func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectError() {
 	// Given
 	msgBytes := []byte("some-invalid-message")
+	natsMessage := &nats.Msg{
+		Subject: "some-subject",
+		Reply:   "some-reply",
+		Data:    msgBytes,
+	}
 
 	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
 
 	// When
-	requestID, err := messagingInst.GetRequestID(msgBytes)
+	requestID, err := messagingInst.GetRequestID(natsMessage)
 
 	// Then
 	s.NotNil(err)
@@ -102,6 +112,11 @@ func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectError() {
 func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ErrorDuringUncompress() {
 	// Given
 	msgBytes := []byte("compressed-data")
+	natsMessage := &nats.Msg{
+		Subject: "some-subject",
+		Reply:   "some-reply",
+		Data:    msgBytes,
+	}
 
 	s.messagingUtils.On("IsCompressed", msgBytes).Return(true, nil)
 	s.messagingUtils.On("UncompressData", msgBytes).Return(nil, errors.New("Uncompression error"))
@@ -109,7 +124,7 @@ func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ErrorDuringUncompress
 	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
 
 	// When
-	requestID, err := messagingInst.GetRequestID(msgBytes)
+	requestID, err := messagingInst.GetRequestID(natsMessage)
 
 	// Then
 	s.NotNil(err)
