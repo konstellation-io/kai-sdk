@@ -21,7 +21,7 @@ ANY_BYTE = b"any"
 @pytest.fixture(scope="function")
 def m_messaging() -> Messaging:
     v.set("nats.output", NATS_OUTPUT)
-    v.set("metadata.process_id", "test_process_id")
+    v.set("metadata.process_name", "test_process_id")
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = Mock(spec=KaiNatsMessage)
