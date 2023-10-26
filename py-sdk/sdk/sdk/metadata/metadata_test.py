@@ -5,9 +5,9 @@ from sdk.metadata.metadata import Metadata
 
 def test_ok():
     v.set("metadata.product_id", "test_product_id")
-    v.set("metadata.workflow_id", "test_workflow_id")
-    v.set("metadata.process_id", "test_process_id")
-    v.set("metadata.version_id", "test_version_id")
+    v.set("metadata.workflow_name", "test_workflow_id")
+    v.set("metadata.process_name", "test_process_id")
+    v.set("metadata.version_tag", "test_version_id")
     v.set("nats.object_store", "test_object_store")
     v.set("centralized_configuration.global.bucket", "test_global")
     v.set("centralized_configuration.product.bucket", "test_product")

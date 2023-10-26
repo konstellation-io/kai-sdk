@@ -377,12 +377,12 @@ files = [
 
 [[package]]
 name = "runner"
-version = "0.3.0"
+version = "0.4.0"
 description = "KAI Runner's implementation in Python"
 optional = false
 python-versions = "3.11.5"
 files = []
-develop = false
+develop = true
 
 [package.dependencies]
 loguru = "0.7.0"
@@ -392,15 +392,12 @@ sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "
 vyper-config = "1.1.1"
 
 [package.source]
-type = "git"
-url = "https://github.com/konstellation-io/kai-sdk.git"
-reference = "HEAD"
-resolved_reference = "7511672512194d940cb7ac6af9da01cbef952702"
-subdirectory = "py-sdk/runner"
+type = "directory"
+url = "../../py-sdk/runner"
 
 [[package]]
 name = "sdk"
-version = "0.2.0"
+version = "0.3.0"
 description = "KAI SDK's implementation in Python"
 optional = false
 python-versions = "3.11.5"
@@ -417,7 +414,7 @@ vyper-config = "1.1.1"
 type = "git"
 url = "https://github.com/konstellation-io/kai-sdk.git"
 reference = "HEAD"
-resolved_reference = "7511672512194d940cb7ac6af9da01cbef952702"
+resolved_reference = "e79ae550d64396641f996feb2df5f666567047db"
 subdirectory = "py-sdk/sdk"
 
 [[package]]
@@ -559,4 +556,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.5"
-content-hash = "ed501b59d599ebd9c33aa56789d5fa83d5ac3da77ae2830e7c4e03e23d82cc4b"
+content-hash = "d92c444912397affced40a822cbdcec1b1e3e276f8b09fb4650e39f4fc650764"

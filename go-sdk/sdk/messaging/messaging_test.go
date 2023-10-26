@@ -1,6 +1,7 @@
 package messaging_test
 
 import (
+	"errors"
 	"math/rand"
 	"testing"
 
@@ -39,30 +40,95 @@ func (s *SdkMessagingTestSuite) SetupTest() {
 
 func (s *SdkMessagingTestSuite) TestMessaging_InstantiateNewMessaging_ExpectOk() {
 	// When
-	objectStore := messaging.NewMessaging(s.logger, nil, &s.jetstream, nil)
+	messagingInst := messaging.NewMessaging(s.logger, nil, &s.jetstream, nil)
 
 	// Then
-	s.NotNil(objectStore)
+	s.NotNil(messagingInst)
 }
 
 func (s *SdkMessagingTestSuite) TestMessaging_PublishError_ExpectOk() {
 	// Given
 	viper.SetDefault("nats.output", "test-parent")
-	viper.SetDefault("metadata.process_id", "parent-node")
+	viper.SetDefault("metadata.process_name", "parent-node")
 	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
 	s.messagingUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
 
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
 
 	// When
-	objectStore.SendError("some-request", "some-error")
+	messagingInst.SendError("some-request", "some-error")
 
 	// Then
-	s.NotNil(objectStore)
+	s.NotNil(messagingInst)
 	s.jetstream.AssertCalled(s.T(),
 		"Publish", "test-parent",
 		getOutputMessage("some-request", nil, "some-error", "parent-node", kai.MessageType_ERROR))
+}
+
+func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectOk() {
+	// Given
+	msg := &kai.KaiNatsMessage{
+		RequestId:   "some-request",
+		FromNode:    "some-node",
+		MessageType: kai.MessageType_OK,
+	}
+	msgBytes, _ := proto.Marshal(msg)
+	natsMessage := &nats.Msg{
+		Subject: "some-subject",
+		Reply:   "some-reply",
+		Data:    msgBytes,
+	}
+
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
+
+	// When
+	requestID, err := messagingInst.GetRequestID(natsMessage)
+
+	// Then
+	s.Nil(err)
+	s.Equal(msg.RequestId, requestID)
+}
+
+func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectError() {
+	// Given
+	msgBytes := []byte("some-invalid-message")
+	natsMessage := &nats.Msg{
+		Subject: "some-subject",
+		Reply:   "some-reply",
+		Data:    msgBytes,
+	}
+
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
+
+	// When
+	requestID, err := messagingInst.GetRequestID(natsMessage)
+
+	// Then
+	s.NotNil(err)
+	s.Equal("", requestID)
+}
+
+func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ErrorDuringUncompress() {
+	// Given
+	msgBytes := []byte("compressed-data")
+	natsMessage := &nats.Msg{
+		Subject: "some-subject",
+		Reply:   "some-reply",
+		Data:    msgBytes,
+	}
+
+	s.messagingUtils.On("IsCompressed", msgBytes).Return(true, nil)
+	s.messagingUtils.On("UncompressData", msgBytes).Return(nil, errors.New("Uncompression error"))
+
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
+
+	// When
+	requestID, err := messagingInst.GetRequestID(natsMessage)
+
+	// Then
+	s.NotNil(err)
+	s.Equal("", requestID)
 }
 
 func TestSdkMessagingTestSuite(t *testing.T) {
