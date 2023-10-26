@@ -101,7 +101,9 @@ async def test_initialize_ko(persistent_storage_mock, centralized_config_initial
     ),
 )
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_nats_initialize_ok(persistent_storage_mock, centralized_config_initialize_mock, object_store_initialize_mock):
+async def test_nats_initialize_ok(
+    persistent_storage_mock, centralized_config_initialize_mock, object_store_initialize_mock
+):
     nc = NatsClient()
     js = nc.jetstream()
     v.set(NATS_OBJECT_STORE, "test_object_store")
