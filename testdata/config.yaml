@@ -9,9 +9,9 @@ runner:
 
 metadata:
   product_id: Product ID
-  workflow_id: Workflow ID
-  process_id: Process ID
-  version_id: Version v1.0.0
+  workflow_name: Workflow ID
+  process_name: Process ID
+  version_tag: Version v1.0.0
   base_path: "/Some/Path"
 
 nats:

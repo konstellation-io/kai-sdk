@@ -174,7 +174,7 @@ func (er *Runner) publishError(requestID, errMsg string) {
 	responseMsg := &kai.KaiNatsMessage{
 		RequestId:   requestID,
 		Error:       errMsg,
-		FromNode:    viper.GetString("metadata.process_id"),
+		FromNode:    viper.GetString("metadata.process_name"),
 		MessageType: kai.MessageType_ERROR,
 	}
 	er.publishResponse(responseMsg, "")

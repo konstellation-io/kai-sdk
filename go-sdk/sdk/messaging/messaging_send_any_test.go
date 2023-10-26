@@ -16,7 +16,7 @@ import (
 const (
 	natsOutputField        = "nats.output"
 	natsOutputValue        = "test-parent"
-	metadataProcessIDField = "metadata.process_id"
+	metadataProcessIDField = "metadata.process_name"
 	metadataProcessIDValue = "parent-node"
 	unit8Type              = "[]uint8"
 	stringValueMessage     = "Hi there!"
