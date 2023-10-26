@@ -10,12 +10,20 @@ from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
 from loguru import logger
 from nats.aio.client import Client as NatsClient
+from nats.aio.msg import Msg
 from nats.js.client import JetStreamContext
 from vyper import v
 
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
-from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError
-from sdk.messaging.messaging_utils import MessagingUtils, MessagingUtilsABC, compress, size_in_mb
+from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError, NewRequestMsgError
+from sdk.messaging.messaging_utils import (
+    MessagingUtils,
+    MessagingUtilsABC,
+    compress,
+    is_compressed,
+    size_in_mb,
+    uncompress,
+)
 
 
 @dataclass
@@ -66,6 +74,10 @@ class MessagingABC(ABC):
 
     @abstractmethod
     def is_message_early_exit(self) -> bool:
+        pass
+
+    @abstractmethod
+    def get_request_id(self, msg: Msg) -> (str, Exception):
         pass
 
 
@@ -165,6 +177,27 @@ class Messaging(MessagingABC):
             from_node=v.get_string("metadata.process_name"),
             message_type=msg_type,
         )
+
+    def get_request_id(self, msg: Msg) -> (str, Exception):
+        request_msg = KaiNatsMessage()
+
+        data = msg.data
+        if is_compressed(data):
+            try:
+                data = uncompress(data)
+            except Exception as e:
+                error = NewRequestMsgError(error=e)
+                self.logger.error(f"{error}")
+                return "", error
+
+        try:
+            request_msg.ParseFromString(data)  # deserialize from bytes
+        except Exception as e:
+            error = NewRequestMsgError(error=e)
+            self.logger.error(f"{error}")
+            return "", error
+
+        return request_msg.request_id, None if getattr(request_msg, "request_id", None) else "", NewRequestMsgError()
 
     async def _publish_response(self, response_msg: KaiNatsMessage, chan: Optional[str] = None) -> None:
         output_subject = self._get_output_subject(chan)

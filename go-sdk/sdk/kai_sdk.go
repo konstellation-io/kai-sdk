@@ -35,6 +35,7 @@ type messaging interface {
 	SendEarlyReply(response proto.Message, channelOpt ...string) error
 	SendEarlyExit(response proto.Message, channelOpt ...string) error
 	GetErrorMessage() string
+	GetRequestID(msg *nats.Msg) (string, error)
 
 	IsMessageOK() bool
 	IsMessageError() bool
@@ -150,7 +151,11 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 }
 
 func (sdk *KaiSDK) GetRequestID() string {
-	return sdk.requestMessage.RequestId
+	if sdk.requestMessage == nil {
+		return ""
+	}
+
+	return sdk.requestMessage.GetRequestId()
 }
 
 func ShallowCopyWithRequest(sdk *KaiSDK, requestMsg *kai.KaiNatsMessage) KaiSDK {

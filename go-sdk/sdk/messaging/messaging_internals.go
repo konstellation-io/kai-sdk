@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/nats-io/nats.go"
 
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
@@ -139,4 +140,27 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 		"Compressed size", sizeInMB(lenOutMsg))
 
 	return outMsg, nil
+}
+
+func (ms Messaging) GetRequestID(msg *nats.Msg) (string, error) {
+	requestMsg := &kai.KaiNatsMessage{}
+
+	data := msg.Data
+
+	var err error
+	if common.IsCompressed(data) {
+		data, err = common.UncompressData(data)
+		if err != nil {
+			ms.logger.Error(err, "Error reading compressed message")
+			return "", err
+		}
+	}
+
+	err = proto.Unmarshal(data, requestMsg)
+	if err != nil {
+		ms.logger.Error(err, "Error unmarshalling message")
+		return "", err
+	}
+
+	return requestMsg.GetRequestId(), err
 }
