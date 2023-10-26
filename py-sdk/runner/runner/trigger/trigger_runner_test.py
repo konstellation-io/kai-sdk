@@ -11,9 +11,11 @@ from runner.trigger.trigger_runner import ResponseHandler, TriggerRunner
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
 from sdk.metadata.metadata import Metadata
+from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 @pytest.fixture(scope="function")
-async def m_sdk() -> KaiSDK:
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+async def m_sdk(persistent_storage_mock) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()
@@ -46,7 +48,8 @@ class MockAsyncio:
         self.gather = AsyncMock()
 
 
-def test_ok():
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+def test_ok(persistent_storage_mock):
     nc = NatsClient()
     js = nc.jetstream()
 

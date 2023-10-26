@@ -10,6 +10,7 @@ from runner.common.common import initialize_process_configuration
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
+from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 
 @pytest.fixture(scope="function")
@@ -30,7 +31,8 @@ def m_centralized_config() -> CentralizedConfig:
 
 
 @pytest.fixture(scope="function")
-async def m_sdk(m_centralized_config: CentralizedConfig) -> KaiSDK:
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+async def m_sdk(persistent_storage_mock, m_centralized_config: CentralizedConfig) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()

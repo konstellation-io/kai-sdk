@@ -18,6 +18,7 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
 from sdk.kai_sdk import KaiSDK
 from sdk.messaging.messaging_utils import compress
 from sdk.metadata.metadata import Metadata
+from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 NATS_INPUT = "nats.inputs"
 SUBJECT = "test.subject"
@@ -26,7 +27,8 @@ SUBJECT_LIST_STR = ",".join(SUBJECT_LIST)
 
 
 @pytest.fixture(scope="function")
-async def m_sdk() -> KaiSDK:
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+async def m_sdk(persistent_storage_mock) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()
