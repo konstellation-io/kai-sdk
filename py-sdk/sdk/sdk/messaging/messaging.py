@@ -76,6 +76,10 @@ class MessagingABC(ABC):
     def is_message_early_exit(self) -> bool:
         pass
 
+    @abstractmethod
+    def get_request_id(self, msg: Msg) -> (str, Exception):
+        pass
+
 
 @dataclass
 class Messaging(MessagingABC):
