@@ -25,7 +25,7 @@ CENTRALIZED_CONFIG = "centralized_configuration.process.config"
 
 @pytest.fixture(scope="function")
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def m_sdk(persistent_storage_mock) -> KaiSDK:
+async def m_sdk(_) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()

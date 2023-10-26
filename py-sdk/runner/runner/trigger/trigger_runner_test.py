@@ -16,7 +16,7 @@ from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 @pytest.fixture(scope="function")
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def m_sdk(persistent_storage_mock) -> KaiSDK:
+async def m_sdk(_) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()
@@ -28,7 +28,8 @@ async def m_sdk(persistent_storage_mock) -> KaiSDK:
 
 
 @pytest.fixture(scope="function")
-def m_trigger_runner(m_sdk: KaiSDK) -> TriggerRunner:
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+def m_trigger_runner(_, m_sdk: KaiSDK) -> TriggerRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 
@@ -50,7 +51,7 @@ class MockAsyncio:
 
 
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-def test_ok(persistent_storage_mock):
+def test_ok(_):
     nc = NatsClient()
     js = nc.jetstream()
 
