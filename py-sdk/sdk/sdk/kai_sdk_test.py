@@ -128,7 +128,7 @@ async def test_nats_initialize_ok(
 
 @patch.object(EphemeralStorage, "_init_object_store", side_effect=Exception)
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_nats_initialize_ko(persistent_storage_mock, object_store_initialize_mock):
+async def test_nats_initialize_ko(_, object_store_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
 

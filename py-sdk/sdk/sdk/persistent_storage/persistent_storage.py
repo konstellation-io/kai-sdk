@@ -7,7 +7,7 @@ from typing import Optional
 
 import loguru
 from loguru import logger
-from minio import Minio, S3Error
+from minio import Minio
 from minio.retention import COMPLIANCE, Retention
 from vyper import v
 
@@ -66,6 +66,7 @@ class PersistentStorage(PersistentStorageABC):
         self.minio_bucket_name = v.get_string("minio.bucket")
         if not self.minio_client.bucket_exists(self.minio_bucket_name):
             self.logger.error(f"bucket {self.minio_bucket_name} does not exist in persistent storage")
+            self.minio_client = None
             raise MissingBucketError(self.minio_bucket_name)
 
         self.logger.debug(f"successfully initialized persistent storage with bucket {self.minio_bucket_name}!")
@@ -93,6 +94,7 @@ class PersistentStorage(PersistentStorageABC):
             raise error
 
     def get(self, key: str, version: str = "latest") -> tuple[Optional[bytes], bool]:
+        response = None
         try:
             exist = self._object_exist(key, version)
             if not exist:
@@ -111,8 +113,9 @@ class PersistentStorage(PersistentStorageABC):
             self.logger.error(f"{error}")
             raise error
         finally:
-            response.close()
-            response.release_conn()
+            if response:
+                response.close()
+                response.release_conn()
 
     def list(self) -> list[str]:
         try:
