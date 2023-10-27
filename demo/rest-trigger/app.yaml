@@ -1,8 +1,8 @@
 metadata:
   product_id: Rest trigger process
-  workflow_id: Rest trigger workflow
-  process_id: Rest trigger process
-  version_id: Rest trigger version v1.0.0
+  workflow_name: Rest trigger workflow
+  process_name: Rest trigger process
+  version_tag: Rest trigger version v1.0.0
   base_path: "/Some/Path"
 
 nats:
