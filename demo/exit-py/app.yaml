@@ -1,8 +1,8 @@
 metadata:
   product_id: Task process
-  workflow_id: Task workflow
-  process_id: Task process
-  version_id: Task version v1.0.0
+  workflow_name: Task workflow
+  process_name: Task process
+  version_tag: Task version v1.0.0
   base_path: "/Some/Path"
 
 nats:

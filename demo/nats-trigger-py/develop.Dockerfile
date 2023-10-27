@@ -26,6 +26,7 @@ USER ${USER}
 WORKDIR /app
 
 COPY main.py process/main.py
+COPY app.yaml app.yaml
 COPY config.yaml config.yaml
 
 CMD ["python","/app/process/main.py"]
