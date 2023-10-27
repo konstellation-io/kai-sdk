@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/golang/protobuf v1.5.3
-	github.com/konstellation-io/kai-sdk/go-sdk v1.2.0
+	github.com/konstellation-io/kai-sdk/go-sdk v1.2.1
 	google.golang.org/protobuf v1.31.0
 )
 
