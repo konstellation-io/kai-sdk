@@ -46,9 +46,9 @@ func NewRunner() *Runner {
 func validateConfig(keys []string) {
 	var mandatoryConfigKeys = []string{
 		"metadata.product_id",
-		"metadata.workflow_id",
-		"metadata.process_id",
-		"metadata.version_id",
+		"metadata.workflow_name",
+		"metadata.process_name",
+		"metadata.version_tag",
 		"metadata.base_path",
 		"nats.url",
 		"nats.stream",

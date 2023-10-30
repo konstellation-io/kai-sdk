@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.1
-	github.com/konstellation-io/kai-sdk/go-sdk v1.1.0
+	github.com/konstellation-io/kai-sdk/go-sdk v1.2.1
 	github.com/nats-io/nats.go v1.31.0
 )
 
@@ -38,5 +38,3 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/konstellation-io/kai-sdk/go-sdk => ../../go-sdk

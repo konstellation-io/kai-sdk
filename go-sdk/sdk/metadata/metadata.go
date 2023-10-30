@@ -16,15 +16,15 @@ func (md Metadata) GetProduct() string {
 }
 
 func (md Metadata) GetWorkflow() string {
-	return viper.GetString("metadata.workflow_id")
+	return viper.GetString("metadata.workflow_name")
 }
 
 func (md Metadata) GetProcess() string {
-	return viper.GetString("metadata.process_id")
+	return viper.GetString("metadata.process_name")
 }
 
 func (md Metadata) GetVersion() string {
-	return viper.GetString("metadata.version_id")
+	return viper.GetString("metadata.version_tag")
 }
 
 func (md Metadata) GetEphemeralStorageName() string {
