@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import BinaryIO, Optional
 
 import loguru
 from loguru import logger
@@ -24,11 +24,11 @@ from sdk.persistent_storage.exceptions import (
 @dataclass
 class PersistentStorageABC(ABC):
     @abstractmethod
-    def save(self, key: str, payload: bytes, ttl_days: int) -> None:
+    def save(self, key: str, payload: bytes, ttl_days: Optional[int]) -> None:
         pass
 
     @abstractmethod
-    def get(self, key: str, version: str) -> tuple[Optional[bytes], bool]:
+    def get(self, key: str, version: Optional[str]) -> tuple[Optional[bytes], bool]:
         pass
 
     @abstractmethod
@@ -40,7 +40,7 @@ class PersistentStorageABC(ABC):
         pass
 
     @abstractmethod
-    def delete(self, key: str, version: str) -> bool:
+    def delete(self, key: str, version: Optional[str]) -> bool:
         pass
 
 
@@ -70,7 +70,7 @@ class PersistentStorage(PersistentStorageABC):
 
         self.logger.debug(f"successfully initialized persistent storage with bucket {self.minio_bucket_name}!")
 
-    def save(self, key: str, payload: bytes, ttl_days: int = None) -> None:
+    def save(self, key: str, payload: BinaryIO, ttl_days: Optional[int] = None) -> None:
         try:
             if ttl_days is not None:
                 expiration_date = datetime.utcnow().replace(
@@ -83,7 +83,7 @@ class PersistentStorage(PersistentStorageABC):
                     self.minio_bucket_name,
                     key,
                     payload,
-                    len(payload),
+                    payload.getbuffer().nbytes,
                     retention=Retention(COMPLIANCE, expiration_date),
                 )
             else:
@@ -91,8 +91,7 @@ class PersistentStorage(PersistentStorageABC):
                     self.minio_bucket_name,
                     key,
                     payload,
-                    len(payload),
-                    legal_hold=True,
+                    payload.getbuffer().nbytes,
                 )
             self.logger.info(f"file {key} successfully saved in persistent storage bucket {self.minio_bucket_name}")
         except Exception as e:
@@ -100,7 +99,7 @@ class PersistentStorage(PersistentStorageABC):
             self.logger.warning(f"{error}")
             raise error
 
-    def get(self, key: str, version: str = "latest") -> tuple[Optional[bytes], bool]:
+    def get(self, key: str, version: Optional[str] = None) -> tuple[Optional[bytes], bool]:
         response = None
         try:
             exist = self._object_exist(key, version)
@@ -142,7 +141,7 @@ class PersistentStorage(PersistentStorageABC):
             self.logger.error(f"failed to list files from persistent storage bucket {self.minio_bucket_name}: {e}")
             return []
 
-    def delete(self, key: str, version: str = "latest") -> bool:
+    def delete(self, key: str, version: Optional[str] = None) -> bool:
         try:
             exist = self._object_exist(key, version)
             if not exist:

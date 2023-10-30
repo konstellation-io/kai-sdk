@@ -1,3 +1,4 @@
+import io
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
@@ -59,31 +60,33 @@ def test_ko(m_persistent_storage):
 
 def test_save_ok(m_persistent_storage):
     m_persistent_storage.minio_client.put_object.return_value = None
+    payload = io.BytesIO(b"test-payload")
 
-    m_persistent_storage.save("test-key", b"test-payload", TTL_DAYS)
+    m_persistent_storage.save("test-key", payload, TTL_DAYS)
 
     m_persistent_storage.minio_client.put_object.assert_called_once()
 
 
-def test_save_legal_hold_ok(m_persistent_storage):
+def test_save_no_ttl_ok(m_persistent_storage):
     m_persistent_storage.minio_client.put_object.return_value = None
+    payload = io.BytesIO(b"test-payload")
 
-    m_persistent_storage.save("test-key", b"test-payload")
+    m_persistent_storage.save("test-key", payload)
 
     m_persistent_storage.minio_client.put_object.assert_called_once_with(
         "test-minio-bucket",
         "test-key",
-        b"test-payload",
-        12,
-        legal_hold=True,
+        payload,
+        payload.getbuffer().nbytes,
     )
 
 
 def test_save_ko(m_persistent_storage):
     m_persistent_storage.minio_client.put_object.side_effect = Exception
+    payload = io.BytesIO(b"test-payload")
 
     with pytest.raises(FailedToSaveFileError):
-        m_persistent_storage.save("test-key", b"test-payload", TTL_DAYS)
+        m_persistent_storage.save("test-key", payload, TTL_DAYS)
 
     m_persistent_storage.minio_client.put_object.assert_called_once()
 
