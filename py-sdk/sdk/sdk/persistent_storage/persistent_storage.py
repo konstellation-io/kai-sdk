@@ -24,7 +24,7 @@ from sdk.persistent_storage.exceptions import (
 @dataclass
 class PersistentStorageABC(ABC):
     @abstractmethod
-    def save(self, key: str, payload: bytes, ttl: int) -> None:
+    def save(self, key: str, payload: bytes, ttl_days: int) -> None:
         pass
 
     @abstractmethod
@@ -70,22 +70,30 @@ class PersistentStorage(PersistentStorageABC):
 
         self.logger.debug(f"successfully initialized persistent storage with bucket {self.minio_bucket_name}!")
 
-    def save(self, key: str, payload: bytes, ttl: int = 30) -> None:
+    def save(self, key: str, payload: bytes, ttl_days: int = None) -> None:
         try:
-            expiration_date = datetime.utcnow().replace(
-                hour=0,
-                minute=0,
-                second=0,
-                microsecond=0,
-            ) + timedelta(days=ttl)
-            self.minio_client.put_object(
-                self.minio_bucket_name,
-                key,
-                payload,
-                len(payload),
-                retention=Retention(COMPLIANCE, expiration_date),
-                legal_hold=True,
-            )
+            if ttl_days is None:
+                expiration_date = datetime.utcnow().replace(
+                    hour=0,
+                    minute=0,
+                    second=0,
+                    microsecond=0,
+                ) + timedelta(days=ttl_days)
+                self.minio_client.put_object(
+                    self.minio_bucket_name,
+                    key,
+                    payload,
+                    len(payload),
+                    retention=Retention(COMPLIANCE, expiration_date),
+                )
+            else:
+                self.minio_client.put_object(
+                    self.minio_bucket_name,
+                    key,
+                    payload,
+                    len(payload),
+                    legal_hold=True,
+                )
             self.logger.info(f"file {key} successfully saved in persistent storage bucket {self.minio_bucket_name}")
         except Exception as e:
             error = FailedToSaveFileError(key, self.minio_bucket_name, e)
