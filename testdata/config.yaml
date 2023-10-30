@@ -22,11 +22,10 @@ nats:
   object_store: ephemeral-storage
 
 minio:
-  endpoint: "localhost:9000"
-  access_key: "minio"
-  secret_key: "minio123"
-  region: "us-east-1"
-  secure: false
+  url: "localhost:9000"
+  access_key_id: "minio"
+  access_key_secret: "minio123"
+  use_ssl: false
   bucket: "test-bucket"
 
 centralized_configuration:

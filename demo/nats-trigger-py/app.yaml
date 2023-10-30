@@ -13,12 +13,11 @@ nats:
   output: nats-trigger-output
 
 minio:
-  endpoint: "localhost:9000"
-  access_key: "minio"
-  secret_key: "minio123"
-  region: "us-east-1"
-  secure: false
-  bucket: "test-bucket"
+  url: "localhost:9000"
+  access_key_id: minioadmin
+  access_key_secret: minioadmin
+  use_ssl: false
+  bucket: test-bucket
 
 centralized_configuration:
   global:

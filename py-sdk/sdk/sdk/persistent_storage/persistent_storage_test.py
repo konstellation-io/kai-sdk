@@ -4,16 +4,13 @@ from unittest.mock import Mock, patch
 import pytest
 import urllib3
 from minio import Minio
-from minio.retention import COMPLIANCE, Retention
 from vyper import v
 
 from sdk.persistent_storage.exceptions import (
     FailedToDeleteFileError,
     FailedToGetFileError,
     FailedToInitializePersistentStorageError,
-    FailedToListFilesError,
     FailedToSaveFileError,
-    MissingBucketError,
 )
 from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
 
@@ -41,11 +38,10 @@ def m_object() -> urllib3.BaseHTTPResponse:
 
 @patch.object(Minio, "__new__", return_value=Mock(spec=Minio))
 def test_ok(minio_mock):
-    v.set("minio.endpoint", "test-endpoint")
-    v.set("minio.access_key", "test-access-key")
-    v.set("minio.secret_key", "test-secret-key")
-    v.set("minio.region", "test-region")
-    v.set("minio.secure", False)
+    v.set("minio.url", "test-endpoint")
+    v.set("minio.access_key_id", "test-access-key")
+    v.set("minio.access_key_secret", "test-secret-key")
+    v.set("minio.use_ssl", False)
     v.set("minio.bucket", "test-minio-bucket")
 
     persistent_storage = PersistentStorage()
@@ -171,6 +167,7 @@ def test_list_versions_ko(m_persistent_storage):
     m_persistent_storage.minio_client.list_objects.assert_called_once()
     assert keys == []
 
+
 def test__object_exist_ok(m_persistent_storage):
     m_persistent_storage.minio_client.stat_object.return_value = None
 
@@ -178,6 +175,7 @@ def test__object_exist_ok(m_persistent_storage):
 
     m_persistent_storage.minio_client.stat_object.assert_called_once()
     assert exist
+
 
 def test__object_exist_ko(m_persistent_storage):
     m_persistent_storage.minio_client.stat_object.side_effect = Exception
