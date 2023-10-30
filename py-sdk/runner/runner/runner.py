@@ -72,7 +72,7 @@ class Runner:
             try:
                 _ = reduce(lambda d, k: d[k], key.split("."), keys)
             except Exception:
-                raise FailedLoadingConfigError(f"missing mandatory configuration key: {key}")
+                raise FailedLoadingConfigError(Exception(f"missing mandatory configuration key: {key}"))
 
     def initialize_config(self) -> None:
         v.set_env_prefix("KAI")

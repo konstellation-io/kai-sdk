@@ -32,7 +32,7 @@ PROCESS = "test process id"
 
 @pytest.fixture(scope="function")
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def m_sdk(_) -> KaiSDK:
+async def m_sdk(_: PersistentStorage) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()
@@ -45,7 +45,7 @@ async def m_sdk(_) -> KaiSDK:
 
 @pytest.fixture(scope="function")
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-def m_trigger_runner(_, m_sdk: KaiSDK) -> TriggerRunner:
+def m_trigger_runner(_: PersistentStorage, m_sdk: KaiSDK) -> TriggerRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 
@@ -227,7 +227,7 @@ async def test_process_message_not_valid_protobuf_ko(m_msg, m_trigger_subscriber
         payload=Any(),
     )
     m_msg.data = expected_response_msg.SerializeToString()
-    m_trigger_subscriber._new_request_msg = Mock(side_effect=Exception(NewRequestMsgError("New request message error")))
+    m_trigger_subscriber._new_request_msg = Mock(side_effect=NewRequestMsgError(Exception("New request message error")))
     m_trigger_subscriber._process_runner_error = AsyncMock()
 
     await m_trigger_subscriber._process_message(m_msg)

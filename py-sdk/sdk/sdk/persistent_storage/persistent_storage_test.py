@@ -1,5 +1,4 @@
 import io
-from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
@@ -20,7 +19,7 @@ TTL_DAYS = 30
 
 @pytest.fixture(scope="function")
 @patch.object(Minio, "__new__", return_value=Mock(spec=Minio))
-def m_persistent_storage(minio_mock) -> PersistentStorageABC:
+def m_persistent_storage(minio_mock: Mock) -> PersistentStorageABC:
     persistent_storage = PersistentStorage()
     persistent_storage.minio_client = minio_mock
     persistent_storage.minio_bucket_name = "test-minio-bucket"
@@ -38,7 +37,7 @@ def m_object() -> urllib3.BaseHTTPResponse:
 
 
 @patch.object(Minio, "__new__", return_value=Mock(spec=Minio))
-def test_ok(minio_mock):
+def test_ok(_):
     v.set("minio.url", "test-endpoint")
     v.set("minio.access_key_id", "test-access-key")
     v.set("minio.access_key_secret", "test-secret-key")

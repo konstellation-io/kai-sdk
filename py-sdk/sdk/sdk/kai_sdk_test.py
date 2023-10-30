@@ -60,9 +60,9 @@ async def test_initialize_ok(persistent_storage_mock, centralized_config_initial
     assert sdk.metadata is not None
     assert sdk.messaging is not None
     assert getattr(sdk.messaging, "request_msg", None) is None
+    assert sdk.storage is not None
     assert sdk.storage.ephemeral is not None
     assert sdk.storage.ephemeral.ephemeral_storage_name == ""
-    assert sdk.storage is not None
     assert sdk.centralized_config is not None
     assert isinstance(sdk.centralized_config.global_kv, KeyValue)
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
@@ -117,11 +117,14 @@ async def test_nats_initialize_ok(
 
     assert isinstance(sdk.centralized_config, CentralizedConfig)
     assert isinstance(sdk.storage, Storage)
+    assert isinstance(sdk.storage.persistent, PersistentStorage)
+    assert isinstance(sdk.storage.ephemeral, EphemeralStorage)
     assert sdk.centralized_config is not None
     assert isinstance(sdk.centralized_config.global_kv, KeyValue)
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
+    assert sdk.storage is not None
     assert sdk.storage.ephemeral.object_store is not None
     assert sdk.storage.ephemeral.ephemeral_storage_name == "test_object_store"
 
