@@ -72,7 +72,7 @@ class PersistentStorage(PersistentStorageABC):
 
     def save(self, key: str, payload: bytes, ttl_days: int = None) -> None:
         try:
-            if ttl_days is None:
+            if ttl_days is not None:
                 expiration_date = datetime.utcnow().replace(
                     hour=0,
                     minute=0,

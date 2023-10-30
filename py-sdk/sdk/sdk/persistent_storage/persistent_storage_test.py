@@ -14,7 +14,7 @@ from sdk.persistent_storage.exceptions import (
 )
 from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
 
-TTL = 30
+TTL_DAYS = 30
 
 
 @pytest.fixture(scope="function")
@@ -60,16 +60,30 @@ def test_ko(m_persistent_storage):
 def test_save_ok(m_persistent_storage):
     m_persistent_storage.minio_client.put_object.return_value = None
 
-    m_persistent_storage.save("test-key", b"test-payload", TTL)
+    m_persistent_storage.save("test-key", b"test-payload", TTL_DAYS)
 
     m_persistent_storage.minio_client.put_object.assert_called_once()
+
+
+def test_save_legal_hold_ok(m_persistent_storage):
+    m_persistent_storage.minio_client.put_object.return_value = None
+
+    m_persistent_storage.save("test-key", b"test-payload")
+
+    m_persistent_storage.minio_client.put_object.assert_called_once_with(
+        "test-minio-bucket",
+        "test-key",
+        b"test-payload",
+        12,
+        legal_hold=True,
+    )
 
 
 def test_save_ko(m_persistent_storage):
     m_persistent_storage.minio_client.put_object.side_effect = Exception
 
     with pytest.raises(FailedToSaveFileError):
-        m_persistent_storage.save("test-key", b"test-payload", TTL)
+        m_persistent_storage.save("test-key", b"test-payload", TTL_DAYS)
 
     m_persistent_storage.minio_client.put_object.assert_called_once()
 
