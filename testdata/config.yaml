@@ -21,6 +21,13 @@ nats:
   output: test-output
   object_store: ephemeral-storage
 
+minio:
+  url: "localhost:9000"
+  access_key_id: minioadmin
+  access_key_secret: minioadmin
+  use_ssl: false
+  bucket: test-bucket
+
 centralized_configuration:
   global:
     bucket: global

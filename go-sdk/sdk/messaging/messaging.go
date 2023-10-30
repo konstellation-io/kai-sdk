@@ -29,7 +29,7 @@ func NewMessaging(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext,
 	requestMessage *kai.KaiNatsMessage,
 ) *Messaging {
 	return &Messaging{
-		logger.WithName("[MESSAGING]"),
+		logger,
 		ns,
 		js,
 		requestMessage,

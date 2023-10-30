@@ -10,6 +10,7 @@ var (
 	ErrMessageToBig              = errors.New("compressed message exceeds maximum size allowed")
 	ErrMsgAck                    = "Error in message ack" //nolint:gochecknoglobals // This is a constant
 	ErrEmptyPayload              = errors.New("the payload cannot be empty")
+	ErrEmptyKey                  = errors.New("the key cannot be empty")
 	ErrObjectAlreadyExists       = errors.New("object already exists for the given key")
 )
 

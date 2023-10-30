@@ -14,6 +14,10 @@ import (
 
 var ErrKeyNotFound = errors.New("config not found in any key-value store for key")
 
+const (
+	_centralizedConfigurationLoggerName = "[CENTRALIZED CONFIGURATION]"
+)
+
 type CentralizedConfiguration struct {
 	logger     logr.Logger
 	globalKv   nats.KeyValue
@@ -25,15 +29,14 @@ type CentralizedConfiguration struct {
 func NewCentralizedConfiguration(logger logr.Logger, js nats.JetStreamContext) (*CentralizedConfiguration, error) {
 	wrapErr := utilErrors.Wrapper("configuration init: %w")
 
-	logger = logger.WithName("[CENTRALIZED CONFIGURATION]")
-
-	globalKv, productKv, workflowKv, processKv, err := initKVStores(logger, js)
+	globalKv, productKv, workflowKv, processKv, err :=
+		initKVStores(logger.WithName(_centralizedConfigurationLoggerName), js)
 	if err != nil {
 		return nil, wrapErr(err)
 	}
 
 	return &CentralizedConfiguration{
-		logger:     logger,
+		logger:     logger.WithName(_centralizedConfigurationLoggerName),
 		globalKv:   globalKv,
 		productKv:  productKv,
 		workflowKv: workflowKv,
@@ -41,7 +44,7 @@ func NewCentralizedConfiguration(logger logr.Logger, js nats.JetStreamContext) (
 	}, nil
 }
 
-func initKVStores(logger logr.Logger, jetstream nats.JetStreamContext) (
+func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	globalKv, productKv, workflowKv, processKv nats.KeyValue, err error,
 ) {
 	wrapErr := utilErrors.Wrapper("configuration init: %w")
@@ -50,7 +53,7 @@ func initKVStores(logger logr.Logger, jetstream nats.JetStreamContext) (
 	logger.V(1).Info("Initializing global key-value store",
 		"name", name)
 
-	globalKv, err = jetstream.KeyValue(name)
+	globalKv, err = js.KeyValue(name)
 	if err != nil {
 		logger.Error(err, "Error initializing global key-value store")
 		return nil, nil, nil, nil, wrapErr(err)
@@ -60,7 +63,7 @@ func initKVStores(logger logr.Logger, jetstream nats.JetStreamContext) (
 	logger.V(1).Info("Initializing product key-value store",
 		"name", name)
 
-	productKv, err = jetstream.KeyValue(name)
+	productKv, err = js.KeyValue(name)
 	if err != nil {
 		logger.Error(err, "Error initializing product key-value store")
 		return nil, nil, nil, nil, wrapErr(err)
@@ -72,7 +75,7 @@ func initKVStores(logger logr.Logger, jetstream nats.JetStreamContext) (
 	logger.V(1).Info("Initializing workflow key-value store",
 		"name", name)
 
-	workflowKv, err = jetstream.KeyValue(name)
+	workflowKv, err = js.KeyValue(name)
 	if err != nil {
 		logger.Error(err, "Error initializing workflow key-value store")
 		return nil, nil, nil, nil, wrapErr(err)
@@ -84,7 +87,7 @@ func initKVStores(logger logr.Logger, jetstream nats.JetStreamContext) (
 	logger.V(1).Info("Initializing process key-value store",
 		"name", name)
 
-	processKv, err = jetstream.KeyValue(name)
+	processKv, err = js.KeyValue(name)
 	if err != nil {
 		logger.Error(err, "Error initializing process key-value store")
 		return nil, nil, nil, nil, wrapErr(err)
@@ -95,7 +98,7 @@ func initKVStores(logger logr.Logger, jetstream nats.JetStreamContext) (
 	return globalKv, productKv, workflowKv, processKv, nil
 }
 
-func (cc CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.Scope) (string, error) {
+func (cc *CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.Scope) (string, error) {
 	wrapErr := utilErrors.Wrapper("configuration get: %w")
 
 	if len(scopeOpt) > 0 {
@@ -125,7 +128,7 @@ func (cc CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.S
 	return "", wrapErr(fmt.Errorf("%w: %q", ErrKeyNotFound, key))
 }
 
-func (cc CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...messaging.Scope) error {
+func (cc *CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...messaging.Scope) error {
 	wrapErr := utilErrors.Wrapper("configuration set: %w")
 
 	kvStore := cc.getScopedConfig(scopeOpt...)
@@ -138,7 +141,7 @@ func (cc CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...mess
 	return nil
 }
 
-func (cc CentralizedConfiguration) DeleteConfig(key string, scope messaging.Scope) error {
+func (cc *CentralizedConfiguration) DeleteConfig(key string, scope messaging.Scope) error {
 	err := cc.getScopedConfig(scope).Delete(key)
 	if err != nil {
 		return fmt.Errorf("error retrieving config with key %q from the configuration: %w", key, err)
@@ -147,7 +150,7 @@ func (cc CentralizedConfiguration) DeleteConfig(key string, scope messaging.Scop
 	return nil
 }
 
-func (cc CentralizedConfiguration) getConfigFromScope(key string, scope messaging.Scope) (string, error) {
+func (cc *CentralizedConfiguration) getConfigFromScope(key string, scope messaging.Scope) (string, error) {
 	value, err := cc.getScopedConfig(scope).Get(key)
 	if err != nil {
 		return "", fmt.Errorf("error retrieving config with key %q from the configuration: %w", key, err)
@@ -156,7 +159,7 @@ func (cc CentralizedConfiguration) getConfigFromScope(key string, scope messagin
 	return string(value.Value()), nil
 }
 
-func (cc CentralizedConfiguration) getScopedConfig(scope ...messaging.Scope) nats.KeyValue {
+func (cc *CentralizedConfiguration) getScopedConfig(scope ...messaging.Scope) nats.KeyValue {
 	if len(scope) == 0 {
 		return cc.processKv
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
@@ -33,7 +34,7 @@ func initializer(kaiSDK sdk.KaiSDK) {
 		return
 	}
 	kaiSDK.Logger.Info("Config value retrieved!", "value", value)
-  
+
 	obj, err := kaiSDK.Storage.Ephemeral.Get("test")
 	if err != nil {
 		kaiSDK.Logger.Error(err, "Error getting Obj Store values")
@@ -52,8 +53,18 @@ func defaultHandler(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		return err
 	}
 
+	objVersion, err := kaiSDK.Storage.Persistent.Save("some-object", []byte("Some value"))
+	if err != nil {
+		kaiSDK.Logger.Error(err, "Error saving value in the persistent storage")
+		return err
+	}
+
 	stringValue = &wrappers.StringValue{
-		Value: stringValue.GetValue() + ", Processed by the task process!",
+		Value: fmt.Sprintf("%s, Processed by the task process, "+
+			"uploaded object to persistent storage with ID %s!",
+			stringValue.GetValue(),
+			objVersion,
+		),
 	}
 
 	err = kaiSDK.Messaging.SendOutput(stringValue)

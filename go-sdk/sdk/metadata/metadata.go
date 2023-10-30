@@ -1,18 +1,14 @@
 package metadata
 
 import (
-	"github.com/go-logr/logr"
 	"github.com/spf13/viper"
 )
 
 type Metadata struct {
-	logger logr.Logger
 }
 
-func NewMetadata(logger logr.Logger) *Metadata {
-	return &Metadata{
-		logger: logger.WithName("[METADATA]"),
-	}
+func NewMetadata() *Metadata {
+	return &Metadata{}
 }
 
 func (md Metadata) GetProduct() string {

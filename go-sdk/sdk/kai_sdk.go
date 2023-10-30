@@ -1,7 +1,12 @@
 package sdk
 
 import (
+	"context"
 	"os"
+
+	kaiCommon "github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
+	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 
 	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	pathutils "github.com/konstellation-io/kai-sdk/go-sdk/sdk/path-utils"
@@ -55,7 +60,6 @@ type metadata interface {
 	GetProcessCentralizedConfigurationName() string
 }
 
-//go:generate mockery --name storage --output ../mocks --filename storage_mock.go --structname StorageMock
 type Storage struct {
 	Ephemeral  ephemeralStorage
 	Persistent persistentStorage
@@ -70,11 +74,14 @@ type ephemeralStorage interface {
 	Purge(regexp ...string) error
 }
 
-//nolint:godox // Task to be done.
-// TODO add storage interface.
-
 //go:generate mockery --name persistentStorage --output ../mocks --filename persistent_storage_mock.go --structname PersistentStorageMock
-type persistentStorage interface{}
+type persistentStorage interface {
+	Save(key string, value []byte) (string, error)
+	Get(key string, version ...string) ([]byte, error)
+	List() ([]string, error)
+	ListVersions(key string) ([]string, error)
+	Delete(key string, version ...string) error
+}
 
 //go:generate mockery --name centralizedConfig --output ../mocks --filename centralized_config_mock.go --structname CentralizedConfigMock
 type centralizedConfig interface {
@@ -90,6 +97,9 @@ type centralizedConfig interface {
 type measurements interface{}
 
 type KaiSDK struct {
+	// Metadata
+	ctx context.Context
+
 	// Needed deps
 	nats           *nats.Conn
 	jetstream      nats.JetStreamContext
@@ -106,35 +116,43 @@ type KaiSDK struct {
 }
 
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
-	metadata := meta.NewMetadata(logger)
+	metadata := meta.NewMetadata()
 
 	logger = logger.WithValues(
-		"product_id", metadata.GetProduct(),
-		"version_id", metadata.GetVersion(),
-		"workflow_id", metadata.GetWorkflow(),
-		"process_id", metadata.GetProcess(),
+		kaiCommon.LoggerProductID, metadata.GetProduct(),
+		kaiCommon.LoggerVersionID, metadata.GetVersion(),
+		kaiCommon.LoggerWorkflowID, metadata.GetWorkflow(),
+		kaiCommon.LoggerProcessID, metadata.GetProcess(),
 	)
 
 	centralizedConfigInst, err := centralizedConfiguration.NewCentralizedConfiguration(logger, jetstreamCli)
 	if err != nil {
-		logger.Error(err, "Error initializing Centralized Configuration")
+		logger.WithName("[CENTRALIZED CONFIGURATION]").
+			Error(err, "Error initializing Centralized Configuration")
 		os.Exit(1)
 	}
 
 	ephemeralStorage, err := objectstore.NewEphemeralStorage(logger, jetstreamCli)
 	if err != nil {
-		logger.Error(err, "Error initializing Object Store")
+		logger.WithName("[EPHEMERAL STORAGE]").Error(err, "Error initializing ephemeral storage")
+		os.Exit(1)
+	}
+
+	persistentStorage, err := persistentstorage.NewPersistentStorage(logger.WithName("[PERSISTENT STORAGE]"))
+	if err != nil {
+		logger.WithName("[PERSISTENT STORAGE]").Error(err, "Error initializing persistent storage")
 		os.Exit(1)
 	}
 
 	storageManager := Storage{
 		Ephemeral:  ephemeralStorage,
-		Persistent: nil,
+		Persistent: persistentStorage,
 	}
 
-	messagingInst := msg.NewMessaging(logger, natsCli, jetstreamCli, nil)
+	messagingInst := msg.NewMessaging(logger.WithName("[MESSAGING]"), natsCli, jetstreamCli, nil)
 
 	sdk := KaiSDK{
+		ctx:               context.Background(),
 		nats:              natsCli,
 		jetstream:         jetstreamCli,
 		Logger:            logger,

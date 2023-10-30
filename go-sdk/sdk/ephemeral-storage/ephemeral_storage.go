@@ -20,15 +20,13 @@ type EphemeralStorage struct {
 func NewEphemeralStorage(logger logr.Logger, jetstream nats.JetStreamContext) (*EphemeralStorage, error) {
 	ephemeralStorageBucket := viper.GetString("nats.object_store")
 
-	logger = logger.WithName("[EPHEMERAL STORAGE]")
-
-	ephemeralStorage, err := initEphemeralStorageDeps(logger, jetstream, ephemeralStorageBucket)
+	ephemeralStorage, err := initEphemeralStorageDeps(logger.WithName("[EPHEMERAL STORAGE]"), jetstream, ephemeralStorageBucket)
 	if err != nil {
 		return nil, err
 	}
 
 	return &EphemeralStorage{
-		logger:                 logger,
+		logger:                 logger.WithName("[EPHEMERAL STORAGE]"),
 		ephemeralStorage:       ephemeralStorage,
 		ephemeralStorageBucket: ephemeralStorageBucket,
 	}, nil

@@ -38,7 +38,7 @@ func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	viper.SetDefault("centralized_configuration.process.bucket", "process-bucket")
 
 	// When
-	sdkMetadata := metadata.NewMetadata(s.logger)
+	sdkMetadata := metadata.NewMetadata()
 
 	productName := sdkMetadata.GetProduct()
 	workflowName := sdkMetadata.GetWorkflow()
