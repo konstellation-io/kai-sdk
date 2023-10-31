@@ -38,7 +38,7 @@ def m_object() -> urllib3.BaseHTTPResponse:
 
 @patch.object(Minio, "__new__", return_value=Mock(spec=Minio))
 def test_ok(_):
-    v.set("minio.url", "test-endpoint")
+    v.set("minio.endpoint", "test-endpoint")
     v.set("minio.access_key_id", "test-access-key")
     v.set("minio.access_key_secret", "test-secret-key")
     v.set("minio.use_ssl", False)

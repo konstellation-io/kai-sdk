@@ -22,7 +22,7 @@ nats:
   object_store: ephemeral-storage
 
 minio:
-  url: "localhost:9000"
+  endpoint: "localhost:9000"
   access_key_id: "minio"
   access_key_secret: "minio123"
   use_ssl: false
