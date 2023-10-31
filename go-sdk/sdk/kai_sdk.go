@@ -77,7 +77,7 @@ type ephemeralStorage interface {
 
 //go:generate mockery --name persistentStorage --output ../mocks --filename persistent_storage_mock.go --structname PersistentStorageMock
 type persistentStorage interface {
-	Save(key string, value []byte) (string, error)
+	Save(key string, value []byte, ttlDays ...int) (string, error)
 	Get(key string, version ...string) ([]byte, error)
 	List() ([]string, error)
 	ListVersions(key string) ([]string, error)

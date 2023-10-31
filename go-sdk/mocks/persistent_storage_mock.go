@@ -250,23 +250,30 @@ func (_c *PersistentStorageMock_ListVersions_Call) RunAndReturn(run func(string)
 	return _c
 }
 
-// Save provides a mock function with given fields: key, value
-func (_m *PersistentStorageMock) Save(key string, value []byte) (string, error) {
-	ret := _m.Called(key, value)
+// Save provides a mock function with given fields: key, value, ttlDays
+func (_m *PersistentStorageMock) Save(key string, value []byte, ttlDays ...int) (string, error) {
+	_va := make([]interface{}, len(ttlDays))
+	for _i := range ttlDays {
+		_va[_i] = ttlDays[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, key, value)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, []byte) (string, error)); ok {
-		return rf(key, value)
+	if rf, ok := ret.Get(0).(func(string, []byte, ...int) (string, error)); ok {
+		return rf(key, value, ttlDays...)
 	}
-	if rf, ok := ret.Get(0).(func(string, []byte) string); ok {
-		r0 = rf(key, value)
+	if rf, ok := ret.Get(0).(func(string, []byte, ...int) string); ok {
+		r0 = rf(key, value, ttlDays...)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(string, []byte) error); ok {
-		r1 = rf(key, value)
+	if rf, ok := ret.Get(1).(func(string, []byte, ...int) error); ok {
+		r1 = rf(key, value, ttlDays...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -282,13 +289,21 @@ type PersistentStorageMock_Save_Call struct {
 // Save is a helper method to define mock.On call
 //   - key string
 //   - value []byte
-func (_e *PersistentStorageMock_Expecter) Save(key interface{}, value interface{}) *PersistentStorageMock_Save_Call {
-	return &PersistentStorageMock_Save_Call{Call: _e.mock.On("Save", key, value)}
+//   - ttlDays ...int
+func (_e *PersistentStorageMock_Expecter) Save(key interface{}, value interface{}, ttlDays ...interface{}) *PersistentStorageMock_Save_Call {
+	return &PersistentStorageMock_Save_Call{Call: _e.mock.On("Save",
+		append([]interface{}{key, value}, ttlDays...)...)}
 }
 
-func (_c *PersistentStorageMock_Save_Call) Run(run func(key string, value []byte)) *PersistentStorageMock_Save_Call {
+func (_c *PersistentStorageMock_Save_Call) Run(run func(key string, value []byte, ttlDays ...int)) *PersistentStorageMock_Save_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].([]byte))
+		variadicArgs := make([]int, len(args)-2)
+		for i, a := range args[2:] {
+			if a != nil {
+				variadicArgs[i] = a.(int)
+			}
+		}
+		run(args[0].(string), args[1].([]byte), variadicArgs...)
 	})
 	return _c
 }
@@ -298,7 +313,7 @@ func (_c *PersistentStorageMock_Save_Call) Return(_a0 string, _a1 error) *Persis
 	return _c
 }
 
-func (_c *PersistentStorageMock_Save_Call) RunAndReturn(run func(string, []byte) (string, error)) *PersistentStorageMock_Save_Call {
+func (_c *PersistentStorageMock_Save_Call) RunAndReturn(run func(string, []byte, ...int) (string, error)) *PersistentStorageMock_Save_Call {
 	_c.Call.Return(run)
 	return _c
 }

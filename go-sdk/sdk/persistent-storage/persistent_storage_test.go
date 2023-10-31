@@ -84,7 +84,7 @@ func (s *SdkPersistentStorageTestSuite) SetupTest() {
 
 	viper.Set("minio.bucket", s.persistentStorageBucket)
 	viper.Set("minio.bucket", s.persistentStorageBucket)
-	viper.Set("minio.url", minioEndpoint)
+	viper.Set("minio.endpoint", minioEndpoint)
 	viper.Set("minio.access_key_id", "minioadmin")
 	viper.Set("minio.access_key_secret", "minioadmin")
 	viper.Set("minio.use_ssl", false)
@@ -136,7 +136,7 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_Initialize_ExpectO
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_Initialize_ExpectError() {
 	// GIVEN
-	viper.Set("minio.url", "invalid-url")
+	viper.Set("minio.endpoint", "invalid-url")
 
 	// WHEN
 	persistentStorage, err := persistentstorage.NewPersistentStorage(testr.New(s.T()))

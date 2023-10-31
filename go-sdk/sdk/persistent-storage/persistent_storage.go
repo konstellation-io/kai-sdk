@@ -46,7 +46,7 @@ func NewPersistentStorage(logger logr.Logger) (*PersistentStorage, error) {
 }
 
 func initPersistentStorage(logger logr.Logger) (*minio.Client, error) {
-	endpoint := viper.GetString("minio.url")
+	endpoint := viper.GetString("minio.endpoint")
 	accessKeyID := viper.GetString("minio.access_key_id")
 	secretAccessKey := viper.GetString("minio.access_key_secret")
 	useSSL := viper.GetBool("minio.use_ssl")
@@ -88,7 +88,7 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (st
 		ps.persistentStorageBucket,
 		key,
 		reader,
-		-1,
+		int64(reader.Len()),
 		opts,
 	)
 	if err != nil {
