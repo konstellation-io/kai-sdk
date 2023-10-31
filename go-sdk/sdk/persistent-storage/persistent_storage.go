@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
@@ -65,7 +66,7 @@ func initPersistentStorage(logger logr.Logger) (*minio.Client, error) {
 	return minioClient, nil
 }
 
-func (ps PersistentStorage) Save(key string, payload []byte) (string, error) {
+func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (string, error) {
 	if key == "" {
 		return "", errors.ErrEmptyKey
 	}
@@ -76,13 +77,19 @@ func (ps PersistentStorage) Save(key string, payload []byte) (string, error) {
 
 	reader := bytes.NewReader(payload)
 
+	opts := minio.PutObjectOptions{}
+
+	if len(ttlDays) > 0 && ttlDays[0] > 0 {
+		opts.RetainUntilDate = time.Now().AddDate(0, 0, ttlDays[0])
+	}
+
 	info, err := ps.persistentStorage.PutObject(
 		context.Background(),
 		ps.persistentStorageBucket,
 		key,
 		reader,
 		-1,
-		minio.PutObjectOptions{},
+		opts,
 	)
 	if err != nil {
 		return "", fmt.Errorf("error storing object to the persistent storage: %w", err)
