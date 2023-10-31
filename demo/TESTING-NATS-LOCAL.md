@@ -13,7 +13,23 @@ For emulating KAI creation of nats resources as defined in `app.yaml` do the fol
 
 # Testing manually with minio and a docker image
 
-- Run 
+- Run the following command
 ```
 mkdir -p ~/minio/data
-docker run     -p 9000:9000     -p 9090:9090     --name minio     -v ~/minio/data:/data     -e "MINIO_ROOT_USER=minioadmin"     -e "MINIO_ROOT_PASSWORD=minioadmin"     quay.io/minio/minio server /data --console-address ":9090"```
+docker run     -p 9000:9000     -p 9090:9090     --name minio     -v ~/minio/data:/data     -e "MINIO_ROOT_USER=minioadmin"     -e "MINIO_ROOT_PASSWORD=minioadmin"     quay.io/minio/minio server /data --console-address ":9090"
+```
+
+# Installing docker-compose
+
+First download docker-compose with:
+
+`sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose`
+
+Next, set the correct permissions so that the docker-compose command is executable:
+
+`sudo chmod +x /usr/local/bin/docker-compose`
+
+To verify that the installation was successful, you can run:
+
+`docker-compose --version`
+
