@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 import urllib3
 from minio import Minio
+from minio.helpers import ObjectWriteResult
 from vyper import v
 
 from sdk.persistent_storage.exceptions import (
@@ -35,6 +36,13 @@ def m_object() -> urllib3.BaseHTTPResponse:
 
     return object_
 
+@pytest.fixture(scope="function")
+def m_object_result() -> ObjectWriteResult:
+    result = Mock(spec=ObjectWriteResult)
+    result.version_id = "version-id"
+
+    return result
+
 
 @patch.object(Minio, "__new__", return_value=Mock(spec=Minio))
 def test_ok(_):
@@ -57,20 +65,21 @@ def test_ko(m_persistent_storage):
         assert m_persistent_storage.minio_client is None
 
 
-def test_save_ok(m_persistent_storage):
-    m_persistent_storage.minio_client.put_object.return_value = None
+def test_save_ok(m_persistent_storage, m_object_result):
+    m_persistent_storage.minio_client.put_object.return_value = m_object_result
     payload = io.BytesIO(b"test-payload")
 
-    m_persistent_storage.save("test-key", payload, TTL_DAYS)
+    result = m_persistent_storage.save("test-key", payload, TTL_DAYS)
 
     m_persistent_storage.minio_client.put_object.assert_called_once()
+    assert result == "version-id"
 
 
-def test_save_no_ttl_ok(m_persistent_storage):
-    m_persistent_storage.minio_client.put_object.return_value = None
+def test_save_no_ttl_ok(m_persistent_storage, m_object_result):
+    m_persistent_storage.minio_client.put_object.return_value = m_object_result
     payload = io.BytesIO(b"test-payload")
 
-    m_persistent_storage.save("test-key", payload)
+    result = m_persistent_storage.save("test-key", payload)
 
     m_persistent_storage.minio_client.put_object.assert_called_once_with(
         "test-minio-bucket",
@@ -78,6 +87,7 @@ def test_save_no_ttl_ok(m_persistent_storage):
         payload,
         payload.getbuffer().nbytes,
     )
+    assert result == "version-id"
 
 
 def test_save_ko(m_persistent_storage):
@@ -85,9 +95,10 @@ def test_save_ko(m_persistent_storage):
     payload = io.BytesIO(b"test-payload")
 
     with pytest.raises(FailedToSaveFileError):
-        m_persistent_storage.save("test-key", payload, TTL_DAYS)
+        result = m_persistent_storage.save("test-key", payload, TTL_DAYS)
 
-    m_persistent_storage.minio_client.put_object.assert_called_once()
+        m_persistent_storage.minio_client.put_object.assert_called_once()
+        assert result is None
 
 
 @patch("sdk.persistent_storage.persistent_storage.PersistentStorage._object_exist", return_value=True)
