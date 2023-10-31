@@ -11,13 +11,13 @@ from vyper import v
 
 from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage, EphemeralStorageABC
 from sdk.ephemeral_storage.exceptions import (
-    FailedCompilingRegexpError,
-    FailedDeletingFileError,
-    FailedEphemeralStorageInitializationError,
-    FailedGettingFileError,
-    FailedListingFilesError,
-    FailedPurgingFilesError,
-    FailedSavingFileError,
+    FailedToCompileRegexpError,
+    FailedToDeleteFileError,
+    FailedToGetFileError,
+    FailedToInitializeEphemeralStorageError,
+    FailedToListFilesError,
+    FailedToPurgeFilesError,
+    FailedToSaveFileError,
     UndefinedEphemeralStorageError,
 )
 
@@ -107,7 +107,7 @@ async def test_initialize_ko(m_ephemeral_storage):
     name = "test_object_store"
     m_ephemeral_storage.ephemeral_storage_name = name
 
-    with pytest.raises(FailedEphemeralStorageInitializationError):
+    with pytest.raises(FailedToInitializeEphemeralStorageError):
         await m_ephemeral_storage.initialize()
 
 
@@ -133,7 +133,7 @@ async def test_list_regex_ok(m_ephemeral_storage, m_objects):
 async def test_list_regex_ko(m_ephemeral_storage, m_objects):
     m_ephemeral_storage.object_store.list.return_value = m_objects
 
-    with pytest.raises(FailedCompilingRegexpError):
+    with pytest.raises(FailedToCompileRegexpError):
         await m_ephemeral_storage.list(1)
 
 
@@ -156,7 +156,7 @@ async def test_list_not_found(m_ephemeral_storage):
 
 async def test_list_failed_ko(m_ephemeral_storage):
     m_ephemeral_storage.object_store.list.side_effect = Exception
-    with pytest.raises(FailedListingFilesError):
+    with pytest.raises(FailedToListFilesError):
         await m_ephemeral_storage.list()
 
 
@@ -192,7 +192,7 @@ async def test_get_not_found(m_ephemeral_storage):
 async def test_get_failed_ko(m_ephemeral_storage):
     m_ephemeral_storage.object_store.get.side_effect = Exception
 
-    with pytest.raises(FailedGettingFileError):
+    with pytest.raises(FailedToGetFileError):
         await m_ephemeral_storage.get("test-key")
 
 
@@ -220,7 +220,7 @@ async def test_save_missing_payload_ko(m_ephemeral_storage):
 async def test_save_failed_ko(m_ephemeral_storage):
     m_ephemeral_storage.object_store.put.side_effect = Exception
 
-    with pytest.raises(FailedSavingFileError):
+    with pytest.raises(FailedToSaveFileError):
         await m_ephemeral_storage.save("test-key", b"prueba")
 
 
@@ -254,7 +254,7 @@ async def test_delete_not_found_ko(m_ephemeral_storage):
 async def test_delete_failed_ko(m_ephemeral_storage):
     m_ephemeral_storage.object_store.delete.side_effect = Exception
 
-    with pytest.raises(FailedDeletingFileError):
+    with pytest.raises(FailedToDeleteFileError):
         await m_ephemeral_storage.delete("test-key")
 
 
@@ -315,7 +315,7 @@ async def test_purge_undefined_ko(m_ephemeral_storage):
 
 
 async def test_purge_regex_ko(m_ephemeral_storage):
-    with pytest.raises(FailedCompilingRegexpError):
+    with pytest.raises(FailedToCompileRegexpError):
         await m_ephemeral_storage.purge(1)
 
 
@@ -323,5 +323,5 @@ async def test_purge_failed_ko(m_ephemeral_storage, m_objects):
     m_ephemeral_storage.object_store.list.return_value = [m_objects[0], m_objects[2]]
     m_ephemeral_storage.object_store.delete.side_effect = Exception
 
-    with pytest.raises(FailedPurgingFilesError):
+    with pytest.raises(FailedToPurgeFilesError):
         await m_ephemeral_storage.purge()

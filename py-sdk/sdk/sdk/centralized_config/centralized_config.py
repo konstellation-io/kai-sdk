@@ -13,10 +13,10 @@ from nats.js.kv import KeyValue
 from vyper import v
 
 from sdk.centralized_config.exceptions import (
-    FailedDeletingConfigError,
-    FailedGettingConfigError,
-    FailedInitializingConfigError,
-    FailedSettingConfigError,
+    FailedToDeleteConfigError,
+    FailedToGetConfigError,
+    FailedToInitializeConfigError,
+    FailedToSetConfigError,
 )
 
 
@@ -88,8 +88,8 @@ class CentralizedConfig(CentralizedConfigABC):
 
             return global_kv, product_kv, workflow_kv, process_kv
         except Exception as e:
-            self.logger.warning(f"failed initializing configuration: {e}")
-            raise FailedInitializingConfigError(error=e)
+            self.logger.warning(f"failed to initialize configuration: {e}")
+            raise FailedToInitializeConfigError(error=e)
 
     async def get_config(self, key: str, scope: Optional[Scope] = None) -> tuple[str, bool]:
         if scope:
@@ -99,8 +99,8 @@ class CentralizedConfig(CentralizedConfigABC):
                 self.logger.debug(f"key {key} not found in scope {scope}: {e}")
                 return None, False
             except Exception as e:
-                self.logger.warning(f"failed getting config: {e}")
-                raise FailedGettingConfigError(key=key, scope=scope, error=e)
+                self.logger.warning(f"failed to get config: {e}")
+                raise FailedToGetConfigError(key=key, scope=scope, error=e)
 
             return config, True
 
@@ -111,8 +111,8 @@ class CentralizedConfig(CentralizedConfigABC):
                 self.logger.debug(f"key {key} not found in scope {_scope}: {e}")
                 continue
             except Exception as e:
-                self.logger.warning(f"failed getting config: {e}")
-                raise FailedGettingConfigError(key=key, scope=_scope, error=e)
+                self.logger.warning(f"failed to get config: {e}")
+                raise FailedToGetConfigError(key=key, scope=_scope, error=e)
 
             return config, True
 
@@ -126,8 +126,8 @@ class CentralizedConfig(CentralizedConfigABC):
         try:
             await kv_store.put(key, bytes(value, "utf-8"))
         except Exception as e:
-            self.logger.warning(f"failed setting config: {e}")
-            raise FailedSettingConfigError(key=key, scope=scope, error=e)
+            self.logger.warning(f"failed to set config: {e}")
+            raise FailedToSetConfigError(key=key, scope=scope, error=e)
 
     async def delete_config(self, key: str, scope: Optional[Scope] = None) -> bool:
         scope = scope or Scope.ProcessScope
@@ -136,8 +136,8 @@ class CentralizedConfig(CentralizedConfigABC):
         try:
             return await kv_store.delete(key)
         except Exception as e:
-            self.logger.warning(f"failed deleting config: {e}")
-            raise FailedDeletingConfigError(key=key, scope=scope, error=e)
+            self.logger.warning(f"failed to delete config: {e}")
+            raise FailedToDeleteConfigError(key=key, scope=scope, error=e)
 
     async def _get_config_from_scope(self, key: str, scope: Optional[Scope] = None) -> str:
         scope = scope or Scope.ProcessScope

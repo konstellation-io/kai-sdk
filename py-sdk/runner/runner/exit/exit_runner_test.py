@@ -11,10 +11,12 @@ from runner.exit.subscriber import ExitSubscriber
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
 from sdk.metadata.metadata import Metadata
+from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 
 @pytest.fixture(scope="function")
-async def m_sdk() -> KaiSDK:
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+async def m_sdk(_: PersistentStorage) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()
@@ -26,7 +28,8 @@ async def m_sdk() -> KaiSDK:
 
 
 @pytest.fixture(scope="function")
-def m_exit_runner(m_sdk: KaiSDK) -> ExitRunner:
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+def m_exit_runner(_: PersistentStorage, m_sdk: KaiSDK) -> ExitRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 
@@ -40,7 +43,8 @@ def m_exit_runner(m_sdk: KaiSDK) -> ExitRunner:
     return exit_runner
 
 
-def test_ok():
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+def test_ok(_):
     nc = NatsClient()
     js = nc.jetstream()
 

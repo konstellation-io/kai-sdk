@@ -1,25 +1,25 @@
 from typing import Optional
 
 
-class FailedInitializingConfigError(Exception):
+class FailedToInitializeConfigError(Exception):
     def __init__(self, error: Optional[Exception] = None):
-        message = "failed initializing configuration"
+        message = "failed to initialize configuration"
         super().__init__(f"{message}: {error}" if error else message)
 
 
-class FailedGettingConfigError(Exception):
+class FailedToGetConfigError(Exception):
     def __init__(self, key: str, scope: str, error: Optional[Exception] = None):
-        message = f"failed getting configuration given key {key} and scope {scope}"
+        message = f"failed to get configuration given key {key} and scope {scope}"
         super().__init__(f"{message}: {error}" if error else message)
 
 
-class FailedSettingConfigError(Exception):
+class FailedToSetConfigError(Exception):
     def __init__(self, key: str, scope: str, error: Optional[Exception] = None):
-        message = f"failed setting configuration given key {key} and scope {scope}"
+        message = f"failed to set configuration given key {key} and scope {scope}"
         super().__init__(f"{message}: {error}" if error else message)
 
 
-class FailedDeletingConfigError(Exception):
+class FailedToDeleteConfigError(Exception):
     def __init__(self, key: str, scope: str, error: Optional[Exception] = None):
-        message = f"failed deleting configuration given key {key} and scope {scope}"
+        message = f"failed to delete configuration given key {key} and scope {scope}"
         super().__init__(f"{message}: {error}" if error else message)

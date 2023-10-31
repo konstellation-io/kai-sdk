@@ -11,11 +11,13 @@ from runner.runner import Runner
 from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
 from sdk.centralized_config.centralized_config import CentralizedConfig
+from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
 from sdk.path_utils.path_utils import PathUtils
+from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 GLOBAL_BUCKET = "centralized_configuration.global.bucket"
 PRODUCT_BUCKET = "centralized_configuration.product.bucket"
@@ -27,7 +29,7 @@ NATS_URL = "nats.url"
 
 @pytest.fixture(scope="function")
 @patch("runner.runner.Runner._validate_config")
-def m_runner(_) -> Runner:
+def m_runner(_: Mock) -> Runner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     v.set(NATS_URL, "test_url")
@@ -52,7 +54,8 @@ def m_runner(_) -> Runner:
         AsyncMock(spec=KeyValue),
     ),
 )
-async def test_sdk_import_ok(_):
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+async def test_sdk_import_ok(_, centralized_config_mock):
     nc = NatsClient()
     js = nc.jetstream()
     request_msg = KaiNatsMessage()
@@ -79,8 +82,10 @@ async def test_sdk_import_ok(_):
     assert sdk.messaging is not None
     assert sdk.messaging.request_msg == request_msg
     assert sdk.storage is not None
+    assert isinstance(sdk.storage.ephemeral, EphemeralStorage)
     assert sdk.storage.ephemeral.ephemeral_storage_name == ""
     assert sdk.storage.ephemeral.object_store is None
+    assert isinstance(sdk.storage.persistent, PersistentStorage)
     assert sdk.centralized_config is not None
     assert isinstance(sdk.centralized_config.global_kv, KeyValue)
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
@@ -153,7 +158,8 @@ async def test_runner_initialize_jetstream_ko(_):
     "runner_type, runner_method",
     [(TriggerRunner, "trigger_runner"), (TaskRunner, "task_runner"), (ExitRunner, "exit_runner")],
 )
-def test_get_runner_ok(runner_type, runner_method, m_runner):
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+def test_get_runner_ok(_, runner_type, runner_method, m_runner):
     result = getattr(m_runner, runner_method)()
 
     assert isinstance(result, runner_type)

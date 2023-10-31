@@ -13,7 +13,7 @@ nats:
   output: nats-trigger-output
 
 minio:
-  url: "localhost:9000"
+  endpoint: "localhost:9000"
   access_key_id: minioadmin
   access_key_secret: minioadmin
   use_ssl: false
