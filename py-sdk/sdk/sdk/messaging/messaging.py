@@ -15,7 +15,7 @@ from nats.js.client import JetStreamContext
 from vyper import v
 
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
-from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError, NewRequestMsgError
+from sdk.messaging.exceptions import FailedToGetMaxMessageSizeError, MessageTooLargeError, NewRequestMsgError
 from sdk.messaging.messaging_utils import (
     MessagingUtils,
     MessagingUtilsABC,
@@ -210,7 +210,7 @@ class Messaging(MessagingABC):
 
         try:
             output_msg = await self._prepare_output_message(output_msg)
-        except (FailedGettingMaxMessageSizeError, MessageTooLargeError) as e:
+        except (FailedToGetMaxMessageSizeError, MessageTooLargeError) as e:
             self.logger.debug(f"failed preparing output message: {e} with request_id {response_msg.request_id}")
             return
 

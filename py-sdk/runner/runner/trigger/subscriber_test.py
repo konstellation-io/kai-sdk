@@ -18,15 +18,21 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
 from sdk.kai_sdk import KaiSDK
 from sdk.messaging.messaging_utils import compress
 from sdk.metadata.metadata import Metadata
+from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 NATS_INPUT = "nats.inputs"
 SUBJECT = "test.subject"
 SUBJECT_LIST = [SUBJECT, "test.subject2"]
 SUBJECT_LIST_STR = ",".join(SUBJECT_LIST)
+ACK_TIME_KEY = "runner.subscriber.ack_wait_time"
+ACK_HOURS = 22
+ACK_TIME_SECONDS = float(ACK_HOURS * 3600)
+PROCESS = "test process id"
 
 
 @pytest.fixture(scope="function")
-async def m_sdk() -> KaiSDK:
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+async def m_sdk(_: PersistentStorage) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()
@@ -38,7 +44,8 @@ async def m_sdk() -> KaiSDK:
 
 
 @pytest.fixture(scope="function")
-def m_trigger_runner(m_sdk: KaiSDK) -> TriggerRunner:
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+def m_trigger_runner(_: PersistentStorage, m_sdk: KaiSDK) -> TriggerRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 
@@ -71,7 +78,8 @@ def m_msg() -> Msg:
 async def test_start_ok_str_input(m_trigger_subscriber):
     v.set(NATS_INPUT, SUBJECT)
     consumer_name = f"{SUBJECT.replace('.', '-')}-test-process-id"
-    m_trigger_subscriber.trigger_runner.sdk.metadata.get_process = Mock(return_value="test process id")
+    v.set(ACK_TIME_KEY, ACK_HOURS)
+    m_trigger_subscriber.trigger_runner.sdk.metadata.get_process = Mock(return_value=PROCESS)
     cb_mock = m_trigger_subscriber._process_message = AsyncMock()
     m_trigger_subscriber.trigger_runner.js.subscribe = AsyncMock()
 
@@ -82,7 +90,7 @@ async def test_start_ok_str_input(m_trigger_subscriber):
         subject=SUBJECT,
         durable=mock.ANY,
         cb=cb_mock,
-        config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+        config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ACK_TIME_SECONDS),
         manual_ack=True,
     )
     assert isinstance(
@@ -93,7 +101,8 @@ async def test_start_ok_str_input(m_trigger_subscriber):
 
 async def test_start_ok_list_input(m_trigger_subscriber):
     v.set(NATS_INPUT, SUBJECT_LIST)
-    m_trigger_subscriber.trigger_runner.sdk.metadata.get_process = Mock(return_value="test process id")
+    v.set(ACK_TIME_KEY, ACK_HOURS)
+    m_trigger_subscriber.trigger_runner.sdk.metadata.get_process = Mock(return_value=PROCESS)
     cb_mock = m_trigger_subscriber._process_message = AsyncMock()
     m_trigger_subscriber.trigger_runner.js.subscribe = AsyncMock()
 
@@ -107,14 +116,14 @@ async def test_start_ok_list_input(m_trigger_subscriber):
             subject=SUBJECT_LIST[0],
             durable=mock.ANY,
             cb=cb_mock,
-            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ACK_TIME_SECONDS),
             manual_ack=True,
         ),
         call(
             subject=SUBJECT_LIST[1],
             durable=mock.ANY,
             cb=cb_mock,
-            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ACK_TIME_SECONDS),
             manual_ack=True,
         ),
     ]
@@ -133,7 +142,8 @@ async def test_start_ok_list_input(m_trigger_subscriber):
 async def test_start_ok_str_list_input(m_trigger_subscriber):
     v.set(NATS_INPUT, SUBJECT_LIST_STR)
     input_subjects = SUBJECT_LIST_STR.replace(" ", "").split(",")
-    m_trigger_subscriber.trigger_runner.sdk.metadata.get_process = Mock(return_value="test process id")
+    v.set(ACK_TIME_KEY, ACK_HOURS)
+    m_trigger_subscriber.trigger_runner.sdk.metadata.get_process = Mock(return_value=PROCESS)
     cb_mock = m_trigger_subscriber._process_message = AsyncMock()
     m_trigger_subscriber.trigger_runner.js.subscribe = AsyncMock()
 
@@ -147,14 +157,14 @@ async def test_start_ok_str_list_input(m_trigger_subscriber):
             subject=input_subjects[0],
             durable=mock.ANY,
             cb=cb_mock,
-            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ACK_TIME_SECONDS),
             manual_ack=True,
         ),
         call(
             subject=input_subjects[1],
             durable=mock.ANY,
             cb=cb_mock,
-            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ACK_TIME_SECONDS),
             manual_ack=True,
         ),
     ]
@@ -172,6 +182,7 @@ async def test_start_ok_str_list_input(m_trigger_subscriber):
 
 async def test_start_nats_subscribing_ko(m_trigger_subscriber):
     v.set(NATS_INPUT, [SUBJECT])
+    v.set(ACK_TIME_KEY, ACK_HOURS)
     m_trigger_subscriber.trigger_runner.js.subscribe = AsyncMock(side_effect=Exception("Subscription error"))
 
     with pytest.raises(SystemExit):
@@ -216,7 +227,7 @@ async def test_process_message_not_valid_protobuf_ko(m_msg, m_trigger_subscriber
         payload=Any(),
     )
     m_msg.data = expected_response_msg.SerializeToString()
-    m_trigger_subscriber._new_request_msg = Mock(side_effect=Exception(NewRequestMsgError("New request message error")))
+    m_trigger_subscriber._new_request_msg = Mock(side_effect=NewRequestMsgError(Exception("New request message error")))
     m_trigger_subscriber._process_runner_error = AsyncMock()
 
     await m_trigger_subscriber._process_message(m_msg)

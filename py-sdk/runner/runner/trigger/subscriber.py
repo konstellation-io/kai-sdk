@@ -42,7 +42,7 @@ class TriggerSubscriber:
                 subject_ = subject.replace(".", "-")
                 consumer_name = f"{subject_}-{process}"
 
-                self.logger.info(f"subscribing to {subject} from queue group {consumer_name}")
+                self.logger.info(f"subscribing to {subject}")
                 try:
                     sub = await self.trigger_runner.js.subscribe(
                         subject=subject,
@@ -57,7 +57,7 @@ class TriggerSubscriber:
                     return
 
                 self.subscriptions.append(sub)
-                self.logger.info(f"listening to {subject} from queue group {consumer_name}")
+                self.logger.info(f"listening to {subject}")
 
             if len(self.subscriptions) > 0:
                 self.logger.info("runner successfully subscribed")

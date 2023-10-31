@@ -34,6 +34,11 @@ MANDATORY_CONFIG_KEYS = [
     "centralized_configuration.product.bucket",
     "centralized_configuration.workflow.bucket",
     "centralized_configuration.process.bucket",
+    "minio.endpoint",
+    "minio.access_key_id",
+    "minio.access_key_secret",
+    "minio.use_ssl",
+    "minio.bucket",
 ]
 
 
@@ -67,7 +72,7 @@ class Runner:
             try:
                 _ = reduce(lambda d, k: d[k], key.split("."), keys)
             except Exception:
-                raise FailedLoadingConfigError(f"missing mandatory configuration key: {key}")
+                raise FailedLoadingConfigError(Exception(f"missing mandatory configuration key: {key}"))
 
     def initialize_config(self) -> None:
         v.set_env_prefix("KAI")

@@ -4,7 +4,7 @@ import asyncio
 import signal
 import sys
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Optional
 
 import loguru
 from loguru import logger

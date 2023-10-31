@@ -10,10 +10,10 @@ from vyper import v
 
 from sdk.centralized_config.centralized_config import CentralizedConfig, Scope
 from sdk.centralized_config.exceptions import (
-    FailedDeletingConfigError,
-    FailedGettingConfigError,
-    FailedInitializingConfigError,
-    FailedSettingConfigError,
+    FailedToDeleteConfigError,
+    FailedToGetConfigError,
+    FailedToInitializeConfigError,
+    FailedToSetConfigError,
 )
 
 
@@ -73,7 +73,7 @@ async def test_initialize_ok(m_centralized_config):
 async def test_initialize_ko(m_centralized_config):
     m_centralized_config.js.key_value.side_effect = Exception
 
-    with pytest.raises(FailedInitializingConfigError):
+    with pytest.raises(FailedToInitializeConfigError):
         await m_centralized_config.initialize()
 
 
@@ -116,7 +116,7 @@ async def test_get_config_with_scope_not_found(m_centralized_config):
 async def test_get_config_with_scope_ko(m_centralized_config):
     m_centralized_config._get_config_from_scope = AsyncMock(side_effect=Exception)
 
-    with pytest.raises(FailedGettingConfigError):
+    with pytest.raises(FailedToGetConfigError):
         await m_centralized_config.get_config("test_key", scope=Scope.ProductScope)
 
 
@@ -141,7 +141,7 @@ async def test_get_config_without_scope_not_found(m_centralized_config):
 async def test_get_config_without_scope_ko(m_centralized_config):
     m_centralized_config._get_config_from_scope = AsyncMock(side_effect=Exception)
 
-    with pytest.raises(FailedGettingConfigError):
+    with pytest.raises(FailedToGetConfigError):
         await m_centralized_config.get_config("test_key")
 
 
@@ -162,14 +162,14 @@ async def test_set_config_without_scope_ok(m_centralized_config):
 async def test_set_config_with_scope_ko(m_centralized_config):
     m_centralized_config.product_kv.put.side_effect = Exception
 
-    with pytest.raises(FailedSettingConfigError):
+    with pytest.raises(FailedToSetConfigError):
         await m_centralized_config.set_config("test_key", "test_value", Scope.ProductScope)
 
 
 async def test_set_config_without_scope_ko(m_centralized_config):
     m_centralized_config.process_kv.put.side_effect = Exception
 
-    with pytest.raises(FailedSettingConfigError):
+    with pytest.raises(FailedToSetConfigError):
         await m_centralized_config.set_config("test_key", "test_value")
 
 
@@ -190,14 +190,14 @@ async def test_delete_config_without_scope_ok(m_centralized_config):
 async def test_delete_config_with_scope_ko(m_centralized_config):
     m_centralized_config.product_kv.delete.side_effect = Exception
 
-    with pytest.raises(FailedDeletingConfigError):
+    with pytest.raises(FailedToDeleteConfigError):
         await m_centralized_config.delete_config("test_key", Scope.ProductScope)
 
 
 async def test_delete_config_without_scope_ko(m_centralized_config):
     m_centralized_config.process_kv.delete.side_effect = Exception
 
-    with pytest.raises(FailedDeletingConfigError):
+    with pytest.raises(FailedToDeleteConfigError):
         await m_centralized_config.delete_config("test_key")
 
 

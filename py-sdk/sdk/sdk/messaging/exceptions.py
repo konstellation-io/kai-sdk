@@ -1,9 +1,9 @@
 from typing import Optional
 
 
-class FailedGettingMaxMessageSizeError(Exception):
+class FailedToGetMaxMessageSizeError(Exception):
     def __init__(self, error: Optional[Exception] = None):
-        message = "failed getting max message size"
+        message = "failed to get max message size"
         super().__init__(f"{message}: {error}" if error else message)
 
 

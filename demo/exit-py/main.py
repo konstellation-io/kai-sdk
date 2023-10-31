@@ -1,4 +1,5 @@
 import asyncio
+import io
 
 from google.protobuf.any_pb2 import Any
 from google.protobuf.wrappers_pb2 import StringValue
@@ -20,6 +21,18 @@ async def initializer(kai_sdk: sdk.KaiSDK):
         logger.info("ephemeral storage value not found")
     else:
         logger.info(f"ephemeral storage value retrieved! {value.decode('utf-8')}")
+
+    object_id = "some-object"
+    object_value = io.BytesIO(b"some-value")
+    kai_sdk.storage.persistent.save(object_id, object_value)
+    logger.info(f"persistent storage value set! {object_id} {object_value!s}")
+    obj, _ = kai_sdk.storage.persistent.get("some-object")
+    logger.info(f"persistent storage value retrieved! {object_id} {obj!s}")
+    objs = kai_sdk.storage.persistent.list()
+    logger.info(f"persistent storage value listed! {objs!s}")
+    kai_sdk.storage.persistent.delete(f"{object_id}")
+    logger.info(f"persistent storage value deleted! {object_id}")
+    kai_sdk.storage.persistent.get(f"{object_id}")
 
 
 async def handler(kai_sdk: sdk.KaiSDK, response: Any):
