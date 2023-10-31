@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  base: &base
+    image: sdk:local
+    env_file:
+      - local.env
+    stdin_open: true
+    tty: true
+    volumes:
+      - ../:/srv
+    working_dir: /srv
+
+  app: &app
+    <<: *base
+    depends_on:
+      - nats
+      - minio
+
+  nats:
+    <<: *base
+    image: nats:2.1.9-alpine
+    ports:
+      - 4222:4222
+      - 8222:8222
+      - 6222:6222
+
+  minio:
+    <<: *base
+    image: minio/minio
+    ports:
+      - 9000:9000
+    command: server /data
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    volumes:
+      - minio-data:/data
+
+volumes:
+  minio-data:
