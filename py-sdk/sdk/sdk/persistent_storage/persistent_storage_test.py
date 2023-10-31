@@ -36,6 +36,7 @@ def m_object() -> urllib3.BaseHTTPResponse:
 
     return object_
 
+
 @pytest.fixture(scope="function")
 def m_object_result() -> ObjectWriteResult:
     result = Mock(spec=ObjectWriteResult)
