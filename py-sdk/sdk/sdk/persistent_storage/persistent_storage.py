@@ -24,7 +24,7 @@ from sdk.persistent_storage.exceptions import (
 @dataclass
 class PersistentStorageABC(ABC):
     @abstractmethod
-    def save(self, key: str, payload: bytes, ttl_days: Optional[int]) -> str | None:
+    def save(self, key: str, payload: bytes, ttl_days: Optional[int]) -> None:
         pass
 
     @abstractmethod
@@ -70,9 +70,8 @@ class PersistentStorage(PersistentStorageABC):
 
         self.logger.debug(f"successfully initialized persistent storage with bucket {self.minio_bucket_name}!")
 
-    def save(self, key: str, payload: BinaryIO, ttl_days: Optional[int] = None) -> str | None:
+    def save(self, key: str, payload: BinaryIO, ttl_days: Optional[int] = None) -> None:
         try:
-            result = None
             if ttl_days is not None:
                 expiration_date = datetime.utcnow().replace(
                     hour=0,
@@ -80,7 +79,7 @@ class PersistentStorage(PersistentStorageABC):
                     second=0,
                     microsecond=0,
                 ) + timedelta(days=ttl_days)
-                result = self.minio_client.put_object(
+                self.minio_client.put_object(
                     self.minio_bucket_name,
                     key,
                     payload,
@@ -88,14 +87,13 @@ class PersistentStorage(PersistentStorageABC):
                     retention=Retention(COMPLIANCE, expiration_date),
                 )
             else:
-                result = self.minio_client.put_object(
+                self.minio_client.put_object(
                     self.minio_bucket_name,
                     key,
                     payload,
                     payload.getbuffer().nbytes,
                 )
             self.logger.info(f"file {key} successfully saved in persistent storage bucket {self.minio_bucket_name}")
-            return result.version_id
         except Exception as e:
             error = FailedToSaveFileError(key, self.minio_bucket_name, e)
             self.logger.warning(f"{error}")
