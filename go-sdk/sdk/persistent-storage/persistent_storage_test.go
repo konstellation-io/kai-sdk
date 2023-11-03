@@ -83,10 +83,9 @@ func (s *SdkPersistentStorageTestSuite) SetupTest() {
 	minioEndpoint := fmt.Sprintf("%s:%d", host, port.Int())
 
 	viper.Set("minio.bucket", s.persistentStorageBucket)
-	viper.Set("minio.bucket", s.persistentStorageBucket)
 	viper.Set("minio.endpoint", minioEndpoint)
-	viper.Set("minio.access_key_id", "minioadmin")
-	viper.Set("minio.access_key_secret", "minioadmin")
+	viper.Set("minio.client_user", "minioadmin")
+	viper.Set("minio.client_password", "minioadmin")
 	viper.Set("minio.use_ssl", false)
 
 	s.client = s.getClient(minioEndpoint, "minioadmin", "minioadmin")
@@ -97,7 +96,7 @@ func (s *SdkPersistentStorageTestSuite) SetupTest() {
 	err = s.client.EnableVersioning(ctx, s.persistentStorageBucket)
 	s.Require().NoError(err)
 
-	storage, err := persistentstorage.NewPersistentStorage(testr.New(s.T()))
+	storage, err := persistentstorage.NewPersistentStorageIntegration(testr.New(s.T()))
 	s.Assert().NoError(err)
 	s.persistentStorage = storage
 
@@ -125,7 +124,7 @@ func (s *SdkPersistentStorageTestSuite) TearDownTest() {
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_Initialize_ExpectOK() {
 	// WHEN
-	persistentStorage, err := persistentstorage.NewPersistentStorage(testr.New(s.T()))
+	persistentStorage, err := persistentstorage.NewPersistentStorageIntegration(testr.New(s.T()))
 	s.Require().NoError(err)
 	_, err = persistentStorage.List()
 
@@ -139,7 +138,7 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_Initialize_ExpectE
 	viper.Set("minio.endpoint", "invalid-url")
 
 	// WHEN
-	persistentStorage, err := persistentstorage.NewPersistentStorage(testr.New(s.T()))
+	persistentStorage, err := persistentstorage.NewPersistentStorageIntegration(testr.New(s.T()))
 	s.Require().NoError(err)
 	objList, err := persistentStorage.List()
 
