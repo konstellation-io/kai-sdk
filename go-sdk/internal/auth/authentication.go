@@ -41,7 +41,7 @@ func New(logger logr.Logger) *Auth {
 }
 
 func (a *Auth) GetToken() (*gocloak.JWT, error) {
-	client := gocloak.NewClient(a.authEndpoint) // "https://auth.kai-dev.konstellation.io"
+	client := gocloak.NewClient(a.authEndpoint)
 	ctx := context.Background()
 
 	if a.jwt != nil {
