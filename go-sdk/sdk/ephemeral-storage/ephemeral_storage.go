@@ -4,6 +4,8 @@ import (
 	"fmt"
 	regexp2 "regexp"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/go-logr/logr"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -18,7 +20,7 @@ type EphemeralStorage struct {
 }
 
 func NewEphemeralStorage(logger logr.Logger, jetstream nats.JetStreamContext) (*EphemeralStorage, error) {
-	ephemeralStorageBucket := viper.GetString("nats.object_store")
+	ephemeralStorageBucket := viper.GetString(common.ConfigNatsEphemeralStorage)
 
 	ephemeralStorage, err := initEphemeralStorageDeps(logger.WithName("[EPHEMERAL STORAGE]"), jetstream, ephemeralStorageBucket)
 	if err != nil {
