@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"fmt"
+
 	"github.com/Nerzal/gocloak/v13"
 	"github.com/go-logr/logr"
 	"github.com/spf13/viper"
@@ -57,11 +58,11 @@ func (a *Auth) GetToken() (*gocloak.JWT, error) {
 
 	token, err := client.Login(
 		ctx,
-		a.clientID,     //"kai-kli-oidc",
-		a.clientSecret, //"ymCJInhe6GzrraFdwFyJZAflNvohRQ1I",
-		a.realm,        // "konstellation",
-		a.username,     // "david",
-		a.password,     //"password",
+		a.clientID,
+		a.clientSecret,
+		a.realm,
+		a.username,
+		a.password,
 	)
 	if err != nil {
 		a.logger.Info(fmt.Sprintf("Error getting token: %s", err.Error()))
@@ -69,5 +70,6 @@ func (a *Auth) GetToken() (*gocloak.JWT, error) {
 	}
 
 	a.jwt = token
+
 	return a.jwt, nil
 }

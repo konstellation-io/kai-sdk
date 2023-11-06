@@ -37,7 +37,7 @@ MANDATORY_CONFIG_KEYS = [
     "minio.endpoint",
     "minio.access_key_id",
     "minio.access_key_secret",
-    "minio.use_ssl",
+    "minio.ssl",
     "minio.bucket",
 ]
 

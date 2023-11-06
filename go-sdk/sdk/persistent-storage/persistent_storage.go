@@ -49,7 +49,7 @@ func NewPersistentStorage(logger logr.Logger) (*PersistentStorage, error) {
 
 func initPersistentStorage(logger logr.Logger) (*minio.Client, error) {
 	endpoint := viper.GetString("minio.endpoint")
-	useSSL := viper.GetBool("minio.use_ssl")
+	useSSL := viper.GetBool("minio.ssl")
 	url := ""
 
 	if useSSL {

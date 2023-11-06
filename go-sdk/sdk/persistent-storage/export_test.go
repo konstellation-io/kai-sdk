@@ -38,7 +38,7 @@ func NewPersistentStorageIntegration(logger logr.Logger) (*PersistentStorage, er
 
 func initPersistentStorageIntegration(logger logr.Logger) (*minio.Client, error) {
 	endpoint := viper.GetString("minio.endpoint")
-	useSSL := viper.GetBool("minio.use_ssl")
+	useSSL := viper.GetBool("minio.ssl")
 	user := viper.GetString("minio.client_user")
 	password := viper.GetString("minio.client_password")
 

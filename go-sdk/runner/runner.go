@@ -58,10 +58,14 @@ func validateConfig(keys []string) {
 		"centralized_configuration.workflow.bucket",
 		"centralized_configuration.process.bucket",
 		"minio.endpoint",
-		"minio.access_key_id",
-		"minio.access_key_secret",
-		"minio.use_ssl",
-		"minio.bucket",
+		"minio.client_user",     // generated user for the bucket
+		"minio.client_password", // generated user's password for the bucket
+		"minio.ssl",             // Enable or disable SSL
+		"minio.bucket",          // Bucket to be used
+		"auth.endpoint",         // keycloak endpoint
+		"auth.client",           // Client to be used to authenticate
+		"auth.client_secret",    // Client's secret to be used
+		"auth.realm",            // Realm
 	}
 
 	for _, key := range mandatoryConfigKeys {
