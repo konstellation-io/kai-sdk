@@ -2,156 +2,65 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Optional
 
-import loguru
-from loguru import logger
-from nats.js.client import JetStreamContext
-from nats.js.errors import KeyNotFoundError
-from nats.js.kv import KeyValue
+from keycloak import KeycloakOpenID
 from vyper import v
 
-from sdk.centralized_config.exceptions import (
-    FailedToDeleteConfigError,
-    FailedToGetConfigError,
-    FailedToInitializeConfigError,
-    FailedToSetConfigError,
-)
-
-
-class Scope(Enum):
-    ProcessScope = "process"
-    WorkflowScope = "workflow"
-    ProductScope = "product"
-    GlobalScope = "global"
-
 
 @dataclass
-class CentralizedConfigABC(ABC):
+class AuthenticationABC(ABC):
     @abstractmethod
-    async def initialize(self) -> None:
-        pass
-
-    @abstractmethod
-    async def get_config(self, key: str, scope: Optional[Scope]) -> tuple[str, bool]:
-        pass
-
-    @abstractmethod
-    async def set_config(self, key: str, value: str, scope: Optional[Scope]) -> None:
-        pass
-
-    @abstractmethod
-    async def delete_config(self, key: str, scope: Optional[Scope]) -> bool:
+    async def get_token(self) -> str:
         pass
 
 
 @dataclass
-class CentralizedConfig(CentralizedConfigABC):
-    js: JetStreamContext
-    global_kv: KeyValue = field(init=False)
-    product_kv: KeyValue = field(init=False)
-    workflow_kv: KeyValue = field(init=False)
-    process_kv: KeyValue = field(init=False)
-    logger: loguru.Logger = logger.bind(context="[CENTRALIZED CONFIGURATION]")
+class Authentication(AuthenticationABC):
+    auth_server_url: str = field(init=False)
+    auth_server_client_id: str = field(init=False)
+    auth_server_client_secret: str = field(init=False)
+    auth_server_realm_name: str = field(init=False)
+    grant_type: str = field(init=False)
+    username: str = field(init=False)
+    password: str = field(init=False)
+    scope: str = field(init=False)
+
+    # logger: loguru.Logger = logger.bind(context="[CENTRALIZED CONFIGURATION]")
 
     def __post_init__(self) -> None:
-        self.global_kv = None
-        self.product_kv = None
-        self.workflow_kv = None
-        self.process_kv = None
+        self.auth_server_url = v.get_string("auth.endpoint")
+        self.auth_server_client_id = v.get_string("auth.client")
+        self.auth_server_client_secret = v.get_string("auth.client_secret")
+        self.auth_server_realm_name = v.get_string("auth.realm")
+        self.grant_type = "password"
+        self.scope = "openid"
+        self.username = v.get_string("minio.client_user")
+        self.password = v.get_string("minio.client_password")
 
-    async def initialize(self) -> None:
-        self.global_kv, self.product_kv, self.workflow_kv, self.process_kv = await self._init_kv_stores()
+    def get_token(self) -> dict:
+        keycloak_openid = KeycloakOpenID(
+            server_url=self.auth_server_url,
+            client_id=self.auth_server_client_id,
+            client_secret_key=self.auth_server_client_secret,
+            realm_name=self.auth_server_realm_name,
+        )
 
-    async def _init_kv_stores(self) -> tuple[KeyValue, KeyValue, KeyValue, KeyValue]:
-        try:
-            name = v.get_string("centralized_configuration.global.bucket")
-            self.logger.debug(f"initializing global key-value store {name}...")
-            global_kv = await self.js.key_value(bucket=name)
-            self.logger.debug("global key-value store initialized")
+        access_token = keycloak_openid.token(
+            grant_type=self.grant_type,
+            username=self.username,
+            password=self.password,
+            scope=self.scope,
+        )
 
-            name = v.get_string("centralized_configuration.product.bucket")
-            self.logger.debug(f"initializing product key-value store {name}...")
-            product_kv = await self.js.key_value(bucket=name)
-            self.logger.debug("product key-value store initialized")
+        return access_token
 
-            name = v.get_string("centralized_configuration.workflow.bucket")
-            self.logger.debug(f"initializing workflow key-value store {name}...")
-            workflow_kv = await self.js.key_value(bucket=name)
-            self.logger.debug("workflow key-value store initialized")
 
-            name = v.get_string("centralized_configuration.process.bucket")
-            self.logger.debug(f"initializing process key-value store {name}...")
-            process_kv = await self.js.key_value(bucket=name)
-            self.logger.debug("process key-value store initialized")
-
-            return global_kv, product_kv, workflow_kv, process_kv
-        except Exception as e:
-            self.logger.warning(f"failed to initialize configuration: {e}")
-            raise FailedToInitializeConfigError(error=e)
-
-    async def get_config(self, key: str, scope: Optional[Scope] = None) -> tuple[str, bool]:
-        if scope:
-            try:
-                config = await self._get_config_from_scope(key, scope)
-            except KeyNotFoundError as e:
-                self.logger.debug(f"key {key} not found in scope {scope}: {e}")
-                return None, False
-            except Exception as e:
-                self.logger.warning(f"failed to get config: {e}")
-                raise FailedToGetConfigError(key=key, scope=scope, error=e)
-
-            return config, True
-
-        for _scope in Scope:
-            try:
-                config = await self._get_config_from_scope(key, _scope)
-            except KeyNotFoundError as e:
-                self.logger.debug(f"key {key} not found in scope {_scope}: {e}")
-                continue
-            except Exception as e:
-                self.logger.warning(f"failed to get config: {e}")
-                raise FailedToGetConfigError(key=key, scope=_scope, error=e)
-
-            return config, True
-
-        self.logger.warning(f"key {key} not found in any scope")
-        return None, False
-
-    async def set_config(self, key: str, value: str, scope: Optional[Scope] = None) -> None:
-        scope = scope or Scope.ProcessScope
-        kv_store = self._get_scoped_config(scope)
-
-        try:
-            await kv_store.put(key, bytes(value, "utf-8"))
-        except Exception as e:
-            self.logger.warning(f"failed to set config: {e}")
-            raise FailedToSetConfigError(key=key, scope=scope, error=e)
-
-    async def delete_config(self, key: str, scope: Optional[Scope] = None) -> bool:
-        scope = scope or Scope.ProcessScope
-        kv_store = self._get_scoped_config(scope)
-
-        try:
-            return await kv_store.delete(key)
-        except Exception as e:
-            self.logger.warning(f"failed to delete config: {e}")
-            raise FailedToDeleteConfigError(key=key, scope=scope, error=e)
-
-    async def _get_config_from_scope(self, key: str, scope: Optional[Scope] = None) -> str:
-        scope = scope or Scope.ProcessScope
-        kv_store = self._get_scoped_config(scope)
-        entry = await kv_store.get(key)
-
-        return entry.value.decode("utf-8")
-
-    def _get_scoped_config(self, scope: Scope) -> KeyValue:
-        if scope == Scope.GlobalScope:
-            return self.global_kv
-        elif scope == Scope.ProductScope:
-            return self.product_kv
-        elif scope == Scope.WorkflowScope:
-            return self.workflow_kv
-        elif scope == Scope.ProcessScope:
-            return self.process_kv
+# v.set("auth.endpoint", "https://auth.kai-dev.konstellation.io")
+# v.set("auth.client", "minio")
+# v.set("auth.client_secret", "LVea9SGpFPTHRhEWw7u6M3")
+# v.set("auth.realm", "konstellation")
+# v.set("minio.client_user", "david")
+# v.set("minio.client_password", "david")
+#
+# auth = Authentication()
+# print("Auth token: ", json.dumps(auth.get_token(), indent=2))

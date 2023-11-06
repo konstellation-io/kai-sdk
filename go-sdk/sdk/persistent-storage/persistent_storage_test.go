@@ -85,9 +85,9 @@ func (s *SdkPersistentStorageTestSuite) SetupTest() {
 	viper.Set("minio.bucket", s.persistentStorageBucket)
 	viper.Set("minio.bucket", s.persistentStorageBucket)
 	viper.Set("minio.endpoint", minioEndpoint)
-	viper.Set("minio.access_key_id", "minioadmin")
-	viper.Set("minio.access_key_secret", "minioadmin")
-	viper.Set("minio.use_ssl", false)
+	viper.Set("minio.client_user", "minioadmin")
+	viper.Set("minio.client_password", "minioadmin")
+	viper.Set("minio.ssl", false)
 
 	s.client = s.getClient(minioEndpoint, "minioadmin", "minioadmin")
 

@@ -8,9 +8,11 @@ from typing import BinaryIO, Optional
 import loguru
 from loguru import logger
 from minio import Minio
+from minio.credentials import ClientGrantsProvider
 from minio.retention import COMPLIANCE, Retention
 from vyper import v
 
+from sdk.auth.authentication import Authentication
 from sdk.persistent_storage.exceptions import (
     FailedToDeleteFileError,
     FailedToGetFileError,
@@ -52,11 +54,17 @@ class PersistentStorage(PersistentStorageABC):
 
     def __post_init__(self) -> None:
         try:
+            auth = Authentication()
+
+            creds = ClientGrantsProvider(
+                jwt_provider_func=lambda: auth.get_token(),
+                sts_endpoint=v.get_string("minio.endpoint"),
+            )
+
             self.minio_client = Minio(
                 endpoint=v.get_string("minio.endpoint"),
-                access_key=v.get_string("minio.access_key_id"),
-                secret_key=v.get_string("minio.access_key_secret"),
-                secure=v.get_bool("minio.use_ssl"),
+                credentials=creds,
+                secure=v.get_bool("minio.ssl"),
             )
         except Exception as e:
             self.logger.error(f"failed to initialize persistent storage client: {e}")

@@ -6,6 +6,7 @@ import urllib3
 from minio import Minio
 from vyper import v
 
+from sdk.auth.authentication import Authentication
 from sdk.persistent_storage.exceptions import (
     FailedToDeleteFileError,
     FailedToGetFileError,
@@ -18,6 +19,7 @@ TTL_DAYS = 30
 
 
 @pytest.fixture(scope="function")
+@patch.object(Authentication, "__new__", return_value=Mock(spec=Authentication))
 @patch.object(Minio, "__new__", return_value=Mock(spec=Minio))
 def m_persistent_storage(minio_mock: Mock) -> PersistentStorageABC:
     persistent_storage = PersistentStorage()
@@ -36,12 +38,13 @@ def m_object() -> urllib3.BaseHTTPResponse:
     return object_
 
 
+@patch.object(Authentication, "__new__", return_value=Mock(spec=Authentication))
 @patch.object(Minio, "__new__", return_value=Mock(spec=Minio))
 def test_ok(_):
     v.set("minio.endpoint", "test-endpoint")
-    v.set("minio.access_key_id", "test-access-key")
-    v.set("minio.access_key_secret", "test-secret-key")
-    v.set("minio.use_ssl", False)
+    v.set("minio.client_user", "test-access-key")
+    v.set("minio.client_password", "test-secret-key")
+    v.set("minio.ssl", False)
     v.set("minio.bucket", "test-minio-bucket")
 
     persistent_storage = PersistentStorage()

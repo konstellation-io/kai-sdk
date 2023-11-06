@@ -47,9 +47,9 @@ func NewPersistentStorage(logger logr.Logger) (*PersistentStorage, error) {
 
 func initPersistentStorage(logger logr.Logger) (*minio.Client, error) {
 	endpoint := viper.GetString("minio.endpoint")
-	accessKeyID := viper.GetString("minio.access_key_id")
-	secretAccessKey := viper.GetString("minio.access_key_secret")
-	useSSL := viper.GetBool("minio.use_ssl")
+	accessKeyID := viper.GetString("minio.client_user")
+	secretAccessKey := viper.GetString("minio.client_password")
+	useSSL := viper.GetBool("minio.ssl")
 
 	// Initialize minio client object.
 	minioClient, err := minio.New(endpoint, &minio.Options{

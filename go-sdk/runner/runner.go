@@ -58,9 +58,9 @@ func validateConfig(keys []string) {
 		"centralized_configuration.workflow.bucket",
 		"centralized_configuration.process.bucket",
 		"minio.endpoint",
-		"minio.access_key_id",
-		"minio.access_key_secret",
-		"minio.use_ssl",
+		"minio.client_user",
+		"minio.client_password",
+		"minio.ssl",
 		"minio.bucket",
 	}
 
