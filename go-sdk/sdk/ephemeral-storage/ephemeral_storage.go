@@ -60,7 +60,7 @@ func (es EphemeralStorage) Save(key string, payload []byte, overwrite ...bool) e
 		return errors.ErrUndefinedEphemeralStorage
 	}
 
-	if payload == nil {
+	if len(payload) == 0 {
 		return errors.ErrEmptyPayload
 	}
 

@@ -73,7 +73,7 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (st
 		return "", errors.ErrEmptyKey
 	}
 
-	if payload == nil {
+	if len(payload) == 0 {
 		return "", errors.ErrEmptyPayload
 	}
 
@@ -184,7 +184,7 @@ func (ps PersistentStorage) ListVersions(key string) ([]string, error) {
 		Info(fmt.Sprintf("Object versions successfully retrieved for prefix %s from persistent storage", key))
 
 	for object := range objects {
-		if object.Key != "" && object.VersionID != "" {
+		if object.VersionID != "" {
 			objectList = append(objectList, fmt.Sprintf("%s - %s", object.Key, object.VersionID))
 		}
 	}
