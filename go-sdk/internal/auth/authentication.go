@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/Nerzal/gocloak/v13"
 	"github.com/go-logr/logr"
 	"github.com/spf13/viper"
@@ -21,12 +23,12 @@ type Auth struct {
 }
 
 func New(logger logr.Logger) *Auth {
-	user := viper.GetString("minio.client_user")
-	password := viper.GetString("minio.client_password")
-	authEndpoint := viper.GetString("auth.endpoint")
-	realm := viper.GetString("auth.realm")
-	clientID := viper.GetString("auth.client")
-	clientSecret := viper.GetString("auth.client_secret")
+	user := viper.GetString(common.ConfigMinioClientUserKey)
+	password := viper.GetString(common.ConfigMinioClientPasswordKey)
+	authEndpoint := viper.GetString(common.ConfigAuthEndpointKey)
+	realm := viper.GetString(common.ConfigAuthRealmKey)
+	clientID := viper.GetString(common.ConfigAuthClientKey)
+	clientSecret := viper.GetString(common.ConfigAuthClientSecretKey)
 
 	return &Auth{
 		logger:       logger,

@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/go-logr/logr/testr"
 	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
@@ -82,11 +84,11 @@ func (s *SdkPersistentStorageTestSuite) SetupTest() {
 
 	minioEndpoint := fmt.Sprintf("%s:%d", host, port.Int())
 
-	viper.Set("minio.bucket", s.persistentStorageBucket)
-	viper.Set("minio.endpoint", minioEndpoint)
-	viper.Set("minio.client_user", "minioadmin")
-	viper.Set("minio.client_password", "minioadmin")
-	viper.Set("minio.ssl", false)
+	viper.Set(common.ConfigMinioBucketKey, s.persistentStorageBucket)
+	viper.Set(common.ConfigMinioEndpointKey, minioEndpoint)
+	viper.Set(common.ConfigMinioClientUserKey, "minioadmin")
+	viper.Set(common.ConfigMinioClientPasswordKey, "minioadmin")
+	viper.Set(common.ConfigMinioUseSslKey, false)
 
 	s.client = s.getClient(minioEndpoint, "minioadmin", "minioadmin")
 
@@ -124,7 +126,7 @@ func (s *SdkPersistentStorageTestSuite) TearDownTest() {
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_Initialize_ExpectOK() {
 	// WHEN
-	persistentStorage, err := persistentstorage.NewPersistentStorageIntegration(testr.New(s.T()))
+	persistentStorage, err := persistentstorage.NewPersistentStorage(testr.New(s.T()))
 	s.Require().NoError(err)
 	_, err = persistentStorage.List()
 
@@ -135,10 +137,10 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_Initialize_ExpectO
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_Initialize_ExpectError() {
 	// GIVEN
-	viper.Set("minio.endpoint", "invalid-url")
+	viper.Set(common.ConfigMinioEndpointKey, "invalid-url")
 
 	// WHEN
-	persistentStorage, err := persistentstorage.NewPersistentStorageIntegration(testr.New(s.T()))
+	persistentStorage, err := persistentstorage.NewPersistentStorage(testr.New(s.T()))
 	s.Require().NoError(err)
 	objList, err := persistentStorage.List()
 

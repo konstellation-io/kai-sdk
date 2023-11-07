@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/auth"
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 
 	"github.com/go-logr/logr"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
@@ -33,7 +34,7 @@ type persistentStorageInterface interface {
 }
 
 func NewPersistentStorage(logger logr.Logger) (*PersistentStorage, error) {
-	persistentStorageBucket := viper.GetString("minio.bucket")
+	persistentStorageBucket := viper.GetString(common.ConfigMinioBucketKey)
 
 	storageManager, err := initPersistentStorage(logger)
 	if err != nil {
@@ -48,14 +49,14 @@ func NewPersistentStorage(logger logr.Logger) (*PersistentStorage, error) {
 }
 
 func initPersistentStorage(logger logr.Logger) (*minio.Client, error) {
-	endpoint := viper.GetString("minio.endpoint")
-	useSSL := viper.GetBool("minio.ssl")
+	endpoint := viper.GetString(common.ConfigMinioEndpointKey)
+	useSSL := viper.GetBool(common.ConfigMinioUseSslKey)
 	url := ""
 
 	if useSSL {
-		url = fmt.Sprintf("%s://%s", "https", viper.GetString("minio.endpoint"))
+		url = fmt.Sprintf("%s://%s", "https", viper.GetString(common.ConfigMinioEndpointKey))
 	} else {
-		url = fmt.Sprintf("%s://%s", "http", viper.GetString("minio.endpoint"))
+		url = fmt.Sprintf("%s://%s", "http", viper.GetString(common.ConfigMinioEndpointKey))
 	}
 
 	minioCreds, err := credentials.NewSTSClientGrants(
@@ -97,7 +98,7 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (st
 		return "", errors.ErrEmptyKey
 	}
 
-	if payload == nil {
+	if len(payload) == 0 {
 		return "", errors.ErrEmptyPayload
 	}
 
@@ -121,8 +122,8 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (st
 		return "", fmt.Errorf("error storing object to the persistent storage: %w", err)
 	}
 
-	ps.logger.V(1).Info("Object %s successfully stored in persistent storage with version ID %s",
-		key, info.VersionID)
+	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully stored in persistent storage with version ID %s",
+		key, info.VersionID))
 
 	return info.VersionID, nil
 }
@@ -150,13 +151,13 @@ func (ps PersistentStorage) Get(key string, version ...string) ([]byte, error) {
 		return nil, fmt.Errorf("error retrieving object from the persistent storage: %w", err)
 	}
 
-	ps.logger.V(1).Info("Object %s successfully retrieved from persistent storage ", key)
+	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully retrieved from persistent storage ", key))
 
 	defer object.Close()
 
 	data, err := io.ReadAll(object)
 	if err != nil {
-		ps.logger.V(1).Error(err, "Error reading object from persistent storage ", key)
+		ps.logger.V(1).Error(err, "Error reading object from persistent storage")
 	}
 
 	return data, nil
@@ -204,10 +205,11 @@ func (ps PersistentStorage) ListVersions(key string) ([]string, error) {
 		},
 	)
 
-	ps.logger.V(1).Info("Object versions successfully retrieved for prefix %s from persistent storage", key)
+	ps.logger.V(1).
+		Info(fmt.Sprintf("Object versions successfully retrieved for prefix %s from persistent storage", key))
 
 	for object := range objects {
-		if object.Key != "" && object.VersionID != "" {
+		if object.VersionID != "" {
 			objectList = append(objectList, fmt.Sprintf("%s - %s", object.Key, object.VersionID))
 		}
 	}
@@ -238,7 +240,7 @@ func (ps PersistentStorage) Delete(key string, version ...string) error {
 		return fmt.Errorf("error deleting object from the persistent storage: %w", err)
 	}
 
-	ps.logger.V(1).Info("Object %s successfully deleted from persistent storage", key)
+	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully deleted from persistent storage", key))
 
 	return nil
 }

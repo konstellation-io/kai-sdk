@@ -90,8 +90,7 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_NoKeyExc
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_GetObjectException() {
 	// GIVEN
 	key := "test"
-	persistentStorage, err := persistentstorage.NewPersistentStorageBuilder(testr.New(s.T()), &s.minioClientMock)
-	s.Require().NoError(err)
+	persistentStorage := persistentstorage.NewPersistentStorageBuilder(testr.New(s.T()), &s.minioClientMock)
 	s.minioClientMock.On("GetObject", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&minio.Object{}, fmt.Errorf("some-error"))
 

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/go-logr/logr"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -49,7 +51,7 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 ) {
 	wrapErr := utilErrors.Wrapper("configuration init: %w")
 
-	name := viper.GetString("centralized_configuration.global.bucket")
+	name := viper.GetString(common.ConfigCcGlobalBucketKey)
 	logger.V(1).Info("Initializing global key-value store",
 		"name", name)
 
@@ -59,7 +61,7 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 		return nil, nil, nil, nil, wrapErr(err)
 	}
 
-	name = viper.GetString("centralized_configuration.product.bucket")
+	name = viper.GetString(common.ConfigCcProductBucketKey)
 	logger.V(1).Info("Initializing product key-value store",
 		"name", name)
 
@@ -71,7 +73,7 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 
 	logger.V(1).Info("Product key-value store initialized")
 
-	name = viper.GetString("centralized_configuration.workflow.bucket")
+	name = viper.GetString(common.ConfigCcWorkflowBucketKey)
 	logger.V(1).Info("Initializing workflow key-value store",
 		"name", name)
 
@@ -83,7 +85,7 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 
 	logger.V(1).Info("Workflow key-value store initialized")
 
-	name = viper.GetString("centralized_configuration.process.bucket")
+	name = viper.GetString(common.ConfigCcProcessBucketKey)
 	logger.V(1).Info("Initializing process key-value store",
 		"name", name)
 

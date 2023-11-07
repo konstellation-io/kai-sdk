@@ -4,6 +4,7 @@ package persistentstorage
 
 import (
 	"fmt"
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 
 	"github.com/go-logr/logr"
 	"github.com/minio/minio-go/v7"
@@ -11,18 +12,18 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewPersistentStorageBuilder(logger logr.Logger, mock persistentStorageInterface) (*PersistentStorage, error) {
-	persistentStorageBucket := viper.GetString("minio.bucket")
+func NewPersistentStorageBuilder(logger logr.Logger, mock persistentStorageInterface) *PersistentStorage {
+	persistentStorageBucket := viper.GetString(common.ConfigMinioBucketKey)
 
 	return &PersistentStorage{
 		logger:                  logger,
 		persistentStorage:       mock,
 		persistentStorageBucket: persistentStorageBucket,
-	}, nil
+	}
 }
 
 func NewPersistentStorageIntegration(logger logr.Logger) (*PersistentStorage, error) {
-	persistentStorageBucket := viper.GetString("minio.bucket")
+	persistentStorageBucket := viper.GetString(common.ConfigMinioBucketKey)
 
 	storageManager, err := initPersistentStorageIntegration(logger)
 	if err != nil {
@@ -37,10 +38,10 @@ func NewPersistentStorageIntegration(logger logr.Logger) (*PersistentStorage, er
 }
 
 func initPersistentStorageIntegration(logger logr.Logger) (*minio.Client, error) {
-	endpoint := viper.GetString("minio.endpoint")
-	useSSL := viper.GetBool("minio.ssl")
-	user := viper.GetString("minio.client_user")
-	password := viper.GetString("minio.client_password")
+	endpoint := viper.GetString(common.ConfigMinioEndpointKey)
+	useSSL := viper.GetBool(common.ConfigMinioUseSslKey)
+	user := viper.GetString(common.ConfigMinioClientUserKey)
+	password := viper.GetString(common.ConfigMinioClientPasswordKey)
 
 	// Initialize minio client object.
 	minioClient, err := minio.New(endpoint, &minio.Options{

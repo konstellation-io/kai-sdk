@@ -3,6 +3,8 @@ package messaging_test
 import (
 	"fmt"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -14,9 +16,9 @@ import (
 )
 
 const (
-	natsOutputField        = "nats.output"
+	natsOutputField        = common.ConfigNatsOutputKey
 	natsOutputValue        = "test-parent"
-	metadataProcessIDField = "metadata.process_name"
+	metadataProcessIDField = common.ConfigMetadataProcessIDKey
 	metadataProcessIDValue = "parent-node"
 	unit8Type              = "[]uint8"
 	stringValueMessage     = "Hi there!"
