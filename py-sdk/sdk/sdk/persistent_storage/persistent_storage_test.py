@@ -19,7 +19,6 @@ TTL_DAYS = 30
 
 
 @pytest.fixture(scope="function")
-@patch.object(Authentication, "__new__", return_value=Mock(spec=Authentication))
 @patch.object(Minio, "__new__", return_value=Mock(spec=Minio))
 def m_persistent_storage(minio_mock: Mock) -> PersistentStorageABC:
     persistent_storage = PersistentStorage()
@@ -40,7 +39,7 @@ def m_object() -> urllib3.BaseHTTPResponse:
 
 @patch.object(Authentication, "__new__", return_value=Mock(spec=Authentication))
 @patch.object(Minio, "__new__", return_value=Mock(spec=Minio))
-def test_ok(_):
+def test_ok(_, __):
     v.set("minio.endpoint", "test-endpoint")
     v.set("minio.client_user", "test-access-key")
     v.set("minio.client_password", "test-secret-key")
