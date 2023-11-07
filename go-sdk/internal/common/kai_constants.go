@@ -31,7 +31,7 @@ const (
 	ConfigCcProcessBucketKey              = "centralized_configuration.process.bucket"
 	ConfigMinioEndpointKey                = "minio.endpoint"
 	ConfigMinioClientUserKey              = "minio.client_user"
-	ConfigMinioClientPasswordKey          = "minio.client_password"
+	ConfigMinioClientPasswordKey          = "minio.client_password" //nolint:gosec // False positive
 	ConfigMinioUseSslKey                  = "minio.ssl"
 	ConfigMinioBucketKey                  = "minio.bucket"
 )
