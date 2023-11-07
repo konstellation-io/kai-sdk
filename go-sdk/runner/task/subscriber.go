@@ -26,7 +26,7 @@ func (tr *Runner) getLoggerWithName() logr.Logger {
 }
 
 func (tr *Runner) startSubscriber() {
-	inputSubjects := viper.GetStringSlice("nats.inputs")
+	inputSubjects := viper.GetStringSlice(common.ConfigNatsInputsKey)
 
 	if len(inputSubjects) == 0 {
 		tr.getLoggerWithName().Info("Undefined input subjects")
@@ -49,7 +49,7 @@ func (tr *Runner) startSubscriber() {
 			nats.DeliverNew(),
 			nats.Durable(consumerName),
 			nats.ManualAck(),
-			nats.AckWait(viper.GetDuration("runner.subscriber.ack_wait_time")),
+			nats.AckWait(viper.GetDuration(common.ConfigRunnerSubscriberAckWaitTimeKey)),
 		)
 		if err != nil {
 			tr.getLoggerWithName().Error(err, "Error subscribing to NATS subject",
@@ -182,7 +182,7 @@ func (tr *Runner) publishError(requestID, errMsg string) {
 	responseMsg := &kai.KaiNatsMessage{
 		RequestId:   requestID,
 		Error:       errMsg,
-		FromNode:    viper.GetString("metadata.process_name"),
+		FromNode:    viper.GetString(common.ConfigMetadataProcessIDKey),
 		MessageType: kai.MessageType_ERROR,
 	}
 	tr.publishResponse(responseMsg, "")
@@ -215,7 +215,7 @@ func (tr *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel strin
 }
 
 func (tr *Runner) getOutputSubject(channel string) string {
-	outputSubject := viper.GetString("nats.output")
+	outputSubject := viper.GetString(common.ConfigNatsOutputKey)
 	if channel != "" {
 		return fmt.Sprintf("%s.%s", outputSubject, channel)
 	}
@@ -268,7 +268,7 @@ func (tr *Runner) getResponseHandler(subject string) Handler {
 }
 
 func (tr *Runner) getMaxMessageSize() (int64, error) {
-	streamInfo, err := tr.jetstream.StreamInfo(viper.GetString("nats.stream"))
+	streamInfo, err := tr.jetstream.StreamInfo(viper.GetString(common.ConfigNatsStreamKey))
 	if err != nil {
 		return 0, fmt.Errorf("error getting stream's max message size: %w", err)
 	}

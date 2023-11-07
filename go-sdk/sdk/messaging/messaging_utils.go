@@ -3,6 +3,8 @@ package messaging
 import (
 	"fmt"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 )
@@ -25,7 +27,7 @@ func NewMessagingUtils(ns *nats.Conn, js nats.JetStreamContext) MessagingUtilsIm
 }
 
 func (mu MessagingUtilsImpl) GetMaxMessageSize() (int64, error) {
-	streamInfo, err := mu.jetstream.StreamInfo(viper.GetString("nats.stream"))
+	streamInfo, err := mu.jetstream.StreamInfo(viper.GetString(common.ConfigNatsStreamKey))
 	if err != nil {
 		return 0, fmt.Errorf("error getting stream's max message size: %w", err)
 	}

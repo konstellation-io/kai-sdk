@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/exit"
@@ -45,23 +47,23 @@ func NewRunner() *Runner {
 
 func validateConfig(keys []string) {
 	var mandatoryConfigKeys = []string{
-		"metadata.product_id",
-		"metadata.workflow_name",
-		"metadata.process_name",
-		"metadata.version_tag",
-		"metadata.base_path",
-		"nats.url",
-		"nats.stream",
-		"nats.output",
-		"centralized_configuration.global.bucket",
-		"centralized_configuration.product.bucket",
-		"centralized_configuration.workflow.bucket",
-		"centralized_configuration.process.bucket",
-		"minio.endpoint",
-		"minio.client_user",
-		"minio.client_password",
-		"minio.ssl",
-		"minio.bucket",
+		common.ConfigMetadataProductIDKey,
+		common.ConfigMetadataWorkflowIDKey,
+		common.ConfigMetadataProcessIDKey,
+		common.ConfigMetadataVersionIDKey,
+		common.ConfigMetadataBasePathKey,
+		common.ConfigNatsURLKey,
+		common.ConfigNatsStreamKey,
+		common.ConfigNatsOutputKey,
+		common.ConfigCcGlobalBucketKey,
+		common.ConfigCcProductBucketKey,
+		common.ConfigCcWorkflowBucketKey,
+		common.ConfigCcProcessBucketKey,
+		common.ConfigMinioEndpointKey,
+		common.ConfigMinioClientUserKey,
+		common.ConfigMinioClientPasswordKey,
+		common.ConfigMinioUseSslKey,
+		common.ConfigMinioBucketKey,
 	}
 
 	for _, key := range mandatoryConfigKeys {
@@ -76,8 +78,8 @@ func initializeConfiguration() {
 	viper.SetEnvPrefix("KAI")
 	viper.AutomaticEnv()
 
-	if viper.IsSet("APP_CONFIG_PATH") {
-		viper.AddConfigPath(viper.GetString("APP_CONFIG_PATH"))
+	if viper.IsSet(common.ConfigAppConfigPathKey) {
+		viper.AddConfigPath(viper.GetString(common.ConfigAppConfigPathKey))
 	}
 
 	viper.SetConfigName("config")
@@ -90,8 +92,8 @@ func initializeConfiguration() {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 
-	if viper.IsSet("APP_CONFIG_PATH") {
-		viper.AddConfigPath(viper.GetString("APP_CONFIG_PATH"))
+	if viper.IsSet(common.ConfigAppConfigPathKey) {
+		viper.AddConfigPath(viper.GetString(common.ConfigAppConfigPathKey))
 	}
 
 	err = viper.MergeInConfig()
@@ -104,16 +106,16 @@ func initializeConfiguration() {
 	validateConfig(keys)
 
 	// Set viper default values
-	viper.SetDefault("metadata.base_path", "/")
-	viper.SetDefault("runner.subscriber.ack_wait_time", 22*time.Hour)
-	viper.SetDefault("runner.logger.level", "InfoLevel")
-	viper.SetDefault("runner.logger.encoding", "console")
-	viper.SetDefault("runner.logger.output_paths", []string{"stdout"})
-	viper.SetDefault("runner.logger.error_output_paths", []string{"stderr"})
+	viper.SetDefault(common.ConfigMetadataBasePathKey, "/")
+	viper.SetDefault(common.ConfigRunnerSubscriberAckWaitTimeKey, 22*time.Hour)
+	viper.SetDefault(common.ConfigRunnerLoggerLevelKey, "InfoLevel")
+	viper.SetDefault(common.ConfigRunnerLoggerEncodingKey, "console")
+	viper.SetDefault(common.ConfigRunnerLoggerOutputPathsKey, []string{"stdout"})
+	viper.SetDefault(common.ConfigRunnerLoggerErrorOutputPathsKey, []string{"stderr"})
 }
 
 func getNatsConnection(logger logr.Logger) (*nats.Conn, error) {
-	nc, err := nats.Connect(viper.GetString("nats.url"))
+	nc, err := nats.Connect(viper.GetString(common.ConfigNatsURLKey))
 	if err != nil {
 		logger.Error(err, "Error connecting to NATS")
 		return nil, err
@@ -137,15 +139,15 @@ func getLogger() logr.Logger {
 
 	config := zap.NewDevelopmentConfig()
 
-	logLevel, err := zap.ParseAtomicLevel(viper.GetString("runner.logger.level"))
+	logLevel, err := zap.ParseAtomicLevel(viper.GetString(common.ConfigRunnerLoggerLevelKey))
 	if err != nil {
 		logLevel = zap.NewAtomicLevelAt(zap.InfoLevel)
 	}
 
 	config.Level = zap.NewAtomicLevelAt(logLevel.Level())
-	config.OutputPaths = viper.GetStringSlice("runner.logger.output_paths")
-	config.ErrorOutputPaths = viper.GetStringSlice("runner.logger.error_output_paths")
-	config.Encoding = viper.GetString("runner.logger.encoding")
+	config.OutputPaths = viper.GetStringSlice(common.ConfigRunnerLoggerOutputPathsKey)
+	config.ErrorOutputPaths = viper.GetStringSlice(common.ConfigRunnerLoggerErrorOutputPathsKey)
+	config.Encoding = viper.GetString(common.ConfigRunnerLoggerEncodingKey)
 
 	logger, err := config.Build()
 	if err != nil {

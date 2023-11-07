@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
 	"github.com/nats-io/nats.go"
@@ -48,8 +50,8 @@ func (s *SdkMessagingTestSuite) TestMessaging_InstantiateNewMessaging_ExpectOk()
 
 func (s *SdkMessagingTestSuite) TestMessaging_PublishError_ExpectOk() {
 	// Given
-	viper.SetDefault("nats.output", "test-parent")
-	viper.SetDefault("metadata.process_name", "parent-node")
+	viper.SetDefault(common.ConfigNatsOutputKey, "test-parent")
+	viper.SetDefault(common.ConfigMetadataProcessIDKey, "parent-node")
 	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
 		Return(&nats.PubAck{}, nil)
 	s.messagingUtils.On("GetMaxMessageSize").Return(int64(2048), nil)

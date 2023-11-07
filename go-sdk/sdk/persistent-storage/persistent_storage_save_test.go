@@ -63,8 +63,7 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObject_ExpectE
 		Return(minio.UploadInfo{}, fmt.Errorf("some-error"))
 
 	// WHEN
-	pStorage, err := persistentstorage.NewPersistentStorageBuilder(testr.New(s.T()), &s.minioClientMock)
-	s.Require().NoError(err)
+	pStorage := persistentstorage.NewPersistentStorageBuilder(testr.New(s.T()), &s.minioClientMock)
 	returnedVersion, err := pStorage.Save(key, data)
 
 	// THEN
