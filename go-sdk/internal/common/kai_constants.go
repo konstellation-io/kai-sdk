@@ -30,8 +30,8 @@ const (
 	ConfigCcWorkflowBucketKey             = "centralized_configuration.workflow.bucket"
 	ConfigCcProcessBucketKey              = "centralized_configuration.process.bucket"
 	ConfigMinioEndpointKey                = "minio.endpoint"
-	ConfigMinioClientUserKey              = "minio.access_key_id"
-	ConfigMinioClientPasswordKey          = "minio.access_key_secret"
-	ConfigMinioUseSslKey                  = "minio.use_ssl"
+	ConfigMinioClientUserKey              = "minio.client_user"
+	ConfigMinioClientPasswordKey          = "minio.client_password"
+	ConfigMinioUseSslKey                  = "minio.ssl"
 	ConfigMinioBucketKey                  = "minio.bucket"
 )
