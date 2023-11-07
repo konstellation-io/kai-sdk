@@ -4,6 +4,8 @@ import (
 	"fmt"
 	regexp2 "regexp"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/go-logr/logr"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -18,17 +20,15 @@ type EphemeralStorage struct {
 }
 
 func NewEphemeralStorage(logger logr.Logger, jetstream nats.JetStreamContext) (*EphemeralStorage, error) {
-	ephemeralStorageBucket := viper.GetString("nats.object_store")
+	ephemeralStorageBucket := viper.GetString(common.ConfigNatsEphemeralStorage)
 
-	logger = logger.WithName("[EPHEMERAL STORAGE]")
-
-	ephemeralStorage, err := initEphemeralStorageDeps(logger, jetstream, ephemeralStorageBucket)
+	ephemeralStorage, err := initEphemeralStorageDeps(logger.WithName("[EPHEMERAL STORAGE]"), jetstream, ephemeralStorageBucket)
 	if err != nil {
 		return nil, err
 	}
 
 	return &EphemeralStorage{
-		logger:                 logger,
+		logger:                 logger.WithName("[EPHEMERAL STORAGE]"),
 		ephemeralStorage:       ephemeralStorage,
 		ephemeralStorageBucket: ephemeralStorageBucket,
 	}, nil
@@ -60,7 +60,7 @@ func (es EphemeralStorage) Save(key string, payload []byte, overwrite ...bool) e
 		return errors.ErrUndefinedEphemeralStorage
 	}
 
-	if payload == nil {
+	if len(payload) == 0 {
 		return errors.ErrEmptyPayload
 	}
 

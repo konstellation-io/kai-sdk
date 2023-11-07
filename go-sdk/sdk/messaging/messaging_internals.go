@@ -57,7 +57,7 @@ func (ms Messaging) publishError(requestID, errMsg string) {
 	responseMsg := &kai.KaiNatsMessage{
 		RequestId:   requestID,
 		Error:       errMsg,
-		FromNode:    viper.GetString("metadata.process_name"),
+		FromNode:    viper.GetString(common.ConfigMetadataProcessIDKey),
 		MessageType: kai.MessageType_ERROR,
 	}
 	ms.publishResponse(responseMsg, "")
@@ -72,7 +72,7 @@ func (ms Messaging) newResponseMsg(payload *anypb.Any, requestID string,
 	return &kai.KaiNatsMessage{
 		RequestId:   requestID,
 		Payload:     payload,
-		FromNode:    viper.GetString("metadata.process_name"),
+		FromNode:    viper.GetString(common.ConfigMetadataProcessIDKey),
 		MessageType: msgType,
 	}
 }
@@ -103,7 +103,7 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 }
 
 func (ms Messaging) getOutputSubject(channel string) string {
-	outputSubject := viper.GetString("nats.output")
+	outputSubject := viper.GetString(common.ConfigNatsOutputKey)
 	if channel != "" {
 		return fmt.Sprintf("%s.%s", outputSubject, channel)
 	}

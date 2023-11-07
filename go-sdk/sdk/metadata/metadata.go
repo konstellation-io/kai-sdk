@@ -1,52 +1,49 @@
 package metadata
 
 import (
-	"github.com/go-logr/logr"
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/spf13/viper"
 )
 
 type Metadata struct {
-	logger logr.Logger
 }
 
-func NewMetadata(logger logr.Logger) *Metadata {
-	return &Metadata{
-		logger: logger.WithName("[METADATA]"),
-	}
+func NewMetadata() *Metadata {
+	return &Metadata{}
 }
 
 func (md Metadata) GetProduct() string {
-	return viper.GetString("metadata.product_id")
+	return viper.GetString(common.ConfigMetadataProductIDKey)
 }
 
 func (md Metadata) GetWorkflow() string {
-	return viper.GetString("metadata.workflow_name")
+	return viper.GetString(common.ConfigMetadataWorkflowIDKey)
 }
 
 func (md Metadata) GetProcess() string {
-	return viper.GetString("metadata.process_name")
+	return viper.GetString(common.ConfigMetadataProcessIDKey)
 }
 
 func (md Metadata) GetVersion() string {
-	return viper.GetString("metadata.version_tag")
+	return viper.GetString(common.ConfigMetadataVersionIDKey)
 }
 
 func (md Metadata) GetEphemeralStorageName() string {
-	return viper.GetString("nats.object_store")
+	return viper.GetString(common.ConfigNatsEphemeralStorage)
 }
 
 func (md Metadata) GetGlobalCentralizedConfigurationName() string {
-	return viper.GetString("centralized_configuration.global.bucket")
+	return viper.GetString(common.ConfigCcGlobalBucketKey)
 }
 
 func (md Metadata) GetProductCentralizedConfigurationName() string {
-	return viper.GetString("centralized_configuration.product.bucket")
+	return viper.GetString(common.ConfigCcProductBucketKey)
 }
 
 func (md Metadata) GetWorkflowCentralizedConfigurationName() string {
-	return viper.GetString("centralized_configuration.workflow.bucket")
+	return viper.GetString(common.ConfigCcWorkflowBucketKey)
 }
 
 func (md Metadata) GetProcessCentralizedConfigurationName() string {
-	return viper.GetString("centralized_configuration.process.bucket")
+	return viper.GetString(common.ConfigCcProcessBucketKey)
 }

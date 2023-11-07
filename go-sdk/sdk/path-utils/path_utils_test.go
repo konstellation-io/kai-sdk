@@ -3,6 +3,8 @@ package pathutils_test
 import (
 	"testing"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	pathUtils2 "github.com/konstellation-io/kai-sdk/go-sdk/sdk/path-utils"
 
 	"github.com/go-logr/logr"
@@ -26,7 +28,7 @@ func (s *SdkPathUtilsTestSuite) SetupTest() {
 	// Reset viper values before each test
 	viper.Reset()
 
-	viper.SetDefault("metadata.base_path", basePathValue)
+	viper.SetDefault(common.ConfigMetadataBasePathKey, basePathValue)
 }
 
 func (s *SdkPathUtilsTestSuite) TestPathUtils_GetBasePath_ExpectOK() {

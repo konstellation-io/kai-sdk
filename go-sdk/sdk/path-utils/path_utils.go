@@ -3,6 +3,8 @@ package pathutils
 import (
 	path2 "path"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/go-logr/logr"
 	"github.com/spf13/viper"
 )
@@ -18,7 +20,7 @@ func NewPathUtils(logger logr.Logger) *PathUtils {
 }
 
 func (pu PathUtils) GetBasePath() string {
-	return viper.GetString("metadata.base_path")
+	return viper.GetString(common.ConfigMetadataBasePathKey)
 }
 
 func (pu PathUtils) ComposePath(relativePath ...string) string {

@@ -24,15 +24,21 @@ async def initializer(kai_sdk: sdk.KaiSDK):
 
     object_id = "some-object"
     object_value = io.BytesIO(b"some-value")
-    kai_sdk.storage.persistent.save(object_id, object_value)
-    logger.info(f"persistent storage value set! {object_id} {object_value!s}")
-    obj, _ = kai_sdk.storage.persistent.get("some-object")
+    version_id = kai_sdk.storage.persistent.save(object_id, object_value)
+    logger.info(
+        f"persistent storage value set! {object_id} {object_value.getvalue()!s} with version {version_id}"
+    )
+    obj, _ = kai_sdk.storage.persistent.get("some-object", version_id)
     logger.info(f"persistent storage value retrieved! {object_id} {obj!s}")
     objs = kai_sdk.storage.persistent.list()
     logger.info(f"persistent storage value listed! {objs!s}")
-    kai_sdk.storage.persistent.delete(f"{object_id}")
+    objs = kai_sdk.storage.persistent.list_versions(object_id)
+    logger.info(
+        f"persistent storage value listed for objects with prefix {object_id}! {objs!s}"
+    )
+    kai_sdk.storage.persistent.delete(object_id, version_id)
     logger.info(f"persistent storage value deleted! {object_id}")
-    kai_sdk.storage.persistent.get(f"{object_id}")
+    kai_sdk.storage.persistent.get("some-object", version_id)
 
 
 async def handler(kai_sdk: sdk.KaiSDK, response: Any):
