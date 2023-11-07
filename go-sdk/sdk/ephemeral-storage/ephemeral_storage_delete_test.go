@@ -3,6 +3,8 @@ package objectstore_test
 import (
 	"fmt"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
 
 	"github.com/spf13/viper"
@@ -11,7 +13,7 @@ import (
 )
 
 const (
-	natsObjectStoreField = "nats.object_store"
+	natsObjectStoreField = common.ConfigNatsEphemeralStorage
 	natsObjectStoreValue = "ephemeral-storage"
 )
 

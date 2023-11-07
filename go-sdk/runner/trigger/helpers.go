@@ -6,8 +6,6 @@ import (
 	"sync"
 	"syscall"
 
-	kaiCommon "github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-
 	"google.golang.org/protobuf/types/known/anypb"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
@@ -23,36 +21,29 @@ const (
 
 func composeInitializer(initializer common.Initializer) common.Initializer {
 	return func(sdk sdk.KaiSDK) {
-		sdk.Logger = sdk.Logger.WithName(_initializerLoggerName)
+		logger := sdk.Logger.WithName(_initializerLoggerName)
 
-		sdk.Logger.V(1).Info("Initializing TriggerRunner...")
+		logger.V(1).Info("Initializing TriggerRunner...")
 		common.InitializeProcessConfiguration(sdk)
 
 		if initializer != nil {
-			sdk.Logger.V(3).Info("Executing user initializer...")
+			logger.V(3).Info("Executing user initializer...")
 			initializer(sdk)
-			sdk.Logger.V(3).Info("User initializer executed")
+			logger.V(3).Info("User initializer executed")
 		}
 
-		sdk.Logger.V(1).Info("TriggerRunner initialized")
+		logger.V(1).Info("TriggerRunner initialized")
 	}
 }
 
 func composeRunner(userRunner RunnerFunc) RunnerFunc {
 	return func(runner *Runner, kaiSDK sdk.KaiSDK) {
-		kaiSDK.Logger = kaiSDK.Logger.
-			WithName(_runnerLoggerName).
-			WithValues(
-				kaiCommon.LoggerProductID, kaiSDK.Metadata.GetProduct(),
-				kaiCommon.LoggerVersionID, kaiSDK.Metadata.GetVersion(),
-				kaiCommon.LoggerWorkflowID, kaiSDK.Metadata.GetWorkflow(),
-				kaiCommon.LoggerProcessID, kaiSDK.Metadata.GetProcess(),
-			)
+		logger := kaiSDK.Logger.WithName(_runnerLoggerName)
 
-		kaiSDK.Logger.V(1).Info("Running TriggerRunner...")
+		logger.V(1).Info("Running TriggerRunner...")
 
 		if userRunner != nil {
-			kaiSDK.Logger.V(3).Info("Executing user runner...")
+			logger.V(3).Info("Executing user runner...")
 
 			go userRunner(runner, kaiSDK)
 		}
@@ -62,28 +53,29 @@ func composeRunner(userRunner RunnerFunc) RunnerFunc {
 		signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM)
 		<-termChan
 
-		kaiSDK.Logger.V(3).Info("User runner executed")
+		logger.V(3).Info("User runner executed")
 
 		// Handle shutdown
-		kaiSDK.Logger.Info("Shutting down runner...")
-		kaiSDK.Logger.V(1).Info("Closing opened channels...")
+		logger.Info("Shutting down runner...")
+		logger.V(1).Info("Closing opened channels...")
 		runner.responseChannels.Range(func(key, value interface{}) bool {
 			close(value.(chan *anypb.Any))
-			kaiSDK.Logger.V(1).Info("Channel closed for requestID",
+			logger.V(1).Info("Channel closed for requestID",
 				sdk.LoggerRequestID, key)
 			return true
 		})
 
-		kaiSDK.Logger.Info("RunnerFunc shutdown")
+		logger.Info("RunnerFunc shutdown")
 		wg.Done()
 	}
 }
 
 func getResponseHandler(handlers *sync.Map) ResponseHandler {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
+		logger := kaiSDK.Logger.WithName(_responseHandlerLoggerName)
+
 		// Unmarshal response to a KaiNatsMessage type
-		kaiSDK.Logger.WithName(_responseHandlerLoggerName).
-			Info("Message received", sdk.LoggerRequestID, kaiSDK.GetRequestID())
+		logger.Info("Message received", sdk.LoggerRequestID, kaiSDK.GetRequestID())
 
 		responseHandler, ok := handlers.LoadAndDelete(kaiSDK.GetRequestID())
 
@@ -92,7 +84,7 @@ func getResponseHandler(handlers *sync.Map) ResponseHandler {
 			return nil
 		}
 
-		kaiSDK.Logger.WithName(_responseHandlerLoggerName).V(1).Info("Undefined handler for the message",
+		logger.V(1).Info("Undefined handler for the message",
 			sdk.LoggerRequestID, kaiSDK.GetRequestID())
 
 		return nil
@@ -101,16 +93,16 @@ func getResponseHandler(handlers *sync.Map) ResponseHandler {
 
 func composeFinalizer(userFinalizer common.Finalizer) common.Finalizer {
 	return func(kaiSDK sdk.KaiSDK) {
-		kaiSDK.Logger = kaiSDK.Logger.WithName(_finalizerLoggerName)
+		logger := kaiSDK.Logger.WithName(_finalizerLoggerName)
 
-		kaiSDK.Logger.V(1).Info("Finalizing TriggerRunner...")
+		logger.V(1).Info("Finalizing TriggerRunner...")
 
 		if userFinalizer != nil {
-			kaiSDK.Logger.V(3).Info("Executing user finalizer...")
+			logger.V(3).Info("Executing user finalizer...")
 			userFinalizer(kaiSDK)
-			kaiSDK.Logger.V(3).Info("User finalizer executed")
+			logger.V(3).Info("User finalizer executed")
 		}
 
-		kaiSDK.Logger.V(1).Info("TriggerRunner finalized")
+		logger.V(1).Info("TriggerRunner finalized")
 	}
 }

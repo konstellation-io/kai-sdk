@@ -17,9 +17,9 @@ const (
 
 func composeInitializer(initializer common.Initializer) common.Initializer {
 	return func(kaiSDK sdk.KaiSDK) {
-		kaiSDK.Logger = kaiSDK.Logger.WithName(_initializerLoggerName)
+		logger := kaiSDK.Logger.WithName(_initializerLoggerName)
 
-		kaiSDK.Logger.V(1).Info("Initializing ExitRunner...")
+		logger.V(1).Info("Initializing ExitRunner...")
 		common.InitializeProcessConfiguration(kaiSDK)
 
 		if initializer != nil {
@@ -32,24 +32,18 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 	}
 }
 
-//nolint:dupl //Needed duplicated code
 func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
-		kaiSDK.Logger = kaiSDK.Logger.
+		logger := kaiSDK.Logger.
 			WithName(_preprocessorLoggerName).
 			WithValues(
 				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
-				kaiCommon.LoggerProductID, kaiSDK.Metadata.GetProduct(),
-				kaiCommon.LoggerVersionID, kaiSDK.Metadata.GetVersion(),
-				kaiCommon.LoggerWorkflowID, kaiSDK.Metadata.GetWorkflow(),
-				kaiCommon.LoggerProcessID, kaiSDK.Metadata.GetProcess(),
 			)
-		kaiSDK.Logger.V(1).Info("Preprocessing ExitRunner...")
+
+		logger.V(1).Info("Preprocessing ExitRunner...")
 
 		if preprocessor != nil {
-			kaiSDK.Logger.
-				V(3).
-				Info("Executing user preprocessor...")
+			logger.V(3).Info("Executing user preprocessor...")
 
 			return preprocessor(kaiSDK, response)
 		}
