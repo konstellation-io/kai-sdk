@@ -56,7 +56,7 @@ class PersistentStorage(PersistentStorageABC):
                 endpoint=v.get_string("minio.endpoint"),
                 access_key=v.get_string("minio.access_key_id"),
                 secret_key=v.get_string("minio.access_key_secret"),
-                secure=v.get_bool("minio.use_ssl"),
+                secure=v.get_bool("minio.ssl"),
             )
         except Exception as e:
             self.logger.error(f"failed to initialize persistent storage client: {e}")

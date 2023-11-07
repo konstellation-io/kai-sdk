@@ -41,7 +41,7 @@ def test_ok(_):
     v.set("minio.endpoint", "test-endpoint")
     v.set("minio.access_key_id", "test-access-key")
     v.set("minio.access_key_secret", "test-secret-key")
-    v.set("minio.use_ssl", False)
+    v.set("minio.ssl", False)
     v.set("minio.bucket", "test-minio-bucket")
 
     persistent_storage = PersistentStorage()

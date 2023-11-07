@@ -7,6 +7,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/auth"
+
 	"github.com/go-logr/logr"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
 	"github.com/minio/minio-go/v7"
@@ -47,13 +49,37 @@ func NewPersistentStorage(logger logr.Logger) (*PersistentStorage, error) {
 
 func initPersistentStorage(logger logr.Logger) (*minio.Client, error) {
 	endpoint := viper.GetString("minio.endpoint")
-	accessKeyID := viper.GetString("minio.access_key_id")
-	secretAccessKey := viper.GetString("minio.access_key_secret")
-	useSSL := viper.GetBool("minio.use_ssl")
+	useSSL := viper.GetBool("minio.ssl")
+	url := ""
+
+	if useSSL {
+		url = fmt.Sprintf("%s://%s", "https", viper.GetString("minio.endpoint"))
+	} else {
+		url = fmt.Sprintf("%s://%s", "http", viper.GetString("minio.endpoint"))
+	}
+
+	minioCreds, err := credentials.NewSTSClientGrants(
+		url,
+		func() (*credentials.ClientGrantsToken, error) {
+			authClient := auth.New(logger)
+			token, err := authClient.GetToken()
+			if err != nil {
+				return nil, err
+			}
+
+			return &credentials.ClientGrantsToken{
+				Token:  token.AccessToken,
+				Expiry: token.ExpiresIn,
+			}, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	// Initialize minio client object.
 	minioClient, err := minio.New(endpoint, &minio.Options{
-		Creds:        credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		Creds:        minioCreds,
 		Secure:       useSSL,
 		BucketLookup: minio.BucketLookupPath,
 	})
