@@ -5,7 +5,7 @@ package persistentstorage_test
 import (
 	"bytes"
 	"context"
-	"fmt"
+	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
 	"github.com/minio/minio-go/v7"
@@ -41,9 +41,9 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_ListObjectVersions
 	// THEN
 	s.Assert().NoError(err)
 	s.Assert().Len(objectVersions, 2)
-	s.Assert().Equal(objectVersions, []string{
-		fmt.Sprintf("%s - %s", key, obj2.VersionID),
-		fmt.Sprintf("%s - %s", key, obj.VersionID),
+	s.Assert().Equal(objectVersions, []*persistentstorage.ObjectInfo{
+		{Key: key, VersionID: obj2.VersionID},
+		{Key: key, VersionID: obj.VersionID},
 	})
 }
 

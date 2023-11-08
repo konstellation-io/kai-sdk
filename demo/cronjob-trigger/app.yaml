@@ -13,10 +13,16 @@ nats:
 
 minio:
   endpoint: "localhost:9000"
-  access_key_id: minioadmin
-  access_key_secret: minioadmin
-  use_ssl: false
-  bucket: test-bucket
+  client_user: "minio_user"
+  client_password: "minio_password"
+  ssl: false
+  bucket: "test-bucket"
+
+auth:
+  endpoint: "http://auth.kai.local"
+  client: "kai"
+  client_secret: "kai_pwd"
+  realm: "konstellation"
 
 centralized_configuration:
   global:
