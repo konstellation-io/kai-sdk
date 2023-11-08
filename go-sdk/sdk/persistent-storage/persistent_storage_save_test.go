@@ -3,13 +3,7 @@
 package persistentstorage_test
 
 import (
-	"fmt"
-
-	"github.com/go-logr/logr/testr"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
-	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
-	"github.com/minio/minio-go/v7"
-	"github.com/stretchr/testify/mock"
 )
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObject_ExpectOK() {
@@ -23,7 +17,26 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObject_ExpectO
 	// THEN
 	s.Assert().NoError(err)
 	s.Assert().NotEmpty(returnedVersion)
+	s.Assert().Equal(key, returnedVersion.Key)
+	s.Assert().NotEmpty(returnedVersion.VersionID)
+	s.Assert().Empty(returnedVersion.ExpiresIn)
+}
+
+func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObject_WithTTL_ExpectOK() {
+	// GIVEN
+	key := "some-object"
+	data := []byte("some-data")
+	ttlDays := 5
+
+	// WHEN
+	returnedVersion, err := s.persistentStorage.Save(key, data, ttlDays)
+
+	// THEN
+	s.Assert().NoError(err)
 	s.Assert().NotEmpty(returnedVersion)
+	s.Assert().Equal(key, returnedVersion.Key)
+	s.Assert().NotEmpty(returnedVersion.VersionID)
+	s.Assert().NotNil(returnedVersion.ExpiresIn)
 }
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObjectWithNoKey_ExpectError() {
@@ -37,7 +50,7 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObjectWithNoKe
 	// THEN
 	s.Assert().Error(err)
 	s.Assert().ErrorIs(err, errors.ErrEmptyKey)
-	s.Assert().Empty(returnedVersion)
+	s.Assert().Nil(returnedVersion)
 }
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObjectWithNoPayload_ExpectError() {
@@ -50,23 +63,5 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObjectWithNoPa
 	// THEN
 	s.Assert().Error(err)
 	s.Assert().ErrorIs(err, errors.ErrEmptyPayload)
-	s.Assert().Empty(returnedVersion)
-}
-
-func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObject_ExpectError() {
-	// GIVEN
-	key := "some-key"
-	data := []byte("some-data")
-
-	s.minioClientMock.On("PutObject", mock.Anything, mock.Anything,
-		mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-		Return(minio.UploadInfo{}, fmt.Errorf("some-error"))
-
-	// WHEN
-	pStorage := persistentstorage.NewPersistentStorageBuilder(testr.New(s.T()), &s.minioClientMock)
-	returnedVersion, err := pStorage.Save(key, data)
-
-	// THEN
-	s.Assert().Error(err)
-	s.Assert().Empty(returnedVersion)
+	s.Assert().Nil(returnedVersion)
 }

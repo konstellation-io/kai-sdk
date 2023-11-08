@@ -19,9 +19,9 @@ minio:
   bucket: test-bucket
 
 auth:
-  endpoint: "https://auth.kai.local"
-  client: minioadmin
-  client_secret: minioadmin
+  endpoint: "http://auth.kai.local"
+  client: "kai"
+  client_secret: "kai_pwd"
   realm: konstellation
 
 centralized_configuration:

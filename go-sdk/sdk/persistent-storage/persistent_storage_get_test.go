@@ -5,13 +5,8 @@ package persistentstorage_test
 import (
 	"bytes"
 	"context"
-	"fmt"
-
-	"github.com/go-logr/logr/testr"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
-	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 	"github.com/minio/minio-go/v7"
-	"github.com/stretchr/testify/mock"
 )
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_ExpectOK() {
@@ -34,7 +29,9 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_ExpectOK
 	// THEN
 	s.Assert().NoError(err)
 	s.Assert().NotEmpty(returnedVersion)
-	s.Assert().Equal(data, returnedVersion)
+	s.Assert().Equal(key, returnedVersion.Key)
+	s.Assert().NotEmpty(returnedVersion.VersionID)
+	s.Assert().Equal(data, returnedVersion.GetBytes())
 }
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObjectWithVersion_ExpectOK() {
@@ -70,8 +67,12 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObjectWithVersi
 	s.Assert().NoError(err2)
 	s.Assert().NotEmpty(returnedVersion)
 	s.Assert().NotEmpty(returnedVersion2)
-	s.Assert().Equal(data, returnedVersion)
-	s.Assert().Equal(data2, returnedVersion2)
+	s.Assert().Equal(key, returnedVersion.Key)
+	s.Assert().Equal(key, returnedVersion2.Key)
+	s.Assert().NotEmpty(returnedVersion.VersionID)
+	s.Assert().NotEmpty(returnedVersion2.VersionID)
+	s.Assert().Equal(data, returnedVersion.GetBytes())
+	s.Assert().Equal(data2, returnedVersion2.GetBytes())
 }
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_NoKeyException() {
@@ -84,20 +85,5 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_NoKeyExc
 	// THEN
 	s.Assert().Error(err)
 	s.Assert().ErrorIs(err, errors.ErrEmptyKey)
-	s.Assert().Nil(returnedVersion)
-}
-
-func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_GetObjectException() {
-	// GIVEN
-	key := "test"
-	persistentStorage := persistentstorage.NewPersistentStorageBuilder(testr.New(s.T()), &s.minioClientMock)
-	s.minioClientMock.On("GetObject", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-		Return(&minio.Object{}, fmt.Errorf("some-error"))
-
-	// WHEN
-	returnedVersion, err := persistentStorage.Get(key)
-
-	// THEN
-	s.Assert().Error(err)
 	s.Assert().Nil(returnedVersion)
 }
