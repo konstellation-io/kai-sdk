@@ -5,13 +5,8 @@ package persistentstorage_test
 import (
 	"bytes"
 	"context"
-	"fmt"
-
-	"github.com/go-logr/logr/testr"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
-	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 	"github.com/minio/minio-go/v7"
-	"github.com/stretchr/testify/mock"
 )
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_ExpectOK() {
@@ -84,20 +79,5 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_NoKeyExc
 	// THEN
 	s.Assert().Error(err)
 	s.Assert().ErrorIs(err, errors.ErrEmptyKey)
-	s.Assert().Nil(returnedVersion)
-}
-
-func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_GetObjectException() {
-	// GIVEN
-	key := "test"
-	persistentStorage := persistentstorage.NewPersistentStorageBuilder(testr.New(s.T()), &s.minioClientMock)
-	s.minioClientMock.On("GetObject", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-		Return(&minio.Object{}, fmt.Errorf("some-error"))
-
-	// WHEN
-	returnedVersion, err := persistentStorage.Get(key)
-
-	// THEN
-	s.Assert().Error(err)
 	s.Assert().Nil(returnedVersion)
 }

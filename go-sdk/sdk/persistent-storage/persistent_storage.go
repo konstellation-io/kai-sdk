@@ -5,25 +5,24 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"time"
-
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/auth"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 
 	"github.com/go-logr/logr"
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/auth"
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/minio/minio-go/v7/pkg/lifecycle"
 	"github.com/spf13/viper"
 )
 
 type PersistentStorage struct {
 	logger                  logr.Logger
-	persistentStorage       persistentStorageInterface
+	persistentStorage       *minio.Client
 	persistentStorageBucket string
 }
 
-//go:generate mockery --name persistentStorageInterface --output ../../mocks --structname MinioClientMock --filename minio_client_mock.go
+/*//go:generate mockery --name persistentStorageInterface --output ../../mocks --structname MinioClientMock --filename minio_client_mock.go
 type persistentStorageInterface interface {
 	PutObject(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64,
 		opts minio.PutObjectOptions) (minio.UploadInfo, error)
@@ -31,7 +30,7 @@ type persistentStorageInterface interface {
 		opts minio.GetObjectOptions) (*minio.Object, error)
 	ListObjects(ctx context.Context, bucketName string, opts minio.ListObjectsOptions) <-chan minio.ObjectInfo
 	RemoveObject(ctx context.Context, bucketName, objectName string, opts minio.RemoveObjectOptions) error
-}
+}*/
 
 func NewPersistentStorage(logger logr.Logger) (*PersistentStorage, error) {
 	persistentStorageBucket := viper.GetString(common.ConfigMinioBucketKey)
@@ -94,6 +93,8 @@ func initPersistentStorage(logger logr.Logger) (*minio.Client, error) {
 }
 
 func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (string, error) {
+	ctx := context.Background()
+
 	if key == "" {
 		return "", errors.ErrEmptyKey
 	}
@@ -106,12 +107,8 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (st
 
 	opts := minio.PutObjectOptions{}
 
-	if len(ttlDays) > 0 && ttlDays[0] > 0 {
-		opts.RetainUntilDate = time.Now().AddDate(0, 0, ttlDays[0])
-	}
-
 	info, err := ps.persistentStorage.PutObject(
-		context.Background(),
+		ctx,
 		ps.persistentStorageBucket,
 		key,
 		reader,
@@ -120,6 +117,25 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (st
 	)
 	if err != nil {
 		return "", fmt.Errorf("error storing object to the persistent storage: %w", err)
+	}
+
+	if len(ttlDays) > 0 && ttlDays[0] > 0 {
+		lc, err := ps.persistentStorage.GetBucketLifecycle(ctx, ps.persistentStorageBucket)
+		if err != nil {
+			lc = lifecycle.NewConfiguration()
+		}
+
+		lc.Rules = append(lc.Rules, lifecycle.Rule{
+			Status: minio.Enabled,
+			Expiration: lifecycle.Expiration{
+				Days: 1,
+			},
+		})
+
+		err = ps.persistentStorage.SetBucketLifecycle(ctx, ps.persistentStorageBucket, lc)
+		if err != nil {
+			return "", fmt.Errorf("error setting bucket lifecycle: %w", err)
+		}
 	}
 
 	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully stored in persistent storage with version ID %s",

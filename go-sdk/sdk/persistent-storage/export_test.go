@@ -12,16 +12,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewPersistentStorageBuilder(logger logr.Logger, mock persistentStorageInterface) *PersistentStorage {
-	persistentStorageBucket := viper.GetString(common.ConfigMinioBucketKey)
-
-	return &PersistentStorage{
-		logger:                  logger,
-		persistentStorage:       mock,
-		persistentStorageBucket: persistentStorageBucket,
-	}
-}
-
 func NewPersistentStorageIntegration(logger logr.Logger) (*PersistentStorage, error) {
 	persistentStorageBucket := viper.GetString(common.ConfigMinioBucketKey)
 

@@ -12,7 +12,6 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 
 	"github.com/go-logr/logr/testr"
-	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -28,7 +27,6 @@ type SdkPersistentStorageTestSuite struct {
 	minioContainer          testcontainers.Container
 	client                  *minio.Client
 	persistentStorageBucket string
-	minioClientMock         mocks.MinioClientMock
 }
 
 func (s *SdkPersistentStorageTestSuite) getContainer() testcontainers.Container {
@@ -101,8 +99,6 @@ func (s *SdkPersistentStorageTestSuite) SetupTest() {
 	storage, err := persistentstorage.NewPersistentStorageIntegration(testr.New(s.T()))
 	s.Assert().NoError(err)
 	s.persistentStorage = storage
-
-	s.minioClientMock = *mocks.NewMinioClientMock(s.T())
 }
 
 func (s *SdkPersistentStorageTestSuite) TearDownTest() {
