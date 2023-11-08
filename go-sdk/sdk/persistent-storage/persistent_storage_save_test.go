@@ -17,14 +17,16 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObject_ExpectO
 	// THEN
 	s.Assert().NoError(err)
 	s.Assert().NotEmpty(returnedVersion)
-	s.Assert().NotEmpty(returnedVersion)
+	s.Assert().Equal(key, returnedVersion.Key)
+	s.Assert().NotEmpty(returnedVersion.VersionID)
+	s.Assert().Empty(returnedVersion.ExpiresIn)
 }
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObject_WithTTL_ExpectOK() {
 	// GIVEN
 	key := "some-object"
 	data := []byte("some-data")
-	ttlDays := 1
+	ttlDays := 5
 
 	// WHEN
 	returnedVersion, err := s.persistentStorage.Save(key, data, ttlDays)
@@ -32,7 +34,9 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObject_WithTTL
 	// THEN
 	s.Assert().NoError(err)
 	s.Assert().NotEmpty(returnedVersion)
-	s.Assert().NotEmpty(returnedVersion)
+	s.Assert().Equal(key, returnedVersion.Key)
+	s.Assert().NotEmpty(returnedVersion.VersionID)
+	s.Assert().NotNil(returnedVersion.ExpiresIn)
 }
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObjectWithNoKey_ExpectError() {
@@ -46,7 +50,7 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObjectWithNoKe
 	// THEN
 	s.Assert().Error(err)
 	s.Assert().ErrorIs(err, errors.ErrEmptyKey)
-	s.Assert().Empty(returnedVersion)
+	s.Assert().Nil(returnedVersion)
 }
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObjectWithNoPayload_ExpectError() {
@@ -59,5 +63,5 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObjectWithNoPa
 	// THEN
 	s.Assert().Error(err)
 	s.Assert().ErrorIs(err, errors.ErrEmptyPayload)
-	s.Assert().Empty(returnedVersion)
+	s.Assert().Nil(returnedVersion)
 }

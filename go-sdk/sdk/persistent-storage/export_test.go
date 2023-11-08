@@ -5,12 +5,20 @@ package persistentstorage
 import (
 	"fmt"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 
 	"github.com/go-logr/logr"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/spf13/viper"
 )
+
+func NewObject(info ObjectInfo, data []byte) Object {
+	return Object{
+		ObjectInfo: info,
+		data:       data,
+	}
+}
 
 func NewPersistentStorageIntegration(logger logr.Logger) (*PersistentStorage, error) {
 	persistentStorageBucket := viper.GetString(common.ConfigMinioBucketKey)
@@ -24,6 +32,7 @@ func NewPersistentStorageIntegration(logger logr.Logger) (*PersistentStorage, er
 		logger:                  logger,
 		persistentStorage:       storageManager,
 		persistentStorageBucket: persistentStorageBucket,
+		metadata:                metadata.NewMetadata(),
 	}, nil
 }
 

@@ -29,7 +29,9 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_ExpectOK
 	// THEN
 	s.Assert().NoError(err)
 	s.Assert().NotEmpty(returnedVersion)
-	s.Assert().Equal(data, returnedVersion)
+	s.Assert().Equal(key, returnedVersion.Key)
+	s.Assert().NotEmpty(returnedVersion.VersionID)
+	s.Assert().Equal(data, returnedVersion.GetBytes())
 }
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObjectWithVersion_ExpectOK() {
@@ -65,8 +67,12 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObjectWithVersi
 	s.Assert().NoError(err2)
 	s.Assert().NotEmpty(returnedVersion)
 	s.Assert().NotEmpty(returnedVersion2)
-	s.Assert().Equal(data, returnedVersion)
-	s.Assert().Equal(data2, returnedVersion2)
+	s.Assert().Equal(key, returnedVersion.Key)
+	s.Assert().Equal(key, returnedVersion2.Key)
+	s.Assert().NotEmpty(returnedVersion.VersionID)
+	s.Assert().NotEmpty(returnedVersion2.VersionID)
+	s.Assert().Equal(data, returnedVersion.GetBytes())
+	s.Assert().Equal(data2, returnedVersion2.GetBytes())
 }
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_GetObject_NoKeyException() {

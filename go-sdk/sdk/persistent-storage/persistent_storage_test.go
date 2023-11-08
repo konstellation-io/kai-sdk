@@ -82,6 +82,10 @@ func (s *SdkPersistentStorageTestSuite) SetupTest() {
 
 	minioEndpoint := fmt.Sprintf("%s:%d", host, port.Int())
 
+	viper.Set(common.ConfigMetadataProductIDKey, "some-product")
+	viper.Set(common.ConfigMetadataVersionIDKey, "some-version")
+	viper.Set(common.ConfigMetadataWorkflowIDKey, "some-workflow")
+	viper.Set(common.ConfigMetadataProcessIDKey, "some-process")
 	viper.Set(common.ConfigMinioBucketKey, s.persistentStorageBucket)
 	viper.Set(common.ConfigMinioEndpointKey, minioEndpoint)
 	viper.Set(common.ConfigMinioClientUserKey, "minioadmin")
@@ -144,6 +148,40 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_Initialize_ExpectE
 	s.Assert().NoError(err)
 	s.Assert().Len(objList, 0)
 	s.Assert().NotNil(persistentStorage)
+}
+
+func (s *SdkPersistentStorageTestSuite) TestObject_GetAsString_ExpectOK() {
+	// Given
+	key := "key"
+	version := "version"
+	data := []byte("some-data")
+	object := persistentstorage.NewObject(persistentstorage.ObjectInfo{
+		Key:       key,
+		VersionID: version,
+	}, data)
+
+	// WHEN
+	strValue := object.GetAsString()
+
+	// THEN
+	s.Assert().Equal(string(data), strValue)
+}
+
+func (s *SdkPersistentStorageTestSuite) TestObject_GetBytes_ExpectOK() {
+	// Given
+	key := "key"
+	version := "version"
+	data := []byte("some-data")
+	object := persistentstorage.NewObject(persistentstorage.ObjectInfo{
+		Key:       key,
+		VersionID: version,
+	}, data)
+
+	// WHEN
+	strValue := object.GetBytes()
+
+	// THEN
+	s.Assert().Equal(data, strValue)
 }
 
 func TestSdkPersistentStorageTestSuite(t *testing.T) {
