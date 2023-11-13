@@ -111,7 +111,7 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (*O
 	reader := bytes.NewReader(payload)
 
 	opts := minio.PutObjectOptions{
-		UserTags: map[string]string{
+		UserMetadata: map[string]string{
 			"product":  ps.metadata.GetProduct(),
 			"version":  ps.metadata.GetVersion(),
 			"workflow": ps.metadata.GetWorkflow(),
@@ -317,17 +317,29 @@ func (ps PersistentStorage) addLifecycleDeletionRule(key string, ttlDays []int, 
 			lc = lifecycle.NewConfiguration()
 		}
 
-		lc.Rules = append(lc.Rules, lifecycle.Rule{
+		rule := lifecycle.Rule{
 			ID:     fmt.Sprintf("ttl-%s", key),
 			Status: minio.Enabled,
-			//Prefix: key,
 			RuleFilter: lifecycle.Filter{
 				Prefix: key,
 			},
 			Expiration: lifecycle.Expiration{
 				Days: lifecycle.ExpirationDays(ttlDays[0]),
 			},
-		})
+		}
+
+		found := false
+
+		for _, r := range lc.Rules {
+			if r.ID == rule.ID {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			lc.Rules = append(lc.Rules, rule)
+		}
 
 		err = ps.persistentStorage.SetBucketLifecycle(ctx, ps.persistentStorageBucket, lc)
 		if err != nil {
