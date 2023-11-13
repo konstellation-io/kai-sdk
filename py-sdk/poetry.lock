@@ -1031,14 +1031,12 @@ loguru = "0.7.0"
 minio = "7.1.17"
 nats-py = "2.3.0"
 protobuf = "4.23.4"
+python-keycloak = "^3.3.0"
 vyper-config = "1.1.1"
 
 [package.source]
-type = "git"
-url = "https://github.com/konstellation-io/kai-sdk.git"
-reference = "HEAD"
-resolved_reference = "acba4f1ba71fa36c3b43b0f958716ff34ab5c42c"
-subdirectory = "py-sdk/sdk"
+type = "directory"
+url = "sdk"
 
 [[package]]
 name = "six"
@@ -1229,4 +1227,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.5"
-content-hash = "9ca32f2ca8e1b01154b2144dc5dbf67cac5d83ae5fca23c8b7c5a8d7b486f2fb"
+content-hash = "5446974b8449dd5e379a624715361fcdc16ea5f0bd7a0387fad77f36acc92485"

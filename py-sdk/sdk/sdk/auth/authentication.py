@@ -53,14 +53,3 @@ class Authentication(AuthenticationABC):
         )
 
         return access_token
-
-
-# v.set("auth.endpoint", "https://auth.kai-dev.konstellation.io")
-# v.set("auth.client", "minio")
-# v.set("auth.client_secret", "LVea9SGpFPTHRhEWw7u6M3")
-# v.set("auth.realm", "konstellation")
-# v.set("minio.client_user", "david")
-# v.set("minio.client_password", "david")
-#
-# auth = Authentication()
-# print("Auth token: ", json.dumps(auth.get_token(), indent=2))
