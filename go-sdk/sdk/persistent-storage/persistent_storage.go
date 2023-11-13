@@ -145,7 +145,6 @@ func (ps PersistentStorage) List() ([]string, error) {
 		context.Background(),
 		ps.persistentStorageBucket,
 		minio.ListObjectsOptions{
-			WithVersions: true,
 			WithMetadata: true,
 			Recursive:    true,
 		},
