@@ -63,7 +63,7 @@ func defaultHandler(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		Value: fmt.Sprintf("%s, Processed by the task process, "+
 			"uploaded object to persistent storage with ID %s!",
 			stringValue.GetValue(),
-			objVersion,
+			objVersion.VersionID,
 		),
 	}
 
