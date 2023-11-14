@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import BinaryIO, Optional
 
 import loguru
@@ -67,20 +67,19 @@ class PersistentStorage(PersistentStorageABC):
     logger: loguru.Logger = logger.bind(context="[PERSISTENT STORAGE]")
     minio_client: Minio = field(init=False)
     minio_bucket_name: str = field(init=False)
-    metadata: Metadata = field(init=False, default_factory=Metadata)
 
     def __post_init__(self) -> None:
         try:
-            print("Initializing Persistent Storage")
+            print("initializing Persistent Storage")
             auth = Authentication()
 
-            print("Initializing Minio Creds")
+            print("initializing Minio Creds")
             creds = ClientGrantsProvider(
                 jwt_provider_func=lambda: auth.get_token(),
                 sts_endpoint=f"{'https://' if v.get_bool('minio.ssl') else 'http://'}{v.get_string('minio.endpoint')}",
             )
 
-            print("Initializing Minio Client")
+            print("initializing Minio Client")
             self.minio_client = Minio(
                 endpoint=v.get_string("minio.endpoint"),
                 credentials=creds,
@@ -118,10 +117,10 @@ class PersistentStorage(PersistentStorageABC):
                 self.minio_client.set_bucket_lifecycle(self.minio_bucket_name, conf)
 
             metadata = {
-                "product": self.metadata.get_product(),
-                "version": self.metadata.get_version(),
-                "workflow": self.metadata.get_workflow(),
-                "process": self.metadata.get_process(),
+                "product": Metadata.get_product(),
+                "version": Metadata.get_version(),
+                "workflow": Metadata.get_workflow(),
+                "process": Metadata.get_process(),
             }
 
             obj = self.minio_client.put_object(
@@ -158,7 +157,13 @@ class PersistentStorage(PersistentStorageABC):
 
             expiry_date = self._get_expiry_date(response.headers.get("x-amz-expiration"))
 
-            return Object(key=key, version=response.headers.get("x-amz-version-id"), data=response.read(), expires=expiry_date, metadata=self._process_raw_metadata(response.headers))
+            return Object(
+                key=key,
+                version=response.headers.get("x-amz-version-id"),
+                data=response.read(),
+                expires=expiry_date,
+                metadata=self._process_raw_metadata(response.headers),
+            )
         except Exception as e:
             error = FailedToGetFileError(key, version, self.minio_bucket_name, e)
             self.logger.error(f"{error}")
@@ -174,7 +179,7 @@ class PersistentStorage(PersistentStorageABC):
                 self.minio_bucket_name,
                 recursive=True,
                 include_user_meta=True,
-                )
+            )
             self.logger.info(f"files successfully listed from persistent storage bucket {self.minio_bucket_name}")
 
             object_info_list = []
@@ -188,7 +193,14 @@ class PersistentStorage(PersistentStorageABC):
 
                     expiry_date = self._get_expiry_date(stats.metadata.get("x-amz-expiration"))
 
-                    object_info_list.append(ObjectInfo(key=obj.object_name, version=stats.version_id, expires=expiry_date, metadata=self._process_raw_metadata(stats.metadata)))
+                    object_info_list.append(
+                        ObjectInfo(
+                            key=obj.object_name,
+                            version=stats.version_id,
+                            expires=expiry_date,
+                            metadata=self._process_raw_metadata(stats.metadata),
+                        )
+                    )
             return object_info_list
         except Exception as e:
             self.logger.error(FailedToListFilesError(self.minio_bucket_name, e))
@@ -204,7 +216,6 @@ class PersistentStorage(PersistentStorageABC):
                 include_user_meta=True,
             )
             self.logger.info(f"files successfully listed from persistent storage bucket {self.minio_bucket_name}")
-
             object_info_list = []
 
             # Get stats for each object
@@ -215,7 +226,14 @@ class PersistentStorage(PersistentStorageABC):
                     )
                     expiry_date = self._get_expiry_date(stats.metadata.get("x-amz-expiration"))
 
-                    object_info_list.append(ObjectInfo(key=obj.object_name, version=stats.version_id, expires=expiry_date, metadata=self._process_raw_metadata(stats.metadata)))
+                    object_info_list.append(
+                        ObjectInfo(
+                            key=obj.object_name,
+                            version=stats.version_id,
+                            expires=expiry_date,
+                            metadata=self._process_raw_metadata(stats.metadata),
+                        )
+                    )
 
             return object_info_list
         except Exception as e:
@@ -254,14 +272,14 @@ class PersistentStorage(PersistentStorageABC):
         # Extract the date part using regular expression
         if not expiry_date_header:
             return None
-        
+
         match = re.search(r'expiry-date="(.*?)"', expiry_date_header)
         if match:
             date_str = match.group(1)
             return datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %Z")
         else:
             return None
-        
+
     def _process_raw_metadata(self, raw_metadata: dict[str, str]) -> dict[str, str]:
         # minio replaces our metadata keys with x-amz-meta-<key>
         return {k.replace("x-amz-meta-", ""): v for k, v in raw_metadata.items() if k.startswith("x-amz-meta-")}
