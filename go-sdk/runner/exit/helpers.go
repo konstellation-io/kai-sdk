@@ -43,7 +43,6 @@ func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	}
 }
 
-//nolint:dupl //Needed duplicated code
 func composeHandler(handler Handler) Handler {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		kaiSDK.Logger.WithName(_handlerLoggerName).V(1).Info("Handling ExitRunner...")
@@ -57,7 +56,6 @@ func composeHandler(handler Handler) Handler {
 	}
 }
 
-//nolint:dupl //Needed duplicated code
 func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		kaiSDK.Logger.WithName(_postprocessorLoggerName).V(1).Info("Postprocessing ExitRunner...")
