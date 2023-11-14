@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import io
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -187,9 +186,9 @@ class PersistentStorage(PersistentStorageABC):
                         self.minio_bucket_name, obj.object_name, version_id=obj.version_id
                     )
 
-                    # TODO get expiration date from metadata is not possible we get that information later
+                    expiry_date = self._get_expiry_date(stats.metadata.get("x-amz-expiration"))
 
-                    object_info_list.append(ObjectInfo(key=obj.object_name, version=stats.version_id, expires=None, metadata=self._process_raw_metadata(stats.metadata)))
+                    object_info_list.append(ObjectInfo(key=obj.object_name, version=stats.version_id, expires=expiry_date, metadata=self._process_raw_metadata(stats.metadata)))
             return object_info_list
         except Exception as e:
             self.logger.error(FailedToListFilesError(self.minio_bucket_name, e))
@@ -214,10 +213,9 @@ class PersistentStorage(PersistentStorageABC):
                     stats = self.minio_client.stat_object(
                         self.minio_bucket_name, obj.object_name, version_id=obj.version_id
                     )
+                    expiry_date = self._get_expiry_date(stats.metadata.get("x-amz-expiration"))
 
-                    # TODO get expiration date from metadata is not possible we get that information later
-
-                    object_info_list.append(ObjectInfo(key=obj.object_name, version=stats.version_id, expires=None, metadata=self._process_raw_metadata(stats.metadata)))
+                    object_info_list.append(ObjectInfo(key=obj.object_name, version=stats.version_id, expires=expiry_date, metadata=self._process_raw_metadata(stats.metadata)))
 
             return object_info_list
         except Exception as e:
@@ -254,6 +252,9 @@ class PersistentStorage(PersistentStorageABC):
 
     def _get_expiry_date(self, expiry_date_header: str) -> datetime | None:
         # Extract the date part using regular expression
+        if not expiry_date_header:
+            return None
+        
         match = re.search(r'expiry-date="(.*?)"', expiry_date_header)
         if match:
             date_str = match.group(1)
