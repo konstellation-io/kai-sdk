@@ -5,6 +5,7 @@ package persistentstorage_test
 import (
 	"bytes"
 	"context"
+
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 
 	"github.com/minio/minio-go/v7"
