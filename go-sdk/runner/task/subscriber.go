@@ -100,7 +100,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 	}
 
 	tr.getLoggerWithName().Info("New message received",
-		"Subject", msg.Subject, "Request ID", requestMsg.RequestId)
+		"Subject", msg.Subject, sdk.LoggerRequestID, requestMsg.RequestId)
 
 	handler := tr.getResponseHandler(strings.ToLower(requestMsg.FromNode))
 	if handler == nil {

@@ -19,7 +19,6 @@ const (
 	ConfigMetadataWorkflowIDKey           = "metadata.workflow_name"
 	ConfigMetadataProcessIDKey            = "metadata.process_name"
 	ConfigMetadataVersionIDKey            = "metadata.version_tag"
-	ConfigMetadataBasePathKey             = "metadata.base_path"
 	ConfigNatsURLKey                      = "nats.url"
 	ConfigNatsStreamKey                   = "nats.stream"
 	ConfigNatsOutputKey                   = "nats.output"
