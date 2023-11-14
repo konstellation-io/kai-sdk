@@ -51,10 +51,6 @@ func initializer(kaiSDK sdk.KaiSDK) {
 		"kv_process", kaiSDK.Metadata.GetProcessCentralizedConfigurationName(),
 		"ephemeral-storage", kaiSDK.Metadata.GetEphemeralStorageName(),
 	)
-
-	kaiSDK.Logger.V(1).Info("PathUtils",
-		"getBasePath", kaiSDK.PathUtils.GetBasePath(),
-		"composeBasePath", kaiSDK.PathUtils.ComposePath("test"))
 }
 
 func natsSubscriberRunner(tr *trigger.Runner, kaiSDK sdk.KaiSDK) {

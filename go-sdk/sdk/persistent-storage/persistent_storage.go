@@ -19,6 +19,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	_persistentStorageLoggerName = "[PERSISTENT STORAGE]"
+)
+
 type PersistentStorage struct {
 	logger                  logr.Logger
 	persistentStorage       *minio.Client
@@ -87,7 +91,7 @@ func initPersistentStorage(logger logr.Logger) (*minio.Client, error) {
 		return nil, fmt.Errorf("error initializing persistent storage: %w", err)
 	}
 
-	logger.Info("Successfully initialized persistent storage")
+	logger.WithName(_persistentStorageLoggerName).Info("Successfully initialized persistent storage")
 
 	return minioClient, nil
 }
@@ -131,8 +135,9 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (*O
 		return nil, fmt.Errorf("error storing object to the persistent storage: %w", err)
 	}
 
-	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully stored in persistent storage with version ID %s",
-		key, info.VersionID))
+	ps.logger.WithName(_persistentStorageLoggerName).V(1).
+		Info(fmt.Sprintf("Object %s successfully stored in persistent storage with version ID %s",
+			key, info.VersionID))
 
 	obj := &ObjectInfo{
 		Key:       key,
@@ -166,7 +171,8 @@ func (ps PersistentStorage) Get(key string, version ...string) (*Object, error) 
 		return nil, fmt.Errorf("error retrieving object from the persistent storage: %w", err)
 	}
 
-	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully retrieved from persistent storage ", key))
+	ps.logger.WithName(_persistentStorageLoggerName).V(1).
+		Info(fmt.Sprintf("Object %s successfully retrieved from persistent storage ", key))
 
 	defer object.Close()
 
@@ -205,7 +211,8 @@ func (ps PersistentStorage) List() ([]*ObjectInfo, error) {
 		},
 	)
 
-	ps.logger.V(1).Info("Objects successfully retrieved from persistent storage")
+	ps.logger.WithName(_persistentStorageLoggerName).V(1).
+		Info("Objects successfully retrieved from persistent storage")
 
 	for object := range objects {
 		if object.Key != "" && object.VersionID != "" {
@@ -241,7 +248,7 @@ func (ps PersistentStorage) ListVersions(key string) ([]*ObjectInfo, error) {
 		},
 	)
 
-	ps.logger.V(1).
+	ps.logger.WithName(_persistentStorageLoggerName).V(1).
 		Info(fmt.Sprintf("Object versions successfully retrieved for prefix %s from persistent storage", key))
 
 	for object := range objects {
@@ -283,7 +290,8 @@ func (ps PersistentStorage) Delete(key string, version ...string) error {
 		return fmt.Errorf("error deleting object from the persistent storage: %w", err)
 	}
 
-	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully deleted from persistent storage", key))
+	ps.logger.WithName(_persistentStorageLoggerName).
+		V(1).Info(fmt.Sprintf("Object %s successfully deleted from persistent storage", key))
 
 	return nil
 }

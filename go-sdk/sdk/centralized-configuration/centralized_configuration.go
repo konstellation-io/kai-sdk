@@ -31,14 +31,13 @@ type CentralizedConfiguration struct {
 func NewCentralizedConfiguration(logger logr.Logger, js nats.JetStreamContext) (*CentralizedConfiguration, error) {
 	wrapErr := utilErrors.Wrapper("configuration init: %w")
 
-	globalKv, productKv, workflowKv, processKv, err :=
-		initKVStores(logger.WithName(_centralizedConfigurationLoggerName), js)
+	globalKv, productKv, workflowKv, processKv, err := initKVStores(logger, js)
 	if err != nil {
 		return nil, wrapErr(err)
 	}
 
 	return &CentralizedConfiguration{
-		logger:     logger.WithName(_centralizedConfigurationLoggerName),
+		logger:     logger,
 		globalKv:   globalKv,
 		productKv:  productKv,
 		workflowKv: workflowKv,
@@ -52,7 +51,7 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	wrapErr := utilErrors.Wrapper("configuration init: %w")
 
 	name := viper.GetString(common.ConfigCcGlobalBucketKey)
-	logger.V(1).Info("Initializing global key-value store",
+	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Initializing global key-value store",
 		"name", name)
 
 	globalKv, err = js.KeyValue(name)
@@ -62,40 +61,43 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	}
 
 	name = viper.GetString(common.ConfigCcProductBucketKey)
-	logger.V(1).Info("Initializing product key-value store",
+	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Initializing product key-value store",
 		"name", name)
 
 	productKv, err = js.KeyValue(name)
 	if err != nil {
-		logger.Error(err, "Error initializing product key-value store")
+		logger.WithName(_centralizedConfigurationLoggerName).
+			Error(err, "Error initializing product key-value store")
 		return nil, nil, nil, nil, wrapErr(err)
 	}
 
-	logger.V(1).Info("Product key-value store initialized")
+	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Product key-value store initialized")
 
 	name = viper.GetString(common.ConfigCcWorkflowBucketKey)
-	logger.V(1).Info("Initializing workflow key-value store",
+	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Initializing workflow key-value store",
 		"name", name)
 
 	workflowKv, err = js.KeyValue(name)
 	if err != nil {
-		logger.Error(err, "Error initializing workflow key-value store")
+		logger.WithName(_centralizedConfigurationLoggerName).
+			Error(err, "Error initializing workflow key-value store")
 		return nil, nil, nil, nil, wrapErr(err)
 	}
 
-	logger.V(1).Info("Workflow key-value store initialized")
+	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Workflow key-value store initialized")
 
 	name = viper.GetString(common.ConfigCcProcessBucketKey)
-	logger.V(1).Info("Initializing process key-value store",
+	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Initializing process key-value store",
 		"name", name)
 
 	processKv, err = js.KeyValue(name)
 	if err != nil {
-		logger.Error(err, "Error initializing process key-value store")
+		logger.WithName(_centralizedConfigurationLoggerName).
+			Error(err, "Error initializing process key-value store")
 		return nil, nil, nil, nil, wrapErr(err)
 	}
 
-	logger.V(1).Info("Process key-value store initialized")
+	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Process key-value store initialized")
 
 	return globalKv, productKv, workflowKv, processKv, nil
 }
@@ -114,7 +116,12 @@ func (cc *CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.
 		return config, nil
 	}
 
-	allScopesInOrder := []messaging.Scope{messaging.ProcessScope, messaging.WorkflowScope, messaging.ProductScope, messaging.GlobalScope}
+	allScopesInOrder := []messaging.Scope{
+		messaging.ProcessScope,
+		messaging.WorkflowScope,
+		messaging.ProductScope,
+		messaging.GlobalScope,
+	}
 	for _, scope := range allScopesInOrder {
 		config, err := cc.getConfigFromScope(key, scope)
 

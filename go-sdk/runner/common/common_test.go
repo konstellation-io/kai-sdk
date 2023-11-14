@@ -29,7 +29,6 @@ func (s *RunnerCommonTestSuite) SetupTest() {
 
 	s.sdk = sdk.KaiSDK{
 		Logger:    s.logger,
-		PathUtils: mocks.NewPathUtilsMock(s.T()),
 		Metadata:  mocks.NewMetadataMock(s.T()),
 		Messaging: mocks.NewMessagingMock(s.T()),
 		Storage: sdk.Storage{

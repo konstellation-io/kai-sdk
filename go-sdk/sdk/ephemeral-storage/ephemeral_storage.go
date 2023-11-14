@@ -13,6 +13,10 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
 )
 
+const (
+	_ephemeralStorageLoggerName = "[EPHEMERAL STORAGE]"
+)
+
 type EphemeralStorage struct {
 	logger                 logr.Logger
 	ephemeralStorage       nats.ObjectStore
@@ -22,13 +26,13 @@ type EphemeralStorage struct {
 func NewEphemeralStorage(logger logr.Logger, jetstream nats.JetStreamContext) (*EphemeralStorage, error) {
 	ephemeralStorageBucket := viper.GetString(common.ConfigNatsEphemeralStorage)
 
-	ephemeralStorage, err := initEphemeralStorageDeps(logger.WithName("[EPHEMERAL STORAGE]"), jetstream, ephemeralStorageBucket)
+	ephemeralStorage, err := initEphemeralStorageDeps(logger, jetstream, ephemeralStorageBucket)
 	if err != nil {
 		return nil, err
 	}
 
 	return &EphemeralStorage{
-		logger:                 logger.WithName("[EPHEMERAL STORAGE]"),
+		logger:                 logger,
 		ephemeralStorage:       ephemeralStorage,
 		ephemeralStorageBucket: ephemeralStorageBucket,
 	}, nil
@@ -45,7 +49,8 @@ func initEphemeralStorageDeps(logger logr.Logger, jetstream nats.JetStreamContex
 		return objStore, nil
 	}
 
-	logger.Info("Ephemeral storage not defined. Skipping ephemeral storage initialization.")
+	logger.WithName(_ephemeralStorageLoggerName).
+		Info("Ephemeral storage not defined. Skipping ephemeral storage initialization.")
 
 	return nil, nil
 }
@@ -73,7 +78,8 @@ func (es EphemeralStorage) Save(key string, payload []byte, overwrite ...bool) e
 		return fmt.Errorf("error storing object to the ephemeral storage: %w", err)
 	}
 
-	es.logger.V(1).Info("File successfully stored in ephemeral storage", key, es.ephemeralStorageBucket)
+	es.logger.WithName(_ephemeralStorageLoggerName).V(1).
+		Info("File successfully stored in ephemeral storage", key, es.ephemeralStorageBucket)
 
 	return nil
 }
@@ -88,7 +94,8 @@ func (es EphemeralStorage) Get(key string) ([]byte, error) {
 		return nil, fmt.Errorf("error retrieving object with key %s from the ephemeral storage: %w", key, err)
 	}
 
-	es.logger.V(1).Info("File successfully retrieved from ephemeral storage", key, es.ephemeralStorageBucket)
+	es.logger.WithName(_ephemeralStorageLoggerName).V(1).
+		Info("File successfully retrieved from ephemeral storage", key, es.ephemeralStorageBucket)
 
 	return response, nil
 }
@@ -122,7 +129,8 @@ func (es EphemeralStorage) List(regexp ...string) ([]string, error) {
 		}
 	}
 
-	es.logger.V(2).Info("Files successfully listed", "Bucket", es.ephemeralStorageBucket)
+	es.logger.WithName(_ephemeralStorageLoggerName).V(2).
+		Info("Files successfully listed", "Bucket", es.ephemeralStorageBucket)
 
 	return response, nil
 }
@@ -137,7 +145,8 @@ func (es EphemeralStorage) Delete(key string) error {
 		return fmt.Errorf("error retrieving object with key %s from the ephemeral storage: %w", key, err)
 	}
 
-	es.logger.V(1).Info("File successfully deleted in ephemeral storage", key, es.ephemeralStorageBucket)
+	es.logger.WithName(_ephemeralStorageLoggerName).V(1).
+		Info("File successfully deleted in ephemeral storage", key, es.ephemeralStorageBucket)
 
 	return nil
 }
@@ -165,7 +174,8 @@ func (es EphemeralStorage) Purge(regexp ...string) error {
 
 	for _, objectName := range objects {
 		if pattern == nil || pattern.MatchString(objectName) {
-			es.logger.V(1).Info("Deleting object", "Object key", objectName)
+			es.logger.WithName(_ephemeralStorageLoggerName).V(1).
+				Info("Deleting object", "Object key", objectName)
 
 			err := es.ephemeralStorage.Delete(objectName)
 			if err != nil {
@@ -174,7 +184,8 @@ func (es EphemeralStorage) Purge(regexp ...string) error {
 		}
 	}
 
-	es.logger.V(2).Info("Files successfully purged", "Bucket", es.ephemeralStorageBucket)
+	es.logger.WithName(_ephemeralStorageLoggerName).V(2).
+		Info("Files successfully purged", "Bucket", es.ephemeralStorageBucket)
 
 	return nil
 }

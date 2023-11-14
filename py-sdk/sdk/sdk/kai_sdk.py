@@ -16,7 +16,6 @@ from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage, EphemeralS
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.messaging.messaging import Messaging, MessagingABC
 from sdk.metadata.metadata import Metadata, MetadataABC
-from sdk.path_utils.path_utils import PathUtils, PathUtilsABC
 from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
 
 
@@ -40,7 +39,6 @@ class KaiSDK:
     metadata: MetadataABC = field(init=False)
     messaging: MessagingABC = field(init=False)
     centralized_config: CentralizedConfigABC = field(init=False)
-    path_utils: PathUtilsABC = field(init=False)
     measurements: MeasurementsABC = field(init=False)
     storage: Storage = field(init=False)
 
@@ -59,7 +57,6 @@ class KaiSDK:
 
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
-        self.path_utils = PathUtils()
         self.measurements = MeasurementsABC()
         self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
 

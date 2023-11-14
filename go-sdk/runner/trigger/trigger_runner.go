@@ -30,8 +30,10 @@ type Runner struct {
 var wg sync.WaitGroup //nolint:gochecknoglobals // WaitGroup is used to wait for goroutines to finish
 
 func NewTriggerRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
+	logger = logger.WithName(_triggerLoggerName)
+
 	return &Runner{
-		sdk:              sdk.NewKaiSDK(logger.WithName(_triggerLoggerName), ns, js),
+		sdk:              sdk.NewKaiSDK(logger, ns, js),
 		nats:             ns,
 		jetstream:        js,
 		responseChannels: sync.Map{},
