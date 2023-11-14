@@ -199,7 +199,6 @@ func (ps PersistentStorage) List() ([]*ObjectInfo, error) {
 		context.Background(),
 		ps.persistentStorageBucket,
 		minio.ListObjectsOptions{
-			WithVersions: true,
 			WithMetadata: true,
 			Recursive:    true,
 		},
@@ -208,17 +207,17 @@ func (ps PersistentStorage) List() ([]*ObjectInfo, error) {
 	ps.logger.V(1).Info("Objects successfully retrieved from persistent storage")
 
 	for object := range objects {
-        if object.Key != "" && object.VersionID != "" && object.IsLatest {
-            objectList = append(
-                objectList,
-                &ObjectInfo{
-                    Key:       object.Key,
-                    VersionID: object.VersionID,
-                    ExpiresIn: object.Expiration,
-                },
-            )
-        }
-    }
+		if object.Key != "" {
+			objectList = append(
+				objectList,
+				&ObjectInfo{
+					Key:       object.Key,
+					VersionID: object.VersionID,
+					ExpiresIn: object.Expiration,
+				},
+			)
+		}
+	}
 
 	return objectList, nil
 }

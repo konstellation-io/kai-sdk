@@ -31,7 +31,7 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_ListObject_ExpectO
 	// THEN
 	s.Assert().NoError(err)
 	s.Assert().Len(listObjects, 1)
-	s.Assert().Contains(listObjects, &persistentstorage.ObjectInfo{Key: key, VersionID: obj.VersionID})
+	s.Assert().Contains(listObjects, &persistentstorage.ObjectInfo{Key: obj.Key})
 }
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_ListObject_EmptyList_ExpectOK() {
