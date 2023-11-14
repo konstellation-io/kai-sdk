@@ -64,6 +64,10 @@ func validateConfig(keys []string) {
 		common.ConfigMinioClientPasswordKey,
 		common.ConfigMinioUseSslKey,
 		common.ConfigMinioBucketKey,
+		common.ConfigAuthEndpointKey,
+		common.ConfigAuthClientKey,
+		common.ConfigAuthClientSecretKey,
+		common.ConfigAuthRealmKey,
 	}
 
 	for _, key := range mandatoryConfigKeys {

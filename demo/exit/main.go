@@ -62,7 +62,7 @@ func defaultHandler(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		return err
 	}
 
-	kaiSDK.Logger.Info("Persistent storage value retrieved!", "some-object", string(obj))
+	kaiSDK.Logger.Info("Persistent storage value retrieved!", "some-object", obj.GetAsString())
 
 	err = kaiSDK.Messaging.SendOutput(stringValue)
 	if err != nil {

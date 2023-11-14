@@ -34,4 +34,8 @@ const (
 	ConfigMinioClientPasswordKey          = "minio.client_password" //nolint:gosec // False positive
 	ConfigMinioUseSslKey                  = "minio.ssl"
 	ConfigMinioBucketKey                  = "minio.bucket"
+	ConfigAuthEndpointKey                 = "auth.endpoint"
+	ConfigAuthClientKey                   = "auth.client"
+	ConfigAuthClientSecretKey             = "auth.client_secret" //nolint:gosec // False positive
+	ConfigAuthRealmKey                    = "auth.realm"
 )

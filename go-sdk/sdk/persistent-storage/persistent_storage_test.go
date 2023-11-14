@@ -12,7 +12,6 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 
 	"github.com/go-logr/logr/testr"
-	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -28,7 +27,6 @@ type SdkPersistentStorageTestSuite struct {
 	minioContainer          testcontainers.Container
 	client                  *minio.Client
 	persistentStorageBucket string
-	minioClientMock         mocks.MinioClientMock
 }
 
 func (s *SdkPersistentStorageTestSuite) getContainer() testcontainers.Container {
@@ -84,6 +82,10 @@ func (s *SdkPersistentStorageTestSuite) SetupTest() {
 
 	minioEndpoint := fmt.Sprintf("%s:%d", host, port.Int())
 
+	viper.Set(common.ConfigMetadataProductIDKey, "some-product")
+	viper.Set(common.ConfigMetadataVersionIDKey, "some-version")
+	viper.Set(common.ConfigMetadataWorkflowIDKey, "some-workflow")
+	viper.Set(common.ConfigMetadataProcessIDKey, "some-process")
 	viper.Set(common.ConfigMinioBucketKey, s.persistentStorageBucket)
 	viper.Set(common.ConfigMinioEndpointKey, minioEndpoint)
 	viper.Set(common.ConfigMinioClientUserKey, "minioadmin")
@@ -98,11 +100,9 @@ func (s *SdkPersistentStorageTestSuite) SetupTest() {
 	err = s.client.EnableVersioning(ctx, s.persistentStorageBucket)
 	s.Require().NoError(err)
 
-	storage, err := persistentstorage.NewPersistentStorage(testr.New(s.T()))
+	storage, err := persistentstorage.NewPersistentStorageIntegration(testr.New(s.T()))
 	s.Assert().NoError(err)
 	s.persistentStorage = storage
-
-	s.minioClientMock = *mocks.NewMinioClientMock(s.T())
 }
 
 func (s *SdkPersistentStorageTestSuite) TearDownTest() {
@@ -148,6 +148,40 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_Initialize_ExpectE
 	s.Assert().NoError(err)
 	s.Assert().Len(objList, 0)
 	s.Assert().NotNil(persistentStorage)
+}
+
+func (s *SdkPersistentStorageTestSuite) TestObject_GetAsString_ExpectOK() {
+	// Given
+	key := "key"
+	version := "version"
+	data := []byte("some-data")
+	object := persistentstorage.NewObject(persistentstorage.ObjectInfo{
+		Key:       key,
+		VersionID: version,
+	}, data)
+
+	// WHEN
+	strValue := object.GetAsString()
+
+	// THEN
+	s.Assert().Equal(string(data), strValue)
+}
+
+func (s *SdkPersistentStorageTestSuite) TestObject_GetBytes_ExpectOK() {
+	// Given
+	key := "key"
+	version := "version"
+	data := []byte("some-data")
+	object := persistentstorage.NewObject(persistentstorage.ObjectInfo{
+		Key:       key,
+		VersionID: version,
+	}, data)
+
+	// WHEN
+	strValue := object.GetBytes()
+
+	// THEN
+	s.Assert().Equal(data, strValue)
 }
 
 func TestSdkPersistentStorageTestSuite(t *testing.T) {
