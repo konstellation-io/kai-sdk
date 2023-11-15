@@ -91,6 +91,8 @@ class KaiSDK:
             ),
             backtrace=True,
             diagnose=True,
+            level="DEBUG",
+            serialize=True,
         )
         logger.configure(extra={"context": "[UNKNOWN]"})
 

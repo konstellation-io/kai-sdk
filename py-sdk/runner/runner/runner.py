@@ -130,6 +130,7 @@ class Runner:
                 backtrace=False,
                 diagnose=False,
                 level=v.get_string("runner.logger.level"),
+                serialize=True,
             )
 
         for error_output_path in error_output_paths:
@@ -143,6 +144,7 @@ class Runner:
                 backtrace=True,
                 diagnose=True,
                 level="ERROR",
+                serialize=True,
             )
 
         logger.configure(extra={"context": "[UNKNOWN]"})
