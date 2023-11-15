@@ -50,12 +50,7 @@ class KaiSDK:
         if not self.logger:
             self._initialize_logger()
         else:
-            product_id = self.metadata.get_product()
-            version_id = self.metadata.get_version()
-            workflow_id = self.metadata.get_workflow()
-            process_id = self.metadata.get_process()
-            metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=}"
-            self.logger.configure(extra={"context": "[KAI SDK]", "metadata_info": "{" + metadata_info + "}"})
+            self.logger.configure(extra={"context": "[KAI SDK]"})
 
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
@@ -92,17 +87,12 @@ class KaiSDK:
             format=(
                 "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
                 "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
-                "<level>{message}</level> {extra[metadata_info]}"
+                "<level>{message}</level>"
             ),
             backtrace=True,
             diagnose=True,
         )
-        product_id = self.metadata.get_product()
-        version_id = self.metadata.get_version()
-        workflow_id = self.metadata.get_workflow()
-        process_id = self.metadata.get_process()
-        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=}"
-        logger.configure(extra={"context": "[UNKNOWN]", "metadata_info": "{" + metadata_info + "}"})
+        logger.configure(extra={"context": "[UNKNOWN]"})
 
         self.logger = logger.bind(context="[KAI SDK]")
         self.logger.debug("logger initialized")
