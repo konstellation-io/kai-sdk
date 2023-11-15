@@ -35,10 +35,7 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		logger := kaiSDK.Logger.
-			WithName(_preprocessorLoggerName).
-			WithValues(
-				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
-			)
+			WithName(_preprocessorLoggerName)
 
 		logger.V(1).Info("Preprocessing TaskRunner...")
 
@@ -54,10 +51,7 @@ func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 func composeHandler(handler Handler) Handler {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		logger := kaiSDK.Logger.
-			WithName(_handlerLoggerName).
-			WithValues(
-				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
-			)
+			WithName(_handlerLoggerName)
 
 		logger.V(1).Info("Handling TaskRunner...")
 
@@ -73,10 +67,7 @@ func composeHandler(handler Handler) Handler {
 func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		logger := kaiSDK.Logger.
-			WithName(_postprocessorLoggerName).
-			WithValues(
-				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
-			)
+			WithName(_postprocessorLoggerName)
 
 		logger.V(1).Info("Postprocessing TaskRunner...")
 

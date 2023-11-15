@@ -119,13 +119,6 @@ type KaiSDK struct {
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
 	metadata := meta.NewMetadata()
 
-	logger = logger.WithValues(
-		kaiCommon.LoggerProductID, metadata.GetProduct(),
-		kaiCommon.LoggerVersionID, metadata.GetVersion(),
-		kaiCommon.LoggerWorkflowID, metadata.GetWorkflow(),
-		kaiCommon.LoggerProcessID, metadata.GetProcess(),
-	)
-
 	centralizedConfigInst, err := centralizedConfiguration.NewCentralizedConfiguration(logger, jetstreamCli)
 	if err != nil {
 		logger.WithName("[CENTRALIZED CONFIGURATION]").
