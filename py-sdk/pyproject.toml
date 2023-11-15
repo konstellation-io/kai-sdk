@@ -12,8 +12,8 @@ nats-py = "2.3.0"
 protobuf = "4.23.4"
 loguru = "0.7.0"
 vyper-config = "1.1.1"
-sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/sdk"} # TODO: Uncomment when SDK is published
-#sdk = {path = "./sdk"}
+#sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/sdk"} # TODO: Uncomment when SDK is published
+sdk = {path = "./sdk"}
 python-keycloak = "3.7.0"
 minio = "7.2.0"
 
