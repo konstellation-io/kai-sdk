@@ -208,12 +208,17 @@ func (ps PersistentStorage) List() ([]*ObjectInfo, error) {
 
 	for object := range objects {
 		if object.Key != "" {
+			stats, err := ps.persistentStorage.StatObject(context.Background(), ps.persistentStorageBucket, object.Key, minio.StatObjectOptions{})
+			if err != nil {
+				return nil, fmt.Errorf("error getting object stats from the persistent storage: %w", err)
+			}
+
 			objectList = append(
 				objectList,
 				&ObjectInfo{
 					Key:       object.Key,
-					VersionID: object.VersionID,
-					ExpiresIn: object.Expiration,
+					VersionID: stats.VersionID,
+					ExpiresIn: stats.Expiration,
 				},
 			)
 		}

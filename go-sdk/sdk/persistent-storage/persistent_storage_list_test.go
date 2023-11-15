@@ -6,8 +6,6 @@ import (
 	"bytes"
 	"context"
 
-	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
-
 	"github.com/minio/minio-go/v7"
 )
 
@@ -31,7 +29,8 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_ListObject_ExpectO
 	// THEN
 	s.Assert().NoError(err)
 	s.Assert().Len(listObjects, 1)
-	s.Assert().Contains(listObjects, &persistentstorage.ObjectInfo{Key: obj.Key})
+	s.Assert().Equal(obj.Key, listObjects[0].Key)
+	s.Assert().Equal(obj.VersionID, listObjects[0].VersionID)
 }
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_ListObject_EmptyList_ExpectOK() {
