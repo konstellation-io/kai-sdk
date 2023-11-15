@@ -16,9 +16,9 @@ from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
 
 LOGGER_FORMAT = (
-    "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
-    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
-    "{extra[context]}: <level>{message}</level> - {extra[metadata_info]}"
+    "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
+    "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
+    "<level>{message}</level> {extra[metadata_info]}"
 )
 
 MANDATORY_CONFIG_KEYS = [
@@ -131,6 +131,7 @@ class Runner:
                 diagnose=False,
                 level=v.get_string("runner.logger.level"),
             )
+
         for error_output_path in error_output_paths:
             if error_output_path == "stderr":
                 error_output_path = sys.stderr
@@ -143,7 +144,12 @@ class Runner:
                 diagnose=True,
                 level="ERROR",
             )
-        logger.configure(extra={"context": "[UNKNOWN]", "metadata_info": ""})
+        product_id = v.get_string("metadata.product_id")
+        version_id = v.get_string("metadata.version_tag")
+        workflow_id = v.get_string("metadata.workflow_name")
+        process_id = v.get_string("metadata.process_name")
+        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=}"
+        logger.configure(extra={"context": "[UNKNOWN]", "metadata_info": "{" + metadata_info + "}"})
 
         self.logger = logger.bind(context="[RUNNER CONFIG]")
         self.logger.info("logger initialized")
