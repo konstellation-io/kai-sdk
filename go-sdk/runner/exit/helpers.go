@@ -1,7 +1,6 @@
 package exit
 
 import (
-	kaiCommon "github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -49,7 +48,6 @@ func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	}
 }
 
-//nolint:dupl //Needed duplicated code
 func composeHandler(handler Handler) Handler {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		kaiSDK.Logger = kaiSDK.Logger.
@@ -66,7 +64,6 @@ func composeHandler(handler Handler) Handler {
 	}
 }
 
-//nolint:dupl //Needed duplicated code
 func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		kaiSDK.Logger = kaiSDK.Logger.

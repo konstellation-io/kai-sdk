@@ -4,8 +4,6 @@ import (
 	"context"
 	"os"
 
-	kaiCommon "github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 
 	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
