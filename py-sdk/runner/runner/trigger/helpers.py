@@ -40,13 +40,7 @@ def compose_runner(user_runner: RunnerFunc) -> RunnerFunc:
     async def runner_func(trigger_runner: TriggerRunner, sdk: KaiSDK) -> None:
         assert sdk.logger is not None
 
-        product_id = sdk.metadata.get_product()
-        version_id = sdk.metadata.get_version()
-        workflow_id = sdk.metadata.get_workflow()
-        process_id = sdk.metadata.get_process()
-        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=}"
-
-        logger = sdk.logger.bind(context="[RUNNER]", metadata_info=metadata_info)
+        logger = sdk.logger.bind(context="[RUNNER]")
         logger.info("executing TriggerRunner...")
 
         logger.info("executing user runner...")
@@ -61,8 +55,8 @@ def compose_runner(user_runner: RunnerFunc) -> RunnerFunc:
 def get_response_handler(handlers: dict[str, asyncio.Queue]) -> ResponseHandler:
     async def response_handler_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
-        logger = sdk.logger.bind(context="[RESPONSE HANDLER]")
         request_id = sdk.get_request_id()
+        logger = sdk.logger.bind(context="[RESPONSE HANDLER]", request_id=request_id)
         assert request_id is not None
         logger.info(f"message received with request id {request_id}")
 
