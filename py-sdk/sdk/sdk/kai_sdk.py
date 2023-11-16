@@ -19,6 +19,11 @@ from sdk.metadata.metadata import Metadata, MetadataABC
 from sdk.path_utils.path_utils import PathUtils, PathUtilsABC
 from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
 
+LOGGER_FORMAT = (
+    "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
+    "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
+    "<level>{message}</level> <level>{extra[request_id]}</level>"
+)
 
 @dataclass
 class MeasurementsABC(ABC):
@@ -50,7 +55,7 @@ class KaiSDK:
         if not self.logger:
             self._initialize_logger()
         else:
-            self.logger.configure(extra={"context": "[KAI SDK]"})
+            self.logger.configure(extra={"context": "[KAI SDK]", "request_id": "{}"})
 
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
@@ -84,17 +89,12 @@ class KaiSDK:
         logger.add(
             sys.stdout,
             colorize=True,
-            format=(
-                "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
-                "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
-                "<level>{message}</level>"
-            ),
+            format=LOGGER_FORMAT,
             backtrace=True,
             diagnose=True,
             level="DEBUG",
-            serialize=True,
         )
-        logger.configure(extra={"context": "[UNKNOWN]"})
+        logger.configure(extra={"context": "[UNKNOWN]", "request_id": "{}"})
 
         self.logger = logger.bind(context="[KAI SDK]")
         self.logger.debug("logger initialized")

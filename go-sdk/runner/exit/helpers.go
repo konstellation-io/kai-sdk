@@ -1,6 +1,7 @@
 package exit
 
 import (
+	kaiCommon "github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -34,7 +35,10 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		logger := kaiSDK.Logger.
-			WithName(_preprocessorLoggerName)
+			WithName(_preprocessorLoggerName).
+			WithValues(
+				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
+			)
 
 		logger.V(1).Info("Preprocessing ExitRunner...")
 
@@ -48,10 +52,14 @@ func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	}
 }
 
+//nolint:dupl //Needed duplicated code
 func composeHandler(handler Handler) Handler {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		kaiSDK.Logger = kaiSDK.Logger.
-			WithName(_handlerLoggerName)
+			WithName(_handlerLoggerName).
+			WithValues(
+				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
+			)
 
 		kaiSDK.Logger.V(1).Info("Handling ExitRunner...")
 
@@ -64,10 +72,14 @@ func composeHandler(handler Handler) Handler {
 	}
 }
 
+//nolint:dupl //Needed duplicated code
 func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		kaiSDK.Logger = kaiSDK.Logger.
-			WithName(_postprocessorLoggerName)
+			WithName(_postprocessorLoggerName).
+			WithValues(
+				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
+			)
 
 		kaiSDK.Logger.V(1).Info("Postprocessing ExitRunner...")
 

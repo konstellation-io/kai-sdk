@@ -1,6 +1,7 @@
 package task
 
 import (
+	kaiCommon "github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -34,7 +35,10 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		logger := kaiSDK.Logger.
-			WithName(_preprocessorLoggerName)
+			WithName(_preprocessorLoggerName).
+			WithValues(
+				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
+			)
 
 		logger.V(1).Info("Preprocessing TaskRunner...")
 
@@ -50,7 +54,10 @@ func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 func composeHandler(handler Handler) Handler {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		logger := kaiSDK.Logger.
-			WithName(_handlerLoggerName)
+			WithName(_handlerLoggerName).
+			WithValues(
+				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
+			)
 
 		logger.V(1).Info("Handling TaskRunner...")
 
@@ -66,7 +73,10 @@ func composeHandler(handler Handler) Handler {
 func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		logger := kaiSDK.Logger.
-			WithName(_postprocessorLoggerName)
+			WithName(_postprocessorLoggerName).
+			WithValues(
+				kaiCommon.LoggerRequestID, kaiSDK.GetRequestID(),
+			)
 
 		logger.V(1).Info("Postprocessing TaskRunner...")
 

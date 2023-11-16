@@ -39,14 +39,8 @@ def compose_preprocessor(preprocessor: Preprocessor) -> Preprocessor:
     async def preprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
 
-        product_id = sdk.metadata.get_product()
-        version_id = sdk.metadata.get_version()
-        workflow_id = sdk.metadata.get_workflow()
-        process_id = sdk.metadata.get_process()
-        request_id = sdk.get_request_id()
-        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=} {request_id=}"
-
-        logger = sdk.logger.bind(context="[PREPROCESSOR]", metadata_info=metadata_info)
+        request_id = f"\u007brequest_id={sdk.get_request_id()}\u007d"
+        logger = sdk.logger.bind(context="[PREPROCESSOR]", request_id=request_id)
         logger.info("preprocessing ExitRunner...")
 
         logger.info("executing user preprocessor...")
@@ -62,14 +56,8 @@ def compose_handler(handler: Handler) -> Handler:
     async def handler_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
 
-        product_id = sdk.metadata.get_product()
-        version_id = sdk.metadata.get_version()
-        workflow_id = sdk.metadata.get_workflow()
-        process_id = sdk.metadata.get_process()
-        request_id = sdk.get_request_id()
-        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=} {request_id=}"
-
-        logger = sdk.logger.bind(context="[HANDLER]", metadata_info=metadata_info)
+        request_id = f"\u007brequest_id={sdk.get_request_id()}\u007d"
+        logger = sdk.logger.bind(context="[HANDLER]", request_id=request_id)
         logger.info("handling ExitRunner...")
 
         logger.info("executing user handler...")
@@ -85,14 +73,8 @@ def compose_postprocessor(postprocessor: Postprocessor) -> Postprocessor:
     async def postprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
 
-        product_id = sdk.metadata.get_product()
-        version_id = sdk.metadata.get_version()
-        workflow_id = sdk.metadata.get_workflow()
-        process_id = sdk.metadata.get_process()
-        request_id = sdk.get_request_id()
-        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=} {request_id=}"
-
-        logger = sdk.logger.bind(context="[POSTPROCESSOR]", metadata_info=metadata_info)
+        request_id = f"\u007brequest_id={sdk.get_request_id()}\u007d"
+        logger = sdk.logger.bind(context="[POSTPROCESSOR]", request_id=request_id)
         logger.info("postprocessing ExitRunner...")
 
         logger.info("executing user postprocessor...")

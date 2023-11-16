@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass, field
 from functools import reduce
+from datetime import datetime
 
 import loguru
 from loguru import logger
@@ -14,11 +15,30 @@ from runner.exceptions import FailedLoadingConfigError, JetStreamConnectionError
 from runner.exit.exit_runner import ExitRunner
 from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
+import json
+
+
+def sink_serializer(message):
+    record = message.record
+    time = datetime.utcfromtimestamp(record["time"].timestamp()).isoformat(timespec="milliseconds") + "Z"
+    filepath = record["file"].path
+    filepath = filepath.split("py-sdk/sdk/")[1] if "py-sdk/sdk/" in filepath else filepath.split("py-sdk/runner/")[1]
+    filepath = filepath + ":" + str(record["line"])
+    simplified = {
+        "L": record["level"].name,
+        "T": time,
+        "N": record["extra"]["context"],
+        "C": filepath,
+        "M": record["message"],
+        "request_id": record["extra"]["request_id"],
+    }
+    serialized = json.dumps(simplified)
+    print(serialized)
 
 LOGGER_FORMAT = (
     "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
     "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
-    "<level>{message}</level>"
+    "<level>{message}</level> <level>{extra[request_id]}</level>"
 )
 
 MANDATORY_CONFIG_KEYS = [
@@ -124,8 +144,10 @@ class Runner:
 
         logger.remove()  # Remove the pre-configured handler
         for output_path in output_paths:
-            if output_path == "stdout":
+            if output_path == "stdout" or output_path == "console":
                 output_path = sys.stdout
+            elif output_path == "json":
+                output_path = sink_serializer
 
             logger.add(
                 output_path,
@@ -134,12 +156,13 @@ class Runner:
                 backtrace=False,
                 diagnose=False,
                 level=v.get_string("runner.logger.level"),
-                serialize=True,
             )
 
         for error_output_path in error_output_paths:
-            if error_output_path == "stderr":
+            if error_output_path == "stderr" or error_output_path == "console":
                 error_output_path = sys.stderr
+            elif error_output_path == "json":
+                error_output_path = sink_serializer
 
             logger.add(
                 error_output_path,
@@ -148,10 +171,9 @@ class Runner:
                 backtrace=True,
                 diagnose=True,
                 level="ERROR",
-                serialize=True,
             )
 
-        logger.configure(extra={"context": "[UNKNOWN]"})
+        logger.configure(extra={"context": "[UNKNOWN]", "request_id": "{}"})
 
         self.logger = logger.bind(context="[RUNNER CONFIG]")
         self.logger.info("logger initialized")
