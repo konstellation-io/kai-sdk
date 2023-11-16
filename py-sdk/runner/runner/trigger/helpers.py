@@ -55,8 +55,8 @@ def compose_runner(user_runner: RunnerFunc) -> RunnerFunc:
 def get_response_handler(handlers: dict[str, asyncio.Queue]) -> ResponseHandler:
     async def response_handler_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
-        request_id = sdk.get_request_id()
-        logger = sdk.logger.bind(context="[RESPONSE HANDLER]", request_id=request_id)
+        request_id = f"\u007b'request_id':{sdk.get_request_id()}\u007d"
+        logger = sdk.logger.bind(context="[RESPONSE HANDLER]", metadata=request_id)
         assert request_id is not None
         logger.info(f"message received with request id {request_id}")
 

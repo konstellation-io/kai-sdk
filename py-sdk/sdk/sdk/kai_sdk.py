@@ -22,7 +22,7 @@ from sdk.persistent_storage.persistent_storage import PersistentStorage, Persist
 LOGGER_FORMAT = (
     "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
     "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
-    "<level>{message}</level> <level>{extra[request_id]}</level>"
+    "<level>{message}</level> <level>{extra[metadata]}</level>"
 )
 
 @dataclass
@@ -55,7 +55,7 @@ class KaiSDK:
         if not self.logger:
             self._initialize_logger()
         else:
-            self.logger.configure(extra={"context": "[KAI SDK]", "request_id": "{}"})
+            self.logger.configure(extra={"context": "[KAI SDK]", "metadata": "{}"})
 
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
@@ -94,7 +94,7 @@ class KaiSDK:
             diagnose=True,
             level="DEBUG",
         )
-        logger.configure(extra={"context": "[UNKNOWN]", "request_id": "{}"})
+        logger.configure(extra={"context": "[UNKNOWN]", "metadata": "{}"})
 
         self.logger = logger.bind(context="[KAI SDK]")
         self.logger.debug("logger initialized")

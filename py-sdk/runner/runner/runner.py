@@ -16,29 +16,39 @@ from runner.exit.exit_runner import ExitRunner
 from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
 import json
+import ast
 
 
 def sink_serializer(message):
     record = message.record
+
     time = datetime.utcfromtimestamp(record["time"].timestamp()).isoformat(timespec="milliseconds") + "Z"
+    
     filepath = record["file"].path
     filepath = filepath.split("py-sdk/sdk/")[1] if "py-sdk/sdk/" in filepath else filepath.split("py-sdk/runner/")[1]
     filepath = filepath + ":" + str(record["line"])
-    simplified = {
+
+    metadata = {}
+    str_metadata = record["extra"]["metadata"]
+    for key, value in ast.literal_eval(str_metadata).items():
+        metadata[key] = value
+
+    serialized_log = {
         "L": record["level"].name,
         "T": time,
         "N": record["extra"]["context"],
         "C": filepath,
         "M": record["message"],
-        "request_id": record["extra"]["request_id"],
+        **metadata,
     }
-    serialized = json.dumps(simplified)
+
+    serialized = json.dumps(serialized_log)
     print(serialized)
 
 LOGGER_FORMAT = (
     "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
     "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
-    "<level>{message}</level> <level>{extra[request_id]}</level>"
+    "<level>{message}</level> <level>{extra[metadata]}</level>"
 )
 
 MANDATORY_CONFIG_KEYS = [
@@ -173,7 +183,7 @@ class Runner:
                 level="ERROR",
             )
 
-        logger.configure(extra={"context": "[UNKNOWN]", "request_id": "{}"})
+        logger.configure(extra={"context": "[UNKNOWN]", "metadata": "{}"})
 
         self.logger = logger.bind(context="[RUNNER CONFIG]")
         self.logger.info("logger initialized")
