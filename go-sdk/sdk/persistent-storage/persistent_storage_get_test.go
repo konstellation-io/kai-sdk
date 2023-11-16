@@ -5,6 +5,7 @@ package persistentstorage_test
 import (
 	"bytes"
 	"context"
+
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
 	"github.com/minio/minio-go/v7"
 )
