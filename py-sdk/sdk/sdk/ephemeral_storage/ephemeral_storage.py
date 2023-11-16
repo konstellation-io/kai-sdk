@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 import loguru
@@ -58,12 +58,15 @@ class EphemeralStorage(EphemeralStorageABC):
     js: JetStreamContext
     ephemeral_storage_name: Optional[str] = None
     object_store: Optional[NatsObjectStore] = None
-    logger: loguru.Logger = logger.bind(context="[EPHEMERAL STORAGE]")
+    logger: loguru.Logger = field(init=False)
 
     def __post_init__(self) -> None:
         self.ephemeral_storage_name = v.get_string("nats.object_store")
+        origin = logger._core.extra["origin"]
         if self.ephemeral_storage_name:
-            self.logger = logger.bind(context=f"[EPHEMERAL STORAGE: {self.ephemeral_storage_name}]")
+            self.logger = logger.bind(context=f"{origin}.[EPHEMERAL STORAGE: {self.ephemeral_storage_name}]")
+        else:
+            self.logger = logger.bind(context=f"{origin}.[EPHEMERAL STORAGE]")
 
     async def initialize(self) -> None:
         if self.ephemeral_storage_name:

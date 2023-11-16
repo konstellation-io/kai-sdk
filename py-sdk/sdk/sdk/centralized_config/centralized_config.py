@@ -53,9 +53,11 @@ class CentralizedConfig(CentralizedConfigABC):
     product_kv: KeyValue = field(init=False)
     workflow_kv: KeyValue = field(init=False)
     process_kv: KeyValue = field(init=False)
-    logger: loguru.Logger = logger.bind(context="[CENTRALIZED CONFIGURATION]")
+    logger: loguru.Logger = field(init=False)
 
     def __post_init__(self) -> None:
+        origin = logger._core.extra["origin"]
+        self.logger = logger.bind(context=f"{origin}.[CENTRALIZED CONFIGURATION]")
         self.global_kv = None
         self.product_kv = None
         self.workflow_kv = None

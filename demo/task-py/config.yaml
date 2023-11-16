@@ -1,6 +1,7 @@
 runner:
   logger:
     level: DEBUG # TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
+    encoding: console # console, json
     output_paths:
       - stdout
     error_output_paths:

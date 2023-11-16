@@ -38,7 +38,8 @@ class TriggerRunner:
     tasks: list[threading.Thread] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
-        self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=self.logger)
+        logger.configure(extra={"context": "", "metadata": "{}", "origin": "[TRIGGER]"})
+        self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=logger)
         self.subscriber = TriggerSubscriber(self)
 
     def with_initializer(self, initializer: Initializer) -> TriggerRunner:

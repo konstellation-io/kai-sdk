@@ -25,6 +25,7 @@ LOGGER_FORMAT = (
     "<level>{message}</level> <level>{extra[metadata]}</level>"
 )
 
+
 @dataclass
 class MeasurementsABC(ABC):
     pass
@@ -55,7 +56,8 @@ class KaiSDK:
         if not self.logger:
             self._initialize_logger()
         else:
-            self.logger.configure(extra={"context": "[KAI SDK]", "metadata": "{}"})
+            origin = logger._core.extra["origin"]
+            self.logger = self.logger.bind(context=f"{origin}.[SDK]")
 
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
@@ -94,9 +96,9 @@ class KaiSDK:
             diagnose=True,
             level="DEBUG",
         )
-        logger.configure(extra={"context": "[UNKNOWN]", "metadata": "{}"})
+        logger.configure(extra={"context": "", "metadata": "{}", "origin": "[SDK]"})
 
-        self.logger = logger.bind(context="[KAI SDK]")
+        self.logger = logger.bind(context="[SDK]")
         self.logger.debug("logger initialized")
 
     def set_request_msg(self, request_msg: KaiNatsMessage) -> None:

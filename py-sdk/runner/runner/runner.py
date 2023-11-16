@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import ast
+import json
 import sys
 from dataclasses import dataclass, field
-from functools import reduce
 from datetime import datetime
+from functools import reduce
 
 import loguru
 from loguru import logger
@@ -15,35 +17,6 @@ from runner.exceptions import FailedLoadingConfigError, JetStreamConnectionError
 from runner.exit.exit_runner import ExitRunner
 from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
-import json
-import ast
-
-
-def sink_serializer(message):
-    record = message.record
-
-    time = datetime.utcfromtimestamp(record["time"].timestamp()).isoformat(timespec="milliseconds") + "Z"
-    
-    filepath = record["file"].path
-    filepath = filepath.split("py-sdk/sdk/")[1] if "py-sdk/sdk/" in filepath else filepath.split("py-sdk/runner/")[1]
-    filepath = filepath + ":" + str(record["line"])
-
-    metadata = {}
-    str_metadata = record["extra"]["metadata"]
-    for key, value in ast.literal_eval(str_metadata).items():
-        metadata[key] = value
-
-    serialized_log = {
-        "L": record["level"].name,
-        "T": time,
-        "N": record["extra"]["context"],
-        "C": filepath,
-        "M": record["message"],
-        **metadata,
-    }
-
-    serialized = json.dumps(serialized_log)
-    print(serialized)
 
 LOGGER_FORMAT = (
     "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
@@ -74,6 +47,45 @@ MANDATORY_CONFIG_KEYS = [
     "auth.client_secret",  # Client's secret to be used
     "auth.realm",  # Realm
 ]
+
+
+def custom_sink(encoding: str, path: str):
+    def configure_sink(message: loguru.Message):
+        result = message
+
+        if encoding == "json":
+            record = message.record
+            time = datetime.utcfromtimestamp(record["time"].timestamp()).isoformat(timespec="milliseconds") + "Z"
+
+            filepath = record["file"].path
+            domain = filepath.split("/")
+            filepath = f"{domain[-2]}/{domain[-1]}"
+            filepath = filepath + ":" + str(record["line"])
+
+            metadata = {}
+            str_metadata = record["extra"]["metadata"]
+            for key, value in ast.literal_eval(str_metadata).items():
+                metadata[key] = value
+
+            serialized_log = {
+                "L": record["level"].name,
+                "T": time,
+                "N": record["extra"]["context"],
+                "C": filepath,
+                "M": record["message"],
+                **metadata,
+            }
+            result = json.dumps(serialized_log)
+
+        if path == "stdout":
+            print(result, file=sys.stdout)
+        elif path == "stderr":
+            print(result, file=sys.stderr)
+        else:
+            with open(path, "a") as file:
+                print(result, file=file)
+
+    return configure_sink
 
 
 @dataclass
@@ -145,22 +157,19 @@ class Runner:
         v.set_default("metadata.base_path", "/")
         v.set_default("runner.subscriber.ack_wait_time", 22)
         v.set_default("runner.logger.level", "INFO")
+        v.set_default("runner.logger.encoding", "json")
         v.set_default("runner.logger.output_paths", ["stdout"])
         v.set_default("runner.logger.error_output_paths", ["stderr"])
 
     def initialize_logger(self) -> None:
+        encoding = v.get_string("runner.logger.encoding")
         output_paths = v.get("runner.logger.output_paths")
         error_output_paths = v.get("runner.logger.error_output_paths")
 
         logger.remove()  # Remove the pre-configured handler
         for output_path in output_paths:
-            if output_path == "stdout" or output_path == "console":
-                output_path = sys.stdout
-            elif output_path == "json":
-                output_path = sink_serializer
-
             logger.add(
-                output_path,
+                custom_sink(encoding, output_path),
                 colorize=True,
                 format=LOGGER_FORMAT,
                 backtrace=False,
@@ -169,13 +178,8 @@ class Runner:
             )
 
         for error_output_path in error_output_paths:
-            if error_output_path == "stderr" or error_output_path == "console":
-                error_output_path = sys.stderr
-            elif error_output_path == "json":
-                error_output_path = sink_serializer
-
             logger.add(
-                error_output_path,
+                custom_sink(encoding, error_output_path),
                 colorize=True,
                 format=LOGGER_FORMAT,
                 backtrace=True,
@@ -183,9 +187,9 @@ class Runner:
                 level="ERROR",
             )
 
-        logger.configure(extra={"context": "[UNKNOWN]", "metadata": "{}"})
+        logger.configure(extra={"context": "", "metadata": "{}", "origin": "[RUNNER]"})
 
-        self.logger = logger.bind(context="[RUNNER CONFIG]")
+        self.logger = logger.bind(context="[RUNNER]")
         self.logger.info("logger initialized")
 
     def trigger_runner(self) -> TriggerRunner:

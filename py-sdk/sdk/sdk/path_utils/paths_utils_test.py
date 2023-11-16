@@ -4,10 +4,7 @@ from sdk.path_utils.path_utils import PathUtils
 
 
 def test_ok():
-    path = PathUtils()
-
-    assert path.logger is not None
-
+    PathUtils()
 
 def test_get_basepath_ok():
     v.set("metadata.base_path", "base_path")
