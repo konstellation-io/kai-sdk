@@ -26,7 +26,7 @@ func (tr *Runner) getLoggerWithName() logr.Logger {
 }
 
 func (tr *Runner) startSubscriber() {
-	inputSubjects := viper.GetStringSlice("nats.inputs")
+	inputSubjects := viper.GetStringSlice(common.ConfigNatsInputsKey)
 
 	if len(inputSubjects) == 0 {
 		tr.getLoggerWithName().Info("Undefined input subjects")
@@ -39,8 +39,7 @@ func (tr *Runner) startSubscriber() {
 		consumerName := fmt.Sprintf("%s-%s", strings.ReplaceAll(subject, ".", "-"),
 			strings.ReplaceAll(strings.ReplaceAll(tr.sdk.Metadata.GetProcess(), ".", "-"), " ", "-"))
 
-		tr.getLoggerWithName().V(1).Info("Subscribing to subject",
-			"Subject", subject, "Queue group", consumerName)
+		tr.getLoggerWithName().V(1).Info(fmt.Sprintf("Subscribing to subject %s with queue group %s", subject, consumerName))
 
 		s, err := tr.jetstream.QueueSubscribe(
 			subject,
@@ -49,21 +48,19 @@ func (tr *Runner) startSubscriber() {
 			nats.DeliverNew(),
 			nats.Durable(consumerName),
 			nats.ManualAck(),
-			nats.AckWait(viper.GetDuration("runner.subscriber.ack_wait_time")),
+			nats.AckWait(viper.GetDuration(common.ConfigRunnerSubscriberAckWaitTimeKey)),
 		)
 		if err != nil {
-			tr.getLoggerWithName().Error(err, "Error subscribing to NATS subject",
-				"Subject", subject)
+			tr.getLoggerWithName().Error(err, fmt.Sprintf("Error subscribing to subject %s", subject))
 			os.Exit(1)
 		}
 
 		subscriptions = append(subscriptions, s)
 
-		tr.getLoggerWithName().V(1).Info("Listening to subject",
-			"Subject", subject, "Queue group", consumerName)
+		tr.getLoggerWithName().V(1).Info(fmt.Sprintf("Listening to subject %s with queue group %s", subject, consumerName))
 	}
 
-	tr.sdk.Logger.Info("Subscribed to all subjects", "Subjects", subscriptions)
+	tr.getLoggerWithName().V(1).Info("Subscribed to all subjects successfully")
 
 	// Handle sigterm and await termChan signal
 	termChan := make(chan os.Signal, 1)
@@ -73,16 +70,14 @@ func (tr *Runner) startSubscriber() {
 	// Handle shutdown
 	tr.getLoggerWithName().Info("Shutdown signal received")
 
-	tr.sdk.Logger.Info("Unsubscribing from all subjects", "Subjects", subscriptions)
+	tr.getLoggerWithName().V(1).Info("Unsubscribing from all subjects")
 
 	for _, s := range subscriptions {
-		tr.getLoggerWithName().V(1).Info("Unsubscribing from subject",
-			"Subject", s.Subject)
+		tr.getLoggerWithName().V(1).Info(fmt.Sprintf("Unsubscribing from subject %s", s.Subject))
 
 		err := s.Unsubscribe()
 		if err != nil {
-			tr.getLoggerWithName().Error(err, "Error unsubscribing from the NATS subject",
-				"Subject", s.Subject)
+			tr.getLoggerWithName().Error(err, fmt.Sprintf("Error unsubscribing from the subject %s", s.Subject))
 			os.Exit(1)
 		}
 	}
@@ -99,8 +94,8 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 		return
 	}
 
-	tr.getLoggerWithName().Info("New message received",
-		"Subject", msg.Subject, "Request ID", requestMsg.RequestId)
+	tr.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
+		msg.Subject))
 
 	handler := tr.getResponseHandler(strings.ToLower(requestMsg.FromNode))
 	if handler == nil {
@@ -182,7 +177,7 @@ func (tr *Runner) publishError(requestID, errMsg string) {
 	responseMsg := &kai.KaiNatsMessage{
 		RequestId:   requestID,
 		Error:       errMsg,
-		FromNode:    viper.GetString("metadata.process_name"),
+		FromNode:    viper.GetString(common.ConfigMetadataProcessIDKey),
 		MessageType: kai.MessageType_ERROR,
 	}
 	tr.publishResponse(responseMsg, "")
@@ -195,7 +190,6 @@ func (tr *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel strin
 	if err != nil {
 		tr.getLoggerWithName().
 			Error(err, "Error generating output result because handler result is not a serializable Protobuf")
-
 		return
 	}
 
@@ -205,8 +199,7 @@ func (tr *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel strin
 		return
 	}
 
-	tr.getLoggerWithName().V(1).Info("Publishing response",
-		"Subject", outputSubject)
+	tr.getLoggerWithName().V(1).Info(fmt.Sprintf("Publishing response with subject %s", outputSubject))
 
 	_, err = tr.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
@@ -215,7 +208,7 @@ func (tr *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel strin
 }
 
 func (tr *Runner) getOutputSubject(channel string) string {
-	outputSubject := viper.GetString("nats.output")
+	outputSubject := viper.GetString(common.ConfigNatsOutputKey)
 	if channel != "" {
 		return fmt.Sprintf("%s.%s", outputSubject, channel)
 	}
@@ -243,17 +236,13 @@ func (tr *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 
 	lenOutMsg := int64(len(outMsg))
 	if lenOutMsg > maxSize {
-		tr.getLoggerWithName().V(1).
-			Info("Compressed message exceeds maximum size allowed",
-				"Current message size", sizeInMB(lenOutMsg),
-				"Compressed message size", sizeInMB(maxSize))
-
+		tr.getLoggerWithName().V(1).Info("Compressed message size %s "+
+			"exceeds maximum size allowed %s", sizeInMB(lenOutMsg), sizeInMB(maxSize))
 		return nil, errors.ErrMessageToBig
 	}
 
-	tr.getLoggerWithName().Info("Message prepared",
-		"Current message size", sizeInMB(lenOutMsg),
-		"Compressed message size", sizeInMB(maxSize))
+	tr.getLoggerWithName().Info(fmt.Sprintf("Message prepared with original size %s "+
+		"and compressed size %s", sizeInMB(lenMsg), sizeInMB(lenOutMsg)))
 
 	return outMsg, nil
 }
@@ -268,7 +257,7 @@ func (tr *Runner) getResponseHandler(subject string) Handler {
 }
 
 func (tr *Runner) getMaxMessageSize() (int64, error) {
-	streamInfo, err := tr.jetstream.StreamInfo(viper.GetString("nats.stream"))
+	streamInfo, err := tr.jetstream.StreamInfo(viper.GetString(common.ConfigNatsStreamKey))
 	if err != nil {
 		return 0, fmt.Errorf("error getting stream's max message size: %w", err)
 	}

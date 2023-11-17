@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -109,7 +111,7 @@ func (s *SdkRunnerTestSuite) TestNewExitRunner_WithoutDefaultHandler_ExpectPanic
 
 func (s *SdkRunnerTestSuite) TestNewRunner_MissingMandatoryKey() {
 	// Given
-	natsURL := viper.GetString("nats.url")
+	natsURL := viper.GetString(common.ConfigNatsURLKey)
 	viper.Set("nats", nil)
 
 	// Then
@@ -117,7 +119,7 @@ func (s *SdkRunnerTestSuite) TestNewRunner_MissingMandatoryKey() {
 		// When
 		runner.NewTestRunner(nil, &s.js)
 	}, "Missing mandatory key 'nats'")
-	viper.Set("nats.url", natsURL)
+	viper.Set(common.ConfigNatsURLKey, natsURL)
 }
 
 func TestRunnerTestSuite(t *testing.T) {

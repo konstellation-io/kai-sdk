@@ -6,7 +6,7 @@ import sys
 import threading
 from asyncio import Queue
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, Optional
+from typing import Awaitable, Callable, Optional
 
 import loguru
 from google.protobuf import any_pb2
@@ -38,7 +38,8 @@ class TriggerRunner:
     tasks: list[threading.Thread] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
-        self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=self.logger)
+        logger.configure(extra={"context": "", "metadata": "{}", "origin": "[TRIGGER]"})
+        self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=logger)
         self.subscriber = TriggerSubscriber(self)
 
     def with_initializer(self, initializer: Initializer) -> TriggerRunner:

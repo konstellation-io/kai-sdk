@@ -15,7 +15,7 @@ from nats.js.client import JetStreamContext
 from vyper import v
 
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
-from sdk.messaging.exceptions import FailedGettingMaxMessageSizeError, MessageTooLargeError, NewRequestMsgError
+from sdk.messaging.exceptions import FailedToGetMaxMessageSizeError, MessageTooLargeError, NewRequestMsgError
 from sdk.messaging.messaging_utils import (
     MessagingUtils,
     MessagingUtilsABC,
@@ -87,9 +87,11 @@ class Messaging(MessagingABC):
     nc: NatsClient
     request_msg: KaiNatsMessage = field(init=False, default=None)
     messaging_utils: MessagingUtilsABC = field(init=False)
-    logger: loguru.Logger = logger.bind(context="[MESSAGING]")
+    logger: loguru.Logger = field(init=False)
 
     def __post_init__(self) -> None:
+        origin = logger._core.extra["origin"]
+        self.logger = logger.bind(context=f"{origin}.[MESSAGING]")
         self.messaging_utils = MessagingUtils(js=self.js, nc=self.nc)
 
     async def send_output(self, response: Message, chan: Optional[str] = None) -> None:
@@ -210,7 +212,7 @@ class Messaging(MessagingABC):
 
         try:
             output_msg = await self._prepare_output_message(output_msg)
-        except (FailedGettingMaxMessageSizeError, MessageTooLargeError) as e:
+        except (FailedToGetMaxMessageSizeError, MessageTooLargeError) as e:
             self.logger.debug(f"failed preparing output message: {e} with request_id {response_msg.request_id}")
             return
 

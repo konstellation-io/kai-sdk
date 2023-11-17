@@ -56,6 +56,14 @@ func defaultHandler(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		Value: stringValue.GetValue() + ", Processed by the exit process!",
 	}
 
+	obj, err := kaiSDK.Storage.Persistent.Get("some-object")
+	if err != nil {
+		kaiSDK.Logger.Error(err, "Error getting value from the persistent storage")
+		return err
+	}
+
+	kaiSDK.Logger.Info("Persistent storage value retrieved!", "some-object", obj.GetAsString())
+
 	err = kaiSDK.Messaging.SendOutput(stringValue)
 	if err != nil {
 		kaiSDK.Logger.Error(err, "Error sending output")

@@ -3,6 +3,8 @@ package metadata_test
 import (
 	"testing"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
 	"github.com/spf13/viper"
@@ -27,18 +29,18 @@ func (s *SdkMetadataTestSuite) SetupTest() {
 
 func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	// Given
-	viper.SetDefault("metadata.product_id", "product-name")
-	viper.SetDefault("metadata.workflow_name", "workflow-name")
-	viper.SetDefault("metadata.process_name", "process-name")
-	viper.SetDefault("metadata.version_tag", "version-name")
-	viper.SetDefault("nats.object_store", "my-ephemeral-storage")
-	viper.SetDefault("centralized_configuration.global.bucket", "global-bucket")
-	viper.SetDefault("centralized_configuration.product.bucket", "product-bucket")
-	viper.SetDefault("centralized_configuration.workflow.bucket", "workflow-bucket")
-	viper.SetDefault("centralized_configuration.process.bucket", "process-bucket")
+	viper.SetDefault(common.ConfigMetadataProductIDKey, "product-name")
+	viper.SetDefault(common.ConfigMetadataWorkflowIDKey, "workflow-name")
+	viper.SetDefault(common.ConfigMetadataProcessIDKey, "process-name")
+	viper.SetDefault(common.ConfigMetadataVersionIDKey, "version-name")
+	viper.SetDefault(common.ConfigNatsEphemeralStorage, "my-ephemeral-storage")
+	viper.SetDefault(common.ConfigCcGlobalBucketKey, "global-bucket")
+	viper.SetDefault(common.ConfigCcProductBucketKey, "product-bucket")
+	viper.SetDefault(common.ConfigCcWorkflowBucketKey, "workflow-bucket")
+	viper.SetDefault(common.ConfigCcProcessBucketKey, "process-bucket")
 
 	// When
-	sdkMetadata := metadata.NewMetadata(s.logger)
+	sdkMetadata := metadata.NewMetadata()
 
 	productName := sdkMetadata.GetProduct()
 	workflowName := sdkMetadata.GetWorkflow()

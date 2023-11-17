@@ -4,7 +4,7 @@ import asyncio
 import signal
 import sys
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Optional
 
 import loguru
 from loguru import logger
@@ -39,7 +39,8 @@ class ExitRunner:
     finalizer: Optional[Finalizer] = None
 
     def __post_init__(self) -> None:
-        self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=self.logger)
+        logger.configure(extra={"context": "", "metadata": "{}", "origin": "[EXIT]"})
+        self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=logger)
         self.subscriber = ExitSubscriber(self)
 
     def with_initializer(self, initializer: Initializer) -> ExitRunner:

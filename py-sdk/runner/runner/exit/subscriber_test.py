@@ -16,15 +16,21 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
 from sdk.kai_sdk import KaiSDK
 from sdk.messaging.messaging_utils import compress
 from sdk.metadata.metadata import Metadata
+from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 NATS_INPUT = "nats.inputs"
 SUBJECT = "test.subject"
 SUBJECT_LIST = [SUBJECT, "test.subject2"]
 SUBJECT_LIST_STR = ",".join(SUBJECT_LIST)
+ACK_TIME_KEY = "runner.subscriber.ack_wait_time"
+ACK_HOURS = 22
+ACK_TIME_SECONDS = float(ACK_HOURS * 3600)
+PROCESS = "test process id"
 
 
 @pytest.fixture(scope="function")
-async def m_sdk() -> KaiSDK:
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+async def m_sdk(_: PersistentStorage) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()
@@ -36,7 +42,8 @@ async def m_sdk() -> KaiSDK:
 
 
 @pytest.fixture(scope="function")
-def m_exit_runner(m_sdk: KaiSDK) -> ExitRunner:
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+def m_exit_runner(_: PersistentStorage, m_sdk: KaiSDK) -> ExitRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 
@@ -67,7 +74,8 @@ def m_msg() -> Msg:
 async def test_start_ok_str_input(m_exit_subscriber):
     v.set(NATS_INPUT, SUBJECT)
     consumer_name = f"{SUBJECT.replace('.', '-')}-test-process-id"
-    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test process id")
+    v.set(ACK_TIME_KEY, ACK_HOURS)
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value=PROCESS)
     cb_mock = m_exit_subscriber._process_message = AsyncMock()
     m_exit_subscriber.exit_runner.js.subscribe = AsyncMock()
 
@@ -79,7 +87,7 @@ async def test_start_ok_str_input(m_exit_subscriber):
         queue=consumer_name,
         durable=consumer_name,
         cb=cb_mock,
-        config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+        config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ACK_TIME_SECONDS),
         manual_ack=True,
     )
     assert m_exit_subscriber.subscriptions == [m_exit_subscriber.exit_runner.js.subscribe.return_value]
@@ -87,7 +95,8 @@ async def test_start_ok_str_input(m_exit_subscriber):
 
 async def test_start_ok_list_input(m_exit_subscriber):
     v.set(NATS_INPUT, SUBJECT_LIST)
-    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test process id")
+    v.set(ACK_TIME_KEY, ACK_HOURS)
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value=PROCESS)
     cb_mock = m_exit_subscriber._process_message = AsyncMock()
     m_exit_subscriber.exit_runner.js.subscribe = AsyncMock()
 
@@ -102,7 +111,7 @@ async def test_start_ok_list_input(m_exit_subscriber):
             queue=consumer_name,
             durable=consumer_name,
             cb=cb_mock,
-            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ACK_TIME_SECONDS),
             manual_ack=True,
         ),
         call(
@@ -110,7 +119,7 @@ async def test_start_ok_list_input(m_exit_subscriber):
             queue=consumer_name2,
             durable=consumer_name2,
             cb=cb_mock,
-            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ACK_TIME_SECONDS),
             manual_ack=True,
         ),
     ]
@@ -123,7 +132,8 @@ async def test_start_ok_list_input(m_exit_subscriber):
 async def test_start_ok_str_list_input(m_exit_subscriber):
     v.set(NATS_INPUT, SUBJECT_LIST_STR)
     input_subjects = SUBJECT_LIST_STR.replace(" ", "").split(",")
-    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value="test process id")
+    v.set(ACK_TIME_KEY, ACK_HOURS)
+    m_exit_subscriber.exit_runner.sdk.metadata.get_process = Mock(return_value=PROCESS)
     cb_mock = m_exit_subscriber._process_message = AsyncMock()
     m_exit_subscriber.exit_runner.js.subscribe = AsyncMock()
 
@@ -138,7 +148,7 @@ async def test_start_ok_str_list_input(m_exit_subscriber):
             queue=consumer_name,
             durable=consumer_name,
             cb=cb_mock,
-            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ACK_TIME_SECONDS),
             manual_ack=True,
         ),
         call(
@@ -146,7 +156,7 @@ async def test_start_ok_str_list_input(m_exit_subscriber):
             queue=consumer_name2,
             durable=consumer_name2,
             cb=cb_mock,
-            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=float(22 * 3600)),
+            config=ConsumerConfig(deliver_policy=DeliverPolicy.NEW, ack_wait=ACK_TIME_SECONDS),
             manual_ack=True,
         ),
     ]
@@ -158,6 +168,7 @@ async def test_start_ok_str_list_input(m_exit_subscriber):
 
 async def test_start_nats_subscribing_ko(m_exit_subscriber):
     v.set(NATS_INPUT, [SUBJECT])
+    v.set(ACK_TIME_KEY, ACK_HOURS)
     m_exit_subscriber.exit_runner.js.subscribe = AsyncMock(side_effect=Exception("Subscription error"))
 
     with pytest.raises(SystemExit):

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+
 	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 
 	"github.com/go-logr/logr"
@@ -16,16 +18,16 @@ import (
 )
 
 const (
-	globalBucketProp       = "centralized_configuration.global.bucket"
+	globalBucketProp       = common.ConfigCcGlobalBucketKey
 	globalBucketVal        = "global-bucket"
 	wrongGlobalBucketVal   = "some-global-bucket"
-	productBucketProp      = "centralized_configuration.product.bucket"
+	productBucketProp      = common.ConfigCcProductBucketKey
 	productBucketVal       = "product-bucket"
 	wrongProductBucketVal  = "some-product-bucket"
-	workflowBucketProp     = "centralized_configuration.workflow.bucket"
+	workflowBucketProp     = common.ConfigCcWorkflowBucketKey
 	workflowBucketVal      = "workflow-bucket"
 	wrongWorkflowBucketVal = "some-workflow-bucket"
-	processBucketProp      = "centralized_configuration.process.bucket"
+	processBucketProp      = common.ConfigCcProcessBucketKey
 	processBucketVal       = "process-bucket"
 	wrongProcessBucketVal  = "some-process-bucket"
 	keyValue               = "KeyValue"
