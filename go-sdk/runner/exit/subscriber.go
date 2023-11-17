@@ -60,7 +60,7 @@ func (er *Runner) startSubscriber() {
 		er.getLoggerWithName().V(1).Info(fmt.Sprintf("Listening to subject %s with queue group %s", subject, consumerName))
 	}
 
-	er.sdk.Logger.Info("Subscribed to all subjects successfully")
+	er.getLoggerWithName().V(1).Info("Subscribed to all subjects successfully")
 
 	// Handle sigterm and await termChan signal
 	termChan := make(chan os.Signal, 1)
@@ -70,7 +70,7 @@ func (er *Runner) startSubscriber() {
 	// Handle shutdown
 	er.getLoggerWithName().Info("Shutdown signal received")
 
-	er.sdk.Logger.Info("Unsubscribing from all subjects")
+	er.getLoggerWithName().V(1).Info("Unsubscribing from all subjects")
 
 	for _, s := range subscriptions {
 		er.getLoggerWithName().V(1).Info(fmt.Sprintf("Unsubscribing from subject %s", s.Subject))
@@ -96,7 +96,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 	}
 
 	er.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
-		msg.Subject), requestMsg.RequestId)
+		msg.Subject))
 
 	handler := er.getResponseHandler(strings.ToLower(requestMsg.FromNode))
 	if handler == nil {

@@ -60,7 +60,7 @@ func (tr *Runner) startSubscriber() {
 		tr.getLoggerWithName().V(1).Info(fmt.Sprintf("Listening to subject %s with queue group %s", subject, consumerName))
 	}
 
-	tr.sdk.Logger.Info("Subscribed to all subjects successfully")
+	tr.getLoggerWithName().V(1).Info("Subscribed to all subjects successfully")
 
 	// Handle sigterm and await termChan signal
 	termChan := make(chan os.Signal, 1)
@@ -70,7 +70,7 @@ func (tr *Runner) startSubscriber() {
 	// Handle shutdown
 	tr.getLoggerWithName().Info("Shutdown signal received")
 
-	tr.sdk.Logger.Info("Unsubscribing from all subjects")
+	tr.getLoggerWithName().V(1).Info("Unsubscribing from all subjects")
 
 	for _, s := range subscriptions {
 		tr.getLoggerWithName().V(1).Info(fmt.Sprintf("Unsubscribing from subject %s", s.Subject))
@@ -95,7 +95,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 	}
 
 	tr.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
-		msg.Subject), requestMsg.RequestId)
+		msg.Subject))
 
 	handler := tr.getResponseHandler(strings.ToLower(requestMsg.FromNode))
 	if handler == nil {

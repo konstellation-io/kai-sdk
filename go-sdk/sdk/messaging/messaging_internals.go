@@ -84,7 +84,7 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 	if err != nil {
 		ms.logger.Error(err, fmt.Sprintf("Error generating output result because "+
 			"handler result is not a serializable "+
-			"Protobuf for request id %s", responseMsg.RequestId), common.LoggerRequestID, responseMsg.RequestId)
+			"Protobuf for request id %s", responseMsg.RequestId))
 
 		return
 	}
@@ -92,17 +92,17 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 	outputMsg, err = ms.prepareOutputMessage(outputMsg)
 	if err != nil {
 		ms.logger.Error(err, fmt.Sprintf("Error preparing output message"+
-			" for request id %s", responseMsg.RequestId), common.LoggerRequestID, responseMsg.RequestId)
+			" for request id %s", responseMsg.RequestId))
 		return
 	}
 
 	ms.logger.Info(fmt.Sprintf("Publishing response with subject %s "+
-		"for request id %s", outputSubject, responseMsg.RequestId), common.LoggerRequestID, responseMsg.RequestId)
+		"for request id %s", outputSubject, responseMsg.RequestId))
 
 	_, err = ms.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
 		ms.logger.Error(err, fmt.Sprintf("Error publishing output for"+
-			" request id %s", responseMsg.RequestId), common.LoggerRequestID, responseMsg.RequestId)
+			" request id %s", responseMsg.RequestId))
 	}
 }
 
