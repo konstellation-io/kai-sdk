@@ -133,7 +133,7 @@ func (cc *CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...mes
 
 	_, err := kvStore.PutString(key, value)
 	if err != nil {
-		return wrapErr(fmt.Errorf("error storing value with key %q to the key-value store: %w", key, err))
+		return wrapErr(fmt.Errorf("failed to set config for key %q: %w", key, err))
 	}
 
 	return nil
@@ -142,7 +142,7 @@ func (cc *CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...mes
 func (cc *CentralizedConfiguration) DeleteConfig(key string, scope messaging.Scope) error {
 	err := cc.getScopedConfig(scope).Delete(key)
 	if err != nil {
-		return fmt.Errorf("error retrieving config with key %q from the configuration: %w", key, err)
+		return fmt.Errorf("failed to delete config for key %q: %w", key, err)
 	}
 
 	return nil
@@ -151,7 +151,7 @@ func (cc *CentralizedConfiguration) DeleteConfig(key string, scope messaging.Sco
 func (cc *CentralizedConfiguration) getConfigFromScope(key string, scope messaging.Scope) (string, error) {
 	value, err := cc.getScopedConfig(scope).Get(key)
 	if err != nil {
-		return "", fmt.Errorf("error retrieving config with key %q from the configuration: %w", key, err)
+		return "", fmt.Errorf("failed to get config for key %q: %w", key, err)
 	}
 
 	return string(value.Value()), nil
