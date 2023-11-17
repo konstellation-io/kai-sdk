@@ -64,22 +64,22 @@ class PersistentStorageABC(ABC):
 
 @dataclass
 class PersistentStorage(PersistentStorageABC):
-    logger: loguru.Logger = logger.bind(context="[PERSISTENT STORAGE]")
+    logger: loguru.Logger = field(init=False)
     minio_client: Minio = field(init=False)
     minio_bucket_name: str = field(init=False)
 
     def __post_init__(self) -> None:
+        origin = logger._core.extra["origin"]
+        self.logger = logger.bind(context=f"{origin}.[PERSISTENT STORAGE]")
         try:
-            print("initializing Persistent Storage")
+            self.logger.info("initializing persistent storage")
             auth = Authentication()
 
-            print("initializing Minio Creds")
             creds = ClientGrantsProvider(
                 jwt_provider_func=lambda: auth.get_token(),
                 sts_endpoint=f"{'https://' if v.get_bool('minio.ssl') else 'http://'}{v.get_string('minio.endpoint')}",
             )
 
-            print("initializing Minio Client")
             self.minio_client = Minio(
                 endpoint=v.get_string("minio.endpoint"),
                 credentials=creds,

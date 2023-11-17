@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
 from google.protobuf.any_pb2 import Any
+from loguru import logger
 
 from runner.common.common import Finalizer, Handler, Initializer, initialize_process_configuration
 
@@ -17,20 +18,22 @@ from sdk.kai_sdk import KaiSDK
 def compose_initializer(initializer: Optional[Initializer] = None) -> Initializer:
     async def initializer_func(sdk: KaiSDK) -> None:
         assert sdk.logger is not None
-        logger = sdk.logger.bind(context="[INITIALIZER]")
-        logger.info("initializing TaskRunner...")
+
+        origin = logger._core.extra["origin"]
+        logger_ = sdk.logger.bind(context=f"{origin}.[INITIALIZER]")
+        logger_.info("initializing...")
         await sdk.initialize()
         await initialize_process_configuration(sdk)
 
         if initializer is not None:
-            logger.info("executing user initializer...")
+            logger_.info("executing user initializer...")
             if inspect.iscoroutinefunction(initializer):
                 await initializer(sdk)
             else:
                 initializer(sdk)
-            logger.info("user initializer executed")
+            logger_.info("user initializer executed")
 
-        logger.info("TaskRunner initialized")
+        logger_.info("initialized")
 
     return initializer_func
 
@@ -39,17 +42,12 @@ def compose_preprocessor(preprocessor: Preprocessor) -> Preprocessor:
     async def preprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
 
-        product_id = sdk.metadata.get_product()
-        version_id = sdk.metadata.get_version()
-        workflow_id = sdk.metadata.get_workflow()
-        process_id = sdk.metadata.get_process()
-        request_id = sdk.get_request_id()
-        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=} {request_id=}"
+        request_id = f"\u007b'request_id':{sdk.get_request_id()}\u007d"
+        origin = logger._core.extra["origin"]
+        logger_ = sdk.logger.bind(context=f"{origin}.[PREPROCESSOR]", metadata=request_id)
+        logger_.info("preprocessing...")
 
-        logger = sdk.logger.bind(context="[PREPROCESSOR]", metadata_info=metadata_info)
-        logger.info("preprocessing TaskRunner...")
-
-        logger.info("executing user preprocessor...")
+        logger_.info("executing user preprocessor...")
         if inspect.iscoroutinefunction(preprocessor):
             await preprocessor(sdk, response)
         else:
@@ -62,17 +60,12 @@ def compose_handler(handler: Handler) -> Handler:
     async def handler_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
 
-        product_id = sdk.metadata.get_product()
-        version_id = sdk.metadata.get_version()
-        workflow_id = sdk.metadata.get_workflow()
-        process_id = sdk.metadata.get_process()
-        request_id = sdk.get_request_id()
-        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=} {request_id=}"
+        request_id = f"\u007b'request_id':{sdk.get_request_id()}\u007d"
+        origin = logger._core.extra["origin"]
+        logger_ = sdk.logger.bind(context=f"{origin}.[HANDLER]", metadata=request_id)
+        logger_.info("handling...")
 
-        logger = sdk.logger.bind(context="[HANDLER]", metadata_info=metadata_info)
-        logger.info("handling TaskRunner...")
-
-        logger.info("executing user handler...")
+        logger_.info("executing user handler...")
         if inspect.iscoroutinefunction(handler):
             await handler(sdk, response)
         else:
@@ -85,17 +78,12 @@ def compose_postprocessor(postprocessor: Postprocessor) -> Postprocessor:
     async def postprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
 
-        product_id = sdk.metadata.get_product()
-        version_id = sdk.metadata.get_version()
-        workflow_id = sdk.metadata.get_workflow()
-        process_id = sdk.metadata.get_process()
-        request_id = sdk.get_request_id()
-        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=} {request_id=}"
+        request_id = f"\u007b'request_id':{sdk.get_request_id()}\u007d"
+        origin = logger._core.extra["origin"]
+        logger_ = sdk.logger.bind(context=f"{origin}.[POSTPROCESSOR]", metadata=request_id)
+        logger_.info("postprocessing...")
 
-        logger = sdk.logger.bind(context="[POSTPROCESSOR]", metadata_info=metadata_info)
-        logger.info("postprocessing TaskRunner...")
-
-        logger.info("executing user postprocessor...")
+        logger_.info("executing user postprocessor...")
         if inspect.iscoroutinefunction(postprocessor):
             await postprocessor(sdk, response)
         else:
@@ -107,17 +95,19 @@ def compose_postprocessor(postprocessor: Postprocessor) -> Postprocessor:
 def compose_finalizer(finalizer: Optional[Finalizer] = None) -> Finalizer:
     async def finalizer_func(sdk: KaiSDK) -> None:
         assert sdk.logger is not None
-        logger = sdk.logger.bind(context="[FINALIZER]")
-        logger.info("finalizing TaskRunner...")
+
+        origin = logger._core.extra["origin"]
+        logger_ = sdk.logger.bind(context=f"{origin}.[FINALIZER]")
+        logger_.info("finalizing...")
 
         if finalizer is not None:
-            logger.info("executing user finalizer...")
+            logger_.info("executing user finalizer...")
             if inspect.iscoroutinefunction(finalizer):
                 await finalizer(sdk)
             else:
                 finalizer(sdk)
-            logger.info("user finalizer executed")
+            logger_.info("user finalizer executed")
 
-        logger.info("TaskRunner finalized")
+        logger_.info("finalized")
 
     return finalizer_func

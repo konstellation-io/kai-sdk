@@ -25,8 +25,6 @@ class Authentication(AuthenticationABC):
     password: str = field(init=False)
     scope: str = field(init=False)
 
-    # logger: loguru.Logger = logger.bind(context="[CENTRALIZED CONFIGURATION]")
-
     def __post_init__(self) -> None:
         self.auth_server_url = v.get_string("auth.endpoint")
         self.auth_server_client_id = v.get_string("auth.client")

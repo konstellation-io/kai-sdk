@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import gzip
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import loguru
 from loguru import logger
@@ -27,7 +27,11 @@ class MessagingUtilsABC(ABC):
 class MessagingUtils(MessagingUtilsABC):
     js: JetStreamContext
     nc: NatsClient
-    logger: loguru.Logger = logger.bind(context="[MESSAGING UTILS]")
+    logger: loguru.Logger = field(init=False)
+
+    def __post_init__(self) -> None:
+        origin = logger._core.extra["origin"]
+        self.logger = logger.bind(context=f"{origin}.[MESSAGING UTILS]")
 
     async def get_max_message_size(self) -> int:
         stream_name = v.get_string("nats.stream")
