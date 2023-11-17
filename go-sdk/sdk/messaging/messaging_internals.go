@@ -67,7 +67,7 @@ func (ms Messaging) newResponseMsg(payload *anypb.Any, requestID string,
 	msgType kai.MessageType,
 ) *kai.KaiNatsMessage {
 	ms.logger.V(1).Info(fmt.Sprintf("Preparing response message for "+
-		"request id %s and message type %s", requestID, msgType), common.LoggerRequestID)
+		"request id %s and message type %s", requestID, msgType), common.LoggerRequestID, requestID)
 
 	return &kai.KaiNatsMessage{
 		RequestId:   requestID,
@@ -84,7 +84,7 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 	if err != nil {
 		ms.logger.Error(err, fmt.Sprintf("Error generating output result because "+
 			"handler result is not a serializable "+
-			"Protobuf for request id %s", responseMsg.RequestId), common.LoggerRequestID)
+			"Protobuf for request id %s", responseMsg.RequestId), common.LoggerRequestID, responseMsg.RequestId)
 
 		return
 	}
@@ -92,17 +92,17 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 	outputMsg, err = ms.prepareOutputMessage(outputMsg)
 	if err != nil {
 		ms.logger.Error(err, fmt.Sprintf("Error preparing output message"+
-			" for request id %s", responseMsg.RequestId), common.LoggerRequestID)
+			" for request id %s", responseMsg.RequestId), common.LoggerRequestID, responseMsg.RequestId)
 		return
 	}
 
 	ms.logger.Info(fmt.Sprintf("Publishing response with subject %s "+
-		"for request id %s", outputSubject, responseMsg.RequestId), common.LoggerRequestID)
+		"for request id %s", outputSubject, responseMsg.RequestId), common.LoggerRequestID, responseMsg.RequestId)
 
 	_, err = ms.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
 		ms.logger.Error(err, fmt.Sprintf("Error publishing output for"+
-			" request id %s", responseMsg.RequestId), common.LoggerRequestID)
+			" request id %s", responseMsg.RequestId), common.LoggerRequestID, responseMsg.RequestId)
 	}
 }
 
