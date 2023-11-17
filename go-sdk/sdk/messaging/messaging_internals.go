@@ -66,7 +66,8 @@ func (ms Messaging) publishError(requestID, errMsg string) {
 func (ms Messaging) newResponseMsg(payload *anypb.Any, requestID string,
 	msgType kai.MessageType,
 ) *kai.KaiNatsMessage {
-	ms.logger.V(1).Info(fmt.Sprintf("Preparing response message for request id %s and message type %s", requestID, msgType), common.LoggerRequestID)
+	ms.logger.V(1).Info(fmt.Sprintf("Preparing response message for "+
+		"request id %s and message type %s", requestID, msgType), common.LoggerRequestID)
 
 	return &kai.KaiNatsMessage{
 		RequestId:   requestID,
@@ -81,21 +82,27 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 
 	outputMsg, err := proto.Marshal(responseMsg)
 	if err != nil {
-		ms.logger.Error(err, fmt.Sprintf("Error generating output result because handler result is not a serializable Protobuf for request id %s", responseMsg.RequestId), common.LoggerRequestID)
+		ms.logger.Error(err, fmt.Sprintf("Error generating output result because "+
+			"handler result is not a serializable "+
+			"Protobuf for request id %s", responseMsg.RequestId), common.LoggerRequestID)
+
 		return
 	}
 
 	outputMsg, err = ms.prepareOutputMessage(outputMsg)
 	if err != nil {
-		ms.logger.Error(err, fmt.Sprintf("Error preparing output message for request id %s", responseMsg.RequestId), common.LoggerRequestID)
+		ms.logger.Error(err, fmt.Sprintf("Error preparing output message"+
+			" for request id %s", responseMsg.RequestId), common.LoggerRequestID)
 		return
 	}
 
-	ms.logger.Info(fmt.Sprintf("Publishing response with subject for request id %s", outputSubject, responseMsg.RequestId), common.LoggerRequestID)
+	ms.logger.Info(fmt.Sprintf("Publishing response with subject %s "+
+		"for request id %s", outputSubject, responseMsg.RequestId), common.LoggerRequestID)
 
 	_, err = ms.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
-		ms.logger.Error(err, fmt.Sprintf("Error publishing output for request id %s", responseMsg.RequestId), common.LoggerRequestID)
+		ms.logger.Error(err, fmt.Sprintf("Error publishing output "+
+			"for request id %s", responseMsg.RequestId), common.LoggerRequestID)
 	}
 }
 

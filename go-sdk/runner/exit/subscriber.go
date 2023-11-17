@@ -237,11 +237,14 @@ func (er *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 
 	lenOutMsg := int64(len(outMsg))
 	if lenOutMsg > maxSize {
-		er.getLoggerWithName().V(1).Info("Compressed message size %s exceeds maximum size allowed %s", sizeInMB(lenOutMsg), sizeInMB(maxSize))
+		er.getLoggerWithName().V(1).Info("Compressed message size %s "+
+			"exceeds maximum size allowed %s", sizeInMB(lenOutMsg), sizeInMB(maxSize))
 		return nil, errors.ErrMessageToBig
 	}
 
-	er.getLoggerWithName().Info(fmt.Sprintf("Message prepared with original size %s and compressed size %s", sizeInMB(lenMsg), sizeInMB(lenOutMsg)))
+	er.getLoggerWithName().Info(fmt.Sprintf("Message prepared with original size %s "+
+		"and compressed size %s", sizeInMB(lenMsg), sizeInMB(lenOutMsg)))
+
 	return outMsg, nil
 }
 
