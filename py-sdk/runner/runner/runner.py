@@ -55,7 +55,6 @@ def custom_sink(encoding: str, path: str):
 
         if encoding == "json":
             record = message.record
-            time = datetime.utcfromtimestamp(record["time"].timestamp()).isoformat(timespec="milliseconds") + "Z"
 
             filepath = record["file"].path
             domain = filepath.split("/")
@@ -68,11 +67,11 @@ def custom_sink(encoding: str, path: str):
                 metadata[key] = value
 
             serialized_log = {
-                "L": record["level"].name,
-                "T": time,
-                "N": record["extra"]["context"],
-                "C": filepath,
-                "M": record["message"],
+                "level": record["level"].name,
+                "ts": record["time"].timestamp(),
+                "logger": record["extra"]["context"],
+                "caller": filepath,
+                "msg": record["message"],
                 **metadata,
             }
             result = json.dumps(serialized_log)
