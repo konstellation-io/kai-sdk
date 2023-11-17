@@ -61,8 +61,7 @@ func composeRunner(userRunner RunnerFunc) RunnerFunc {
 		logger.V(1).Info("Closing opened channels...")
 		runner.responseChannels.Range(func(key, value interface{}) bool {
 			close(value.(chan *anypb.Any))
-			logger.V(1).Info(fmt.Sprintf("Channel closed for request id %s", key), 
-				sdk.LoggerRequestID, key)
+			logger.V(1).Info(fmt.Sprintf("Channel closed for request id %s", key), sdk.LoggerRequestID, key)
 			return true
 		})
 
