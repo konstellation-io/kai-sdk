@@ -67,7 +67,7 @@ func (ms Messaging) newResponseMsg(payload *anypb.Any, requestID string,
 	msgType kai.MessageType,
 ) *kai.KaiNatsMessage {
 	ms.logger.V(1).Info(fmt.Sprintf("Preparing response message for "+
-		"request id %s and message type %s", requestID, msgType), common.LoggerRequestID, requestID)
+		"request id %s and message type %s", requestID, msgType))
 
 	return &kai.KaiNatsMessage{
 		RequestId:   requestID,
