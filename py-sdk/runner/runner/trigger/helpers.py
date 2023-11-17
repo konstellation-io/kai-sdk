@@ -60,9 +60,11 @@ def get_response_handler(handlers: dict[str, asyncio.Queue]) -> ResponseHandler:
     async def response_handler_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
 
-        request_id = f"\u007b'request_id':{sdk.get_request_id()}\u007d"
+        request_id = sdk.get_request_id()
+        assert request_id is not None
+        request_id_formatted = f"\u007b'request_id':{request_id}\u007d"
         origin = logger._core.extra["origin"]
-        logger_ = sdk.logger.bind(context=f"{origin}.[RESPONSE HANDLER]", metadata=request_id)
+        logger_ = sdk.logger.bind(context=f"{origin}.[RESPONSE HANDLER]", metadata=request_id_formatted)
         logger_.info(f"message received with request id {request_id}")
 
         handler = handlers.pop(request_id, None)
