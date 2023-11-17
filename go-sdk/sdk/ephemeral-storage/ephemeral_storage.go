@@ -168,8 +168,8 @@ func (es EphemeralStorage) Purge(regexp ...string) error {
 
 	for _, objectName := range objects {
 		if pattern == nil || pattern.MatchString(objectName) {
-			es.logger.V(1).Info(fmt.Sprintf("Deleting object with key %s from the "+
-				"ephemeral storage with name %s", objectName, es.ephemeralStorageBucket))
+			es.logger.V(1).Info(fmt.Sprintf("Deleting object with key %s from the"+
+				" ephemeral storage with name %s", objectName, es.ephemeralStorageBucket))
 
 			err := es.ephemeralStorage.Delete(objectName)
 			if err != nil {

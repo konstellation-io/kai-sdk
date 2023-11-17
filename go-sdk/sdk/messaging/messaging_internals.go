@@ -101,8 +101,8 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 
 	_, err = ms.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
-		ms.logger.Error(err, fmt.Sprintf("Error publishing output "+
-			"for request id %s", responseMsg.RequestId), common.LoggerRequestID)
+		ms.logger.Error(err, fmt.Sprintf("Error publishing output for"+
+			" request id %s", responseMsg.RequestId), common.LoggerRequestID)
 	}
 }
 
