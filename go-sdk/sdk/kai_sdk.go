@@ -170,7 +170,8 @@ func (sdk *KaiSDK) GetRequestID() string {
 func ShallowCopyWithRequest(sdk *KaiSDK, requestMsg *kai.KaiNatsMessage) KaiSDK {
 	hSdk := *sdk
 	hSdk.requestMessage = requestMsg
-	hSdk.Messaging = msg.NewMessaging(sdk.Logger, sdk.nats, sdk.jetstream, requestMsg)
+	hSdk.Logger = sdk.Logger.WithValues(LoggerRequestID, requestMsg.GetRequestId())
+	hSdk.Messaging = msg.NewMessaging(hSdk.Logger, sdk.nats, sdk.jetstream, requestMsg)
 
 	return hSdk
 }
