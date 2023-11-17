@@ -66,8 +66,7 @@ func (ms Messaging) publishError(requestID, errMsg string) {
 func (ms Messaging) newResponseMsg(payload *anypb.Any, requestID string,
 	msgType kai.MessageType,
 ) *kai.KaiNatsMessage {
-	ms.logger.V(1).Info("Preparing response message",
-		common.LoggerRequestID, requestID, "msgType", msgType)
+	ms.logger.V(1).Info(fmt.Sprintf("Preparing response message for request id %s and message type %s", requestID, msgType), common.LoggerRequestID)
 
 	return &kai.KaiNatsMessage{
 		RequestId:   requestID,
@@ -82,23 +81,21 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 
 	outputMsg, err := proto.Marshal(responseMsg)
 	if err != nil {
-		ms.logger.Error(err, "Error generating output result because handler result is not "+
-			"a serializable Protobuf", common.LoggerRequestID, responseMsg.RequestId)
+		ms.logger.Error(err, fmt.Sprintf("Error generating output result because handler result is not a serializable Protobuf for request id %s", responseMsg.RequestId), common.LoggerRequestID)
 		return
 	}
 
 	outputMsg, err = ms.prepareOutputMessage(outputMsg)
 	if err != nil {
-		ms.logger.Error(err, "Error preparing output msg", common.LoggerRequestID, responseMsg.RequestId)
+		ms.logger.Error(err, fmt.Sprintf("Error preparing output message for request id %s", responseMsg.RequestId), common.LoggerRequestID)
 		return
 	}
 
-	ms.logger.Info("Publishing response", "subject", outputSubject,
-		common.LoggerRequestID, responseMsg.RequestId)
+	ms.logger.Info(fmt.Sprintf("Publishing response with subject for request id %s", outputSubject, responseMsg.RequestId), common.LoggerRequestID)
 
 	_, err = ms.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
-		ms.logger.Error(err, "Error publishing output", common.LoggerRequestID, responseMsg.RequestId)
+		ms.logger.Error(err, fmt.Sprintf("Error publishing output for request id %s", responseMsg.RequestId), common.LoggerRequestID)
 	}
 }
 
@@ -131,13 +128,11 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 
 	lenOutMsg := int64(len(outMsg))
 	if lenOutMsg > maxSize {
-		ms.logger.V(1).Info("Compressed message exceeds maximum size allowed",
-			"Current Message Size", sizeInMB(lenOutMsg), "Max. Allowed Size", sizeInMB(maxSize))
+		ms.logger.V(1).Info("Compressed message size %s exceeds maximum size allowed %s", sizeInMB(lenOutMsg), sizeInMB(maxSize))
 		return nil, errors.ErrMessageToBig
 	}
 
-	ms.logger.Info("Message compressed", "Original size", sizeInMB(lenMsg),
-		"Compressed size", sizeInMB(lenOutMsg))
+	ms.logger.Info(fmt.Sprintf("Message prepared with original size %s and compressed size %s", sizeInMB(lenMsg), sizeInMB(lenOutMsg)))
 
 	return outMsg, nil
 }

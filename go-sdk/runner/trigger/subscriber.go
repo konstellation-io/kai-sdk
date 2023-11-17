@@ -35,8 +35,7 @@ func (tr *Runner) startSubscriber() {
 		consumerName := fmt.Sprintf("%s-%s", strings.ReplaceAll(subject, ".", "-"),
 			strings.ReplaceAll(strings.ReplaceAll(tr.sdk.Metadata.GetProcess(), ".", "-"), " ", "-"))
 
-		tr.getLoggerWithName().V(1).Info("Subscribing to subject",
-			"Subject", subject, "Queue group", consumerName)
+		tr.getLoggerWithName().V(1).Info(fmt.Sprintf("Subscribing to subject %s with queue group %s", subject, consumerName))
 
 		s, err := tr.jetstream.Subscribe(
 			subject,
@@ -47,17 +46,17 @@ func (tr *Runner) startSubscriber() {
 			nats.AckWait(viper.GetDuration(common.ConfigRunnerSubscriberAckWaitTimeKey)),
 		)
 		if err != nil {
-			tr.getLoggerWithName().Error(err, "Error subscribing to NATS subject",
-				"Subject", subject)
+			tr.getLoggerWithName().Error(err, fmt.Sprintf("Error subscribing to subject %s", subject))
 			wg.Done()
 			os.Exit(1)
 		}
 
 		subscriptions = append(subscriptions, s)
 
-		tr.getLoggerWithName().V(1).Info("Listening to subject",
-			"Subject", subject, "Queue group", consumerName)
+		tr.getLoggerWithName().V(1).Info(fmt.Sprintf("Listening to subject %s with queue group %s", subject, consumerName))
 	}
+
+	tr.sdk.Logger.Info("Subscribed to all subjects successfully")
 
 	// Handle sigterm and await termChan signal
 	termChan := make(chan os.Signal, 1)
@@ -67,14 +66,14 @@ func (tr *Runner) startSubscriber() {
 	// Handle shutdown
 	tr.getLoggerWithName().Info("Shutdown signal received")
 
+	tr.sdk.Logger.Info("Unsubscribing from all subjects")
+
 	for _, s := range subscriptions {
-		tr.getLoggerWithName().V(1).Info("Unsubscribing from subject",
-			"Subject", s.Subject)
+		tr.getLoggerWithName().V(1).Info(fmt.Sprintf("Unsubscribing from subject %s", s.Subject))
 
 		err := s.Unsubscribe()
 		if err != nil {
-			tr.getLoggerWithName().Error(err, "Error unsubscribing from the NATS subject",
-				"Subject", s.Subject)
+			tr.getLoggerWithName().Error(err, fmt.Sprintf("Error unsubscribing from the subject %s", s.Subject))
 			wg.Done()
 			os.Exit(1)
 		}
@@ -95,11 +94,11 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 		return
 	}
 
-	tr.getLoggerWithName().Info("New message received",
-		"Subject", msg.Subject, "Request ID", requestMsg.RequestId)
+	tr.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
+		msg.Subject), requestMsg.RequestId)
 
 	if tr.responseHandler == nil {
-		errMsg := "Error missing handler"
+		errMsg := fmt.Sprintf("Error missing handler for node %q", requestMsg.FromNode)
 		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
 
 		return
@@ -166,8 +165,7 @@ func (tr *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel strin
 
 	outputMsg, err := proto.Marshal(responseMsg)
 	if err != nil {
-		tr.getLoggerWithName().Error(err, "Error generating output result"+
-			" because handler result is not a serializable Protobuf")
+		tr.getLoggerWithName().Error(err, "Error generating output result because handler result is not a serializable Protobuf")
 		return
 	}
 
@@ -177,8 +175,7 @@ func (tr *Runner) publishResponse(responseMsg *kai.KaiNatsMessage, channel strin
 		return
 	}
 
-	tr.getLoggerWithName().V(1).Info("Publishing response",
-		"Subject", outputSubject)
+	tr.getLoggerWithName().V(1).Info(fmt.Sprintf("Publishing response with subject %s", outputSubject))
 
 	_, err = tr.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
@@ -215,17 +212,11 @@ func (tr *Runner) prepareOutputMessage(msg []byte) ([]byte, error) {
 
 	lenOutMsg := int64(len(outMsg))
 	if lenOutMsg > maxSize {
-		tr.getLoggerWithName().V(1).Info("Compressed message exceeds maximum size allowed",
-			"Current message size", sizeInMB(lenOutMsg),
-			"Compressed message size", sizeInMB(maxSize))
-
+		tr.getLoggerWithName().V(1).Info("Compressed message size %s exceeds maximum size allowed %s", sizeInMB(lenOutMsg), sizeInMB(maxSize))
 		return nil, errors.ErrMessageToBig
 	}
 
-	tr.getLoggerWithName().Info("Message prepared",
-		"Current message size", sizeInMB(lenOutMsg),
-		"Compressed message size", sizeInMB(maxSize))
-
+	tr.getLoggerWithName().Info(fmt.Sprintf("Message prepared with original size %s and compressed size %s", sizeInMB(lenMsg), sizeInMB(lenOutMsg)))
 	return outMsg, nil
 }
 

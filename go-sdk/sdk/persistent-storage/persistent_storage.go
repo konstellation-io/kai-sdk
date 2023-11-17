@@ -131,8 +131,7 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (*O
 		return nil, fmt.Errorf("error storing object to the persistent storage: %w", err)
 	}
 
-	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully stored in persistent storage with version ID %s",
-		key, info.VersionID))
+	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully stored in persistent storage with version ID %s", key, info.VersionID))
 
 	obj := &ObjectInfo{
 		Key:       key,
@@ -166,7 +165,7 @@ func (ps PersistentStorage) Get(key string, version ...string) (*Object, error) 
 		return nil, fmt.Errorf("error retrieving object from the persistent storage: %w", err)
 	}
 
-	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully retrieved from persistent storage ", key))
+	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully retrieved from persistent storage", key))
 
 	defer object.Close()
 

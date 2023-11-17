@@ -162,8 +162,7 @@ func getLogger() logr.Logger {
 
 	log = zapr.NewLogger(logger)
 
-	log.WithName("[RUNNER CONFIG]").V(1).Info("Logger initialized",
-		"log_level", logLevel.String())
+	log.WithName("[RUNNER CONFIG]").V(1).Info(fmt.Sprintf("Logger initialized with level %s", logLevel.String()))
 
 	return log
 }

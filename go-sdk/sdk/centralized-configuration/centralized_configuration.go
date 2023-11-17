@@ -52,8 +52,7 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	wrapErr := utilErrors.Wrapper("configuration init: %w")
 
 	name := viper.GetString(common.ConfigCcGlobalBucketKey)
-	logger.V(1).Info("Initializing global key-value store",
-		"name", name)
+	logger.V(1).Info(fmt.Sprintf("Initializing global key-value store with name %s", name))
 
 	globalKv, err = js.KeyValue(name)
 	if err != nil {
@@ -62,8 +61,7 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	}
 
 	name = viper.GetString(common.ConfigCcProductBucketKey)
-	logger.V(1).Info("Initializing product key-value store",
-		"name", name)
+	logger.V(1).Info(fmt.Sprintf("Initializing product key-value store with name %s", name))
 
 	productKv, err = js.KeyValue(name)
 	if err != nil {
@@ -74,8 +72,7 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	logger.V(1).Info("Product key-value store initialized")
 
 	name = viper.GetString(common.ConfigCcWorkflowBucketKey)
-	logger.V(1).Info("Initializing workflow key-value store",
-		"name", name)
+	logger.V(1).Info(fmt.Sprintf("Initializing workflow key-value store with name %s", name))
 
 	workflowKv, err = js.KeyValue(name)
 	if err != nil {
@@ -86,8 +83,7 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	logger.V(1).Info("Workflow key-value store initialized")
 
 	name = viper.GetString(common.ConfigCcProcessBucketKey)
-	logger.V(1).Info("Initializing process key-value store",
-		"name", name)
+	logger.V(1).Info(fmt.Sprintf("Initializing process key-value store with name %s", name))
 
 	processKv, err = js.KeyValue(name)
 	if err != nil {
