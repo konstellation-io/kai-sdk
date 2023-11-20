@@ -68,7 +68,6 @@ class TaskSubscriber:
             await self.task_runner._shutdown_handler(asyncio.get_event_loop())
 
     async def _process_message(self, msg: Msg) -> None:
-        self.logger.info("new message received")
         try:
             request_msg = self._new_request_msg(msg.data)
             self.task_runner.sdk.set_request_msg(request_msg)
@@ -76,6 +75,7 @@ class TaskSubscriber:
             await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e))
             return
 
+        self.logger.info("new message received")
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
         from_node = request_msg.from_node
