@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import ast
+import json
 import sys
 from dataclasses import dataclass, field
 from functools import reduce
@@ -16,9 +18,9 @@ from runner.task.task_runner import TaskRunner
 from runner.trigger.trigger_runner import TriggerRunner
 
 LOGGER_FORMAT = (
-    "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
-    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
-    "{extra[context]}: <level>{message}</level> - {extra[metadata_info]}"
+    "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
+    "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
+    "<level>{message}</level> <level>{extra[metadata]}</level>"
 )
 
 MANDATORY_CONFIG_KEYS = [
@@ -26,7 +28,6 @@ MANDATORY_CONFIG_KEYS = [
     "metadata.workflow_name",
     "metadata.process_name",
     "metadata.version_tag",
-    "metadata.base_path",
     "nats.url",
     "nats.stream",
     "nats.output",
@@ -35,11 +36,52 @@ MANDATORY_CONFIG_KEYS = [
     "centralized_configuration.workflow.bucket",
     "centralized_configuration.process.bucket",
     "minio.endpoint",
-    "minio.access_key_id",
-    "minio.access_key_secret",
-    "minio.ssl",
-    "minio.bucket",
+    "minio.client_user",  # generated user for the bucket
+    "minio.client_password",  # generated user's password for the bucket
+    "minio.ssl",  # Enable or disable SSL
+    "minio.bucket",  # Bucket to be used
+    "auth.endpoint",  # keycloak endpoint
+    "auth.client",  # Client to be used to authenticate
+    "auth.client_secret",  # Client's secret to be used
+    "auth.realm",  # Realm
 ]
+
+
+def custom_sink(encoding: str, path: str):
+    def configure_sink(message: loguru.Message):
+        result = message
+
+        if encoding == "json":
+            record = message.record
+
+            filepath = record["file"].path
+            domain = filepath.split("/")
+            filepath = f"{domain[-2]}/{domain[-1]}"
+            filepath = filepath + ":" + str(record["line"])
+
+            metadata = {}
+            for key, value in record["extra"]["metadata"].items():
+                metadata[key] = value
+
+            serialized_log = {
+                "level": record["level"].name,
+                "ts": record["time"].timestamp(),
+                "logger": record["extra"]["context"],
+                "caller": filepath,
+                "msg": record["message"],
+                **metadata,
+            }
+            result = json.dumps(serialized_log)
+
+        if path == "stdout":
+            print(result, file=sys.stdout)
+        elif path == "stderr":
+            print(result, file=sys.stderr)
+        else:
+            with open(path, "a") as file:
+                print(result, file=file)
+
+    return configure_sink
 
 
 @dataclass
@@ -108,44 +150,41 @@ class Runner:
 
         self._validate_config(v.all_settings())
 
-        v.set_default("metadata.base_path", "/")
         v.set_default("runner.subscriber.ack_wait_time", 22)
         v.set_default("runner.logger.level", "INFO")
+        v.set_default("runner.logger.encoding", "json")
         v.set_default("runner.logger.output_paths", ["stdout"])
         v.set_default("runner.logger.error_output_paths", ["stderr"])
 
     def initialize_logger(self) -> None:
+        encoding = v.get_string("runner.logger.encoding")
         output_paths = v.get("runner.logger.output_paths")
         error_output_paths = v.get("runner.logger.error_output_paths")
 
         logger.remove()  # Remove the pre-configured handler
         for output_path in output_paths:
-            if output_path == "stdout":
-                output_path = sys.stdout
-
             logger.add(
-                output_path,
+                custom_sink(encoding, output_path),
                 colorize=True,
                 format=LOGGER_FORMAT,
                 backtrace=False,
                 diagnose=False,
                 level=v.get_string("runner.logger.level"),
             )
-        for error_output_path in error_output_paths:
-            if error_output_path == "stderr":
-                error_output_path = sys.stderr
 
+        for error_output_path in error_output_paths:
             logger.add(
-                error_output_path,
+                custom_sink(encoding, error_output_path),
                 colorize=True,
                 format=LOGGER_FORMAT,
                 backtrace=True,
                 diagnose=True,
                 level="ERROR",
             )
-        logger.configure(extra={"context": "[UNKNOWN]", "metadata_info": ""})
 
-        self.logger = logger.bind(context="[RUNNER CONFIG]")
+        logger.configure(extra={"context": "", "metadata": {}, "origin": "[RUNNER]"})
+
+        self.logger = logger.bind(context="[RUNNER]")
         self.logger.info("logger initialized")
 
     def trigger_runner(self) -> TriggerRunner:

@@ -66,8 +66,8 @@ func (ms Messaging) publishError(requestID, errMsg string) {
 func (ms Messaging) newResponseMsg(payload *anypb.Any, requestID string,
 	msgType kai.MessageType,
 ) *kai.KaiNatsMessage {
-	ms.logger.V(1).Info("Preparing response message",
-		common.LoggerRequestID, requestID, "msgType", msgType)
+	ms.logger.WithName(_messagingLoggerName).V(1).Info(fmt.Sprintf("Preparing response message for "+
+		"request id %s and message type %s", requestID, msgType))
 
 	return &kai.KaiNatsMessage{
 		RequestId:   requestID,
@@ -82,23 +82,29 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 
 	outputMsg, err := proto.Marshal(responseMsg)
 	if err != nil {
-		ms.logger.Error(err, "Error generating output result because handler result is not "+
-			"a serializable Protobuf", common.LoggerRequestID, responseMsg.RequestId)
+		ms.logger.WithName(_messagingLoggerName).
+			Error(err, fmt.Sprintf("Error generating output result because "+
+				"handler result is not a serializable Protobuf for request id %s", responseMsg.RequestId))
+
 		return
 	}
 
 	outputMsg, err = ms.prepareOutputMessage(outputMsg)
 	if err != nil {
-		ms.logger.Error(err, "Error preparing output msg", common.LoggerRequestID, responseMsg.RequestId)
+		ms.logger.WithName(_messagingLoggerName).
+			Error(err, fmt.Sprintf("Error preparing output message for request id %s", responseMsg.RequestId))
+
 		return
 	}
 
-	ms.logger.Info("Publishing response", "subject", outputSubject,
-		common.LoggerRequestID, responseMsg.RequestId)
+	ms.logger.WithName(_messagingLoggerName).Info(fmt.Sprintf("Publishing response with subject %s "+
+		"for request id %s", outputSubject, responseMsg.RequestId))
 
 	_, err = ms.jetstream.Publish(outputSubject, outputMsg)
 	if err != nil {
-		ms.logger.Error(err, "Error publishing output", common.LoggerRequestID, responseMsg.RequestId)
+		ms.logger.WithName(_messagingLoggerName).
+			Error(err, fmt.Sprintf("Error publishing output for"+
+				" request id %s", responseMsg.RequestId))
 	}
 }
 
@@ -122,7 +128,8 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 		return msg, nil
 	}
 
-	ms.logger.V(1).Info("Message exceeds maximum size allowed, compressing data")
+	ms.logger.WithName(_messagingLoggerName).V(1).
+		Info("Message exceeds maximum size allowed, compressing data")
 
 	outMsg, err := common.CompressData(msg)
 	if err != nil {
@@ -131,13 +138,18 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 
 	lenOutMsg := int64(len(outMsg))
 	if lenOutMsg > maxSize {
-		ms.logger.V(1).Info("Compressed message exceeds maximum size allowed",
-			"Current Message Size", sizeInMB(lenOutMsg), "Max. Allowed Size", sizeInMB(maxSize))
+		ms.logger.WithName(_messagingLoggerName).V(1).
+			Info("Compressed message size %s exceeds maximum size allowed %s",
+				sizeInMB(lenOutMsg),
+				sizeInMB(maxSize),
+			)
+
 		return nil, errors.ErrMessageToBig
 	}
 
-	ms.logger.Info("Message compressed", "Original size", sizeInMB(lenMsg),
-		"Compressed size", sizeInMB(lenOutMsg))
+	ms.logger.WithName(_messagingLoggerName).
+		Info(fmt.Sprintf("Message prepared with original size %s and compressed size %s", sizeInMB(lenMsg),
+			sizeInMB(lenOutMsg)))
 
 	return outMsg, nil
 }
@@ -151,14 +163,14 @@ func (ms Messaging) GetRequestID(msg *nats.Msg) (string, error) {
 	if common.IsCompressed(data) {
 		data, err = common.UncompressData(data)
 		if err != nil {
-			ms.logger.Error(err, "Error reading compressed message")
+			ms.logger.WithName(_messagingLoggerName).Error(err, "Error reading compressed message")
 			return "", err
 		}
 	}
 
 	err = proto.Unmarshal(data, requestMsg)
 	if err != nil {
-		ms.logger.Error(err, "Error unmarshalling message")
+		ms.logger.WithName(_messagingLoggerName).Error(err, "Error unmarshalling message")
 		return "", err
 	}
 

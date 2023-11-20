@@ -87,9 +87,11 @@ class Messaging(MessagingABC):
     nc: NatsClient
     request_msg: KaiNatsMessage = field(init=False, default=None)
     messaging_utils: MessagingUtilsABC = field(init=False)
-    logger: loguru.Logger = logger.bind(context="[MESSAGING]")
+    logger: loguru.Logger = field(init=False)
 
     def __post_init__(self) -> None:
+        origin = logger._core.extra["origin"]
+        self.logger = logger.bind(context=f"{origin}.[MESSAGING]")
         self.messaging_utils = MessagingUtils(js=self.js, nc=self.nc)
 
     async def send_output(self, response: Message, chan: Optional[str] = None) -> None:

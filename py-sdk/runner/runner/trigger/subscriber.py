@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import loguru
+from loguru import logger
 from nats.aio.msg import Msg
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
@@ -28,7 +29,8 @@ class TriggerSubscriber:
     subscriptions: list[JetStreamContext.PushSubscription] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
-        self.logger = self.trigger_runner.logger.bind(context="[TRIGGER SUBSCRIBER]")
+        origin = logger._core.extra["origin"]
+        self.logger = self.trigger_runner.logger.bind(context=f"{origin}.[SUBSCRIBER]")
 
     async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
@@ -65,7 +67,6 @@ class TriggerSubscriber:
             self.logger.debug("input subjects undefined, skipping subscription")
 
     async def _process_message(self, msg: Msg) -> None:
-        self.logger.info("new message received")
         try:
             request_msg = self._new_request_msg(msg.data)
             self.trigger_runner.sdk.set_request_msg(request_msg)
@@ -73,6 +74,7 @@ class TriggerSubscriber:
             await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e))
             return
 
+        self.logger.info("new message received")
         self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
         handler = getattr(self.trigger_runner, "response_handler", None)

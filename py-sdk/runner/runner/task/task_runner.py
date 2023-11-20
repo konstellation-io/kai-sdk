@@ -39,7 +39,8 @@ class TaskRunner:
     finalizer: Optional[Finalizer] = None
 
     def __post_init__(self) -> None:
-        self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=self.logger)
+        logger.configure(extra={"context": "", "metadata": {}, "origin": "[TASK]"})
+        self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=logger)
         self.subscriber = TaskSubscriber(self)
 
     def with_initializer(self, initializer: Initializer) -> TaskRunner:

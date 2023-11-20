@@ -16,8 +16,13 @@ from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage, EphemeralS
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.messaging.messaging import Messaging, MessagingABC
 from sdk.metadata.metadata import Metadata, MetadataABC
-from sdk.path_utils.path_utils import PathUtils, PathUtilsABC
 from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
+
+LOGGER_FORMAT = (
+    "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
+    "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
+    "<level>{message}</level> <level>{extra[metadata]}</level>"
+)
 
 
 @dataclass
@@ -40,26 +45,19 @@ class KaiSDK:
     metadata: MetadataABC = field(init=False)
     messaging: MessagingABC = field(init=False)
     centralized_config: CentralizedConfigABC = field(init=False)
-    path_utils: PathUtilsABC = field(init=False)
     measurements: MeasurementsABC = field(init=False)
     storage: Storage = field(init=False)
 
     def __post_init__(self) -> None:
-        self.metadata = Metadata()
-
         if not self.logger:
             self._initialize_logger()
         else:
-            product_id = self.metadata.get_product()
-            version_id = self.metadata.get_version()
-            workflow_id = self.metadata.get_workflow()
-            process_id = self.metadata.get_process()
-            metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=}"
-            self.logger.configure(extra={"context": "[KAI SDK]", "metadata_info": metadata_info})
+            origin = logger._core.extra["origin"]
+            self.logger = self.logger.bind(context=f"{origin}.[SDK]")
 
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
-        self.path_utils = PathUtils()
+        self.metadata = Metadata()
         self.measurements = MeasurementsABC()
         self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
 
@@ -89,25 +87,19 @@ class KaiSDK:
         logger.add(
             sys.stdout,
             colorize=True,
-            format=(
-                "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
-                "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
-                "{extra[context]}: <level>{message}</level> - {extra[metadata_info]}"
-            ),
+            format=LOGGER_FORMAT,
             backtrace=True,
             diagnose=True,
+            level="DEBUG",
         )
-        product_id = self.metadata.get_product()
-        version_id = self.metadata.get_version()
-        workflow_id = self.metadata.get_workflow()
-        process_id = self.metadata.get_process()
-        metadata_info = f"{product_id=} {version_id=} {workflow_id=} {process_id=}"
-        logger.configure(extra={"context": "[UNKNOWN]", "metadata_info": metadata_info})
+        logger.configure(extra={"context": "", "metadata": {}, "origin": "[SDK]"})
 
-        self.logger = logger.bind(context="[KAI SDK]")
+        self.logger = logger.bind(context="[SDK]")
         self.logger.debug("logger initialized")
 
     def set_request_msg(self, request_msg: KaiNatsMessage) -> None:
         self.request_msg = request_msg
         assert isinstance(self.messaging, Messaging)
         self.messaging.request_msg = request_msg
+        origin = logger._core.extra["origin"]
+        logger.configure(extra={"metadata": {"request_id": request_msg.request_id}, "origin": origin})

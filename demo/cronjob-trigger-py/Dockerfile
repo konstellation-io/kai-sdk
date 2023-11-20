@@ -7,6 +7,7 @@ ARG UID=1001
 
 ENV PATH="/root/.local/bin:$PATH" \
     POETRY_VIRTUALENVS_CREATE=false
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /tmp
 
@@ -21,11 +22,17 @@ RUN apt update &&\
 
 RUN poetry install --only main --no-interaction --no-ansi
 
-USER ${USER}
-
 WORKDIR /app
+
+RUN chown -R kai:0 /app \
+    && chmod -R g+w /app \
+    && mkdir /var/log/app -p \
+    && chown -R kai:0 /var/log/app \
+    && chmod -R g+w /var/log/app
+
+USER ${USER}
 
 COPY main.py process/main.py
 COPY config.yaml config.yaml
 
-CMD ["python","/app/process/main.py"]
+CMD ["sh", "-c", "/usr/local/bin/python /app/process/main.py 2>&1 | tee -a /var/log/app/app.log"]

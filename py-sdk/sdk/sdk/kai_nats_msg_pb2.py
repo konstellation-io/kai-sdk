@@ -20,9 +20,8 @@ _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'kai_nats_msg_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
-
-  DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'Z\005./kai'
+  _globals['DESCRIPTOR']._options = None
+  _globals['DESCRIPTOR']._serialized_options = b'Z\005./kai'
   _globals['_MESSAGETYPE']._serialized_start=197
   _globals['_MESSAGETYPE']._serialized_end=277
   _globals['_KAINATSMESSAGE']._serialized_start=50

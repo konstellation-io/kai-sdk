@@ -13,7 +13,6 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
-from sdk.path_utils.path_utils import PathUtils
 from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 GLOBAL_BUCKET = "centralized_configuration.global.bucket"
@@ -52,7 +51,6 @@ async def test_initialize_ok(persistent_storage_mock, centralized_config_initial
     assert isinstance(sdk.storage.ephemeral, EphemeralStorage)
     assert isinstance(sdk.storage.persistent, PersistentStorage)
     assert isinstance(sdk.centralized_config, CentralizedConfig)
-    assert isinstance(sdk.path_utils, PathUtils)
     assert sdk.nc is not None
     assert sdk.js is not None
     assert getattr(sdk, "request_msg", None) is None
@@ -68,7 +66,6 @@ async def test_initialize_ok(persistent_storage_mock, centralized_config_initial
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
-    assert sdk.path_utils is not None
     assert isinstance(sdk.measurements, MeasurementsABC)
 
 
