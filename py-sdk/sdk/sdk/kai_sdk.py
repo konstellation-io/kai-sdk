@@ -49,8 +49,6 @@ class KaiSDK:
     storage: Storage = field(init=False)
 
     def __post_init__(self) -> None:
-        self.metadata = Metadata()
-
         if not self.logger:
             self._initialize_logger()
         else:
@@ -59,6 +57,7 @@ class KaiSDK:
 
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
+        self.metadata = Metadata()
         self.measurements = MeasurementsABC()
         self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
 
@@ -102,3 +101,5 @@ class KaiSDK:
         self.request_msg = request_msg
         assert isinstance(self.messaging, Messaging)
         self.messaging.request_msg = request_msg
+        origin = logger._core.extra["origin"]
+        logger.configure(extra={"metadata": {"request_id": request_msg.request_id}, "origin": origin})
