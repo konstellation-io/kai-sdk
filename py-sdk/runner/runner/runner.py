@@ -4,7 +4,6 @@ import ast
 import json
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime
 from functools import reduce
 
 import loguru
@@ -62,8 +61,7 @@ def custom_sink(encoding: str, path: str):
             filepath = filepath + ":" + str(record["line"])
 
             metadata = {}
-            str_metadata = record["extra"]["metadata"]
-            for key, value in ast.literal_eval(str_metadata).items():
+            for key, value in record["extra"]["metadata"].items():
                 metadata[key] = value
 
             serialized_log = {
@@ -186,7 +184,7 @@ class Runner:
                 level="ERROR",
             )
 
-        logger.configure(extra={"context": "", "metadata": "{}", "origin": "[RUNNER]"})
+        logger.configure(extra={"context": "", "metadata": {}, "origin": "[RUNNER]"})
 
         self.logger = logger.bind(context="[RUNNER]")
         self.logger.info("logger initialized")
