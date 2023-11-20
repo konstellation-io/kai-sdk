@@ -29,9 +29,6 @@ async def initializer(kai_sdk: sdk.KaiSDK):
     )
     kai_sdk.logger.info(f"object-store {kai_sdk.metadata.get_ephemeral_storage_name()}")
 
-    kai_sdk.logger.info(f"base path {kai_sdk.path_utils.get_base_path()}")
-    kai_sdk.logger.info(f"compose base path {kai_sdk.path_utils.compose_path('test')}")
-
     value1 = await kai_sdk.centralized_config.get_config("test1")
     value2 = await kai_sdk.centralized_config.get_config("test2")
 
