@@ -4,8 +4,6 @@ import (
 	"context"
 	"os"
 
-	kaiCommon "github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 
 	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
@@ -110,13 +108,6 @@ type KaiSDK struct {
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
 	metadata := meta.NewMetadata()
 
-	logger = logger.WithValues(
-		kaiCommon.LoggerProductID, metadata.GetProduct(),
-		kaiCommon.LoggerVersionID, metadata.GetVersion(),
-		kaiCommon.LoggerWorkflowID, metadata.GetWorkflow(),
-		kaiCommon.LoggerProcessID, metadata.GetProcess(),
-	)
-
 	centralizedConfigInst, err := centralizedConfiguration.NewCentralizedConfiguration(logger, jetstreamCli)
 	if err != nil {
 		logger.WithName("[CENTRALIZED CONFIGURATION]").
@@ -171,9 +162,6 @@ func ShallowCopyWithRequest(sdk *KaiSDK, requestMsg *kai.KaiNatsMessage) KaiSDK 
 	hSdk.requestMessage = requestMsg
 	hSdk.Logger = sdk.Logger.WithValues(LoggerRequestID, requestMsg.GetRequestId())
 	hSdk.Messaging = msg.NewMessaging(hSdk.Logger, sdk.nats, sdk.jetstream, requestMsg)
-
-	hSdk = NewKaiSDK(hSdk.Logger, sdk.nats, sdk.jetstream)
-	hSdk.requestMessage = requestMsg
 
 	return hSdk
 }
