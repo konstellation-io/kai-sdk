@@ -51,7 +51,6 @@ func validateConfig(keys []string) {
 		common.ConfigMetadataWorkflowIDKey,
 		common.ConfigMetadataProcessIDKey,
 		common.ConfigMetadataVersionIDKey,
-		common.ConfigMetadataBasePathKey,
 		common.ConfigNatsURLKey,
 		common.ConfigNatsStreamKey,
 		common.ConfigNatsOutputKey,
