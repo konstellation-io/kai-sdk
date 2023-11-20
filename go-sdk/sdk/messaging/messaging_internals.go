@@ -84,9 +84,7 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 	if err != nil {
 		ms.logger.WithName(_messagingLoggerName).
 			Error(err, fmt.Sprintf("Error generating output result because "+
-			"handler result is not a serializable "+
-			"Protobuf for request id %s", responseMsg.RequestId)
-)
+				"handler result is not a serializable Protobuf for request id %s", responseMsg.RequestId))
 		return
 	}
 
@@ -94,7 +92,7 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 	if err != nil {
 		ms.logger.WithName(_messagingLoggerName).
 			Error(err, fmt.Sprintf("Error preparing output message"+
-			" for request id %s", responseMsg.RequestId))
+				" for request id %s", responseMsg.RequestId))
 		return
 	}
 
@@ -105,7 +103,7 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 	if err != nil {
 		ms.logger.WithName(_messagingLoggerName).
 			Error(err, fmt.Sprintf("Error publishing output for"+
-			" request id %s", responseMsg.RequestId))
+				" request id %s", responseMsg.RequestId))
 	}
 }
 
@@ -145,7 +143,7 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 
 	ms.logger.WithName(_messagingLoggerName).
 		Info(fmt.Sprintf("Message prepared with original size %s and compressed size %s", sizeInMB(lenMsg),
-			 sizeInMB(lenOutMsg)))
+			sizeInMB(lenOutMsg)))
 
 	return outMsg, nil
 }
