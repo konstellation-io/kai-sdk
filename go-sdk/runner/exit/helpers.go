@@ -20,12 +20,12 @@ func composeInitializer(initializer common.Initializer) common.Initializer {
 		common.InitializeProcessConfiguration(kaiSDK)
 
 		if initializer != nil {
-			kaiSDK.Logger.V(3).Info("Executing user initializer...")
+			kaiSDK.Logger.WithName(_initializerLoggerName).V(3).Info("Executing user initializer...")
 			initializer(kaiSDK)
-			kaiSDK.Logger.V(3).Info("User initializer executed")
+			kaiSDK.Logger.WithName(_initializerLoggerName).V(3).Info("User initializer executed")
 		}
 
-		kaiSDK.Logger.V(1).Info("ExitRunner initialized")
+		kaiSDK.Logger.WithName(_initializerLoggerName).V(1).Info("ExitRunner initialized")
 	}
 }
 

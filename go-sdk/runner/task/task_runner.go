@@ -28,10 +28,8 @@ type Runner struct {
 }
 
 func NewTaskRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
-	logger = logger.WithName(_taskLoggerName)
-
 	return &Runner{
-		sdk:              sdk.NewKaiSDK(logger, ns, js),
+		sdk:              sdk.NewKaiSDK(logger.WithName(_taskLoggerName), ns, js),
 		nats:             ns,
 		jetstream:        js,
 		responseHandlers: make(map[string]Handler),

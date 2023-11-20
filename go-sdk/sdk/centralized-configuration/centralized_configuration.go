@@ -56,7 +56,7 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 
 	globalKv, err = js.KeyValue(name)
 	if err != nil {
-		logger.Error(err, "Error initializing global key-value store")
+		logger.WithName(_centralizedConfigurationLoggerName).Error(err, "Error initializing global key-value store")
 		return nil, nil, nil, nil, wrapErr(err)
 	}
 

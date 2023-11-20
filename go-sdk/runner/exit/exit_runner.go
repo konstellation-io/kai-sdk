@@ -28,10 +28,8 @@ type Runner struct {
 }
 
 func NewExitRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
-	logger = logger.WithName(_exitLoggerName)
-
 	return &Runner{
-		sdk:              sdk.NewKaiSDK(logger, ns, js),
+		sdk:              sdk.NewKaiSDK(logger.WithName(_exitLoggerName), ns, js),
 		nats:             ns,
 		jetstream:        js,
 		responseHandlers: make(map[string]Handler),
