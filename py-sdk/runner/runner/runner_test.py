@@ -16,7 +16,6 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
-from sdk.path_utils.path_utils import PathUtils
 from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 GLOBAL_BUCKET = "centralized_configuration.global.bucket"
@@ -73,7 +72,6 @@ async def test_sdk_import_ok(_, centralized_config_mock):
     assert isinstance(sdk.messaging, Messaging)
     assert isinstance(sdk.storage, Storage)
     assert isinstance(sdk.centralized_config, CentralizedConfig)
-    assert isinstance(sdk.path_utils, PathUtils)
     assert sdk.nc is not None
     assert sdk.js is not None
     assert sdk.request_msg == request_msg
@@ -91,7 +89,6 @@ async def test_sdk_import_ok(_, centralized_config_mock):
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
-    assert sdk.path_utils is not None
     assert isinstance(sdk.measurements, MeasurementsABC)
 
 
@@ -198,7 +195,7 @@ def test_initialize_config_ok(m_vyper, m_runner):
     assert m_vyper.get_string.call_count == 2
     assert m_vyper.all_keys.call_count == 1
     assert m_vyper.all_settings.call_count == 1
-    assert m_vyper.set_default.call_count == 6
+    assert m_vyper.set_default.call_count == 5
 
 
 @patch("runner.runner.v", return_value=MockVyper())
@@ -258,7 +255,7 @@ def test_initialize_config_read_one_exception_ok(m_vyper, m_runner):
     assert m_vyper.merge_in_config.called
     assert m_vyper.all_keys.call_count == 1
     assert m_vyper.all_settings.call_count == 1
-    assert m_vyper.set_default.call_count == 6
+    assert m_vyper.set_default.call_count == 5
 
 
 @patch("runner.runner.v", return_value=MockVyper())

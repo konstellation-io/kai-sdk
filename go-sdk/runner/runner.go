@@ -51,7 +51,6 @@ func validateConfig(keys []string) {
 		common.ConfigMetadataWorkflowIDKey,
 		common.ConfigMetadataProcessIDKey,
 		common.ConfigMetadataVersionIDKey,
-		common.ConfigMetadataBasePathKey,
 		common.ConfigNatsURLKey,
 		common.ConfigNatsStreamKey,
 		common.ConfigNatsOutputKey,
@@ -110,7 +109,6 @@ func initializeConfiguration() {
 	validateConfig(keys)
 
 	// Set viper default values
-	viper.SetDefault(common.ConfigMetadataBasePathKey, "/")
 	viper.SetDefault(common.ConfigRunnerSubscriberAckWaitTimeKey, 22*time.Hour)
 	viper.SetDefault(common.ConfigRunnerLoggerLevelKey, "InfoLevel")
 	viper.SetDefault(common.ConfigRunnerLoggerEncodingKey, "json")

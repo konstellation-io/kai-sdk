@@ -1,14 +1,6 @@
 package common
 
 const (
-	LoggerRequestID  = "request_id"
-	LoggerProductID  = "product_id"
-	LoggerVersionID  = "version_id"
-	LoggerWorkflowID = "workflow_id"
-	LoggerProcessID  = "process_id"
-)
-
-const (
 	ConfigAppConfigPathKey                = "APP_CONFIG_PATH"
 	ConfigRunnerLoggerLevelKey            = "runner.logger.level"
 	ConfigRunnerLoggerOutputPathsKey      = "runner.logger.output_paths"
@@ -19,7 +11,6 @@ const (
 	ConfigMetadataWorkflowIDKey           = "metadata.workflow_name"
 	ConfigMetadataProcessIDKey            = "metadata.process_name"
 	ConfigMetadataVersionIDKey            = "metadata.version_tag"
-	ConfigMetadataBasePathKey             = "metadata.base_path"
 	ConfigNatsURLKey                      = "nats.url"
 	ConfigNatsStreamKey                   = "nats.stream"
 	ConfigNatsOutputKey                   = "nats.output"

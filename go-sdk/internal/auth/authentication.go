@@ -11,6 +11,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	_authLoggerName = "[AUTHENTICATION]"
+)
+
 type Auth struct {
 	logger       logr.Logger
 	authEndpoint string
@@ -50,7 +54,7 @@ func (a *Auth) GetToken() (*gocloak.JWT, error) {
 		token, err := client.RefreshToken(ctx, a.jwt.RefreshToken, a.clientID, a.clientSecret, a.realm)
 
 		if err != nil {
-			a.logger.V(2).Info("Couldn't refresh token")
+			a.logger.WithName(_authLoggerName).V(2).Info("Couldn't refresh token")
 		} else {
 			a.jwt = token
 
@@ -67,7 +71,7 @@ func (a *Auth) GetToken() (*gocloak.JWT, error) {
 		a.password,
 	)
 	if err != nil {
-		a.logger.Info(fmt.Sprintf("Error getting token: %s", err.Error()))
+		a.logger.WithName(_authLoggerName).Info(fmt.Sprintf("Error getting token: %s", err.Error()))
 		return nil, err
 	}
 

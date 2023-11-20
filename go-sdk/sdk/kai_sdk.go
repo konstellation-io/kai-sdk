@@ -7,8 +7,6 @@ import (
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 
 	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
-	pathutils "github.com/konstellation-io/kai-sdk/go-sdk/sdk/path-utils"
-
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
 
 	"github.com/go-logr/logr"
@@ -23,12 +21,6 @@ import (
 const (
 	LoggerRequestID = "request_id"
 )
-
-//go:generate mockery --name pathUtils --output ../mocks --filename path_utils_mock.go --structname PathUtilsMock
-type pathUtils interface {
-	GetBasePath() string
-	ComposePath(relativePath ...string) string
-}
 
 //go:generate mockery --name messaging --output ../mocks --filename messaging_mock.go --structname MessagingMock
 type messaging interface {
@@ -106,7 +98,6 @@ type KaiSDK struct {
 
 	// Main methods
 	Logger            logr.Logger
-	PathUtils         pathUtils
 	Metadata          metadata
 	Messaging         messaging
 	CentralizedConfig centralizedConfig
@@ -130,7 +121,7 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		os.Exit(1)
 	}
 
-	persistentStorage, err := persistentstorage.NewPersistentStorage(logger.WithName("[PERSISTENT STORAGE]"))
+	persistentStorage, err := persistentstorage.NewPersistentStorage(logger)
 	if err != nil {
 		logger.WithName("[PERSISTENT STORAGE]").Error(err, "Error initializing persistent storage")
 		os.Exit(1)
@@ -141,14 +132,13 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		Persistent: persistentStorage,
 	}
 
-	messagingInst := msg.NewMessaging(logger.WithName("[MESSAGING]"), natsCli, jetstreamCli, nil)
+	messagingInst := msg.NewMessaging(logger, natsCli, jetstreamCli, nil)
 
 	sdk := KaiSDK{
 		ctx:               context.Background(),
 		nats:              natsCli,
 		jetstream:         jetstreamCli,
 		Logger:            logger,
-		PathUtils:         pathutils.NewPathUtils(logger),
 		Metadata:          metadata,
 		Messaging:         messagingInst,
 		CentralizedConfig: centralizedConfigInst,
