@@ -3,6 +3,6 @@ runner:
     level: DEBUG # TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
     encoding: console # console, json
     output_paths:
-      - json
+      - stdout
     error_output_paths:
-      - console
+      - stderr
