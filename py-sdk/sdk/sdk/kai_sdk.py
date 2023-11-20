@@ -95,7 +95,7 @@ class KaiSDK:
             diagnose=True,
             level="DEBUG",
         )
-        logger.configure(extra={"context": "", "metadata": "{}", "origin": "[SDK]"})
+        logger.configure(extra={"context": "", "metadata": {}, "origin": "[SDK]"})
 
         self.logger = logger.bind(context="[SDK]")
         self.logger.debug("logger initialized")
