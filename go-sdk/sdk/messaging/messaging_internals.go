@@ -85,14 +85,15 @@ func (ms Messaging) publishResponse(responseMsg *kai.KaiNatsMessage, channel str
 		ms.logger.WithName(_messagingLoggerName).
 			Error(err, fmt.Sprintf("Error generating output result because "+
 				"handler result is not a serializable Protobuf for request id %s", responseMsg.RequestId))
+
 		return
 	}
 
 	outputMsg, err = ms.prepareOutputMessage(outputMsg)
 	if err != nil {
 		ms.logger.WithName(_messagingLoggerName).
-			Error(err, fmt.Sprintf("Error preparing output message"+
-				" for request id %s", responseMsg.RequestId))
+			Error(err, fmt.Sprintf("Error preparing output message for request id %s", responseMsg.RequestId))
+
 		return
 	}
 
@@ -137,7 +138,12 @@ func (ms Messaging) prepareOutputMessage(msg []byte) ([]byte, error) {
 
 	lenOutMsg := int64(len(outMsg))
 	if lenOutMsg > maxSize {
-		ms.logger.WithName(_messagingLoggerName).V(1).Info("Compressed message size %s exceeds maximum size allowed %s", sizeInMB(lenOutMsg), sizeInMB(maxSize))
+		ms.logger.WithName(_messagingLoggerName).V(1).
+			Info("Compressed message size %s exceeds maximum size allowed %s",
+				sizeInMB(lenOutMsg),
+				sizeInMB(maxSize),
+			)
+
 		return nil, errors.ErrMessageToBig
 	}
 

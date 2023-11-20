@@ -97,7 +97,7 @@ func (es EphemeralStorage) Get(key string) ([]byte, error) {
 
 	es.logger.WithName(_ephemeralStorageLoggerName).V(1).
 		Info(fmt.Sprintf("File successfully for key %s retrieved from the "+
-		"ephemeral storage with name %s", key, es.ephemeralStorageBucket))
+			"ephemeral storage with name %s", key, es.ephemeralStorageBucket))
 
 	return response, nil
 }
@@ -149,7 +149,7 @@ func (es EphemeralStorage) Delete(key string) error {
 
 	es.logger.WithName(_ephemeralStorageLoggerName).V(1).
 		Info(fmt.Sprintf("File successfully deleted for key "+
-		"%s in the ephemeral storage with name %s", key, es.ephemeralStorageBucket))
+			"%s in the ephemeral storage with name %s", key, es.ephemeralStorageBucket))
 
 	return nil
 }
@@ -179,7 +179,7 @@ func (es EphemeralStorage) Purge(regexp ...string) error {
 		if pattern == nil || pattern.MatchString(objectName) {
 			es.logger.WithName(_ephemeralStorageLoggerName).V(1).
 				Info(fmt.Sprintf("Deleting object with key %s from the"+
-				" ephemeral storage with name %s", objectName, es.ephemeralStorageBucket))
+					" ephemeral storage with name %s", objectName, es.ephemeralStorageBucket))
 
 			err := es.ephemeralStorage.Delete(objectName)
 			if err != nil {
