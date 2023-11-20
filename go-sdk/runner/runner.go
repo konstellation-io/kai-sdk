@@ -111,7 +111,7 @@ func initializeConfiguration() {
 	// Set viper default values
 	viper.SetDefault(common.ConfigRunnerSubscriberAckWaitTimeKey, 22*time.Hour)
 	viper.SetDefault(common.ConfigRunnerLoggerLevelKey, "InfoLevel")
-	viper.SetDefault(common.ConfigRunnerLoggerEncodingKey, "console")
+	viper.SetDefault(common.ConfigRunnerLoggerEncodingKey, "json")
 	viper.SetDefault(common.ConfigRunnerLoggerOutputPathsKey, []string{"stdout"})
 	viper.SetDefault(common.ConfigRunnerLoggerErrorOutputPathsKey, []string{"stderr"})
 }
@@ -139,7 +139,7 @@ func getJetStreamConnection(logger logr.Logger, nc *nats.Conn) (nats.JetStreamCo
 func getLogger() logr.Logger {
 	var log logr.Logger
 
-	config := zap.NewDevelopmentConfig()
+	config := zap.NewProductionConfig()
 
 	logLevel, err := zap.ParseAtomicLevel(viper.GetString(common.ConfigRunnerLoggerLevelKey))
 	if err != nil {
@@ -160,8 +160,7 @@ func getLogger() logr.Logger {
 
 	log = zapr.NewLogger(logger)
 
-	log.WithName("[RUNNER CONFIG]").V(1).Info("Logger initialized",
-		"log_level", logLevel.String())
+	log.WithName("[RUNNER CONFIG]").V(1).Info(fmt.Sprintf("Logger initialized with level %s", logLevel.String()))
 
 	return log
 }

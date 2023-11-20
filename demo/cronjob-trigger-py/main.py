@@ -36,8 +36,8 @@ async def initializer(kai_sdk: sdk.KaiSDK):
 
     await kai_sdk.storage.ephemeral.save("test", bytes("value-obj", "utf-8"))
 
-    kai_sdk.storage.ephemeral.logger.info(
-        f"config values from comfig.yaml test1: {value1} test2: {value2}"
+    kai_sdk.logger.info(
+        f"config values from config.yaml test1: {value1} test2: {value2}"
     )
 
 

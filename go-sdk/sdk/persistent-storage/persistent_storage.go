@@ -172,7 +172,7 @@ func (ps PersistentStorage) Get(key string, version ...string) (*Object, error) 
 	}
 
 	ps.logger.WithName(_persistentStorageLoggerName).V(1).
-		Info(fmt.Sprintf("Object %s successfully retrieved from persistent storage ", key))
+		Info(fmt.Sprintf("Object %s successfully retrieved from persistent storage", key))
 
 	defer object.Close()
 
@@ -205,7 +205,6 @@ func (ps PersistentStorage) List() ([]*ObjectInfo, error) {
 		context.Background(),
 		ps.persistentStorageBucket,
 		minio.ListObjectsOptions{
-			WithVersions: true,
 			WithMetadata: true,
 			Recursive:    true,
 		},
@@ -215,13 +214,18 @@ func (ps PersistentStorage) List() ([]*ObjectInfo, error) {
 		Info("Objects successfully retrieved from persistent storage")
 
 	for object := range objects {
-		if object.Key != "" && object.VersionID != "" {
+		if object.Key != "" {
+			stats, err := ps.persistentStorage.StatObject(context.Background(), ps.persistentStorageBucket, object.Key, minio.StatObjectOptions{})
+			if err != nil {
+				return nil, fmt.Errorf("error getting object stats from the persistent storage: %w", err)
+			}
+
 			objectList = append(
 				objectList,
 				&ObjectInfo{
 					Key:       object.Key,
-					VersionID: object.VersionID,
-					ExpiresIn: object.Expiration,
+					VersionID: stats.VersionID,
+					ExpiresIn: stats.Expiration,
 				},
 			)
 		}

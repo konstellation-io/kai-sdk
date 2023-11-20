@@ -1,6 +1,8 @@
 package common
 
 import (
+	"fmt"
+
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/types/known/anypb"
 
@@ -28,10 +30,9 @@ func InitializeProcessConfiguration(sdk kaisdk.KaiSDK) {
 		err := sdk.CentralizedConfig.SetConfig(key, value)
 		if err != nil {
 			sdk.Logger.WithName(_processConfigLoggerName).
-				Error(err, "Error initializing process configuration", "key", key)
+				Error(err, fmt.Sprintf("Error initializing process configuration with key %s", key))
 		}
-
-		sdk.Logger.WithName(_processConfigLoggerName).V(3).
-			Info("New process configuration added", "key", key, "value", value)
 	}
+
+	sdk.Logger.WithName(_processConfigLoggerName).V(1).Info("Process configuration initialized")
 }

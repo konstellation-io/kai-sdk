@@ -1,6 +1,7 @@
 package trigger
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -56,8 +57,7 @@ func composeRunner(userRunner RunnerFunc) RunnerFunc {
 		kaiSDK.Logger.WithName(_runnerLoggerName).V(1).Info("Closing opened channels...")
 		runner.responseChannels.Range(func(key, value interface{}) bool {
 			close(value.(chan *anypb.Any))
-			kaiSDK.Logger.WithName(_runnerLoggerName).V(1).Info("Channel closed for requestID",
-				sdk.LoggerRequestID, key)
+			kaiSDK.Logger.WithName(_runnerLoggerName).V(1).Info(fmt.Sprintf("Channel closed for request id %s", key))
 			return true
 		})
 
@@ -70,7 +70,7 @@ func getResponseHandler(handlers *sync.Map) ResponseHandler {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
 		// Unmarshal response to a KaiNatsMessage type
 		kaiSDK.Logger.WithName(_responseHandlerLoggerName).
-			Info("Message received", sdk.LoggerRequestID, kaiSDK.GetRequestID())
+			Info(fmt.Sprintf("Message received with request id %s", kaiSDK.GetRequestID()))
 
 		responseHandler, ok := handlers.LoadAndDelete(kaiSDK.GetRequestID())
 
@@ -79,8 +79,8 @@ func getResponseHandler(handlers *sync.Map) ResponseHandler {
 			return nil
 		}
 
-		kaiSDK.Logger.WithName(_responseHandlerLoggerName).V(1).Info("Undefined handler for the message",
-			sdk.LoggerRequestID, kaiSDK.GetRequestID())
+		kaiSDK.Logger.WithName(_responseHandlerLoggerName).V(1).Info(fmt.Sprintf("Undefined handler for the message with request id %s",
+			kaiSDK.GetRequestID()))
 
 		return nil
 	}

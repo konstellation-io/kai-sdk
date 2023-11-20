@@ -51,8 +51,8 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	wrapErr := utilErrors.Wrapper("configuration init: %w")
 
 	name := viper.GetString(common.ConfigCcGlobalBucketKey)
-	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Initializing global key-value store",
-		"name", name)
+	logger.WithName(_centralizedConfigurationLoggerName).V(1).
+		Info(fmt.Sprintf("Initializing global key-value store with name %s", name))
 
 	globalKv, err = js.KeyValue(name)
 	if err != nil {
@@ -61,8 +61,8 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	}
 
 	name = viper.GetString(common.ConfigCcProductBucketKey)
-	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Initializing product key-value store",
-		"name", name)
+	logger.WithName(_centralizedConfigurationLoggerName).V(1).
+		Info(fmt.Sprintf("Initializing product key-value store with name %s", name))
 
 	productKv, err = js.KeyValue(name)
 	if err != nil {
@@ -74,8 +74,8 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Product key-value store initialized")
 
 	name = viper.GetString(common.ConfigCcWorkflowBucketKey)
-	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Initializing workflow key-value store",
-		"name", name)
+	logger.WithName(_centralizedConfigurationLoggerName).V(1).
+		Info(fmt.Sprintf("Initializing workflow key-value store with name %s", name))
 
 	workflowKv, err = js.KeyValue(name)
 	if err != nil {
@@ -87,8 +87,8 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Workflow key-value store initialized")
 
 	name = viper.GetString(common.ConfigCcProcessBucketKey)
-	logger.WithName(_centralizedConfigurationLoggerName).V(1).Info("Initializing process key-value store",
-		"name", name)
+	logger.WithName(_centralizedConfigurationLoggerName).V(1).
+		Info(fmt.Sprintf("Initializing process key-value store with name %s", name))
 
 	processKv, err = js.KeyValue(name)
 	if err != nil {
@@ -144,7 +144,7 @@ func (cc *CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...mes
 
 	_, err := kvStore.PutString(key, value)
 	if err != nil {
-		return wrapErr(fmt.Errorf("error storing value with key %q to the key-value store: %w", key, err))
+		return wrapErr(fmt.Errorf("failed to set config for key %q: %w", key, err))
 	}
 
 	return nil
@@ -153,7 +153,7 @@ func (cc *CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...mes
 func (cc *CentralizedConfiguration) DeleteConfig(key string, scope messaging.Scope) error {
 	err := cc.getScopedConfig(scope).Delete(key)
 	if err != nil {
-		return fmt.Errorf("error retrieving config with key %q from the configuration: %w", key, err)
+		return fmt.Errorf("failed to delete config for key %q: %w", key, err)
 	}
 
 	return nil
@@ -162,7 +162,7 @@ func (cc *CentralizedConfiguration) DeleteConfig(key string, scope messaging.Sco
 func (cc *CentralizedConfiguration) getConfigFromScope(key string, scope messaging.Scope) (string, error) {
 	value, err := cc.getScopedConfig(scope).Get(key)
 	if err != nil {
-		return "", fmt.Errorf("error retrieving config with key %q from the configuration: %w", key, err)
+		return "", fmt.Errorf("failed to get config for key %q: %w", key, err)
 	}
 
 	return string(value.Value()), nil

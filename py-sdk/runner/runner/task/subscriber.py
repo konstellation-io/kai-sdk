@@ -6,6 +6,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 import loguru
+from loguru import logger
 from nats.aio.msg import Msg
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
@@ -28,7 +29,8 @@ class TaskSubscriber:
     subscriptions: list[JetStreamContext.PushSubscription] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
-        self.logger = self.task_runner.logger.bind(context="[TASK SUBSCRIBER]")
+        origin = logger._core.extra["origin"]
+        self.logger = self.task_runner.logger.bind(context=f"{origin}.[SUBSCRIBER]")
 
     async def start(self) -> None:
         input_subjects = v.get("nats.inputs")
