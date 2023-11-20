@@ -3,7 +3,6 @@ metadata:
   workflow_name: Exit workflow
   process_name: Exit process
   version_tag: Exit version v1.0.0
-  base_path: "/Some/Path"
 
 nats:
   url: "nats://localhost:4222"

@@ -821,7 +821,7 @@ develop = true
 loguru = "0.7.0"
 nats-py = "2.3.0"
 protobuf = "4.23.4"
-sdk = {path = "../sdk", develop = true}
+sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/sdk"}
 vyper-config = "1.1.1"
 
 [package.source]
@@ -835,7 +835,7 @@ description = "KAI SDK's implementation in Python"
 optional = false
 python-versions = "3.11.5"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 loguru = "0.7.0"
@@ -846,8 +846,11 @@ python-keycloak = "3.7.0"
 vyper-config = "1.1.1"
 
 [package.source]
-type = "directory"
-url = "../../py-sdk/sdk"
+type = "git"
+url = "https://github.com/konstellation-io/kai-sdk.git"
+reference = "HEAD"
+resolved_reference = "000eba366633eea751c12e47463be19f058d3949"
+subdirectory = "py-sdk/sdk"
 
 [[package]]
 name = "six"
