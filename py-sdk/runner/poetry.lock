@@ -1204,7 +1204,7 @@ vyper-config = "1.1.1"
 type = "git"
 url = "https://github.com/konstellation-io/kai-sdk.git"
 reference = "HEAD"
-resolved_reference = "68883816a6c13ba76340d198028006dca68dcfd8"
+resolved_reference = "7718121e3b54eb88cdafd1785cb389791723400d"
 subdirectory = "py-sdk/sdk"
 
 [[package]]
