@@ -29,4 +29,7 @@ const (
 	ConfigAuthClientKey                   = "auth.client"
 	ConfigAuthClientSecretKey             = "auth.client_secret" //nolint:gosec // False positive
 	ConfigAuthRealmKey                    = "auth.realm"
+	ConfigRedisEndpointKey                = "predictions.endpoint"
+	ConfigRedisUsernameKey                = "predictions.username"
+	ConfigRedisPasswordKey                = "predictions.password" //nolint:gosec // False positive
 )

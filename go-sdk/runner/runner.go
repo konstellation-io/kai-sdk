@@ -67,6 +67,9 @@ func validateConfig(keys []string) {
 		common.ConfigAuthClientKey,
 		common.ConfigAuthClientSecretKey,
 		common.ConfigAuthRealmKey,
+		common.ConfigRedisUsernameKey,
+		common.ConfigRedisPasswordKey,
+		common.ConfigRedisEndpointKey,
 	}
 
 	for _, key := range mandatoryConfigKeys {
