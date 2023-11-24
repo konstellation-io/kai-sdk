@@ -2,9 +2,9 @@ package sdk
 
 import (
 	"context"
-	"os"
-
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
+	"os"
 
 	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
@@ -71,7 +71,7 @@ type persistentStorage interface {
 	Get(key string, version ...string) (*persistentstorage.Object, error)
 	List() ([]*persistentstorage.ObjectInfo, error)
 	ListVersions(key string) ([]*persistentstorage.ObjectInfo, error)
-	Delete(key string, version ...string) error
+	Delete(key string) error
 }
 
 //go:generate mockery --name centralizedConfig --output ../mocks --filename centralized_config_mock.go --structname CentralizedConfigMock
@@ -87,6 +87,15 @@ type centralizedConfig interface {
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock
 type measurements interface{}
 
+//go:generate mockery --name modelRegistry --output ../mocks --filename model_registry_mock.go --structname ModelRegistryMock
+type modelRegistry interface {
+	RegisterModel(model []byte, name, version, description, modelFormat string) error
+	GetModel(name string, version ...string) (*modelregistry.Model, error)
+	ListModels() ([]*modelregistry.ModelInfo, error)
+	ListModelVersions(name string) ([]*modelregistry.ModelInfo, error)
+	DeleteModel(name string, version ...string) error
+}
+
 type KaiSDK struct {
 	// Metadata
 	ctx context.Context
@@ -100,28 +109,29 @@ type KaiSDK struct {
 	Logger            logr.Logger
 	Metadata          metadata
 	Messaging         messaging
+	Storage           Storage
+	ModelRegistry     modelRegistry
 	CentralizedConfig centralizedConfig
 	Measurements      measurements
-	Storage           Storage
 }
 
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
-	metadata := meta.NewMetadata()
+	metadata := meta.New()
 
-	centralizedConfigInst, err := centralizedConfiguration.NewCentralizedConfiguration(logger, jetstreamCli)
+	centralizedConfigInst, err := centralizedConfiguration.New(logger, jetstreamCli)
 	if err != nil {
 		logger.WithName("[CENTRALIZED CONFIGURATION]").
 			Error(err, "Error initializing Centralized Configuration")
 		os.Exit(1)
 	}
 
-	ephemeralStorage, err := objectstore.NewEphemeralStorage(logger, jetstreamCli)
+	ephemeralStorage, err := objectstore.New(logger, jetstreamCli)
 	if err != nil {
 		logger.WithName("[EPHEMERAL STORAGE]").Error(err, "Error initializing ephemeral storage")
 		os.Exit(1)
 	}
 
-	persistentStorage, err := persistentstorage.NewPersistentStorage(logger)
+	persistentStorage, err := persistentstorage.New(logger)
 	if err != nil {
 		logger.WithName("[PERSISTENT STORAGE]").Error(err, "Error initializing persistent storage")
 		os.Exit(1)
@@ -132,7 +142,13 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		Persistent: persistentStorage,
 	}
 
-	messagingInst := msg.NewMessaging(logger, natsCli, jetstreamCli, nil)
+	messagingInst := msg.New(logger, natsCli, jetstreamCli, nil)
+
+	modelRegistry, err := modelregistry.New(logger)
+	if err != nil {
+		logger.WithName("[MODEL REGISTRY]").Error(err, "Error initializing model registry")
+		os.Exit(1)
+	}
 
 	sdk := KaiSDK{
 		ctx:               context.Background(),
@@ -141,9 +157,10 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		Logger:            logger,
 		Metadata:          metadata,
 		Messaging:         messagingInst,
+		Storage:           storageManager,
+		ModelRegistry:     modelRegistry,
 		CentralizedConfig: centralizedConfigInst,
 		Measurements:      nil,
-		Storage:           storageManager,
 	}
 
 	return sdk
@@ -161,7 +178,7 @@ func ShallowCopyWithRequest(sdk *KaiSDK, requestMsg *kai.KaiNatsMessage) KaiSDK 
 	hSdk := *sdk
 	hSdk.requestMessage = requestMsg
 	hSdk.Logger = sdk.Logger.WithValues(LoggerRequestID, requestMsg.GetRequestId())
-	hSdk.Messaging = msg.NewMessaging(hSdk.Logger, sdk.nats, sdk.jetstream, requestMsg)
+	hSdk.Messaging = msg.New(hSdk.Logger, sdk.nats, sdk.jetstream, requestMsg)
 
 	return hSdk
 }

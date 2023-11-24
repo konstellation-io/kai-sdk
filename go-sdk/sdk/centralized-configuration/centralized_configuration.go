@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 
 	utilErrors "github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
+	msg "github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 )
 
 var ErrKeyNotFound = errors.New("config not found in any key-value store for key")
@@ -28,7 +28,7 @@ type CentralizedConfiguration struct {
 	processKv  nats.KeyValue
 }
 
-func NewCentralizedConfiguration(logger logr.Logger, js nats.JetStreamContext) (*CentralizedConfiguration, error) {
+func New(logger logr.Logger, js nats.JetStreamContext) (*CentralizedConfiguration, error) {
 	wrapErr := utilErrors.Wrapper("configuration init: %w")
 
 	globalKv, productKv, workflowKv, processKv, err := initKVStores(logger, js)
@@ -102,7 +102,7 @@ func initKVStores(logger logr.Logger, js nats.JetStreamContext) (
 	return globalKv, productKv, workflowKv, processKv, nil
 }
 
-func (cc *CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.Scope) (string, error) {
+func (cc *CentralizedConfiguration) GetConfig(key string, scopeOpt ...msg.Scope) (string, error) {
 	wrapErr := utilErrors.Wrapper("configuration get: %w")
 
 	if len(scopeOpt) > 0 {
@@ -116,11 +116,11 @@ func (cc *CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.
 		return config, nil
 	}
 
-	allScopesInOrder := []messaging.Scope{
-		messaging.ProcessScope,
-		messaging.WorkflowScope,
-		messaging.ProductScope,
-		messaging.GlobalScope,
+	allScopesInOrder := []msg.Scope{
+		msg.ProcessScope,
+		msg.WorkflowScope,
+		msg.ProductScope,
+		msg.GlobalScope,
 	}
 	for _, scope := range allScopesInOrder {
 		config, err := cc.getConfigFromScope(key, scope)
@@ -137,7 +137,7 @@ func (cc *CentralizedConfiguration) GetConfig(key string, scopeOpt ...messaging.
 	return "", wrapErr(fmt.Errorf("%w: %q", ErrKeyNotFound, key))
 }
 
-func (cc *CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...messaging.Scope) error {
+func (cc *CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...msg.Scope) error {
 	wrapErr := utilErrors.Wrapper("configuration set: %w")
 
 	kvStore := cc.getScopedConfig(scopeOpt...)
@@ -150,7 +150,7 @@ func (cc *CentralizedConfiguration) SetConfig(key, value string, scopeOpt ...mes
 	return nil
 }
 
-func (cc *CentralizedConfiguration) DeleteConfig(key string, scope messaging.Scope) error {
+func (cc *CentralizedConfiguration) DeleteConfig(key string, scope msg.Scope) error {
 	err := cc.getScopedConfig(scope).Delete(key)
 	if err != nil {
 		return fmt.Errorf("failed to delete config for key %q: %w", key, err)
@@ -159,7 +159,7 @@ func (cc *CentralizedConfiguration) DeleteConfig(key string, scope messaging.Sco
 	return nil
 }
 
-func (cc *CentralizedConfiguration) getConfigFromScope(key string, scope messaging.Scope) (string, error) {
+func (cc *CentralizedConfiguration) getConfigFromScope(key string, scope msg.Scope) (string, error) {
 	value, err := cc.getScopedConfig(scope).Get(key)
 	if err != nil {
 		return "", fmt.Errorf("failed to get config for key %q: %w", key, err)
@@ -168,19 +168,19 @@ func (cc *CentralizedConfiguration) getConfigFromScope(key string, scope messagi
 	return string(value.Value()), nil
 }
 
-func (cc *CentralizedConfiguration) getScopedConfig(scope ...messaging.Scope) nats.KeyValue {
+func (cc *CentralizedConfiguration) getScopedConfig(scope ...msg.Scope) nats.KeyValue {
 	if len(scope) == 0 {
 		return cc.processKv
 	}
 
 	switch scope[0] {
-	case messaging.GlobalScope:
+	case msg.GlobalScope:
 		return cc.globalKv
-	case messaging.ProductScope:
+	case msg.ProductScope:
 		return cc.productKv
-	case messaging.WorkflowScope:
+	case msg.WorkflowScope:
 		return cc.workflowKv
-	case messaging.ProcessScope:
+	case msg.ProcessScope:
 		return cc.processKv
 	default:
 		return cc.processKv
