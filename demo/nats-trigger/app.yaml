@@ -3,7 +3,6 @@ metadata:
   workflow_name: Nats trigger workflow
   process_name: Nats trigger process
   version_tag: Nats trigger version v1.0.0
-  base_path: "/Some/Path"
 
 nats:
   url: "nats://localhost:4222"

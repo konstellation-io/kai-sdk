@@ -12,7 +12,6 @@ metadata:
   workflow_name: Workflow ID
   process_name: Process ID
   version_tag: Version v1.0.0
-  base_path: "/Some/Path"
 
 nats:
   url: "nats://localhost:4222"

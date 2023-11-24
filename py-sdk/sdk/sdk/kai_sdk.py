@@ -101,5 +101,3 @@ class KaiSDK:
         self.request_msg = request_msg
         assert isinstance(self.messaging, Messaging)
         self.messaging.request_msg = request_msg
-        origin = logger._core.extra["origin"]
-        logger.configure(extra={"metadata": {"request_id": request_msg.request_id}, "origin": origin})

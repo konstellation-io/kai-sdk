@@ -74,7 +74,7 @@ jobs:
       - name: Install poetry and dependencies
         if: matrix.changes == 'true' && matrix.component == 'py-sdk'
         run: |
-          python -m pip install poetry=="1.5.1"
+          python -m pip install poetry=="1.7.1"
           python -m poetry install --with dev
         working-directory: ./${{ matrix.component }}
       # - name: Run mypy
@@ -83,13 +83,13 @@ jobs:
       #   working-directory: ./
       - name: Run unit tests Go
         if: matrix.changes == 'true' && matrix.component == 'go-sdk'
-        run: make gotest
-        working-directory: .
+        run: go test ./... -cover -v -coverpkg=./... -coverprofile=coverage-unit.out --tags=unit
+        working-directory: ./${{ matrix.component }}
       - name: Run unit tests Python
         if: matrix.changes == 'true' && matrix.component == 'py-sdk'
-        run: make pytest
-        working-directory: ./
-      - name: Run integration tests
+        run: python -m poetry run pytest sdk runner --cov --cov-report=term-missing --cov-report=xml:coverage-unit.out --cov-config=pyproject.toml --no-cov-on-fail
+        working-directory: ./${{ matrix.component }}
+      - name: Run integration tests Go
         if: matrix.changes == 'true' && matrix.component == 'go-sdk'
         run: go test ./... -cover -v -coverpkg=./... -coverprofile=coverage-integration.out --tags=integration
         working-directory: ./${{ matrix.component }}
