@@ -44,6 +44,10 @@ MANDATORY_CONFIG_KEYS = [
     "auth.client",  # Client to be used to authenticate
     "auth.client_secret",  # Client's secret to be used
     "auth.realm",  # Realm
+    "opentelemetry.endpoint",
+    "opentelemetry.insecure",
+    "opentelemetry.timeout",
+    "opentelemetry.metrics_interval",
 ]
 
 
