@@ -29,8 +29,6 @@ const (
 	ConfigAuthEndpointKey                 = "auth.endpoint"
 	ConfigAuthClientKey                   = "auth.client"
 	ConfigAuthClientSecretKey             = "auth.client_secret" //nolint:gosec // False positive
-	// TODO add this later
-	// ConfigStorageIgnoredFolders           = "storage.ignored_folders"
-	ConfigAuthRealmKey       = "auth.realm"
-	ConfigModelFolderNameKey = "model_registry.folder_name"
+	ConfigAuthRealmKey                    = "auth.realm"
+	ConfigModelFolderNameKey              = "model_registry.folder_name"
 )
