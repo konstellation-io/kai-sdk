@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+
 	"github.com/go-logr/logr"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/auth"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"

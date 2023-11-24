@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/storage"
 	"io"
 	"strings"
 	"time"
+
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/storage"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 	"github.com/minio/minio-go/v7/pkg/lifecycle"

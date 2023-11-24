@@ -2,12 +2,12 @@ package sdk
 
 import (
 	"context"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
-	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 	"os"
 
-	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
+	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
+	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 
 	"github.com/go-logr/logr"
 	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
@@ -71,7 +71,7 @@ type persistentStorage interface {
 	Get(key string, version ...string) (*persistentstorage.Object, error)
 	List() ([]*persistentstorage.ObjectInfo, error)
 	ListVersions(key string) ([]*persistentstorage.ObjectInfo, error)
-	Delete(key string) error
+	Delete(key string, version ...string) error
 }
 
 //go:generate mockery --name centralizedConfig --output ../mocks --filename centralized_config_mock.go --structname CentralizedConfigMock
@@ -93,7 +93,7 @@ type modelRegistry interface {
 	GetModel(name string, version ...string) (*modelregistry.Model, error)
 	ListModels() ([]*modelregistry.ModelInfo, error)
 	ListModelVersions(name string) ([]*modelregistry.ModelInfo, error)
-	DeleteModel(name string, version ...string) error
+	DeleteModel(name string) error
 }
 
 type KaiSDK struct {
@@ -118,33 +118,33 @@ type KaiSDK struct {
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
 	metadata := meta.New()
 
-	centralizedConfigInst, err := centralizedConfiguration.New(logger, jetstreamCli)
+	centralizedConfigInst, err := centralizedconfiguration.New(logger, jetstreamCli)
 	if err != nil {
 		logger.WithName("[CENTRALIZED CONFIGURATION]").
 			Error(err, "Error initializing Centralized Configuration")
 		os.Exit(1)
 	}
 
-	ephemeralStorage, err := objectstore.New(logger, jetstreamCli)
+	ephemeralStg, err := objectstore.New(logger, jetstreamCli)
 	if err != nil {
 		logger.WithName("[EPHEMERAL STORAGE]").Error(err, "Error initializing ephemeral storage")
 		os.Exit(1)
 	}
 
-	persistentStorage, err := persistentstorage.New(logger)
+	persistentStg, err := persistentstorage.New(logger)
 	if err != nil {
 		logger.WithName("[PERSISTENT STORAGE]").Error(err, "Error initializing persistent storage")
 		os.Exit(1)
 	}
 
 	storageManager := Storage{
-		Ephemeral:  ephemeralStorage,
-		Persistent: persistentStorage,
+		Ephemeral:  ephemeralStg,
+		Persistent: persistentStg,
 	}
 
 	messagingInst := msg.New(logger, natsCli, jetstreamCli, nil)
 
-	modelRegistry, err := modelregistry.New(logger)
+	modelRegistryInst, err := modelregistry.New(logger)
 	if err != nil {
 		logger.WithName("[MODEL REGISTRY]").Error(err, "Error initializing model registry")
 		os.Exit(1)
@@ -158,7 +158,7 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		Metadata:          metadata,
 		Messaging:         messagingInst,
 		Storage:           storageManager,
-		ModelRegistry:     modelRegistry,
+		ModelRegistry:     modelRegistryInst,
 		CentralizedConfig: centralizedConfigInst,
 		Measurements:      nil,
 	}

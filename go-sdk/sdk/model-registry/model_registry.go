@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"path"
+
 	"github.com/go-logr/logr"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
@@ -12,8 +15,6 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/rogpeppe/go-internal/semver"
 	"github.com/spf13/viper"
-	"io"
-	"path"
 )
 
 const (
@@ -285,7 +286,7 @@ func (mr *ModelRegistry) getModelVersion(name string, opts minio.GetObjectOption
 	}, nil
 }
 
-func (mr *ModelRegistry) getModelVersionFromList(name string, version string) (*Model, error) {
+func (mr *ModelRegistry) getModelVersionFromList(name, version string) (*Model, error) {
 	objectList := mr.storageClient.ListObjects(
 		context.Background(),
 		mr.storageBucket,
