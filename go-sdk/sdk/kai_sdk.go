@@ -8,6 +8,7 @@ import (
 
 	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
+	measurements "github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurements"
 
 	"github.com/go-logr/logr"
 	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
@@ -81,11 +82,9 @@ type centralizedConfig interface {
 	DeleteConfig(key string, scope msg.Scope) error
 }
 
-//nolint:godox // Task to be done.
-// TODO add metrics interface.
-
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock
-type measurements interface{}
+type measurements interface {
+}
 
 type KaiSDK struct {
 	// Metadata
@@ -134,6 +133,12 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 
 	messagingInst := msg.NewMessaging(logger, natsCli, jetstreamCli, nil)
 
+	measurementsInst, err := measurements.New(logger)
+	if err != nil {
+		logger.WithName("[MEASUREMENTS]").Error(err, "Error initializing measurements")
+		os.Exit(1)
+	}
+
 	sdk := KaiSDK{
 		ctx:               context.Background(),
 		nats:              natsCli,
@@ -142,7 +147,7 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		Metadata:          metadata,
 		Messaging:         messagingInst,
 		CentralizedConfig: centralizedConfigInst,
-		Measurements:      nil,
+		Measurements:      measurementsInst,
 		Storage:           storageManager,
 	}
 

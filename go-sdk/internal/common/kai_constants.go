@@ -29,4 +29,8 @@ const (
 	ConfigAuthClientKey                   = "auth.client"
 	ConfigAuthClientSecretKey             = "auth.client_secret" //nolint:gosec // False positive
 	ConfigAuthRealmKey                    = "auth.realm"
+	ConfigOpenTelemetryEndpointKey        = "opentelemetry.endpoint"
+	ConfigOpenTelemetryInsecureKey        = "opentelemetry.insecure"
+	ConfigOpenTelemetryTimeoutKey         = "opentelemetry.timeout"
+	ConfigOpenTelemetryMetricsIntervalKey = "opentelemetry.metrics_interval"
 )

@@ -27,7 +27,7 @@ class MeasurementsABC(ABC):
 @dataclass
 class Measurements(MeasurementsABC):
     logger: loguru.Logger = field(init=False)
-    meter: Meter = field(init=False)
+    metrics: Meter = field(init=False)
 
     def __post_init__(self):
         origin = logger._core.extra["origin"]
@@ -63,7 +63,4 @@ class Measurements(MeasurementsABC):
         )
         provider = MeterProvider(resource=resource, metric_readers=[reader])
         set_meter_provider(provider)
-        self.meter = get_meter(__name__)
-
-    def get_metrics_client(self):
-        return self.meter
+        self.metrics = get_meter(__name__)
