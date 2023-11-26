@@ -1,9 +1,9 @@
 package prediction
 
 type Prediction struct {
-	Timestamp string            `json:"timestamp"`
-	Payload   map[string]string `json:"payload,omitempty"`
-	Metadata  Metadata          `json:"metadata"`
+	Timestamp int64                  `json:"timestamp"`
+	Payload   map[string]interface{} `json:"payload,omitempty"`
+	Metadata  Metadata               `json:"metadata"`
 }
 
 type Metadata struct {

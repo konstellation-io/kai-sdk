@@ -98,9 +98,9 @@ type predictions interface {
 	//		 product, version, requestid, workflow, process
 	//	}
 	//}
-	Save(ctx context.Context, predictionID string, value map[string]string) error
+	Save(ctx context.Context, predictionID string, value map[string]interface{}) error
 	Get(ctx context.Context, predictionID string) (*prediction.Prediction, error)
-	List(ctx context.Context, filter prediction.Filter) ([]prediction.Prediction, error)
+	Find(ctx context.Context, filter *prediction.Filter) ([]prediction.Prediction, error)
 }
 
 type KaiSDK struct {
