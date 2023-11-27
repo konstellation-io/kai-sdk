@@ -96,7 +96,7 @@ func (r *RedisPredictionStore) Find(ctx context.Context, filter *Filter) ([]Pred
 		return nil, err
 	}
 
-	predictions, err = r.parseResultToPredictionsList(result)
+	predictions, err = r.parseResultsToPredictionsList(result)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (r *RedisPredictionStore) buildQueryWithFilters(filter *Filter) string {
 	return strings.ReplaceAll(strings.Join(queryFilters, " "), "-", "\\-")
 }
 
-func (r *RedisPredictionStore) parseResultToPredictionsList(rawResult interface{}) ([]Prediction, error) {
+func (r *RedisPredictionStore) parseResultsToPredictionsList(rawResult interface{}) ([]Prediction, error) {
 	result, ok := rawResult.(map[interface{}]interface{})
 	if !ok {
 		return nil, ErrParsingListResult
@@ -158,40 +158,49 @@ func (r *RedisPredictionStore) parseResultToPredictionsList(rawResult interface{
 	predictions := make([]Prediction, 0, len(results))
 
 	for _, res := range results {
-		rawResContent, ok := res.(map[interface{}]interface{})
-		if !ok {
-			return nil, ErrParsingListResult
-		}
-
-		rawExtraAttributes, ok := rawResContent["extra_attributes"]
-		if !ok {
-			return nil, ErrParsingListResult
-		}
-
-		extraAttributes, ok := rawExtraAttributes.(map[interface{}]interface{})
-		if !ok {
-			return nil, ErrParsingListResult
-		}
-
-		resJSONRoot, ok := extraAttributes["$"]
-		if !ok {
-			return nil, ErrParsingListResult
-		}
-
-		resJSONRootString, ok := resJSONRoot.(string)
-		if !ok {
-			return nil, ErrParsingListResult
-		}
-
-		var prediction Prediction
-
-		err := json.Unmarshal([]byte(resJSONRootString), &prediction)
+		prediction, err := r.parseResultToPrediction(res)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshalling prediction: %w", err)
+			return nil, err
 		}
 
-		predictions = append(predictions, prediction)
+		predictions = append(predictions, *prediction)
 	}
 
 	return predictions, nil
+}
+
+func (r *RedisPredictionStore) parseResultToPrediction(res interface{}) (*Prediction, error) {
+	rawResContent, ok := res.(map[interface{}]interface{})
+	if !ok {
+		return nil, ErrParsingListResult
+	}
+
+	rawExtraAttributes, ok := rawResContent["extra_attributes"]
+	if !ok {
+		return nil, ErrParsingListResult
+	}
+
+	extraAttributes, ok := rawExtraAttributes.(map[interface{}]interface{})
+	if !ok {
+		return nil, ErrParsingListResult
+	}
+
+	resJSONRoot, ok := extraAttributes["$"]
+	if !ok {
+		return nil, ErrParsingListResult
+	}
+
+	resJSONRootString, ok := resJSONRoot.(string)
+	if !ok {
+		return nil, ErrParsingListResult
+	}
+
+	var prediction *Prediction
+
+	err := json.Unmarshal([]byte(resJSONRootString), &prediction)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshalling prediction: %w", err)
+	}
+
+	return prediction, nil
 }
