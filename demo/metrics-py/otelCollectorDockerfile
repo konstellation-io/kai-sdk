@@ -9,7 +9,3 @@ ENV OTEL_CONFIG=/etc/otel-collector-config.yaml
 
 # Expose the default collector port
 EXPOSE 4317
-
-# Start the OpenTelemetry Collector with the configuration file provided
-# $ docker build -t test-otl-collector .
-# $ docker run -p 4317:4317 test-otl-collector
