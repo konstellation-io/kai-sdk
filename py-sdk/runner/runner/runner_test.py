@@ -90,6 +90,7 @@ async def test_sdk_import_ok(_, centralized_config_mock):
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
     assert isinstance(sdk.measurements, MeasurementsABC)
+    assert sdk.predictions is not None
 
 
 @patch("runner.runner.Runner._validate_config")

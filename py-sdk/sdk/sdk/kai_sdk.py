@@ -17,6 +17,7 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.messaging.messaging import Messaging, MessagingABC
 from sdk.metadata.metadata import Metadata, MetadataABC
 from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
+from sdk.predictions.store import Predictions, PredictionsABC
 
 LOGGER_FORMAT = (
     "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
@@ -47,6 +48,7 @@ class KaiSDK:
     centralized_config: CentralizedConfigABC = field(init=False)
     measurements: MeasurementsABC = field(init=False)
     storage: Storage = field(init=False)
+    predictions: PredictionsABC = field(init=False)
 
     def __post_init__(self) -> None:
         if not self.logger:
@@ -60,6 +62,7 @@ class KaiSDK:
         self.metadata = Metadata()
         self.measurements = MeasurementsABC()
         self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
+        self.predictions = Predictions()
 
     async def initialize(self) -> None:
         try:

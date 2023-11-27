@@ -67,6 +67,7 @@ async def test_initialize_ok(persistent_storage_mock, centralized_config_initial
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
     assert isinstance(sdk.measurements, MeasurementsABC)
+    assert sdk.predictions is not None
 
 
 @patch.object(CentralizedConfig, "_init_kv_stores", side_effect=Exception)

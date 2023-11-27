@@ -25,6 +25,11 @@ auth:
   client_secret: "kai_pwd"
   realm: "konstellation"
 
+predictions:
+  endpoint: localhost:6379
+  username: testuser
+  password: testpassword
+
 centralized_configuration:
   global:
     bucket: global
