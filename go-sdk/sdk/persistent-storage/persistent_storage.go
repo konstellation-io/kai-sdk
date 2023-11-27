@@ -55,7 +55,7 @@ func (o Object) GetBytes() []byte {
 	return o.data
 }
 
-func New(logger logr.Logger) (*PersistentStorage, error) {
+func New(logger logr.Logger, meta *metadata.Metadata) (*PersistentStorage, error) {
 	persistentStorageBucket := viper.GetString(common.ConfigMinioBucketKey)
 
 	storageClient, err := storage.New(logger).GetStorageClient()
@@ -67,7 +67,7 @@ func New(logger logr.Logger) (*PersistentStorage, error) {
 		logger:        logger,
 		storageClient: storageClient,
 		storageBucket: persistentStorageBucket,
-		metadata:      metadata.New(),
+		metadata:      meta,
 	}, nil
 }
 

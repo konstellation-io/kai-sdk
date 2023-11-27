@@ -6,9 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
+	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
 	"net/http"
 	"testing"
+
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 
@@ -128,7 +130,7 @@ func (s *SdkModelRegistryTestSuite) TearDownTest() {
 
 func (s *SdkModelRegistryTestSuite) TestModelRegistry_Initialize_ExpectOK() {
 	// WHEN
-	modelRegistry, err := modelregistry.New(testr.New(s.T()))
+	modelRegistry, err := modelregistry.New(testr.New(s.T()), metadata.New())
 	s.Require().NoError(err)
 	_, err = modelRegistry.ListModels()
 
@@ -142,7 +144,7 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_Initialize_ExpectError() {
 	viper.Set(common.ConfigMinioEndpointKey, "invalid-url")
 
 	// WHEN
-	modelRegistry, err := modelregistry.New(testr.New(s.T()))
+	modelRegistry, err := modelregistry.New(testr.New(s.T()), metadata.New())
 	s.Require().NoError(err)
 	objList, err := modelRegistry.ListModels()
 

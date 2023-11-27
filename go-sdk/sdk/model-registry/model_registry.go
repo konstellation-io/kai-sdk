@@ -50,21 +50,25 @@ type Model struct {
 	Model []byte
 }
 
-func New(logger logr.Logger) (*ModelRegistry, error) {
+func New(logger logr.Logger, meta *metadata.Metadata) (*ModelRegistry, error) {
+	persistentStorageBucket := viper.GetString(common.ConfigMinioBucketKey)
+
+	modelFolder := path.Join(
+		viper.GetString(common.ConfigMinioInternalFolderKey),
+		viper.GetString(common.ConfigModelFolderNameKey),
+	)
+
 	storageClient, err := storage.New(logger).GetStorageClient()
 	if err != nil {
 		return nil, err
 	}
 
 	return &ModelRegistry{
-		logger:        logger,
-		storageClient: storageClient,
-		storageBucket: viper.GetString(common.ConfigMinioBucketKey),
-		metadata:      metadata.New(),
-		modelFolderName: path.Join(
-			viper.GetString(common.ConfigMinioInternalFolderKey),
-			viper.GetString(common.ConfigModelFolderNameKey),
-		),
+		logger:          logger,
+		storageClient:   storageClient,
+		storageBucket:   persistentStorageBucket,
+		metadata:        meta,
+		modelFolderName: modelFolder,
 	}, nil
 }
 

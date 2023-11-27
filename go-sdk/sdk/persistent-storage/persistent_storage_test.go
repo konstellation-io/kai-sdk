@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 
 	"github.com/go-logr/logr/testr"
@@ -127,7 +129,7 @@ func (s *SdkPersistentStorageTestSuite) TearDownTest() {
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_Initialize_ExpectOK() {
 	// WHEN
-	persistentStorage, err := persistentstorage.New(testr.New(s.T()))
+	persistentStorage, err := persistentstorage.New(testr.New(s.T()), metadata.New())
 	s.Require().NoError(err)
 	_, err = persistentStorage.List()
 
@@ -141,7 +143,7 @@ func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_Initialize_ExpectE
 	viper.Set(common.ConfigMinioEndpointKey, "invalid-url")
 
 	// WHEN
-	persistentStorage, err := persistentstorage.New(testr.New(s.T()))
+	persistentStorage, err := persistentstorage.New(testr.New(s.T()), metadata.New())
 	s.Require().NoError(err)
 	objList, err := persistentStorage.List()
 

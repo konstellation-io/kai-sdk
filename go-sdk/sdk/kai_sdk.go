@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 
+	meta "github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+
 	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
 	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
@@ -12,7 +14,6 @@ import (
 	"github.com/go-logr/logr"
 	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
 	msg "github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
-	meta "github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -131,7 +132,7 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		os.Exit(1)
 	}
 
-	persistentStg, err := persistentstorage.New(logger)
+	persistentStg, err := persistentstorage.New(logger, metadata)
 	if err != nil {
 		logger.WithName("[PERSISTENT STORAGE]").Error(err, "Error initializing persistent storage")
 		os.Exit(1)
@@ -144,7 +145,7 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 
 	messagingInst := msg.New(logger, natsCli, jetstreamCli, nil)
 
-	modelRegistryInst, err := modelregistry.New(logger)
+	modelRegistryInst, err := modelregistry.New(logger, metadata)
 	if err != nil {
 		logger.WithName("[MODEL REGISTRY]").Error(err, "Error initializing model registry")
 		os.Exit(1)
