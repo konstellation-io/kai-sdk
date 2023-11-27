@@ -29,7 +29,7 @@ type Measurement struct {
 }
 
 type MetricsObjectClient struct {
-	metricsClient metric.Meter
+	MetricsClient metric.Meter
 }
 
 func New(logger logr.Logger, meta *metadata.Metadata) (*Measurement, error) {
@@ -52,7 +52,7 @@ func New(logger logr.Logger, meta *metadata.Metadata) (*Measurement, error) {
 
 func (m Measurement) GetMetricsClient() MetricsObjectClient {
 	return MetricsObjectClient{
-		metricsClient: m.metricsClient,
+		MetricsClient: m.metricsClient,
 	}
 }
 
