@@ -24,7 +24,7 @@ auth:
   client_secret: "kai_pwd"
   realm: "konstellation"
 
-opentelemetry:
+measurements:
   endpoint: "localhost:4317"
   insecure: true
   timeout: 5

@@ -18,16 +18,21 @@ from sdk.metadata.metadata import Metadata
 
 
 @dataclass
+class MetricsClientObject:
+    metrics_client: Meter = field(init=True)
+
+
+@dataclass
 class MeasurementsABC(ABC):
     @abstractmethod
-    def get_metrics_client(self):
+    def get_metrics_client(self) -> MetricsClientObject:
         pass
 
 
 @dataclass
 class Measurements(MeasurementsABC):
     logger: loguru.Logger = field(init=False)
-    metrics: Meter = field(init=False)
+    metricsClient: Meter = field(init=False)
 
     def __post_init__(self):
         origin = logger._core.extra["origin"]
@@ -41,9 +46,9 @@ class Measurements(MeasurementsABC):
                     "service.version": Metadata.get_version(),
                 }
             )
-            endpoint = v.get_string("opentelemetry.endpoint")
-            insecure = v.get_bool("opentelemetry.insecure")
-            timeout = v.get_int("opentelemetry.timeout")
+            endpoint = v.get_string("measurements.endpoint")
+            insecure = v.get_bool("measurements.insecure")
+            timeout = v.get_int("measurements.timeout")
             self._setup_metrics(resource, endpoint, insecure, timeout)
         except Exception as e:
             self.logger.error(f"failed to initialize measurements: {e}")
@@ -51,9 +56,12 @@ class Measurements(MeasurementsABC):
 
         self.logger.info("successfully initialized measurements")
 
+    def get_metrics_client(self) -> MetricsClientObject:
+        return MetricsClientObject(metrics_client=self.metricsClient)
+
     def _setup_metrics(self, resource: Resource, endpoint: str, insecure: bool, timeout: int):
         reader = PeriodicExportingMetricReader(
-            export_interval_millis=v.get_int("opentelemetry.metrics_interval") * 1000,
+            export_interval_millis=v.get_int("measurements.metrics_interval") * 1000,
             exporter=OTLPMetricExporter(
                 endpoint=endpoint,
                 insecure=insecure,
@@ -63,4 +71,4 @@ class Measurements(MeasurementsABC):
         )
         provider = MeterProvider(resource=resource, metric_readers=[reader])
         set_meter_provider(provider)
-        self.metrics = get_meter(__name__)
+        self.metricsClient = get_meter(__name__)

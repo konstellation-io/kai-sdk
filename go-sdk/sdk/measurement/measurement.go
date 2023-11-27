@@ -1,4 +1,4 @@
-package measurements
+package measurement
 
 import (
 	"fmt"
@@ -22,33 +22,42 @@ const (
 	_persistentStorageLoggerName = "[MEASUREMENTS]"
 )
 
-type Measurements struct {
+type Measurement struct {
 	logger        logr.Logger
 	metricsClient metric.Meter
 	metadata      *metadata.Metadata
 }
 
-func New(logger logr.Logger) (*Measurements, error) {
-	endpoint := viper.GetString(common.ConfigOpenTelemetryEndpointKey)
-	insecure := viper.GetBool(common.ConfigOpenTelemetryInsecureKey)
-	timeout := viper.GetInt(common.ConfigOpenTelemetryTimeoutKey)
-	interval := viper.GetInt(common.ConfigOpenTelemetryMetricsIntervalKey)
-	metadata := metadata.NewMetadata()
+type MetricsObjectClient struct {
+	metricsClient metric.Meter
+}
 
-	metricsClient, err := initMetrics(logger, endpoint, insecure, timeout, interval, metadata)
+func New(logger logr.Logger, meta *metadata.Metadata) (*Measurement, error) {
+	endpoint := viper.GetString(common.ConfigMeasurementsEndpointKey)
+	insecure := viper.GetBool(common.ConfigMeasurementsInsecureKey)
+	timeout := viper.GetInt(common.ConfigMeasurementsTimeoutKey)
+	interval := viper.GetInt(common.ConfigMeasurementsMetricsIntervalKey)
+
+	metricsClient, err := initMetrics(logger, endpoint, insecure, timeout, interval, meta)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Measurements{
+	return &Measurement{
 		logger:        logger,
 		metricsClient: metricsClient,
-		metadata:      metadata,
+		metadata:      meta,
 	}, nil
 }
 
-func initMetrics(logger logr.Logger, endpoint string, insecure bool, timeout, interval int, metadata *metadata.Metadata) (metric.Meter, error) {
-	resource, err := initResource(metadata)
+func (m Measurement) GetMetricsClient() MetricsObjectClient {
+	return MetricsObjectClient{
+		metricsClient: m.metricsClient,
+	}
+}
+
+func initMetrics(logger logr.Logger, endpoint string, insecure bool, timeout, interval int, meta *metadata.Metadata) (metric.Meter, error) {
+	res, err := initResource(meta)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing metrics: %w", err)
 	}
@@ -58,7 +67,7 @@ func initMetrics(logger logr.Logger, endpoint string, insecure bool, timeout, in
 		return nil, fmt.Errorf("error initializing metrics: %w", err)
 	}
 
-	provider := initProvider(exporter, resource, interval)
+	provider := initProvider(exporter, res, interval)
 
 	otel.SetMeterProvider(provider)
 
@@ -67,14 +76,14 @@ func initMetrics(logger logr.Logger, endpoint string, insecure bool, timeout, in
 	return provider.Meter("measurements"), nil
 }
 
-func initResource(metadata *metadata.Metadata) (*resource.Resource, error) {
+func initResource(meta *metadata.Metadata) (*resource.Resource, error) {
 	return resource.Merge(resource.Default(),
 		resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceName(metadata.GetProduct()),
-			semconv.ServiceVersion(metadata.GetVersion()),
-			semconv.ServiceNamespace(metadata.GetWorkflow()),
-			semconv.ServiceInstanceID(metadata.GetProcess()),
+			semconv.ServiceName(meta.GetProduct()),
+			semconv.ServiceVersion(meta.GetVersion()),
+			semconv.ServiceNamespace(meta.GetWorkflow()),
+			semconv.ServiceInstanceID(meta.GetProcess()),
 		),
 	)
 }
@@ -96,9 +105,9 @@ func initExporter(endpoint string, insecure bool, timeout int) (*otlpmetricgrpc.
 	)
 }
 
-func initProvider(exporter *otlpmetricgrpc.Exporter, resource *resource.Resource, interval int) *sdkMetric.MeterProvider {
+func initProvider(exporter *otlpmetricgrpc.Exporter, res *resource.Resource, interval int) *sdkMetric.MeterProvider {
 	return sdkMetric.NewMeterProvider(
-		sdkMetric.WithResource(resource),
+		sdkMetric.WithResource(res),
 		sdkMetric.WithReader(
 			sdkMetric.NewPeriodicReader(
 				exporter,

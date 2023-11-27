@@ -8,7 +8,7 @@ import (
 
 	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
-	measurements "github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurements"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
 
 	"github.com/go-logr/logr"
 	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
@@ -84,6 +84,7 @@ type centralizedConfig interface {
 
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock
 type measurements interface {
+	GetMetricsClient() measurement.MetricsObjectClient
 }
 
 type KaiSDK struct {
@@ -133,7 +134,7 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 
 	messagingInst := msg.NewMessaging(logger, natsCli, jetstreamCli, nil)
 
-	measurementsInst, err := measurements.New(logger)
+	measurementsInst, err := measurement.New(logger, metadata)
 	if err != nil {
 		logger.WithName("[MEASUREMENTS]").Error(err, "Error initializing measurements")
 		os.Exit(1)

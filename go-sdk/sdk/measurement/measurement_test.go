@@ -1,4 +1,4 @@
-package measurements_test
+package measurement_test
 
 import (
 	"testing"
@@ -10,24 +10,25 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 )
 
-type SdkMetadataTestSuite struct {
+type SdkMeasurementTestSuite struct {
 	suite.Suite
 	logger logr.Logger
 }
 
-func (s *SdkMetadataTestSuite) SetupSuite() {
+func (s *SdkMeasurementTestSuite) SetupSuite() {
 	s.logger = testr.NewWithOptions(s.T(), testr.Options{Verbosity: 1, LogTimestamp: true})
 }
 
-func (s *SdkMetadataTestSuite) SetupTest() {
+func (s *SdkMeasurementTestSuite) SetupTest() {
 	// Reset viper values before each test
 	viper.Reset()
 }
 
-func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
+func (s *SdkMeasurementTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	// Given
 	viper.SetDefault(common.ConfigMetadataProductIDKey, "product-name")
 	viper.SetDefault(common.ConfigMetadataWorkflowIDKey, "workflow-name")
@@ -38,33 +39,21 @@ func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	viper.SetDefault(common.ConfigCcProductBucketKey, "product-bucket")
 	viper.SetDefault(common.ConfigCcWorkflowBucketKey, "workflow-bucket")
 	viper.SetDefault(common.ConfigCcProcessBucketKey, "process-bucket")
+	viper.SetDefault(common.ConfigMeasurementsEndpointKey, "http://localhost:4137")
+	viper.SetDefault(common.ConfigMeasurementsInsecureKey, true)
+	viper.SetDefault(common.ConfigMeasurementsTimeoutKey, 10)
+	viper.SetDefault(common.ConfigMeasurementsMetricsIntervalKey, 10)
 
 	// When
 	sdkMetadata := metadata.NewMetadata()
-
-	productName := sdkMetadata.GetProduct()
-	workflowName := sdkMetadata.GetWorkflow()
-	processName := sdkMetadata.GetProcess()
-	versionName := sdkMetadata.GetVersion()
-	objectStoreName := sdkMetadata.GetEphemeralStorageName()
-	globalKvName := sdkMetadata.GetGlobalCentralizedConfigurationName()
-	productKvName := sdkMetadata.GetProductCentralizedConfigurationName()
-	workflowKvName := sdkMetadata.GetWorkflowCentralizedConfigurationName()
-	processKvName := sdkMetadata.GetProcessCentralizedConfigurationName()
+	sdkMeasurement, err := measurement.New(s.logger, sdkMetadata)
 
 	// Then
 	s.NotNil(sdkMetadata)
-	s.Equal("product-name", productName)
-	s.Equal("workflow-name", workflowName)
-	s.Equal("process-name", processName)
-	s.Equal("version-name", versionName)
-	s.Equal("my-ephemeral-storage", objectStoreName)
-	s.Equal("global-bucket", globalKvName)
-	s.Equal("product-bucket", productKvName)
-	s.Equal("workflow-bucket", workflowKvName)
-	s.Equal("process-bucket", processKvName)
+	s.NotNil(sdkMeasurement)
+	s.Nil(err)
 }
 
 func TestSdkMetadataTestSuite(t *testing.T) {
-	suite.Run(t, new(SdkMetadataTestSuite))
+	suite.Run(t, new(SdkMeasurementTestSuite))
 }

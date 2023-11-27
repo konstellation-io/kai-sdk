@@ -21,11 +21,11 @@ PRODUCT_BUCKET = "centralized_configuration.product.bucket"
 WORKFLOW_BUCKET = "centralized_configuration.workflow.bucket"
 PROCESS_BUCKET = "centralized_configuration.process.bucket"
 NATS_OBJECT_STORE = "nats.object_store"
-OPENTELEMETRY_ENDPOINT = "opentelemetry.endpoint"
-OPENTELEMETRY_INSECURE = "opentelemetry.insecure"
-OPENTELEMETRY_TIMEOUT = "opentelemetry.timeout"
-OPENTELEMETRY_METRICS_INTERVAL = "opentelemetry.metrics_interval"
-OPENTELEMETRY_ENDPOINT_VALUE = "localhost:4317"
+MEASUREMENTS_ENDPOINT = "measurements.endpoint"
+MEASUREMENTS_INSECURE = "measurements.insecure"
+MEASUREMENTS_TIMEOUT = "measurements.timeout"
+MEASUREMENTS_METRICS_INTERVAL = "measurements.metrics_interval"
+MEASUREMENTS_ENDPOINT_VALUE = "localhost:4317"
 
 
 @patch.object(
@@ -47,10 +47,10 @@ async def test_initialize_ok(persistent_storage_mock, centralized_config_initial
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
-    v.set(OPENTELEMETRY_ENDPOINT, OPENTELEMETRY_ENDPOINT_VALUE)
-    v.set(OPENTELEMETRY_INSECURE, True)
-    v.set(OPENTELEMETRY_TIMEOUT, 5)
-    v.set(OPENTELEMETRY_METRICS_INTERVAL, 1)
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()
@@ -89,10 +89,10 @@ async def test_initialize_ko(persistent_storage_mock, centralized_config_initial
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
-    v.set(OPENTELEMETRY_ENDPOINT, OPENTELEMETRY_ENDPOINT_VALUE)
-    v.set(OPENTELEMETRY_INSECURE, True)
-    v.set(OPENTELEMETRY_TIMEOUT, 5)
-    v.set(OPENTELEMETRY_METRICS_INTERVAL, 1)
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     with pytest.raises(SystemExit):
         with pytest.raises(FailedToInitializeConfigError):
@@ -122,10 +122,10 @@ async def test_nats_initialize_ok(
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
-    v.set(OPENTELEMETRY_ENDPOINT, OPENTELEMETRY_ENDPOINT_VALUE)
-    v.set(OPENTELEMETRY_INSECURE, True)
-    v.set(OPENTELEMETRY_TIMEOUT, 5)
-    v.set(OPENTELEMETRY_METRICS_INTERVAL, 1)
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()
@@ -149,10 +149,10 @@ async def test_nats_initialize_ok(
 async def test_nats_initialize_ko(_, object_store_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
-    v.set(OPENTELEMETRY_ENDPOINT, OPENTELEMETRY_ENDPOINT_VALUE)
-    v.set(OPENTELEMETRY_INSECURE, True)
-    v.set(OPENTELEMETRY_TIMEOUT, 5)
-    v.set(OPENTELEMETRY_METRICS_INTERVAL, 1)
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     with pytest.raises(SystemExit):
         with pytest.raises(FailedToInitializeEphemeralStorageError):
@@ -180,10 +180,10 @@ async def test_get_request_id_ok(persistent_storage_mock, centralized_config_ini
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
-    v.set(OPENTELEMETRY_ENDPOINT, OPENTELEMETRY_ENDPOINT_VALUE)
-    v.set(OPENTELEMETRY_INSECURE, True)
-    v.set(OPENTELEMETRY_TIMEOUT, 5)
-    v.set(OPENTELEMETRY_METRICS_INTERVAL, 1)
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()
@@ -215,10 +215,10 @@ async def test_set_request_msg_ok(persistent_storage_mock, centralized_config_in
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
-    v.set(OPENTELEMETRY_ENDPOINT, OPENTELEMETRY_ENDPOINT_VALUE)
-    v.set(OPENTELEMETRY_INSECURE, True)
-    v.set(OPENTELEMETRY_TIMEOUT, 5)
-    v.set(OPENTELEMETRY_METRICS_INTERVAL, 1)
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()
