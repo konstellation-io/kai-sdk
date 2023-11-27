@@ -75,45 +75,46 @@ class ExitSubscriber:
             await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e))
             return
 
-        self.logger.info("new message received")
-        self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
+        with self.logger.contextualize(metadata={"request_id": request_msg.request_id}):
+            self.logger.info("new message received")
+            self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
-        from_node = request_msg.from_node
-        handler = self._get_response_handler(from_node.lower())
-        to_node = self.exit_runner.sdk.metadata.get_process()
+            from_node = request_msg.from_node
+            handler = self._get_response_handler(from_node.lower())
+            to_node = self.exit_runner.sdk.metadata.get_process()
 
-        if handler is None:
-            await self._process_runner_error(msg, Exception(f"no handler defined for {from_node}"))
-            return
+            if handler is None:
+                await self._process_runner_error(msg, Exception(f"no handler defined for {from_node}"))
+                return
 
-        try:
-            if self.exit_runner.preprocessor is not None:
-                await self.exit_runner.preprocessor(self.exit_runner.sdk, request_msg.payload)
-        except Exception as e:
-            await self._process_runner_error(
-                msg, HandlerError(from_node, to_node, error=e, type="handler preprocessor")
-            )
-            return
+            try:
+                if self.exit_runner.preprocessor is not None:
+                    await self.exit_runner.preprocessor(self.exit_runner.sdk, request_msg.payload)
+            except Exception as e:
+                await self._process_runner_error(
+                    msg, HandlerError(from_node, to_node, error=e, type="handler preprocessor")
+                )
+                return
 
-        try:
-            await handler(self.exit_runner.sdk, request_msg.payload)
-        except Exception as e:
-            await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
-            return
+            try:
+                await handler(self.exit_runner.sdk, request_msg.payload)
+            except Exception as e:
+                await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
+                return
 
-        try:
-            if self.exit_runner.postprocessor is not None:
-                await self.exit_runner.postprocessor(self.exit_runner.sdk, request_msg.payload)
-        except Exception as e:
-            await self._process_runner_error(
-                msg, HandlerError(from_node, to_node, error=e, type="handler postprocessor")
-            )
-            return
+            try:
+                if self.exit_runner.postprocessor is not None:
+                    await self.exit_runner.postprocessor(self.exit_runner.sdk, request_msg.payload)
+            except Exception as e:
+                await self._process_runner_error(
+                    msg, HandlerError(from_node, to_node, error=e, type="handler postprocessor")
+                )
+                return
 
-        try:
-            await msg.ack()
-        except Exception as e:
-            self.logger.error(f"error acknowledging message: {e}")
+            try:
+                await msg.ack()
+            except Exception as e:
+                self.logger.error(f"error acknowledging message: {e}")
 
     async def _process_runner_error(self, msg: Msg, error: Exception) -> None:
         error_msg = str(error)

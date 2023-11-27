@@ -59,13 +59,18 @@ def custom_sink(encoding: str, path: str):
             record = message.record
 
             filepath = record["file"].path
-            domain = filepath.split("/")
-            filepath = f"{domain[-2]}/{domain[-1]}"
-            filepath = filepath + ":" + str(record["line"])
+            if filepath:
+                domain = filepath.split("/")
+                if len(domain) > 1:
+                    filepath = f"{domain[-2]}/{domain[-1]}"
+                else:
+                    filepath = domain[0]
+                filepath = filepath + ":" + str(record["line"])
 
             metadata = {}
-            for key, value in record["extra"]["metadata"].items():
-                metadata[key] = value
+            if record["extra"]["metadata"]:
+                for key, value in record["extra"]["metadata"].items():
+                    metadata[key] = value
 
             serialized_log = {
                 "level": record["level"].name,
