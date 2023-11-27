@@ -45,3 +45,8 @@ centralized_configuration:
     config:
       test1: value1
       test2: value2
+
+predictions:
+  endpoint: localhost:6379
+  username: testuser
+  password: testpassword

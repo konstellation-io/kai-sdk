@@ -31,5 +31,5 @@ const (
 	ConfigAuthRealmKey                    = "auth.realm"
 	ConfigRedisEndpointKey                = "predictions.endpoint"
 	ConfigRedisUsernameKey                = "predictions.username"
-	ConfigRedisPasswordKey                = "predictions.password" //nolint:gosec // False positive
+	ConfigRedisPasswordKey                = "predictions.password"
 )

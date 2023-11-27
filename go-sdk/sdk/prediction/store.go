@@ -95,7 +95,6 @@ func (r *RedisPredictionStore) Find(ctx context.Context, filter *Filter) ([]Pred
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(result)
 
 	predictions, err = r.parseResultToPredictionsList(result)
 	if err != nil {
@@ -156,7 +155,8 @@ func (r *RedisPredictionStore) parseResultToPredictionsList(rawResult interface{
 		return nil, ErrParsingListResult
 	}
 
-	var predictions []Prediction
+	predictions := make([]Prediction, 0, len(results))
+
 	for _, res := range results {
 		rawResContent, ok := res.(map[interface{}]interface{})
 		if !ok {
@@ -173,18 +173,19 @@ func (r *RedisPredictionStore) parseResultToPredictionsList(rawResult interface{
 			return nil, ErrParsingListResult
 		}
 
-		resJsonRoot, ok := extraAttributes["$"]
+		resJSONRoot, ok := extraAttributes["$"]
 		if !ok {
 			return nil, ErrParsingListResult
 		}
 
-		resJsonRootString, ok := resJsonRoot.(string)
+		resJSONRootString, ok := resJSONRoot.(string)
 		if !ok {
 			return nil, ErrParsingListResult
 		}
 
 		var prediction Prediction
-		err := json.Unmarshal([]byte(resJsonRootString), &prediction)
+
+		err := json.Unmarshal([]byte(resJSONRootString), &prediction)
 		if err != nil {
 			return nil, fmt.Errorf("unmarshalling prediction: %w", err)
 		}
