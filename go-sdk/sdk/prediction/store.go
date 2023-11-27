@@ -39,10 +39,6 @@ type RedisPredictionStore struct {
 }
 
 func NewRedisPredictionStore(requestID string) *RedisPredictionStore {
-	//opts, err := redis.ParseURL(viper.GetString(common.ConfigRedisEndpointKey))
-	//if err != nil {
-	//	return nil, fmt.Errorf("parsing Redis URL: %w", err)
-	//}
 	opts := &redis.Options{
 		Addr:     strings.ReplaceAll(viper.GetString(common.ConfigRedisEndpointKey), "redis://", ""),
 		Username: viper.GetString(common.ConfigRedisUsernameKey),
@@ -142,11 +138,10 @@ func (r *RedisPredictionStore) buildQueryWithFilters(filter *Filter) string {
 	}
 
 	return strings.ReplaceAll(strings.Join(queryFilters, " "), "-", "\\-")
-	//return queryFilters
 }
 
 func (r *RedisPredictionStore) parseResultToPredictionsList(rawResult interface{}) ([]Prediction, error) {
-	result, ok := rawResult.(map[interface{}]interface{}) // ["results"].([]interface{})[0].(map[interface{}]interface{})["extra_attributes"].(map[interface{}]interface{})["$"].(string)
+	result, ok := rawResult.(map[interface{}]interface{})
 	if !ok {
 		return nil, ErrParsingListResult
 	}

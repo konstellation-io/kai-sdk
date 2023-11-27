@@ -90,14 +90,6 @@ type measurements interface{}
 
 //go:generate mockery --name predictions --output ../mocks --filename predictions_mock.go --structname PredictionsMock
 type predictions interface {
-	// product:predictionID
-	//{
-	// 	timestamp: time.Now(),
-	//	payload: map[string]string,
-	//	metadata: {
-	//		 product, version, requestid, workflow, process
-	//	}
-	//}
 	Save(ctx context.Context, predictionID string, value map[string]interface{}) error
 	Get(ctx context.Context, predictionID string) (*prediction.Prediction, error)
 	Find(ctx context.Context, filter *prediction.Filter) ([]prediction.Prediction, error)
