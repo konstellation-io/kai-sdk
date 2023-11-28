@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "task-py"
+name = "redis-py"
 version = "0.1.0"
 description = "KAI SDK's demo in Python"
 authors = ["Intelygenz - AIO Team"]
