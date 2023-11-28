@@ -5,14 +5,13 @@ import (
 	"os"
 
 	meta "github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
-	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 	"go.opentelemetry.io/otel/metric"
 
 	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
 	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
 
 	"github.com/go-logr/logr"
 	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
@@ -170,7 +169,6 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		ModelRegistry:     modelRegistryInst,
 		CentralizedConfig: centralizedConfigInst,
 		Measurements:      measurementsInst,
-		Storage:           storageManager,
 	}
 
 	return sdk
