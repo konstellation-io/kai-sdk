@@ -37,3 +37,8 @@ class FailedToParseResultError(Exception):
     def __init__(self, result: dict[str, str], error: Optional[Exception] = None):
         message = f"failed to parse result {result}"
         super().__init__(f"{message}: {error}" if error else message)
+
+class MissingRequiredFilterFieldError(Exception):
+    def __init__(self, field: str, error: Optional[Exception] = None):
+        message = f"filter {field} is required"
+        super().__init__(f"{message}: {error}" if error else message)

@@ -17,7 +17,8 @@ loguru = "0.7.0"
 vyper-config = "1.1.1"
 minio = "7.2.0"
 python-keycloak = "3.7.0"
-redis = {extras = ["hiredis"], version = "5.0.1"}
+redis = {extras = ["hiredis"], version = "4.6.0"}
+redis-om = "0.2.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "23.7.0"

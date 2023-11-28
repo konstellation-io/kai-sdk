@@ -3,7 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Prediction:
-    timestamp: str
+    creation_date: float
+    last_modified: float
     payload: dict[str, str]
     metadata: dict[str, str]
 
@@ -16,8 +17,9 @@ class TimestampRange:
 
 @dataclass
 class Filter:
-    request_id: str
-    workflow: str
-    process: str
     version: str
+    workflow: str
+    workflow_type: str
+    process: str
+    request_id: str
     timestamp: TimestampRange
