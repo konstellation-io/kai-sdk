@@ -14,8 +14,7 @@ from sdk.model_registry.exceptions import (
     FailedToSaveModelError,
     InvalidVersionError,
 )
-from sdk.model_registry.model_registry import Model, ModelInfo, ModelRegistry, \
-    ModelRegistryABC
+from sdk.model_registry.model_registry import Model, ModelInfo, ModelRegistry, ModelRegistryABC
 
 METADATA = {
     "process": "test_process",
