@@ -10,6 +10,7 @@ import (
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
 	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/go-logr/logr"
 	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
@@ -82,11 +83,10 @@ type centralizedConfig interface {
 	DeleteConfig(key string, scope msg.Scope) error
 }
 
-//nolint:godox // Task to be done.
-// TODO add metrics interface.
-
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock
-type measurements interface{}
+type measurements interface {
+	GetMetricsClient() metric.Meter
+}
 
 //go:generate mockery --name modelRegistry --output ../mocks --filename model_registry_mock.go --structname ModelRegistryMock
 type modelRegistry interface {
@@ -151,6 +151,12 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		os.Exit(1)
 	}
 
+	measurementsInst, err := measurement.New(logger, metadata)
+	if err != nil {
+		logger.WithName("[MEASUREMENTS]").Error(err, "Error initializing measurements")
+		os.Exit(1)
+	}
+
 	sdk := KaiSDK{
 		ctx:               context.Background(),
 		nats:              natsCli,
@@ -161,7 +167,7 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		Storage:           storageManager,
 		ModelRegistry:     modelRegistryInst,
 		CentralizedConfig: centralizedConfigInst,
-		Measurements:      nil,
+		Measurements:      measurementsInst,
 	}
 
 	return sdk

@@ -1,0 +1,23 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+
+exporters:
+  otlp:
+    endpoint: "your-otlp-endpoint"
+    insecure: false
+    headers:
+      your-header-key: your-header-value
+    compression: "gzip"
+
+processors:
+  batch:
+    timeout: 5s
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp]

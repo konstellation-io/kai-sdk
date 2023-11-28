@@ -29,6 +29,12 @@ auth:
   client_secret: "kai_pwd"
   realm: "konstellation"
 
+measurements:
+  endpoint: "localhost:4317"
+  insecure: true
+  timeout: 5
+  metrics_interval: 10
+
 centralized_configuration:
   global:
     bucket: global
