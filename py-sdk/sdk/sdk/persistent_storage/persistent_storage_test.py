@@ -20,9 +20,10 @@ TTL_DAYS = 30
 EXPIRE_DATETIME = datetime.strptime("Sat, 18 Nov 2023 00:00:00 GMT", "%a, %d %b %Y %H:%M:%S %Z")
 METADATA = {
     "process": "test_process",
-    "product": "konstellation",
     "version": "v0.0.1",
     "workflow": "test_workflow",
+    "workflow_type": "test_workflow_type",
+    "product": "konstellation",
 }
 EXPECTED_OBJECT_INFO = ObjectInfo(
     key="test-key",
@@ -99,6 +100,7 @@ def test_ko(m_persistent_storage):
 def test_save_ok(m_persistent_storage, m_object):
     v.set("metadata.product_id", METADATA["product"])
     v.set("metadata.workflow_name", METADATA["workflow"])
+    v.set("metadata.workflow_type", METADATA["workflow_type"])
     v.set("metadata.process_name", METADATA["process"])
     v.set("metadata.version_tag", METADATA["version"])
     m_persistent_storage.minio_client.put_object.return_value = m_object
@@ -115,6 +117,7 @@ def test_save_ok(m_persistent_storage, m_object):
 def test_save_no_ttl_ok(m_persistent_storage, m_object):
     v.set("metadata.product_id", METADATA["product"])
     v.set("metadata.workflow_name", METADATA["workflow"])
+    v.set("metadata.workflow_type", METADATA["workflow_type"])
     v.set("metadata.process_name", METADATA["process"])
     v.set("metadata.version_tag", METADATA["version"])
     m_persistent_storage.minio_client.put_object.return_value = m_object

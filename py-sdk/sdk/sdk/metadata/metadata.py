@@ -13,17 +13,22 @@ class MetadataABC(ABC):
 
     @staticmethod
     @abstractmethod
+    def get_version() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
     def get_workflow() -> str:
         pass
 
     @staticmethod
     @abstractmethod
-    def get_process() -> str:
+    def get_workflow_type() -> str:
         pass
 
     @staticmethod
     @abstractmethod
-    def get_version() -> str:
+    def get_process() -> str:
         pass
 
     @staticmethod
@@ -59,16 +64,21 @@ class Metadata(MetadataABC):
         return v.get_string("metadata.product_id")
 
     @staticmethod
+    def get_version() -> str:
+        return v.get_string("metadata.version_tag")
+    
+    @staticmethod
     def get_workflow() -> str:
         return v.get_string("metadata.workflow_name")
+    
+    @staticmethod
+    def get_workflow_type() -> str:
+        return v.get_string("metadata.workflow_type")
 
     @staticmethod
     def get_process() -> str:
         return v.get_string("metadata.process_name")
 
-    @staticmethod
-    def get_version() -> str:
-        return v.get_string("metadata.version_tag")
 
     @staticmethod
     def get_ephemeral_storage_name() -> str:
