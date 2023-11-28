@@ -215,3 +215,53 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ProductFilterAppliedByDe
 	// THEN
 	s.ElementsMatch(expectedPredictions, actualPredictions)
 }
+
+func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByActualVersionByDefault() {
+	var (
+		ctx             = context.Background()
+		firstPrediction = prediction.Prediction{
+			CreationDate: time.Now().UnixMilli(),
+			Payload: map[string]interface{}{
+				"test-key-2": "test-value-2",
+			},
+			Metadata: s.getPredictionMetadata(),
+		}
+
+		secondPrediction = prediction.Prediction{
+			CreationDate: time.Now().UnixMilli(),
+			Payload: map[string]interface{}{
+				"test-key-2": "test-value-2",
+			},
+			Metadata: prediction.Metadata{
+				Product:      _testProduct,
+				Version:      "another-version",
+				Workflow:     _testWorkflow,
+				WorkflowType: _testWorkflowType,
+				Process:      _testProcess,
+				RequestID:    _testRequestID,
+			},
+		}
+
+		expectedPredictions = []prediction.Prediction{firstPrediction}
+	)
+
+	err := s.redisClient.
+		JSONSet(ctx, s.getKeyWithProductPrefix("first-prediction"), "$", firstPrediction).
+		Err()
+	s.Require().NoError(err)
+
+	err = s.redisClient.
+		JSONSet(ctx, s.getKeyWithProductPrefix("second-prediction"), "$", secondPrediction).
+		Err()
+	s.Require().NoError(err)
+
+	actualPredictions, err := s.predictionStore.Find(ctx, &prediction.Filter{
+		CreationDate: prediction.TimestampRange{
+			EndDate: time.Now().UnixMilli(),
+		},
+	})
+	s.Require().NoError(err)
+
+	// THEN
+	s.ElementsMatch(expectedPredictions, actualPredictions)
+}
