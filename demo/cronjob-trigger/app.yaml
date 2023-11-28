@@ -1,8 +1,9 @@
 metadata:
   product_id: Trigger product
-  workflow_name: Trigger workflow
-  process_name: Trigger process
   version_tag: Trigger version v1.0.0
+  workflow_name: Trigger workflow
+  workflow_type: training workflow
+  process_name: Trigger process
 
 nats:
   url: "nats://localhost:4222"
@@ -25,8 +26,9 @@ auth:
 
 predictions:
   endpoint: localhost:6379
-  username: testuser
-  password: testpassword
+  username: default
+  password: redispw
+  index_key: index
 
 centralized_configuration:
   global:
