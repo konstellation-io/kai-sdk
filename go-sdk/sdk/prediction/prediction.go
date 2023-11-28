@@ -1,11 +1,13 @@
 package prediction
 
 type Prediction struct {
-	CreationDate int64                  `json:"creationDate"`
-	LastModified int64                  `json:"lastModified"`
-	Payload      map[string]interface{} `json:"payload"`
-	Metadata     Metadata               `json:"metadata"`
+	CreationDate int64    `json:"creationDate"`
+	LastModified int64    `json:"lastModified"`
+	Payload      Payload  `json:"payload"`
+	Metadata     Metadata `json:"metadata"`
 }
+
+type Payload map[string]interface{}
 
 type Metadata struct {
 	Product      string `json:"product"`

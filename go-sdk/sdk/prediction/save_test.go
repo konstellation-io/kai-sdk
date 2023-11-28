@@ -11,7 +11,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Save_ExpectOK() {
 	var (
 		ctx              = context.Background()
 		predictionID     = "test-prediction"
-		predictionValues = map[string]interface{}{
+		predictionValues = prediction.Payload{
 			"test-key": "test-value",
 		}
 		expectedMetadata = s.getPredictionMetadata()

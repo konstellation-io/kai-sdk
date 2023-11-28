@@ -12,7 +12,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ExpectOK() {
 		ctx             = context.Background()
 		firstPrediction = prediction.Prediction{
 			CreationDate: time.Now().UnixMilli(),
-			Payload: map[string]interface{}{
+			Payload: prediction.Payload{
 				"test-key-2": "test-value-2",
 			},
 			Metadata: s.getPredictionMetadata(),
@@ -20,7 +20,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ExpectOK() {
 
 		secondPrediction = prediction.Prediction{
 			CreationDate: time.Now().UnixMilli(),
-			Payload: map[string]interface{}{
+			Payload: prediction.Payload{
 				"test-key-2": "test-value-2",
 			},
 			Metadata: s.getPredictionMetadata(),
@@ -56,7 +56,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByMultipleFields_E
 		ctx             = context.Background()
 		firstPrediction = prediction.Prediction{
 			CreationDate: time.Now().UnixMilli(),
-			Payload: map[string]interface{}{
+			Payload: prediction.Payload{
 				"test-key-2": "test-value-2",
 			},
 			Metadata: s.getPredictionMetadata(),
@@ -64,7 +64,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByMultipleFields_E
 
 		secondPrediction = prediction.Prediction{
 			CreationDate: time.Now().UnixMilli(),
-			Payload: map[string]interface{}{
+			Payload: prediction.Payload{
 				"test-key-2": "test-value-2",
 			},
 			Metadata: prediction.Metadata{
@@ -109,7 +109,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByTimestampRange_E
 		ctx             = context.Background()
 		firstPrediction = prediction.Prediction{
 			CreationDate: 1000,
-			Payload: map[string]interface{}{
+			Payload: prediction.Payload{
 				"test-key-2": "test-value-2",
 			},
 			Metadata: s.getPredictionMetadata(),
@@ -117,7 +117,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByTimestampRange_E
 
 		secondPrediction = prediction.Prediction{
 			CreationDate: 2000,
-			Payload: map[string]interface{}{
+			Payload: prediction.Payload{
 				"test-key-2": "test-value-2",
 			},
 			Metadata: s.getPredictionMetadata(),
@@ -171,7 +171,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ProductFilterAppliedByDe
 		ctx             = context.Background()
 		firstPrediction = prediction.Prediction{
 			CreationDate: time.Now().UnixMilli(),
-			Payload: map[string]interface{}{
+			Payload: prediction.Payload{
 				"test-key-2": "test-value-2",
 			},
 			Metadata: s.getPredictionMetadata(),
@@ -179,7 +179,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ProductFilterAppliedByDe
 
 		secondPrediction = prediction.Prediction{
 			CreationDate: time.Now().UnixMilli(),
-			Payload: map[string]interface{}{
+			Payload: prediction.Payload{
 				"test-key-2": "test-value-2",
 			},
 			Metadata: prediction.Metadata{
@@ -221,7 +221,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByActualVersionByD
 		ctx             = context.Background()
 		firstPrediction = prediction.Prediction{
 			CreationDate: time.Now().UnixMilli(),
-			Payload: map[string]interface{}{
+			Payload: prediction.Payload{
 				"test-key-2": "test-value-2",
 			},
 			Metadata: s.getPredictionMetadata(),
@@ -229,7 +229,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByActualVersionByD
 
 		secondPrediction = prediction.Prediction{
 			CreationDate: time.Now().UnixMilli(),
-			Payload: map[string]interface{}{
+			Payload: prediction.Payload{
 				"test-key-2": "test-value-2",
 			},
 			Metadata: prediction.Metadata{

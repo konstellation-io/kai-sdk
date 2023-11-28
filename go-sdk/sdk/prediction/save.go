@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (r *RedisPredictionStore) Save(ctx context.Context, predictionID string, value map[string]interface{}) error {
+func (r *RedisPredictionStore) Save(ctx context.Context, predictionID string, value Payload) error {
 	prediction := Prediction{
 		CreationDate: time.Now().UnixMilli(),
 		LastModified: time.Now().UnixMilli(),
