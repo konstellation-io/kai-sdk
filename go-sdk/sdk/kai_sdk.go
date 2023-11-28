@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
+
 	meta "github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 
 	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
