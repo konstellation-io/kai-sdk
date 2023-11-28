@@ -89,11 +89,11 @@ def test_ok(_, __):
     assert persistent_storage.minio_bucket_name == "test-minio-bucket"
 
 
-def test_ko(m_persistent_storage):
+def test_ko():
     with pytest.raises(FailedToInitializePersistentStorageError):
-        PersistentStorage()
+        persistent_storage = PersistentStorage()
 
-        assert m_persistent_storage.minio_client is None
+        assert persistent_storage.minio_client is None
 
 
 def test_save_ok(m_persistent_storage, m_object):
