@@ -1,0 +1,41 @@
+metadata:
+  product_id: Redis process
+  workflow_name: Redis workflow
+  process_name: Redis process
+  version_tag: Redis version v1.0.0
+
+nats:
+  url: "nats://localhost:4222"
+  stream: redis
+  inputs:
+    - trigger-output
+  output: redis-output
+  object_store: ephemeral-storage
+
+minio:
+  endpoint: "localhost:9000"
+  client_user: "minio_user"
+  client_password: "minio_password"
+  ssl: false
+  bucket: "test-bucket"
+
+auth:
+  endpoint: "http://auth.kai.local"
+  client: "kai"
+  client_secret: "kai_pwd"
+  realm: "konstellation"
+
+predictions:
+  endpoint: localhost:6379
+  username: testuser
+  password: testpassword
+
+centralized_configuration:
+  global:
+    bucket: global
+  product:
+    bucket: product
+  workflow:
+    bucket: workflow
+  process:
+    bucket: process
