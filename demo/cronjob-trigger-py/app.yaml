@@ -23,7 +23,7 @@ auth:
   endpoint: "http://auth.kai.local"
   client: "kai"
   client_secret: "kai_pwd"
-  realm: "konstellation"ç
+  realm: "konstellation"
 
 predictions:
   endpoint: localhost:6379
