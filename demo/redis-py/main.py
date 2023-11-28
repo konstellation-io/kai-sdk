@@ -4,6 +4,8 @@ from google.protobuf.any_pb2 import Any
 from google.protobuf.wrappers_pb2 import StringValue
 from runner.runner import Runner
 from sdk import kai_sdk as sdk
+from sdk.predictions.types import Filter, TimestampRange
+from sdk.metadata.metadata import Metadata
 
 
 async def initializer(kai_sdk: sdk.KaiSDK):
@@ -19,7 +21,33 @@ async def handler(kai_sdk: sdk.KaiSDK, response: Any):
     message = string_value.value
     logger.info(f"received message {message}")
 
-    kai_sdk.predictions.save("test", {"test": "test"})
+    logger.info("saving prediction")
+    key = "test"
+    prediction = {"test": "test"}
+    kai_sdk.predictions.save(key, prediction)
+    logger.info(f"prediction saved with key {key} and value {prediction}")
+    response = kai_sdk.predictions.get(key)
+    logger.info(f"prediction retrieved with key {key} and value {response}")
+    
+    def func(payload: dict[str, str]) -> dict[str, str]:
+        payload["test"] = "updatedValueByFunc"
+        return payload
+    
+    kai_sdk.predictions.update(key, func)
+    logger.info(f"prediction updated with key {key}")
+    response = kai_sdk.predictions.get(key)
+    logger.info(f"prediction retrieved with key {key} and value {response}")
+
+    filter_ = Filter(
+        version=Metadata.get_version(),
+        workflow=Metadata.get_workflow(),
+        workflow_type=Metadata.get_workflow_type(),
+        process=Metadata.get_process(),
+        request_id=kai_sdk.get_request_id(),
+        timestamp=TimestampRange(start_date="2020-01-01", end_date="2024-01-01"),
+    )
+    response = kai_sdk.predictions.find(filter=filter_)
+    logger.info(f"prediction retrieved with filter {filter_} and value {response}")
 
     composed_string = f"{message}, processed by the task process!"
     logger.info(f"sending message {composed_string}")
