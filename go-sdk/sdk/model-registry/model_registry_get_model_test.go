@@ -38,8 +38,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_GetModelVersion_ExpectOK()
 	modelData1 := []byte("some-data")
 	modelData2 := []byte("some-data2")
 	modelName := "model.pt"
-	modelVersion1 := "v1.0.0"
-	modelVersion2 := "v1.0.1"
+	modelVersion1 := "1.0.0"
+	modelVersion2 := "1.0.1"
 	modelDescription := "description"
 	modelFormat := "Pytorch"
 
@@ -101,8 +101,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_GetNonExistingModelVersion
 	// GIVEN
 	modelData1 := []byte("some-data")
 	modelName := "model.pt"
-	modelVersion1 := "v1.0.0"
-	modelVersion2 := "v1.0.1"
+	modelVersion1 := "1.0.0"
+	modelVersion2 := "1.0.1"
 	modelDescription := "description"
 	modelFormat := "Pytorch"
 
@@ -140,7 +140,7 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_GetModel_GetNonExistingMod
 func (s *SdkModelRegistryTestSuite) TestModelRegistry_GetModel_GetNonExistingModelVersion_Expect() {
 	// GIVEN
 	modelName := "some-model.pt"
-	version := "v3.0.0"
+	version := "3.0.0"
 
 	// WHEN
 	model, err := s.modelRegistry.GetModel(modelName, version)

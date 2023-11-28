@@ -3,6 +3,7 @@ module github.com/konstellation-io/kai-sdk/go-sdk
 go 1.20
 
 require (
+	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/Nerzal/gocloak/v13 v13.8.0
 	github.com/go-logr/logr v1.2.4
 	github.com/go-logr/zapr v1.2.4
@@ -10,7 +11,6 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/minio/minio-go/v7 v7.0.63
 	github.com/nats-io/nats.go v1.31.0
-	github.com/rogpeppe/go-internal v1.9.0
 	github.com/spf13/viper v1.17.0
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.25.0

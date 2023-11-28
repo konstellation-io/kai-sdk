@@ -13,6 +13,7 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
+from sdk.model_registry.model_registry import ModelRegistry
 from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 GLOBAL_BUCKET = "centralized_configuration.global.bucket"
@@ -33,7 +34,8 @@ NATS_OBJECT_STORE = "nats.object_store"
     ),
 )
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_initialize_ok(persistent_storage_mock, centralized_config_initialize_mock):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_initialize_ok(persistent_storage_mock, model_registry_mock, centralized_config_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
     v.set(NATS_OBJECT_STORE, None)
@@ -51,6 +53,7 @@ async def test_initialize_ok(persistent_storage_mock, centralized_config_initial
     assert isinstance(sdk.storage.ephemeral, EphemeralStorage)
     assert isinstance(sdk.storage.persistent, PersistentStorage)
     assert isinstance(sdk.centralized_config, CentralizedConfig)
+    assert isinstance(sdk.model_registry, ModelRegistry)
     assert sdk.nc is not None
     assert sdk.js is not None
     assert getattr(sdk, "request_msg", None) is None
@@ -71,7 +74,8 @@ async def test_initialize_ok(persistent_storage_mock, centralized_config_initial
 
 @patch.object(CentralizedConfig, "_init_kv_stores", side_effect=Exception)
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_initialize_ko(persistent_storage_mock, centralized_config_initialize_mock):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_initialize_ko(persistent_storage_mock, model_registry_mock, centralized_config_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
     v.set(NATS_OBJECT_STORE, None)
@@ -98,8 +102,9 @@ async def test_initialize_ko(persistent_storage_mock, centralized_config_initial
     ),
 )
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
 async def test_nats_initialize_ok(
-    persistent_storage_mock, centralized_config_initialize_mock, object_store_initialize_mock
+    persistent_storage_mock, centralized_config_initialize_mock, model_registry_mock, object_store_initialize_mock
 ):
     nc = NatsClient()
     js = nc.jetstream()
@@ -128,7 +133,8 @@ async def test_nats_initialize_ok(
 
 @patch.object(EphemeralStorage, "_init_object_store", side_effect=Exception)
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_nats_initialize_ko(_, object_store_initialize_mock):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_nats_initialize_ko(_, object_store_initialize_mock, model_registry_mock):
     nc = NatsClient()
     js = nc.jetstream()
 
@@ -149,7 +155,8 @@ async def test_nats_initialize_ko(_, object_store_initialize_mock):
     ),
 )
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_get_request_id_ok(persistent_storage_mock, centralized_config_initialize_mock):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_get_request_id_ok(persistent_storage_mock, model_registry_mock, centralized_config_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
     request_msg = KaiNatsMessage(request_id="test_request_id")
@@ -180,7 +187,8 @@ async def test_get_request_id_ok(persistent_storage_mock, centralized_config_ini
     ),
 )
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_set_request_msg_ok(persistent_storage_mock, centralized_config_initialize_mock):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_set_request_msg_ok(persistent_storage_mock, model_registry_mock, centralized_config_initialize_mock):
     nc = NatsClient()
     js = nc.jetstream()
     request_msg = KaiNatsMessage(request_id="test_request_id")

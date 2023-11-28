@@ -7,13 +7,13 @@ import (
 	"io"
 	"path"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/go-logr/logr"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/storage"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 	"github.com/minio/minio-go/v7"
-	"github.com/rogpeppe/go-internal/semver"
 	"github.com/spf13/viper"
 )
 
@@ -79,7 +79,7 @@ func (mr *ModelRegistry) RegisterModel(model []byte, name, version, description,
 		return errors.ErrEmptyName
 	}
 
-	if !semver.IsValid(version) {
+	if _, err := semver.NewVersion(version); err != nil {
 		return errors.ErrInvalidVersion
 	}
 
@@ -127,7 +127,7 @@ func (mr *ModelRegistry) GetModel(name string, version ...string) (*Model, error
 	opts := minio.GetObjectOptions{}
 
 	if len(version) > 0 {
-		if semver.IsValid(version[0]) {
+		if _, err := semver.NewVersion(version[0]); err == nil {
 			return mr.getModelVersionFromList(name, version[0])
 		}
 
