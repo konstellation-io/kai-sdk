@@ -104,27 +104,39 @@ func (r *RedisPredictionStore) getKeyWithProductPrefix(key string) string {
 
 func (r *RedisPredictionStore) buildQueryWithFilters(filter *Filter) string {
 	queryFilters := []string{
-		fmt.Sprintf("@product:{%s}", r.metadata.GetProduct()),
-		fmt.Sprintf("@creationDate:[%d %d]", filter.CreationDate.StartDate, filter.CreationDate.EndDate),
+		r.getSearchTagFilter("product", r.metadata.GetProduct()),
+		r.getSearchNumericRangeFilter("creationDate", filter.CreationDate.StartDate, filter.CreationDate.EndDate),
 	}
 
 	if filter.Workflow != "" {
-		queryFilters = append(queryFilters, fmt.Sprintf("@workflow:{%s}", filter.Workflow))
+		queryFilters = append(queryFilters, r.getSearchTagFilter("workflow", filter.Workflow))
+	}
+
+	if filter.WorkflowType != "" {
+		queryFilters = append(queryFilters, r.getSearchTagFilter("workflowType", filter.WorkflowType))
 	}
 
 	if filter.Version != "" {
-		queryFilters = append(queryFilters, fmt.Sprintf("@version:{%s}", filter.Version))
+		queryFilters = append(queryFilters, r.getSearchTagFilter("version", filter.Version))
 	}
 
 	if filter.Process != "" {
-		queryFilters = append(queryFilters, fmt.Sprintf("@process:{%s}", filter.Process))
+		queryFilters = append(queryFilters, r.getSearchTagFilter("process", filter.Process))
 	}
 
 	if filter.RequestID != "" {
-		queryFilters = append(queryFilters, fmt.Sprintf("@requestID:{%s}", filter.RequestID))
+		queryFilters = append(queryFilters, r.getSearchTagFilter("requestID", filter.RequestID))
 	}
 
 	return strings.ReplaceAll(strings.Join(queryFilters, " "), "-", "\\-")
+}
+
+func (r *RedisPredictionStore) getSearchTagFilter(field, value string) string {
+	return fmt.Sprintf("@%s:{%s}", field, value)
+}
+
+func (r *RedisPredictionStore) getSearchNumericRangeFilter(field string, from, to int64) string {
+	return fmt.Sprintf("@%s:[%d %d]", field, from, to)
 }
 
 func (r *RedisPredictionStore) parseResultsToPredictionsList(rawResult interface{}) ([]Prediction, error) {

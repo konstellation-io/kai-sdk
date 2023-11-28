@@ -9,6 +9,7 @@ var (
 type Filter struct {
 	RequestID    string
 	Workflow     string
+	WorkflowType string
 	Process      string
 	Version      string
 	CreationDate TimestampRange
