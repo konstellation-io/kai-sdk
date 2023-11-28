@@ -37,6 +37,12 @@ predictions:
   endpoint: localhost:6379
   username: testuser
   password: testpassword
+  
+measurements:
+  endpoint: "localhost:4317"
+  insecure: true
+  timeout: 5
+  metrics_interval: 10
 
 centralized_configuration:
   global:

@@ -29,4 +29,8 @@ const (
 	ConfigAuthClientKey                   = "auth.client"
 	ConfigAuthClientSecretKey             = "auth.client_secret" //nolint:gosec // False positive
 	ConfigAuthRealmKey                    = "auth.realm"
+	ConfigMeasurementsEndpointKey         = "measurements.endpoint"
+	ConfigMeasurementsInsecureKey         = "measurements.insecure"
+	ConfigMeasurementsTimeoutKey          = "measurements.timeout"
+	ConfigMeasurementsMetricsIntervalKey  = "measurements.metrics_interval"
 )

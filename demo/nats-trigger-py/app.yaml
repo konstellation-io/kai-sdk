@@ -30,6 +30,12 @@ predictions:
   username: default
   password: redispw
   index_key: index
+  
+measurements:
+  endpoint: "localhost:4317"
+  insecure: true
+  timeout: 5
+  metrics_interval: 10
 
 centralized_configuration:
   global:
