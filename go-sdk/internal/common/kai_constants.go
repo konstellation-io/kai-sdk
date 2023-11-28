@@ -9,6 +9,7 @@ const (
 	ConfigRunnerSubscriberAckWaitTimeKey  = "runner.subscriber.ack_wait_time"
 	ConfigMetadataProductIDKey            = "metadata.product_id"
 	ConfigMetadataWorkflowIDKey           = "metadata.workflow_name"
+	ConfigMetadataWorkflowTypeKey         = "metadata.workflow_type"
 	ConfigMetadataProcessIDKey            = "metadata.process_name"
 	ConfigMetadataVersionIDKey            = "metadata.version_tag"
 	ConfigNatsURLKey                      = "nats.url"

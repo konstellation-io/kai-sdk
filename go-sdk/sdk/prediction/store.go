@@ -19,19 +19,6 @@ var (
 	ErrParsingListResult  = errors.New("error parsing prediction store search result")
 )
 
-type Filter struct {
-	RequestID string
-	Workflow  string
-	Process   string
-	Version   string
-	Timestamp *TimestampRange
-}
-
-type TimestampRange struct {
-	StartDate int64
-	EndDate   int64
-}
-
 type RedisPredictionStore struct {
 	requestID string
 	client    *redis.Client
@@ -40,7 +27,7 @@ type RedisPredictionStore struct {
 
 func NewRedisPredictionStore(requestID string) *RedisPredictionStore {
 	opts := &redis.Options{
-		Addr:     strings.ReplaceAll(viper.GetString(common.ConfigRedisEndpointKey), "redis://", ""),
+		Addr:     viper.GetString(common.ConfigRedisEndpointKey),
 		Username: viper.GetString(common.ConfigRedisUsernameKey),
 		Password: viper.GetString(common.ConfigRedisPasswordKey),
 	}
@@ -54,14 +41,16 @@ func NewRedisPredictionStore(requestID string) *RedisPredictionStore {
 
 func (r *RedisPredictionStore) Save(ctx context.Context, predictionID string, value map[string]interface{}) error {
 	prediction := Prediction{
-		Timestamp: time.Now().UnixMilli(),
-		Payload:   value,
+		CreationDate: time.Now().UnixMilli(),
+		LastModified: time.Now().UnixMilli(),
+		Payload:      value,
 		Metadata: Metadata{
-			Product:   r.metadata.GetProduct(),
-			Version:   r.metadata.GetVersion(),
-			Workflow:  r.metadata.GetWorkflow(),
-			Process:   r.metadata.GetProcess(),
-			RequestID: r.requestID,
+			Product:      r.metadata.GetProduct(),
+			Version:      r.metadata.GetVersion(),
+			Workflow:     r.metadata.GetWorkflow(),
+			WorkflowType: r.metadata.GetWorkflowType(),
+			Process:      r.metadata.GetProcess(),
+			RequestID:    r.requestID,
 		},
 	}
 
@@ -91,6 +80,11 @@ func (r *RedisPredictionStore) Get(ctx context.Context, predictionID string) (*P
 func (r *RedisPredictionStore) Find(ctx context.Context, filter *Filter) ([]Prediction, error) {
 	var predictions []Prediction
 
+	if err := filter.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid filter: %w", err)
+	}
+
+	// set prediciton index as config variable
 	result, err := r.client.Do(ctx, "FT.SEARCH", "predictionsIdx", r.buildQueryWithFilters(filter)).Result()
 	if err != nil {
 		return nil, err
@@ -110,7 +104,8 @@ func (r *RedisPredictionStore) getKeyWithProductPrefix(key string) string {
 
 func (r *RedisPredictionStore) buildQueryWithFilters(filter *Filter) string {
 	queryFilters := []string{
-		fmt.Sprintf("@product:{%s} @timestamp:[0 inf]", r.metadata.GetProduct()),
+		fmt.Sprintf("@product:{%s}", r.metadata.GetProduct()),
+		fmt.Sprintf("@creationDate:[%d %d]", filter.CreationDate.StartDate, filter.CreationDate.EndDate),
 	}
 
 	if filter.Workflow != "" {
@@ -127,13 +122,6 @@ func (r *RedisPredictionStore) buildQueryWithFilters(filter *Filter) string {
 
 	if filter.RequestID != "" {
 		queryFilters = append(queryFilters, fmt.Sprintf("@requestID:{%s}", filter.RequestID))
-	}
-
-	if filter.Timestamp != nil {
-		queryFilters = append(
-			queryFilters,
-			fmt.Sprintf("@timestamp:[%d %d]", filter.Timestamp.StartDate, filter.Timestamp.EndDate),
-		)
 	}
 
 	return strings.ReplaceAll(strings.Join(queryFilters, " "), "-", "\\-")

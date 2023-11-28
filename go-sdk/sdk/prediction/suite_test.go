@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -24,11 +23,12 @@ import (
 )
 
 const (
-	_testRequestID = "test-request-id"
-	_testProduct   = "test-product"
-	_testVersion   = "test-version"
-	_testWorkflow  = "test-workflow"
-	_testProcess   = "test-process"
+	_testRequestID    = "test-request-id"
+	_testProduct      = "test-product"
+	_testVersion      = "test-version"
+	_testWorkflow     = "test-workflow"
+	_testWorkflowType = "training"
+	_testProcess      = "test-process"
 
 	_testRedisUser          = "test-user"
 	_testRedisPassword      = "test-password"
@@ -93,7 +93,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Get_ExpectOK() {
 		ctx                = context.Background()
 		predictionID       = "test-prediction"
 		expectedPrediction = &prediction.Prediction{
-			Timestamp: time.Now().UnixMilli(),
+			CreationDate: time.Now().UnixMilli(),
 			Payload: map[string]interface{}{
 				"test-key": "test-value",
 			},
@@ -119,7 +119,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Get_ProductWithoutPemissions(
 		ctx                    = context.Background()
 		predictionID           = "test-prediction"
 		otherProductPermission = &prediction.Prediction{
-			Timestamp: time.Now().UnixMilli(),
+			CreationDate: time.Now().UnixMilli(),
 			Payload: map[string]interface{}{
 				"test-key": "test-value",
 			},
@@ -155,7 +155,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ExpectOK() {
 	var (
 		ctx             = context.Background()
 		firstPrediction = prediction.Prediction{
-			Timestamp: time.Now().UnixMilli(),
+			CreationDate: time.Now().UnixMilli(),
 			Payload: map[string]interface{}{
 				"test-key-2": "test-value-2",
 			},
@@ -163,7 +163,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ExpectOK() {
 		}
 
 		secondPrediction = prediction.Prediction{
-			Timestamp: time.Now().UnixMilli(),
+			CreationDate: time.Now().UnixMilli(),
 			Payload: map[string]interface{}{
 				"test-key-2": "test-value-2",
 			},
@@ -185,6 +185,9 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ExpectOK() {
 
 	actualPredictions, err := s.predictionStore.Find(ctx, &prediction.Filter{
 		Version: _testVersion,
+		CreationDate: prediction.TimestampRange{
+			EndDate: time.Now().UnixMilli(),
+		},
 	})
 	s.Require().NoError(err)
 
@@ -196,7 +199,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByMultipleFields_E
 	var (
 		ctx             = context.Background()
 		firstPrediction = prediction.Prediction{
-			Timestamp: time.Now().UnixMilli(),
+			CreationDate: time.Now().UnixMilli(),
 			Payload: map[string]interface{}{
 				"test-key-2": "test-value-2",
 			},
@@ -204,7 +207,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByMultipleFields_E
 		}
 
 		secondPrediction = prediction.Prediction{
-			Timestamp: time.Now().UnixMilli(),
+			CreationDate: time.Now().UnixMilli(),
 			Payload: map[string]interface{}{
 				"test-key-2": "test-value-2",
 			},
@@ -235,6 +238,9 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByMultipleFields_E
 		Workflow:  _testWorkflow,
 		Process:   _testProcess,
 		RequestID: _testRequestID,
+		CreationDate: prediction.TimestampRange{
+			EndDate: time.Now().UnixMilli(),
+		},
 	})
 	s.Require().NoError(err)
 
@@ -246,7 +252,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByTimestampRange_E
 	var (
 		ctx             = context.Background()
 		firstPrediction = prediction.Prediction{
-			Timestamp: 1000,
+			CreationDate: 1000,
 			Payload: map[string]interface{}{
 				"test-key-2": "test-value-2",
 			},
@@ -254,7 +260,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByTimestampRange_E
 		}
 
 		secondPrediction = prediction.Prediction{
-			Timestamp: 2000,
+			CreationDate: 2000,
 			Payload: map[string]interface{}{
 				"test-key-2": "test-value-2",
 			},
@@ -275,7 +281,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByTimestampRange_E
 	s.Require().NoError(err)
 
 	actualPredictions, err := s.predictionStore.Find(ctx, &prediction.Filter{
-		Timestamp: &prediction.TimestampRange{
+		CreationDate: prediction.TimestampRange{
 			StartDate: 1500,
 			EndDate:   3000,
 		},
@@ -308,7 +314,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ProductFilterAppliedByDe
 	var (
 		ctx             = context.Background()
 		firstPrediction = prediction.Prediction{
-			Timestamp: time.Now().UnixMilli(),
+			CreationDate: time.Now().UnixMilli(),
 			Payload: map[string]interface{}{
 				"test-key-2": "test-value-2",
 			},
@@ -316,7 +322,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ProductFilterAppliedByDe
 		}
 
 		secondPrediction = prediction.Prediction{
-			Timestamp: time.Now().UnixMilli(),
+			CreationDate: time.Now().UnixMilli(),
 			Payload: map[string]interface{}{
 				"test-key-2": "test-value-2",
 			},
@@ -344,6 +350,9 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ProductFilterAppliedByDe
 
 	actualPredictions, err := s.predictionStore.Find(ctx, &prediction.Filter{
 		Version: _testVersion,
+		CreationDate: prediction.TimestampRange{
+			EndDate: time.Now().UnixMilli(),
+		},
 	})
 	s.Require().NoError(err)
 
@@ -380,7 +389,7 @@ func (s *PredictionStoreSuite) initializeRedisContainer() {
 	})
 	s.Require().NoError(err)
 
-	redisEndpoint, err := s.redisContainer.PortEndpoint(context.Background(), nat.Port(exposedPort), "redis")
+	redisEndpoint, err := s.redisContainer.PortEndpoint(context.Background(), nat.Port(exposedPort), "")
 	s.Require().NoError(err)
 
 	viper.Set(common.ConfigRedisEndpointKey, redisEndpoint)
@@ -390,6 +399,7 @@ func (s *PredictionStoreSuite) initializeMetadataConfiguration() {
 	viper.Set(common.ConfigMetadataProductIDKey, _testProduct)
 	viper.Set(common.ConfigMetadataVersionIDKey, _testVersion)
 	viper.Set(common.ConfigMetadataWorkflowIDKey, _testWorkflow)
+	viper.Set(common.ConfigMetadataWorkflowTypeKey, _testWorkflowType)
 	viper.Set(common.ConfigMetadataProcessIDKey, _testProcess)
 	viper.Set(common.ConfigRedisUsernameKey, _testRedisUser)
 	viper.Set(common.ConfigRedisPasswordKey, _testRedisPassword)
@@ -411,7 +421,7 @@ func (s *PredictionStoreSuite) getClient(url, keyID, keySecret string) *minio.Cl
 
 func (s *PredictionStoreSuite) initializeRedisClient() {
 	opts := &redis.Options{
-		Addr:     strings.ReplaceAll(viper.GetString(common.ConfigRedisEndpointKey), "redis://", ""),
+		Addr:     viper.GetString(common.ConfigRedisEndpointKey),
 		Username: "default",
 		Password: _testRedisAdminPassword,
 	}
@@ -441,20 +451,22 @@ func (s *PredictionStoreSuite) createRedisPredictionIndex() {
 		"$.metadata.product", "AS", "product", "TAG",
 		"$.metadata.version", "AS", "version", "TAG",
 		"$.metadata.workflow", "AS", "workflow", "TAG",
+		"$.metadata.workflowType", "AS", "workflowType", "TAG",
 		"$.metadata.process", "AS", "process", "TAG",
 		"$.metadata.requestID", "AS", "requestID", "TAG",
-		"$.timestamp", "AS", "timestamp", "NUMERIC",
+		"$.creationDate", "AS", "creationDate", "NUMERIC",
 	).Err()
 	s.Require().NoError(err)
 }
 
 func (s *PredictionStoreSuite) getPredictionMetadata() prediction.Metadata {
 	return prediction.Metadata{
-		Product:   _testProduct,
-		Version:   _testVersion,
-		Workflow:  _testWorkflow,
-		Process:   _testProcess,
-		RequestID: _testRequestID,
+		Product:      viper.GetString(common.ConfigMetadataProductIDKey),
+		Version:      viper.GetString(common.ConfigMetadataVersionIDKey),
+		Workflow:     viper.GetString(common.ConfigMetadataWorkflowIDKey),
+		WorkflowType: viper.GetString(common.ConfigMetadataWorkflowTypeKey),
+		Process:      viper.GetString(common.ConfigMetadataProcessIDKey),
+		RequestID:    _testRequestID,
 	}
 }
 
