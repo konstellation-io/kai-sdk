@@ -1,0 +1,42 @@
+metadata:
+  product_id: Metrics process
+  workflow_name: Metrics workflow
+  process_name: Metrics process
+  version_tag: Metrics version v1.0.0
+
+nats:
+  url: "nats://localhost:4222"
+  stream: metrics
+  inputs:
+    - trigger-output
+  output: metrics-output
+  object_store: ephemeral-storage
+
+minio:
+  endpoint: "localhost:9000"
+  client_user: "minio_user"
+  client_password: "minio_password"
+  ssl: false
+  bucket: "test-bucket"
+
+auth:
+  endpoint: "http://auth.kai.local"
+  client: "kai"
+  client_secret: "kai_pwd"
+  realm: "konstellation"
+
+measurements:
+  endpoint: "localhost:4317"
+  insecure: true
+  timeout: 5
+  metrics_interval: 10
+
+centralized_configuration:
+  global:
+    bucket: global
+  product:
+    bucket: product
+  workflow:
+    bucket: workflow
+  process:
+    bucket: process

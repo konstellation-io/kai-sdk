@@ -67,6 +67,10 @@ func validateConfig(keys []string) {
 		common.ConfigAuthClientKey,
 		common.ConfigAuthClientSecretKey,
 		common.ConfigAuthRealmKey,
+		common.ConfigMeasurementsEndpointKey,
+		common.ConfigMeasurementsInsecureKey,
+		common.ConfigMeasurementsTimeoutKey,
+		common.ConfigMeasurementsMetricsIntervalKey,
 	}
 
 	for _, key := range mandatoryConfigKeys {
