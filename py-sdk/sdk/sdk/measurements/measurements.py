@@ -18,14 +18,9 @@ from sdk.metadata.metadata import Metadata
 
 
 @dataclass
-class MetricsClientObject:
-    metrics_client: Meter = field(init=True)
-
-
-@dataclass
 class MeasurementsABC(ABC):
     @abstractmethod
-    def get_metrics_client(self) -> MetricsClientObject:
+    def get_metrics_client(self) -> Meter:
         pass
 
 
@@ -56,8 +51,8 @@ class Measurements(MeasurementsABC):
 
         self.logger.info("successfully initialized measurements")
 
-    def get_metrics_client(self) -> MetricsClientObject:
-        return MetricsClientObject(metrics_client=self.metricsClient)
+    def get_metrics_client(self) -> Meter:
+        return self.metricsClient
 
     def _setup_metrics(self, resource: Resource, endpoint: str, insecure: bool, timeout: int):
         reader = PeriodicExportingMetricReader(

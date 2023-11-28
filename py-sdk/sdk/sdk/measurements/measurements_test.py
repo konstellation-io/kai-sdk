@@ -5,7 +5,7 @@ from opentelemetry.metrics import Meter
 from vyper import v
 
 from sdk.measurements.exceptions import FailedToInitializeMeasurementsError
-from sdk.measurements.measurements import Measurements, MetricsClientObject
+from sdk.measurements.measurements import Measurements
 
 
 @pytest.fixture
@@ -19,9 +19,9 @@ def test_ok(_):
     v.set("measurements.insecure", True)
     v.set("measurements.timeout", 5)
     v.set("measurements.metrics_interval", 1)
-    expected_metrics_client = MetricsClientObject(metrics_client=Mock(spec=Meter))
+    expected_metrics_client = Mock(spec=Meter)
     m_measurements = Measurements()
-    m_measurements.metricsClient = expected_metrics_client.metrics_client
+    m_measurements.metricsClient = expected_metrics_client
 
     assert m_measurements.get_metrics_client() == expected_metrics_client
 

@@ -28,10 +28,6 @@ type Measurement struct {
 	metadata      *metadata.Metadata
 }
 
-type MetricsObjectClient struct {
-	MetricsClient metric.Meter
-}
-
 func New(logger logr.Logger, meta *metadata.Metadata) (*Measurement, error) {
 	endpoint := viper.GetString(common.ConfigMeasurementsEndpointKey)
 	insecure := viper.GetBool(common.ConfigMeasurementsInsecureKey)
@@ -50,10 +46,8 @@ func New(logger logr.Logger, meta *metadata.Metadata) (*Measurement, error) {
 	}, nil
 }
 
-func (m Measurement) GetMetricsClient() MetricsObjectClient {
-	return MetricsObjectClient{
-		MetricsClient: m.metricsClient,
-	}
+func (m Measurement) GetMetricsClient() metric.Meter {
+	return m.metricsClient
 }
 
 func initMetrics(logger logr.Logger, endpoint string, insecure bool, timeout, interval int, meta *metadata.Metadata) (metric.Meter, error) {

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
+	"go.opentelemetry.io/otel/metric"
 
 	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
@@ -84,7 +85,7 @@ type centralizedConfig interface {
 
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock
 type measurements interface {
-	GetMetricsClient() measurement.MetricsObjectClient
+	GetMetricsClient() metric.Meter
 }
 
 type KaiSDK struct {

@@ -29,7 +29,7 @@ var GlobalCounter metric.Int64Counter
 func initializer(kaiSDK sdk.KaiSDK) {
 	kaiSDK.Logger.Info("Initializer")
 
-	metricsClient := kaiSDK.Measurements.GetMetricsClient().MetricsClient
+	metricsClient := kaiSDK.Measurements.GetMetricsClient()
 	counter, err := metricsClient.Int64Counter("messages_received")
 	if err != nil {
 		kaiSDK.Logger.Error(err, "Error creating counter")

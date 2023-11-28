@@ -6,11 +6,13 @@ from runner.runner import Runner
 from sdk import kai_sdk as sdk
 
 counter = None
+
+
 async def initializer(kai_sdk: sdk.KaiSDK):
     logger = kai_sdk.logger.bind(context="[METRICS INITIALIZER]")
     logger.info("starting example...")
     logger.info("creating counter messages_received...")
-    metrics_client = kai_sdk.measurements.get_metrics_client().metrics_client
+    metrics_client = kai_sdk.measurements.get_metrics_client()
     global counter
     counter = metrics_client.create_counter(
         name="messages_received", description="messages received", unit="integer"
