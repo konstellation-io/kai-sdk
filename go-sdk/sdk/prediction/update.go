@@ -13,7 +13,13 @@ func (r *RedisPredictionStore) Update(ctx context.Context, predictionID string, 
 		return err
 	}
 
-	prediction.Payload = updatePayload(prediction.Payload)
+	updatedPayload := updatePayload(prediction.Payload)
+
+	if updatedPayload == nil {
+		return ErrEmptyPayload
+	}
+
+	prediction.Payload = updatedPayload
 	prediction.LastModified = time.Now().UnixMilli()
 
 	err = r.client.JSONSet(ctx, r.getKeyWithProductPrefix(predictionID), "$", prediction).Err()

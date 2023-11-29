@@ -5,6 +5,7 @@ package prediction_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
 )
@@ -32,4 +33,29 @@ func (s *PredictionStoreSuite) TestPredictionStore_Save_ExpectOK() {
 	// THEN
 	s.Equal(predictionValues, actualPrediction[0].Payload)
 	s.Equal(expectedMetadata, actualPrediction[0].Metadata)
+}
+
+func (s *PredictionStoreSuite) TestPredictionStore_Save_FailsIfPayloadIsNil() {
+	var (
+		ctx          = context.Background()
+		predictionID = "test-prediction"
+	)
+	// WHEN
+	err := s.predictionStore.Save(ctx, predictionID, nil)
+
+	// THEN
+	s.Assert().ErrorIs(err, prediction.ErrEmptyPayload)
+}
+
+func (s *PredictionStoreSuite) TestPredictionStore_Save_InvalidPredictionID() {
+	var (
+		ctx          = context.Background()
+		predictionID = ""
+	)
+	// WHEN
+	err := s.predictionStore.Save(ctx, predictionID, prediction.Payload{"test": "test"})
+
+	fmt.Println(err)
+	// THEN
+	s.Assert().ErrorIs(err, prediction.ErrInvalidPredictionID)
 }

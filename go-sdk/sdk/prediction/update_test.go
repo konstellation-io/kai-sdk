@@ -50,3 +50,21 @@ func (s *PredictionStoreSuite) TestPredictionStore_Update_FailsIfPredictionDoesn
 	err := s.predictionStore.Update(ctx, predictionID, updatePayload)
 	s.Require().ErrorIs(err, prediction.ErrPredictionNotFound)
 }
+
+func (s *PredictionStoreSuite) TestPredictionStore_Update_FailsIfUpdatedPayloadIsNil() {
+	var (
+		ctx          = context.Background()
+		predict      = newPredictionBuilder().Build()
+		predictionID = "test-prediction"
+
+		updatePayload = func(_ prediction.Payload) prediction.Payload {
+			return nil
+		}
+	)
+
+	err := s.redisClient.JSONSet(ctx, s.getKeyWithProductPrefix(predictionID), "$", predict.Payload).Err()
+	s.Require().NoError(err)
+
+	err = s.predictionStore.Update(ctx, predictionID, updatePayload)
+	s.ErrorIs(err, prediction.ErrEmptyPayload)
+}

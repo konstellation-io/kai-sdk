@@ -2,14 +2,28 @@ package prediction
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
-func (r *RedisPredictionStore) Save(ctx context.Context, predictionID string, value Payload) error {
+var (
+	ErrEmptyPayload        = errors.New("empty payload")
+	ErrInvalidPredictionID = errors.New("invalid prediction ID")
+)
+
+func (r *RedisPredictionStore) Save(ctx context.Context, predictionID string, payload Payload) error {
+	if predictionID == "" {
+		return ErrInvalidPredictionID
+	}
+
+	if payload == nil {
+		return ErrEmptyPayload
+	}
+
 	prediction := Prediction{
 		CreationDate: time.Now().UnixMilli(),
 		LastModified: time.Now().UnixMilli(),
-		Payload:      value,
+		Payload:      payload,
 		Metadata: Metadata{
 			Product:      r.metadata.GetProduct(),
 			Version:      r.metadata.GetVersion(),
