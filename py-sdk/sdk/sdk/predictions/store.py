@@ -162,15 +162,15 @@ class Predictions(PredictionsABC):
         if not filter.version:
             filter.version = Metadata.get_version()
 
-        if not filter.creation_date:
+        if filter.creation_date is None:
             self.logger.error("filter creation_date is required")
             raise MissingRequiredFilterFieldError("creation_date")
 
-        if not filter.creation_date.start_date:
+        if filter.creation_date.start_date is None:
             self.logger.error("filter creation_date start_date is required")
             raise MissingRequiredFilterFieldError("creation_date.start_date")
 
-        if not filter.creation_date.end_date:
+        if filter.creation_date.end_date is None:
             self.logger.error("filter creation_date end_date is required")
             raise MissingRequiredFilterFieldError("creation_date.end_date")
 
