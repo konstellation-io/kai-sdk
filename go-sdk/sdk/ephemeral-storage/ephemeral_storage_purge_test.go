@@ -15,7 +15,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectStoreNotInitialized
 	// Given
 	viper.SetDefault(natsObjectStoreField, "")
 
-	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.New(s.logger, &s.jetstream)
 
 	// When
 	err := objectStore.Purge("key")
@@ -30,7 +30,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorPurgingObject_ExpectError
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
-	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.New(s.logger, &s.jetstream)
 	keys := []string{"key1", "key2"}
 	objects := generateObjectInfoResponse(keys)
 
@@ -52,7 +52,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObject_ExpectOK() {
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
-	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.New(s.logger, &s.jetstream)
 	keys := []string{"key1", "key2"}
 	objects := generateObjectInfoResponse(keys)
 
@@ -74,7 +74,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectWithFilter_ExpectOK
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
-	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.New(s.logger, &s.jetstream)
 	keys := []string{"key1", "key2", "anotherKey3", "anotherKey4"}
 	objects := generateObjectInfoResponse(keys)
 
@@ -98,7 +98,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectWithFilter_InvalidR
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
-	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.New(s.logger, &s.jetstream)
 
 	s.objectStore.On("Delete", mock.AnythingOfType("string")).Return(nil)
 
@@ -117,7 +117,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectWithFilter_ErrorLis
 	viper.SetDefault(natsObjectStoreField, natsObjectStoreValue)
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
-	objectStore, _ := objectStore2.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, _ := objectStore2.New(s.logger, &s.jetstream)
 
 	s.objectStore.On("List").Return(nil, fmt.Errorf("error listing keys"))
 

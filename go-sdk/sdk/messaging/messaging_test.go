@@ -42,7 +42,7 @@ func (s *SdkMessagingTestSuite) SetupTest() {
 
 func (s *SdkMessagingTestSuite) TestMessaging_InstantiateNewMessaging_ExpectOk() {
 	// When
-	messagingInst := messaging.NewMessaging(s.logger, nil, &s.jetstream, nil)
+	messagingInst := messaging.New(s.logger, nil, &s.jetstream, nil)
 
 	// Then
 	s.NotNil(messagingInst)

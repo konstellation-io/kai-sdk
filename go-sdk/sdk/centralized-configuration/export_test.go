@@ -5,7 +5,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func NewCentralizedConfigurationBuilder(logger logr.Logger,
+func NewBuilder(logger logr.Logger,
 	globalKv, productKv, workflowKv, processKv nats.KeyValue) (*CentralizedConfiguration, error) {
 	logger = logger.WithName("[CENTRALIZED CONFIGURATION]")
 

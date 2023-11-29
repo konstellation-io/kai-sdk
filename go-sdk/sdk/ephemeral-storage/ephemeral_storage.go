@@ -23,7 +23,7 @@ type EphemeralStorage struct {
 	ephemeralStorageBucket string
 }
 
-func NewEphemeralStorage(logger logr.Logger, jetstream nats.JetStreamContext) (*EphemeralStorage, error) {
+func New(logger logr.Logger, jetstream nats.JetStreamContext) (*EphemeralStorage, error) {
 	ephemeralStorageBucket := viper.GetString(common.ConfigNatsEphemeralStorage)
 
 	ephemeralStorage, err := initEphemeralStorageDeps(logger, jetstream, ephemeralStorageBucket)

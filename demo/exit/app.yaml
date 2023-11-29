@@ -21,6 +21,7 @@ minio:
   bucket: "test-bucket"
 
 auth:
+  internal_folder: ".kai"
   endpoint: "http://auth.kai.local"
   client: "kai"
   client_secret: "kai_pwd"
@@ -31,6 +32,9 @@ predictions:
   username: default
   password: redispw
   index_key: index
+  
+model_registry:
+  folder_name: ".models"
 
 measurements:
   endpoint: "localhost:4317"

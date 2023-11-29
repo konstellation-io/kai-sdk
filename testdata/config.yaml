@@ -21,11 +21,15 @@ nats:
   object_store: ephemeral-storage
 
 minio:
+  internal_folder: ".kai"
   endpoint: "localhost:9000"
   client_user: "minio_user"
   client_password: "minio_password"
   ssl: false
   bucket: "test-bucket"
+
+model_registry:
+  folder_name: ".models"
 
 auth:
   endpoint: "http://auth.kai.local"
