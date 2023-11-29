@@ -66,11 +66,11 @@ class Metadata(MetadataABC):
     @staticmethod
     def get_version() -> str:
         return v.get_string("metadata.version_tag")
-    
+
     @staticmethod
     def get_workflow() -> str:
         return v.get_string("metadata.workflow_name")
-    
+
     @staticmethod
     def get_workflow_type() -> str:
         return v.get_string("metadata.workflow_type")
@@ -78,7 +78,6 @@ class Metadata(MetadataABC):
     @staticmethod
     def get_process() -> str:
         return v.get_string("metadata.process_name")
-
 
     @staticmethod
     def get_ephemeral_storage_name() -> str:

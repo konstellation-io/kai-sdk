@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from redis.commands.json.path import Path
 
 import loguru
 from loguru import logger
 from redis import Redis
+from redis.commands.json.path import Path
 from vyper import v
 
 from sdk.metadata.metadata import Metadata
@@ -18,8 +18,8 @@ from sdk.predictions.exceptions import (
     FailedToInitializePredictionsStoreError,
     FailedToParseResultError,
     FailedToSavePredictionError,
-    NotFoundError,
     MissingRequiredFilterFieldError,
+    NotFoundError,
 )
 from sdk.predictions.types import Filter, Prediction
 
@@ -46,16 +46,16 @@ class PredictionsABC(ABC):
 @dataclass
 class Predictions(PredictionsABC):
     logger: loguru.Logger = field(init=False)
-    request_id: str = field(init=False)
+    request_id: str = ""
     client: Redis = field(init=False)
 
     def __post_init__(self):
         origin = logger._core.extra["origin"]
         self.logger = logger.bind(context=f"{origin}.[PREDICTIONS STORE]")
-        endpoint = v.get_string("predictions.endpoint")
-        host = endpoint.split(":")[0]
-        port = endpoint.split(":")[1]
         try:
+            endpoint = v.get_string("predictions.endpoint")
+            host = endpoint.split(":")[0]
+            port = endpoint.split(":")[1]
             self.client = Redis(
                 host=host,
                 port=port,
@@ -70,7 +70,7 @@ class Predictions(PredictionsABC):
 
     def save(self, id: str, value: dict[str, str]) -> None:
         try:
-            creation_timestamp = datetime.now().timestamp() * 1000 # milliseconds
+            creation_timestamp = datetime.now().timestamp() * 1000  # milliseconds
             key = self._get_key_with_product_prefix(id)
             prediction = Prediction(
                 creation_date=creation_timestamp,
@@ -111,9 +111,7 @@ class Predictions(PredictionsABC):
         self._validate_filter(filter)
         index = v.get_string("predictions.index_key")
         try:
-            predictions = self.client.ft(index).search(
-                query=self._build_query(filter)
-            )
+            predictions = self.client.ft(index).search(query=self._build_query(filter))
         except Exception as e:
             self.logger.error(
                 f"failed to find predictions from the predictions store matching the filter {filter}: {e}"
@@ -122,7 +120,7 @@ class Predictions(PredictionsABC):
 
         self.logger.info(f"successfully found predictions from the predictions store matching the filter {filter}")
         return [self._parse_result(prediction) for prediction in predictions]
-    
+
     def update(self, id: str, function: callable) -> None:
         try:
             key = self._get_key_with_product_prefix(id)
@@ -130,7 +128,7 @@ class Predictions(PredictionsABC):
 
             payload = prediction["payload"]
             new_payload = function(payload)
-            last_modified = datetime.now().timestamp() * 1000 # milliseconds
+            last_modified = datetime.now().timestamp() * 1000  # milliseconds
 
             updated_prediction = Prediction(
                 creation_date=prediction["creation_date"],
@@ -168,7 +166,7 @@ class Predictions(PredictionsABC):
         if not filter.timestamp.end_date:
             self.logger.error("filter timestamp end_date is required")
             raise MissingRequiredFilterFieldError("end_date")
-        
+
     def _build_query(self, filter: Filter) -> str:
         query = f"@product:{Metadata.get_product()} @timestamp:[0 inf]"
 
@@ -193,6 +191,6 @@ class Predictions(PredictionsABC):
         query = query.replace("-", "\\-")
 
         return query
-    
+
     def _get_key_with_product_prefix(self, key: str) -> str:
         return f"{Metadata.get_product()}:{key}"

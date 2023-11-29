@@ -4,8 +4,8 @@ from google.protobuf.any_pb2 import Any
 from google.protobuf.wrappers_pb2 import StringValue
 from runner.runner import Runner
 from sdk import kai_sdk as sdk
-from sdk.predictions.types import Filter, TimestampRange
 from sdk.metadata.metadata import Metadata
+from sdk.predictions.types import Filter, TimestampRange
 
 
 async def initializer(kai_sdk: sdk.KaiSDK):
@@ -28,11 +28,11 @@ async def handler(kai_sdk: sdk.KaiSDK, response: Any):
     logger.info(f"prediction saved with key {key} and value {prediction}")
     response = kai_sdk.predictions.get(key)
     logger.info(f"prediction retrieved with key {key} and value {response}")
-    
+
     def func(payload: dict[str, str]) -> dict[str, str]:
         payload["test"] = "updatedValueByFunc"
         return payload
-    
+
     kai_sdk.predictions.update(key, func)
     logger.info(f"prediction updated with key {key}")
     response = kai_sdk.predictions.get(key)

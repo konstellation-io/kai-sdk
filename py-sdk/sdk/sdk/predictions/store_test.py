@@ -39,6 +39,7 @@ def test_ok(m_redis_init, m_redis):
     m_redis_init.assert_called_once_with(host="test_endpoint", username="test_username", password="test_password")
     assert store.client is not None
 
+
 @patch.object(Redis, "__init__", side_effect=Exception)
 def test_ko(m_redis_init):
     v.set("predictions.endpoint", "test_endpoint")

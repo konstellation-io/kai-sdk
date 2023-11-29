@@ -15,8 +15,7 @@ nats-py = "2.3.0"
 protobuf = "4.23.4"
 loguru = "0.7.0"
 vyper-config = "1.1.1"
-sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/sdk"}
-
+sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/sdk", tag="py-sdk/v1.0.1"}
 [tool.poetry.group.dev.dependencies]
 black = "23.7.0"
 pytest = "7.4.0"
