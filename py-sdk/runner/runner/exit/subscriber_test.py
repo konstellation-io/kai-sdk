@@ -16,6 +16,7 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
 from sdk.kai_sdk import KaiSDK
 from sdk.messaging.messaging_utils import compress
 from sdk.metadata.metadata import Metadata
+from sdk.model_registry.model_registry import ModelRegistry
 from sdk.persistent_storage.persistent_storage import PersistentStorage
 from sdk.predictions.store import Predictions
 
@@ -32,7 +33,8 @@ PROCESS = "test process id"
 @pytest.fixture(scope="function")
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def m_sdk(_: PersistentStorage, __: Predictions) -> KaiSDK:
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def m_sdk(_: ModelRegistry, __: PersistentStorage, ___: Predictions) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()
@@ -46,7 +48,8 @@ async def m_sdk(_: PersistentStorage, __: Predictions) -> KaiSDK:
 @pytest.fixture(scope="function")
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-def m_exit_runner(_: PersistentStorage, __: Predictions, m_sdk: KaiSDK) -> ExitRunner:
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+def m_exit_runner(_: ModelRegistry, __: PersistentStorage, ___: Predictions, m_sdk: KaiSDK) -> ExitRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 

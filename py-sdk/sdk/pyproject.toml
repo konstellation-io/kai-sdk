@@ -19,6 +19,7 @@ minio = "7.2.0"
 python-keycloak = "3.7.0"
 redis = {extras = ["hiredis"], version = "4.6.0"}
 redis-om = "0.2.1"
+semver = "3.0.2"
 opentelemetry-sdk = "1.21.0"
 opentelemetry-exporter-otlp-proto-grpc = "1.21.0"
 grpcio = "1.59.3"

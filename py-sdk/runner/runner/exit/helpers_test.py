@@ -18,6 +18,7 @@ from runner.exit.helpers import (
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
+from sdk.model_registry.model_registry import ModelRegistry
 from sdk.persistent_storage.persistent_storage import PersistentStorage
 from sdk.predictions.store import Predictions
 
@@ -27,7 +28,8 @@ CENTRALIZED_CONFIG = "centralized_configuration.process.config"
 @pytest.fixture(scope="function")
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def m_sdk(_: PersistentStorage, __: Predictions) -> KaiSDK:
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def m_sdk(_: ModelRegistry, __: PersistentStorage, ___: Predictions) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()
