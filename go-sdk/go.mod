@@ -3,6 +3,7 @@ module github.com/konstellation-io/kai-sdk/go-sdk
 go 1.20
 
 require (
+	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/Nerzal/gocloak/v13 v13.8.0
 	github.com/go-logr/logr v1.3.0
 	github.com/go-logr/zapr v1.2.4
