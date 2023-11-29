@@ -4,15 +4,14 @@ import (
 	"context"
 	"os"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
-
 	meta "github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+	"go.opentelemetry.io/otel/metric"
 
 	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
 	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
 	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
-	"go.opentelemetry.io/otel/metric"
 
 	"github.com/go-logr/logr"
 	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
