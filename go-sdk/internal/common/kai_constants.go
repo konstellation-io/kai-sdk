@@ -33,4 +33,8 @@ const (
 	ConfigRedisEndpointKey                = "predictions.endpoint"
 	ConfigRedisUsernameKey                = "predictions.username"
 	ConfigRedisPasswordKey                = "predictions.password"
+	ConfigMeasurementsEndpointKey         = "measurements.endpoint"
+	ConfigMeasurementsInsecureKey         = "measurements.insecure"
+	ConfigMeasurementsTimeoutKey          = "measurements.timeout"
+	ConfigMeasurementsMetricsIntervalKey  = "measurements.metrics_interval"
 )

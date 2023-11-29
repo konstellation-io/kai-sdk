@@ -13,7 +13,8 @@ from runner.trigger.trigger_runner import TriggerRunner
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
-from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
+from sdk.kai_sdk import KaiSDK, Storage
+from sdk.measurements.measurements import Measurements
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
 from sdk.persistent_storage.persistent_storage import PersistentStorage
@@ -89,7 +90,7 @@ async def test_sdk_import_ok(_, centralized_config_mock):
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
-    assert isinstance(sdk.measurements, MeasurementsABC)
+    assert isinstance(sdk.measurements, Measurements)
 
 
 @patch("runner.runner.Runner._validate_config")
