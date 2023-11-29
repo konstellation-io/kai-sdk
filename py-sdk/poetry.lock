@@ -1447,13 +1447,13 @@ files = [
 
 [[package]]
 name = "redis"
-version = "4.6.0"
+version = "5.0.1"
 description = "Python client for Redis database and key-value store"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "redis-4.6.0-py3-none-any.whl", hash = "sha256:e2b03db868160ee4591de3cb90d40ebb50a90dd302138775937f6a42b7ed183c"},
-    {file = "redis-4.6.0.tar.gz", hash = "sha256:585dc516b9eb042a619ef0a39c3d7d55fe81bdb4df09a52c9cdde0d07bf1aa7d"},
+    {file = "redis-5.0.1-py3-none-any.whl", hash = "sha256:ed4802971884ae19d640775ba3b03aa2e7bd5e8fb8dfaed2decce4d0fc48391f"},
+    {file = "redis-5.0.1.tar.gz", hash = "sha256:0dab495cd5753069d3bc650a0dde8a8f9edde16fc5691b689a566eda58100d0f"},
 ]
 
 [package.dependencies]
@@ -1530,7 +1530,7 @@ opentelemetry-exporter-otlp-proto-grpc = "1.21.0"
 opentelemetry-sdk = "1.21.0"
 protobuf = "4.23.4"
 python-keycloak = "3.7.0"
-redis = {version = "4.6.0", extras = ["hiredis"]}
+redis = {version = "5.0.1", extras = ["hiredis"]}
 semver = "3.0.2"
 vyper-config = "1.1.1"
 
@@ -1831,4 +1831,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.5"
-content-hash = "c6d6b72f9b92973f62e7da6ca7c904ef11b4bc415e24fcc894b3daccbb5ad336"
+content-hash = "69ebc288094ae280dfb610e41252408f73dc5e37f805e8648388477d5d290a96"
