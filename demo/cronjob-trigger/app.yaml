@@ -30,7 +30,7 @@ predictions:
   username: default
   password: redispw
   index_key: index
-  
+
 model_registry:
   folder_name: ".models"
 
