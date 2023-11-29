@@ -45,7 +45,7 @@ func (s *SdkMeasurementTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	viper.SetDefault(common.ConfigMeasurementsMetricsIntervalKey, 10)
 
 	// When
-	sdkMetadata := metadata.NewMetadata()
+	sdkMetadata := metadata.New()
 	sdkMeasurement, err := measurement.New(s.logger, sdkMetadata)
 
 	// Then

@@ -26,6 +26,7 @@ const (
 	ConfigMinioClientPasswordKey          = "minio.client_password" //nolint:gosec // False positive
 	ConfigMinioUseSslKey                  = "minio.ssl"
 	ConfigMinioBucketKey                  = "minio.bucket"
+	ConfigMinioInternalFolderKey          = "minio.internal_folder"
 	ConfigAuthEndpointKey                 = "auth.endpoint"
 	ConfigAuthClientKey                   = "auth.client"
 	ConfigAuthClientSecretKey             = "auth.client_secret" //nolint:gosec // False positive
@@ -33,6 +34,7 @@ const (
 	ConfigRedisEndpointKey                = "predictions.endpoint"
 	ConfigRedisUsernameKey                = "predictions.username"
 	ConfigRedisPasswordKey                = "predictions.password"
+	ConfigModelFolderNameKey              = "model_registry.folder_name"
 	ConfigMeasurementsEndpointKey         = "measurements.endpoint"
 	ConfigMeasurementsInsecureKey         = "measurements.insecure"
 	ConfigMeasurementsTimeoutKey          = "measurements.timeout"

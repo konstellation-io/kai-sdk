@@ -28,7 +28,7 @@ type CentralizedConfiguration struct {
 	processKv  nats.KeyValue
 }
 
-func NewCentralizedConfiguration(logger logr.Logger, js nats.JetStreamContext) (*CentralizedConfiguration, error) {
+func New(logger logr.Logger, js nats.JetStreamContext) (*CentralizedConfiguration, error) {
 	wrapErr := utilErrors.Wrapper("configuration init: %w")
 
 	globalKv, productKv, workflowKv, processKv, err := initKVStores(logger, js)
