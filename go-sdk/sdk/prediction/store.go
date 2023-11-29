@@ -30,7 +30,7 @@ func NewRedisPredictionStore(requestID string) *RedisPredictionStore {
 
 	return &RedisPredictionStore{
 		client:    redis.NewClient(opts),
-		metadata:  metadata.NewMetadata(),
+		metadata:  metadata.New(),
 		requestID: requestID,
 	}
 }

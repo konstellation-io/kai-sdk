@@ -14,8 +14,10 @@ from nats.js.client import JetStreamContext
 from sdk.centralized_config.centralized_config import CentralizedConfig, CentralizedConfigABC
 from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage, EphemeralStorageABC
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
+from sdk.measurements.measurements import Measurements, MeasurementsABC
 from sdk.messaging.messaging import Messaging, MessagingABC
 from sdk.metadata.metadata import Metadata, MetadataABC
+from sdk.model_registry.model_registry import ModelRegistry, ModelRegistryABC
 from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
 
 LOGGER_FORMAT = (
@@ -23,11 +25,6 @@ LOGGER_FORMAT = (
     "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
     "<level>{message}</level> <level>{extra[metadata]}</level>"
 )
-
-
-@dataclass
-class MeasurementsABC(ABC):
-    pass
 
 
 @dataclass
@@ -45,6 +42,7 @@ class KaiSDK:
     metadata: MetadataABC = field(init=False)
     messaging: MessagingABC = field(init=False)
     centralized_config: CentralizedConfigABC = field(init=False)
+    model_registry: ModelRegistryABC = field(init=False)
     measurements: MeasurementsABC = field(init=False)
     storage: Storage = field(init=False)
 
@@ -58,8 +56,9 @@ class KaiSDK:
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
         self.metadata = Metadata()
-        self.measurements = MeasurementsABC()
+        self.measurements = Measurements()
         self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
+        self.model_registry = ModelRegistry()
 
     async def initialize(self) -> None:
         try:

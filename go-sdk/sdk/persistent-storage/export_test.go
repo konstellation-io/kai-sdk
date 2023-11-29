@@ -30,10 +30,10 @@ func NewPersistentStorageIntegration(logger logr.Logger) (*PersistentStorage, er
 	}
 
 	return &PersistentStorage{
-		logger:                  logger,
-		persistentStorage:       storageManager,
-		persistentStorageBucket: persistentStorageBucket,
-		metadata:                metadata.NewMetadata(),
+		logger:        logger,
+		storageClient: storageManager,
+		storageBucket: persistentStorageBucket,
+		metadata:      metadata.New(),
 	}, nil
 }
 

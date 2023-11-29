@@ -16,7 +16,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(1), nil)
 
-	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
+	config, err := centralizedconfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -44,7 +44,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 
-	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
+	config, err := centralizedconfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -73,7 +73,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(1), nil)
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 
-	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
+	config, err := centralizedconfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -101,7 +101,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(1), nil)
-	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
+	config, err := centralizedconfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -130,7 +130,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 
-	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
+	config, err := centralizedconfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -159,7 +159,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 
-	config, err := centralizedconfiguration.NewCentralizedConfigurationBuilder(
+	config, err := centralizedconfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,

@@ -13,9 +13,11 @@ from runner.trigger.trigger_runner import TriggerRunner
 from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
-from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
+from sdk.kai_sdk import KaiSDK, Storage
+from sdk.measurements.measurements import Measurements
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
+from sdk.model_registry.model_registry import ModelRegistry
 from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 GLOBAL_BUCKET = "centralized_configuration.global.bucket"
@@ -54,7 +56,8 @@ def m_runner(_: Mock) -> Runner:
     ),
 )
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_sdk_import_ok(_, centralized_config_mock):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_sdk_import_ok(_, __, centralized_config_mock):
     nc = NatsClient()
     js = nc.jetstream()
     request_msg = KaiNatsMessage()
@@ -89,7 +92,7 @@ async def test_sdk_import_ok(_, centralized_config_mock):
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
-    assert isinstance(sdk.measurements, MeasurementsABC)
+    assert isinstance(sdk.measurements, Measurements)
 
 
 @patch("runner.runner.Runner._validate_config")
@@ -156,7 +159,8 @@ async def test_runner_initialize_jetstream_ko(_):
     [(TriggerRunner, "trigger_runner"), (TaskRunner, "task_runner"), (ExitRunner, "exit_runner")],
 )
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-def test_get_runner_ok(_, runner_type, runner_method, m_runner):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+def test_get_runner_ok(_, __, runner_type, runner_method, m_runner):
     result = getattr(m_runner, runner_method)()
 
     assert isinstance(result, runner_type)

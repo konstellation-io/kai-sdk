@@ -14,6 +14,7 @@ from sdk.centralized_config.centralized_config import CentralizedConfig
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
 from sdk.metadata.metadata import Metadata
+from sdk.model_registry.model_registry import ModelRegistry
 from sdk.persistent_storage.persistent_storage import PersistentStorage
 
 CENTRALIZED_CONFIG = "centralized_configuration.process.config"
@@ -22,7 +23,8 @@ TEST_REQUEST_ID = "test-request-id"
 
 @pytest.fixture(scope="function")
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def m_sdk(_: PersistentStorage) -> KaiSDK:
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def m_sdk(_: PersistentStorage, __: ModelRegistry) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()

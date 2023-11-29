@@ -8,7 +8,7 @@ import (
 type Metadata struct {
 }
 
-func NewMetadata() *Metadata {
+func New() *Metadata {
 	return &Metadata{}
 }
 

@@ -1,3 +1,5 @@
+//go:build integration
+
 package prediction_test
 
 import (
