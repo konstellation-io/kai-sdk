@@ -1,9 +1,9 @@
 metadata:
-  product_id: Redis process
-  version_tag: Redis version v1.0.0
-  workflow_name: Redis workflow
-  workflow_type: serving workflow
-  process_name: Redis process
+  product_id: Redis_product
+  version_tag: v1.0.0
+  workflow_name: Redis_workflow
+  workflow_type: serving_workflow
+  process_name: Redis_process
 
 nats:
   url: "nats://localhost:4222"
@@ -34,7 +34,7 @@ predictions:
   endpoint: localhost:6379
   username: default
   password: redispw
-  index_key: index
+  index_key: test_index
 
 measurements:
   endpoint: "localhost:4317"

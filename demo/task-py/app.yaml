@@ -34,7 +34,7 @@ predictions:
   endpoint: localhost:6379
   username: default
   password: redispw
-  index_key: index
+  index_key: test_index
   
 measurements:
   endpoint: "localhost:4317"

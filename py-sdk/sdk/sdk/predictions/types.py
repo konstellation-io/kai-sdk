@@ -1,25 +1,28 @@
 from dataclasses import dataclass
+from typing import Optional, Any, Callable
 
+Payload = dict[str, Any]
+UpdatePayloadFunc = Callable[[Payload], Payload]
 
 @dataclass
 class Prediction:
     creation_date: float
     last_modified: float
-    payload: dict[str, str]
+    payload: Payload
     metadata: dict[str, str]
 
 
 @dataclass
 class TimestampRange:
-    start_date: str
-    end_date: str
+    start_date: float
+    end_date: float
 
 
 @dataclass
 class Filter:
-    version: str
-    workflow: str
-    workflow_type: str
-    process: str
-    request_id: str
-    timestamp: TimestampRange
+    creation_date: TimestampRange
+    version: Optional[str] = None
+    workflow: Optional[str] = None
+    workflow_type: Optional[str] = None
+    process: Optional[str] = None
+    request_id: Optional[str] = None

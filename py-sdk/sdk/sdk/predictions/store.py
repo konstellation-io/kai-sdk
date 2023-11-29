@@ -22,7 +22,7 @@ from sdk.predictions.exceptions import (
     MissingRequiredFilterFieldError,
     NotFoundError,
 )
-from sdk.predictions.types import Filter, Prediction
+from sdk.predictions.types import Filter, Prediction, UpdatePayloadFunc
 
 
 @dataclass
@@ -126,15 +126,15 @@ class Predictions(PredictionsABC):
             raise FailedToFindPredictionsError(filter, e)
 
         self.logger.info(f"successfully found predictions from the predictions store matching the filter {filter}")
-        return [self._parse_result(prediction) for prediction in predictions]
+        return [self._parse_result(prediction) for prediction in predictions.docs]
 
-    def update(self, id: str, function: callable) -> None:
+    def update(self, id: str, update_function: UpdatePayloadFunc) -> None:
         try:
             key = self._get_key_with_product_prefix(id)
             prediction = self.client.json().get(key)
 
             payload = prediction["payload"]
-            new_payload = function(payload)
+            new_payload = update_function(payload)
             last_modified = datetime.now().timestamp() * 1000  # milliseconds
 
             updated_prediction = Prediction(
@@ -162,24 +162,21 @@ class Predictions(PredictionsABC):
         if not filter.version:
             filter.version = Metadata.get_version()
 
-        if not filter.timestamp:
-            self.logger.error("filter timestamp is required")
-            raise MissingRequiredFilterFieldError("timestamp")
+        if not filter.creation_date:
+            self.logger.error("filter creation_date is required")
+            raise MissingRequiredFilterFieldError("creation_date")
 
-        if not filter.timestamp.start_date:
-            self.logger.error("filter timestamp start_date is required")
-            raise MissingRequiredFilterFieldError("start_date")
+        if not filter.creation_date.start_date:
+            self.logger.error("filter creation_date start_date is required")
+            raise MissingRequiredFilterFieldError("creation_date.start_date")
 
-        if not filter.timestamp.end_date:
-            self.logger.error("filter timestamp end_date is required")
-            raise MissingRequiredFilterFieldError("end_date")
+        if not filter.creation_date.end_date:
+            self.logger.error("filter creation_date end_date is required")
+            raise MissingRequiredFilterFieldError("creation_date.end_date")
 
     @staticmethod
     def _build_query(filter: Filter) -> str:
-        query = f"@product:{Metadata.get_product()} @timestamp:[0 inf]"
-
-        if filter.version:
-            query = f"{query} @version:{filter.version}"
+        query = f"@product:{Metadata.get_product()} @creation_date:[{filter.creation_date.start_date} {filter.creation_date.end_date}] @version:{filter.version}"
 
         if filter.workflow:
             query = f"{query} @workflow:{filter.workflow}"
@@ -192,9 +189,6 @@ class Predictions(PredictionsABC):
 
         if filter.request_id:
             query = f"{query} @request_id:{filter.request_id}"
-
-        if filter.timestamp:
-            query = f"{query} @timestamp:[{filter.timestamp.start_date} {filter.timestamp.end_date}]"
 
         query = query.replace("-", "\\-")
 
