@@ -1,9 +1,10 @@
-//go:build integration
+//go:build unit
 
 package prediction_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
 	"github.com/stretchr/testify/assert"
@@ -19,20 +20,20 @@ func TestFilter_Validate(t *testing.T) {
 			name: "valid filter",
 			filter: prediction.Filter{
 				CreationDate: prediction.TimestampRange{
-					StartDate: 100000,
-					EndDate:   200000,
+					StartDate: time.Now().Add(-10 * time.Minute),
+					EndDate:   time.Now().Add(10 * time.Minute),
 				},
 			},
 			expectedError: nil,
 		},
 		{
-			name: "filter without start date is valid",
+			name: "filter without start date is not valid",
 			filter: prediction.Filter{
 				CreationDate: prediction.TimestampRange{
-					EndDate: 200000,
+					EndDate: time.Now(),
 				},
 			},
-			expectedError: nil,
+			expectedError: prediction.ErrDateRangeFilterRequired,
 		},
 		{
 			name: "filter without creation date range is not valid",
@@ -45,7 +46,7 @@ func TestFilter_Validate(t *testing.T) {
 			name: "filter without end date is not valid",
 			filter: prediction.Filter{
 				CreationDate: prediction.TimestampRange{
-					StartDate: 1000,
+					StartDate: time.Now(),
 				},
 			},
 			expectedError: prediction.ErrDateRangeFilterRequired,

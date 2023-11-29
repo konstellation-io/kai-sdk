@@ -154,10 +154,10 @@ func (s *PredictionStoreSuite) createRedisPredictionIndex() {
 		"$.metadata.product", "AS", "product", "TAG",
 		"$.metadata.version", "AS", "version", "TAG",
 		"$.metadata.workflow", "AS", "workflow", "TAG",
-		"$.metadata.workflowType", "AS", "workflowType", "TAG",
+		"$.metadata.workflow_type", "AS", "workflow_type", "TAG",
 		"$.metadata.process", "AS", "process", "TAG",
-		"$.metadata.requestID", "AS", "requestID", "TAG",
-		"$.creationDate", "AS", "creationDate", "NUMERIC",
+		"$.metadata.request_id", "AS", "request_id", "TAG",
+		"$.creation_date", "AS", "creation_date", "NUMERIC",
 	).Err()
 	s.Require().NoError(err)
 }

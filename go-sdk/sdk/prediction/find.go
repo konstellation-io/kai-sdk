@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/spf13/viper"
@@ -34,15 +35,17 @@ func (r *RedisPredictionStore) Find(ctx context.Context, filter *Filter) ([]Pred
 func (r *RedisPredictionStore) buildQueryWithFilters(filter *Filter) string {
 	queryFilters := []string{
 		r.getSearchTagFilter("product", r.metadata.GetProduct()),
-		r.getSearchNumericRangeFilter("creationDate", filter.CreationDate.StartDate, filter.CreationDate.EndDate),
+		r.getSearchNumericRangeFilter("creation_date", filter.CreationDate.StartDate, filter.CreationDate.EndDate),
 	}
+
+	fmt.Println(queryFilters)
 
 	if filter.Workflow != "" {
 		queryFilters = append(queryFilters, r.getSearchTagFilter("workflow", filter.Workflow))
 	}
 
 	if filter.WorkflowType != "" {
-		queryFilters = append(queryFilters, r.getSearchTagFilter("workflowType", filter.WorkflowType))
+		queryFilters = append(queryFilters, r.getSearchTagFilter("workflow_type", filter.WorkflowType))
 	}
 
 	if filter.Version != "" {
@@ -56,18 +59,22 @@ func (r *RedisPredictionStore) buildQueryWithFilters(filter *Filter) string {
 	}
 
 	if filter.RequestID != "" {
-		queryFilters = append(queryFilters, r.getSearchTagFilter("requestID", filter.RequestID))
+		queryFilters = append(queryFilters, r.getSearchTagFilter("request_id", filter.RequestID))
 	}
 
-	return strings.ReplaceAll(strings.Join(queryFilters, " "), "-", "\\-")
+	return strings.ReplaceAll(
+		strings.ReplaceAll(strings.Join(queryFilters, " "), "-", "\\-"),
+		".",
+		"\\.",
+	)
 }
 
 func (r *RedisPredictionStore) getSearchTagFilter(field, value string) string {
 	return fmt.Sprintf("@%s:{%s}", field, value)
 }
 
-func (r *RedisPredictionStore) getSearchNumericRangeFilter(field string, from, to int64) string {
-	return fmt.Sprintf("@%s:[%d %d]", field, from, to)
+func (r *RedisPredictionStore) getSearchNumericRangeFilter(field string, from, to time.Time) string {
+	return fmt.Sprintf("@%s:[%d %d]", field, from.UnixMilli(), to.UnixMilli())
 }
 
 func (r *RedisPredictionStore) parseResultsToPredictionsList(rawResult interface{}) ([]Prediction, error) {

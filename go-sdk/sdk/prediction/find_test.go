@@ -44,7 +44,8 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ExpectOK() {
 	actualPredictions, err := s.predictionStore.Find(ctx, &prediction.Filter{
 		Version: _testVersion,
 		CreationDate: prediction.TimestampRange{
-			EndDate: time.Now().UnixMilli(),
+			StartDate: time.Now().Add(-10 * time.Minute),
+			EndDate:   time.Now(),
 		},
 	})
 	s.Require().NoError(err)
@@ -97,7 +98,8 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByMultipleFields_E
 		Process:   _testProcess,
 		RequestID: _testRequestID,
 		CreationDate: prediction.TimestampRange{
-			EndDate: time.Now().UnixMilli(),
+			StartDate: time.Now().Add(-10 * time.Minute),
+			EndDate:   time.Now(),
 		},
 	})
 	s.Require().NoError(err)
@@ -118,7 +120,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByTimestampRange_E
 		}
 
 		secondPrediction = prediction.Prediction{
-			CreationDate: 2000,
+			CreationDate: time.Now().UnixMilli(),
 			Payload: prediction.Payload{
 				"test-key-2": "test-value-2",
 			},
@@ -140,8 +142,8 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByTimestampRange_E
 
 	actualPredictions, err := s.predictionStore.Find(ctx, &prediction.Filter{
 		CreationDate: prediction.TimestampRange{
-			StartDate: 1500,
-			EndDate:   3000,
+			StartDate: time.Now().Add(-10 * time.Minute),
+			EndDate:   time.Now().Add(10 * time.Minute),
 		},
 	})
 	s.Require().NoError(err)
@@ -209,7 +211,8 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_ProductFilterAppliedByDe
 	actualPredictions, err := s.predictionStore.Find(ctx, &prediction.Filter{
 		Version: _testVersion,
 		CreationDate: prediction.TimestampRange{
-			EndDate: time.Now().UnixMilli(),
+			StartDate: time.Now().Add(-10 * time.Minute),
+			EndDate:   time.Now(),
 		},
 	})
 	s.Require().NoError(err)
@@ -259,7 +262,8 @@ func (s *PredictionStoreSuite) TestPredictionStore_Find_FilterByActualVersionByD
 
 	actualPredictions, err := s.predictionStore.Find(ctx, &prediction.Filter{
 		CreationDate: prediction.TimestampRange{
-			EndDate: time.Now().UnixMilli(),
+			StartDate: time.Now().Add(-10 * time.Minute),
+			EndDate:   time.Now(),
 		},
 	})
 	s.Require().NoError(err)
