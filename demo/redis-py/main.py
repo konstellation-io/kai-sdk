@@ -1,13 +1,14 @@
 import asyncio
+from datetime import datetime
+from typing import Any
 
 from google.protobuf.any_pb2 import Any
 from google.protobuf.wrappers_pb2 import StringValue
 from runner.runner import Runner
 from sdk import kai_sdk as sdk
 from sdk.metadata.metadata import Metadata
-from sdk.predictions.types import Filter, TimestampRange, UpdatePayloadFunc, Payload
-from datetime import datetime
-from typing import Any
+from sdk.predictions.types import (Filter, Payload, TimestampRange,
+                                   UpdatePayloadFunc)
 
 
 async def initializer(kai_sdk: sdk.KaiSDK):
@@ -46,7 +47,10 @@ async def handler(kai_sdk: sdk.KaiSDK, response: Any):
         workflow_type=Metadata.get_workflow_type(),
         process=Metadata.get_process(),
         request_id=kai_sdk.get_request_id(),
-        creation_date=TimestampRange(start_date=datetime.fromisoformat("2023-01-01"), end_date=datetime.fromisoformat("2023-12-31"))
+        creation_date=TimestampRange(
+            start_date=datetime.fromisoformat("2023-01-01"),
+            end_date=datetime.fromisoformat("2023-12-31"),
+        ),
     )
     response = kai_sdk.predictions.find(filter=filter_)
     logger.info(f"prediction retrieved with filter {filter_} and value {response}")

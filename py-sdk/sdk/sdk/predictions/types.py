@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from typing import Optional, Any, Callable
 from datetime import datetime
+from typing import Any, Callable, Optional
 
 Payload = dict[str, Any]
 UpdatePayloadFunc = Callable[[Payload], Payload]
+
 
 @dataclass
 class Prediction:

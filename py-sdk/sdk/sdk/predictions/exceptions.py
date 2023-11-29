@@ -38,7 +38,20 @@ class FailedToFindPredictionsError(Exception):
         message = f"failed to find predictions from the predictions store matching the filter {filter}"
         super().__init__(f"{message}: {error}" if error else message)
 
+
 class MissingRequiredFilterFieldError(Exception):
     def __init__(self, field: str, error: Optional[Exception] = None):
         message = f"filter {field} is required"
+        super().__init__(f"{message}: {error}" if error else message)
+
+
+class FailedToUpdatePredictionError(Exception):
+    def __init__(self, key: str, error: Optional[Exception] = None):
+        message = f"update function returned None for prediction {key}"
+        super().__init__(f"{message}: {error}" if error else message)
+
+
+class EmptyIdError(Exception):
+    def __init__(self, error: Optional[Exception] = None):
+        message = "id is empty"
         super().__init__(f"{message}: {error}" if error else message)

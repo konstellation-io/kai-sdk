@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -12,16 +13,17 @@ from vyper import v
 
 from sdk.metadata.metadata import Metadata
 from sdk.predictions.exceptions import (
+    EmptyIdError,
     FailedToFindPredictionsError,
     FailedToGetPredictionError,
     FailedToInitializePredictionsStoreError,
     FailedToSavePredictionError,
+    FailedToUpdatePredictionError,
     MalformedEndpointError,
     MissingRequiredFilterFieldError,
     NotFoundError,
 )
-from sdk.predictions.types import Filter, Prediction, UpdatePayloadFunc
-import ast
+from sdk.predictions.types import Filter, Payload, Prediction, UpdatePayloadFunc
 
 
 @dataclass
@@ -74,8 +76,12 @@ class Predictions(PredictionsABC):
 
         self.logger.info("successfully initialized predictions store")
 
-    def save(self, id: str, value: dict[str, str]) -> None:
+    def save(self, id: str, value: Payload) -> None:
         try:
+            if id == "" or id is None:
+                self.logger.error(f"{EmptyIdError()}")
+                raise EmptyIdError()
+
             creation_timestamp = datetime.now().timestamp() * 1000  # milliseconds
             key = self._get_key_with_product_prefix(id)
             prediction = Prediction(
@@ -100,6 +106,10 @@ class Predictions(PredictionsABC):
 
     def get(self, id: str) -> Prediction:
         try:
+            if id == "" or id is None:
+                self.logger.error(f"{EmptyIdError()}")
+                raise EmptyIdError()
+
             key = self._get_key_with_product_prefix(id)
             prediction = self.client.json().get(key)
             prediction = Prediction(**prediction)
@@ -126,17 +136,24 @@ class Predictions(PredictionsABC):
                 f"failed to find predictions from the predictions store matching the filter {filter}: {e}"
             )
             raise FailedToFindPredictionsError(filter, e)
-        
-        return result
 
+        return result
 
     def update(self, id: str, update_function: UpdatePayloadFunc) -> None:
         try:
+            if id == "" or id is None:
+                self.logger.error(f"{EmptyIdError()}")
+                raise EmptyIdError()
+
             key = self._get_key_with_product_prefix(id)
             prediction = self.client.json().get(key)
 
             payload = prediction["payload"]
             new_payload = update_function(payload)
+            if new_payload is None:
+                self.logger.error(f"update function returned None for prediction {id}")
+                raise FailedToUpdatePredictionError(id)
+
             last_modified = int(datetime.now().timestamp() * 1000)  # milliseconds
 
             updated_prediction = Prediction(
@@ -154,7 +171,7 @@ class Predictions(PredictionsABC):
         self.logger.info(f"successfully updated prediction with {id} to the predictions store")
 
     def _validate_filter(self, filter: Filter) -> None:
-        if not filter.version:
+        if filter.version is None:
             filter.version = Metadata.get_version()
 
         if filter.creation_date is None:
@@ -169,7 +186,8 @@ class Predictions(PredictionsABC):
             self.logger.error("filter creation_date end_date is required")
             raise MissingRequiredFilterFieldError("creation_date.end_date")
 
-    def _build_query(self, filter: Filter) -> str:
+    @staticmethod
+    def _build_query(filter: Filter) -> str:
         query = "@product:{%s} @creation_date:[%s %s] @version:{%s}" % (
             Metadata.get_product(),
             int(filter.creation_date.start_date.timestamp() * 1000),  # milliseconds
@@ -178,7 +196,7 @@ class Predictions(PredictionsABC):
         )
 
         if filter.workflow:
-            query = query + " @workflow:{%s}" % filter.workflow 
+            query = query + " @workflow:{%s}" % filter.workflow
 
         if filter.workflow_type:
             query = query + " @workflow_type:{%s}" % filter.workflow_type
