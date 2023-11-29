@@ -118,12 +118,15 @@ func initializeConfiguration() {
 	viper.SetDefault(common.ConfigRunnerLoggerEncodingKey, "json")
 	viper.SetDefault(common.ConfigRunnerLoggerOutputPathsKey, []string{"stdout"})
 	viper.SetDefault(common.ConfigRunnerLoggerErrorOutputPathsKey, []string{"stderr"})
+	viper.SetDefault(common.ConfigMinioInternalFolderKey, ".kai")
+	viper.SetDefault(common.ConfigModelFolderNameKey, ".models")
 }
 
 func getNatsConnection(logger logr.Logger) (*nats.Conn, error) {
 	nc, err := nats.Connect(viper.GetString(common.ConfigNatsURLKey))
 	if err != nil {
 		logger.Error(err, "Error connecting to NATS")
+
 		return nil, err
 	}
 

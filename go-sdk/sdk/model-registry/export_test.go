@@ -1,9 +1,10 @@
 //go:build integration
 
-package persistentstorage
+package modelregistry
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
@@ -14,14 +15,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewObject(info ObjectInfo, data []byte) Object {
-	return Object{
-		ObjectInfo: info,
-		data:       data,
-	}
-}
-
-func NewPersistentStorageIntegration(logger logr.Logger) (*PersistentStorage, error) {
+func NewModelRegistryIntegration(logger logr.Logger) (*ModelRegistry, error) {
 	persistentStorageBucket := viper.GetString(common.ConfigMinioBucketKey)
 
 	storageManager, err := initPersistentStorageIntegration(logger)
@@ -29,11 +23,15 @@ func NewPersistentStorageIntegration(logger logr.Logger) (*PersistentStorage, er
 		return nil, err
 	}
 
-	return &PersistentStorage{
+	return &ModelRegistry{
 		logger:        logger,
 		storageClient: storageManager,
 		storageBucket: persistentStorageBucket,
 		metadata:      metadata.New(),
+		modelFolderName: path.Join(
+			viper.GetString(common.ConfigMinioInternalFolderKey),
+			viper.GetString(common.ConfigModelFolderNameKey),
+		),
 	}, nil
 }
 
@@ -53,7 +51,7 @@ func initPersistentStorageIntegration(logger logr.Logger) (*minio.Client, error)
 		return nil, fmt.Errorf("error initializing persistent storage: %w", err)
 	}
 
-	logger.Info("Successfully initialized persistent storage")
+	logger.Info("Successfully initialized model registry storage")
 
 	return minioClient, nil
 }

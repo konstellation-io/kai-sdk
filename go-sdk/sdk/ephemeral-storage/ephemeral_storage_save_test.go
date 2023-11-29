@@ -15,7 +15,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObjectStoreNotInitialized_
 	// Given
 	viper.SetDefault(natsObjectStoreField, "")
 
-	objectStore, err := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, err := objectstore.New(s.logger, &s.jetstream)
 	s.NoError(err)
 
 	// When
@@ -31,7 +31,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveEmptyPayload_ExpectError()
 
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
-	objectStore, err := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, err := objectstore.New(s.logger, &s.jetstream)
 	s.NoError(err)
 
 	s.objectStore.On("GetInfo", "key").Return(&nats.ObjectInfo{},
@@ -53,7 +53,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_ErrorSavingPayload_ExpectError
 
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
-	objectStore, err := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, err := objectstore.New(s.logger, &s.jetstream)
 	s.NoError(err)
 
 	s.objectStore.On("GetInfo", "key").Return(&nats.ObjectInfo{},
@@ -75,7 +75,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObject_ExpectOK() {
 
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
-	objectStore, err := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, err := objectstore.New(s.logger, &s.jetstream)
 	s.NoError(err)
 
 	s.objectStore.On("GetInfo", "key").Return(&nats.ObjectInfo{},
@@ -97,7 +97,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveDuplicatedObject_ExpectErr
 
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
-	objectStore, err := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, err := objectstore.New(s.logger, &s.jetstream)
 	s.NoError(err)
 
 	s.objectStore.On("GetInfo", "key").Return(&nats.ObjectInfo{}, nil)
@@ -119,7 +119,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveDuplicatedObject_Overwrite
 
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
-	objectStore, _ := objectstore.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, _ := objectstore.New(s.logger, &s.jetstream)
 
 	s.objectStore.On("GetInfo", "key").Return(&nats.ObjectInfo{}, nil)
 	s.objectStore.On("PutBytes", "key", []byte("value")).Return(&nats.ObjectInfo{}, nil)
