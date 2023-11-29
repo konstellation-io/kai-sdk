@@ -17,6 +17,7 @@ from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
 from sdk.persistent_storage.persistent_storage import PersistentStorage
+from sdk.predictions.store import Predictions
 
 GLOBAL_BUCKET = "centralized_configuration.global.bucket"
 PRODUCT_BUCKET = "centralized_configuration.product.bucket"
@@ -53,8 +54,9 @@ def m_runner(_: Mock) -> Runner:
         AsyncMock(spec=KeyValue),
     ),
 )
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_sdk_import_ok(_, centralized_config_mock):
+async def test_sdk_import_ok(_,__, centralized_config_mock):
     nc = NatsClient()
     js = nc.jetstream()
     request_msg = KaiNatsMessage()
@@ -156,8 +158,9 @@ async def test_runner_initialize_jetstream_ko(_):
     "runner_type, runner_method",
     [(TriggerRunner, "trigger_runner"), (TaskRunner, "task_runner"), (ExitRunner, "exit_runner")],
 )
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-def test_get_runner_ok(_, runner_type, runner_method, m_runner):
+def test_get_runner_ok(_, __, runner_type, runner_method, m_runner):
     result = getattr(m_runner, runner_method)()
 
     assert isinstance(result, runner_type)

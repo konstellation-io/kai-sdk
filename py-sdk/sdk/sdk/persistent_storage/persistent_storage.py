@@ -120,7 +120,7 @@ class PersistentStorage(PersistentStorageABC):
                 "product": Metadata.get_product(),
                 "version": Metadata.get_version(),
                 "workflow": Metadata.get_workflow(),
-                "workflow_type": Metadata.get_workflow_type(),
+                "workflow-type": Metadata.get_workflow_type(),
                 "process": Metadata.get_process(),
             }
 

@@ -20,6 +20,7 @@ from sdk.predictions.exceptions import (
     FailedToSavePredictionError,
     MissingRequiredFilterFieldError,
     NotFoundError,
+    MalformedEndpointError,
 )
 from sdk.predictions.types import Filter, Prediction
 
@@ -53,9 +54,15 @@ class Predictions(PredictionsABC):
         origin = logger._core.extra["origin"]
         self.logger = logger.bind(context=f"{origin}.[PREDICTIONS STORE]")
         try:
-            endpoint = v.get_string("predictions.endpoint")
-            host = endpoint.split(":")[0]
-            port = endpoint.split(":")[1]
+            try:
+                endpoint = v.get_string("predictions.endpoint")
+                endpoint_ = endpoint.split(":")
+                host = endpoint_[0]
+                port = int(endpoint_[1])
+            except Exception as e:
+                self.logger.error(f"malformed endpoint: {e}")
+                raise MalformedEndpointError(v.get_string("predictions.endpoint"), e)
+
             self.client = Redis(
                 host=host,
                 port=port,
