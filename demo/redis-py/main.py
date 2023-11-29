@@ -24,7 +24,7 @@ async def handler(kai_sdk: sdk.KaiSDK, response: Any):
     logger.info(f"received message {message}")
 
     logger.info("saving prediction")
-    key = "test"
+    key = "test" + str(int(datetime.now().timestamp()))
     prediction = {"test": "test"}
     kai_sdk.predictions.save(key, prediction)
     logger.info(f"prediction saved with key {key} and value {prediction}")
@@ -32,7 +32,7 @@ async def handler(kai_sdk: sdk.KaiSDK, response: Any):
     logger.info(f"prediction retrieved with key {key} and value {response}")
 
     def func(payload: UpdatePayloadFunc) -> Payload:
-        payload["test"] = "updatedValueByFunc"
+        payload[key] = "updatedValueByFunc"
         return payload
 
     kai_sdk.predictions.update(key, func)
@@ -46,7 +46,7 @@ async def handler(kai_sdk: sdk.KaiSDK, response: Any):
         workflow_type=Metadata.get_workflow_type(),
         process=Metadata.get_process(),
         request_id=kai_sdk.get_request_id(),
-        creation_date=TimestampRange(start_date=datetime.fromisoformat("2023-11-28").timestamp(), end_date=datetime.now().timestamp()),
+        creation_date=TimestampRange(start_date=datetime.fromisoformat("2023-01-01"), end_date=datetime.fromisoformat("2023-12-31"))
     )
     response = kai_sdk.predictions.find(filter=filter_)
     logger.info(f"prediction retrieved with filter {filter_} and value {response}")

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -16,13 +15,13 @@ from sdk.predictions.exceptions import (
     FailedToFindPredictionsError,
     FailedToGetPredictionError,
     FailedToInitializePredictionsStoreError,
-    FailedToParseResultError,
     FailedToSavePredictionError,
     MalformedEndpointError,
     MissingRequiredFilterFieldError,
     NotFoundError,
 )
 from sdk.predictions.types import Filter, Prediction, UpdatePayloadFunc
+import ast
 
 
 @dataclass
@@ -80,8 +79,8 @@ class Predictions(PredictionsABC):
             creation_timestamp = datetime.now().timestamp() * 1000  # milliseconds
             key = self._get_key_with_product_prefix(id)
             prediction = Prediction(
-                creation_date=creation_timestamp,
-                last_modified=creation_timestamp,
+                creation_date=int(creation_timestamp),
+                last_modified=int(creation_timestamp),
                 payload=value,
                 metadata={
                     "product": Metadata.get_product(),
@@ -103,6 +102,7 @@ class Predictions(PredictionsABC):
         try:
             key = self._get_key_with_product_prefix(id)
             prediction = self.client.json().get(key)
+            prediction = Prediction(**prediction)
         except Exception as e:
             self.logger.error(f"failed to get prediction {id} from the predictions store: {e}")
             raise FailedToGetPredictionError(id, e)
@@ -112,21 +112,23 @@ class Predictions(PredictionsABC):
             raise NotFoundError(id)
 
         self.logger.info(f"successfully found prediction {id} from the predictions store")
-        return self._parse_result(prediction)
+        return prediction
 
     def find(self, filter: Filter) -> list[Prediction]:
         self._validate_filter(filter)
         index = v.get_string("predictions.index_key")
         try:
             predictions = self.client.ft(index).search(query=self._build_query(filter))
+            result = [Prediction(**ast.literal_eval(prediction["json"])) for prediction in predictions.docs]
+            self.logger.info(f"successfully found predictions from the predictions store matching the filter {filter}")
         except Exception as e:
             self.logger.error(
                 f"failed to find predictions from the predictions store matching the filter {filter}: {e}"
             )
             raise FailedToFindPredictionsError(filter, e)
+        
+        return result
 
-        self.logger.info(f"successfully found predictions from the predictions store matching the filter {filter}")
-        return [self._parse_result(prediction) for prediction in predictions.docs]
 
     def update(self, id: str, update_function: UpdatePayloadFunc) -> None:
         try:
@@ -135,7 +137,7 @@ class Predictions(PredictionsABC):
 
             payload = prediction["payload"]
             new_payload = update_function(payload)
-            last_modified = datetime.now().timestamp() * 1000  # milliseconds
+            last_modified = int(datetime.now().timestamp() * 1000)  # milliseconds
 
             updated_prediction = Prediction(
                 creation_date=prediction["creation_date"],
@@ -150,13 +152,6 @@ class Predictions(PredictionsABC):
             raise FailedToSavePredictionError(id, e)
 
         self.logger.info(f"successfully updated prediction with {id} to the predictions store")
-
-    def _parse_result(self, result: dict[str, str]) -> Prediction:
-        try:
-            return Prediction(**result)
-        except Exception as e:
-            self.logger.error(f"failed to parse result {result}: {e}")
-            raise FailedToParseResultError(result, e)
 
     def _validate_filter(self, filter: Filter) -> None:
         if not filter.version:
@@ -174,23 +169,28 @@ class Predictions(PredictionsABC):
             self.logger.error("filter creation_date end_date is required")
             raise MissingRequiredFilterFieldError("creation_date.end_date")
 
-    @staticmethod
-    def _build_query(filter: Filter) -> str:
-        query = f"@product:{Metadata.get_product()} @creation_date:[{filter.creation_date.start_date} {filter.creation_date.end_date}] @version:{filter.version}"
+    def _build_query(self, filter: Filter) -> str:
+        query = "@product:{%s} @creation_date:[%s %s] @version:{%s}" % (
+            Metadata.get_product(),
+            int(filter.creation_date.start_date.timestamp() * 1000),  # milliseconds
+            int(filter.creation_date.end_date.timestamp() * 1000),  # milliseconds
+            filter.version,
+        )
 
         if filter.workflow:
-            query = f"{query} @workflow:{filter.workflow}"
+            query = query + " @workflow:{%s}" % filter.workflow 
 
         if filter.workflow_type:
-            query = f"{query} @workflow_type:{filter.workflow_type}"
+            query = query + " @workflow_type:{%s}" % filter.workflow_type
 
         if filter.process:
-            query = f"{query} @process:{filter.process}"
+            query = query + " @process:{%s}" % filter.process
 
         if filter.request_id:
-            query = f"{query} @request_id:{filter.request_id}"
+            query = query + " @request_id:{%s}" % filter.request_id
 
         query = query.replace("-", "\\-")
+        query = query.replace(".", "\\.")
 
         return query
 

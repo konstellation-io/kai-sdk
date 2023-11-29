@@ -1,21 +1,22 @@
 from dataclasses import dataclass
 from typing import Optional, Any, Callable
+from datetime import datetime
 
 Payload = dict[str, Any]
 UpdatePayloadFunc = Callable[[Payload], Payload]
 
 @dataclass
 class Prediction:
-    creation_date: float
-    last_modified: float
+    creation_date: int
+    last_modified: int
     payload: Payload
     metadata: dict[str, str]
 
 
 @dataclass
 class TimestampRange:
-    start_date: float
-    end_date: float
+    start_date: datetime
+    end_date: datetime
 
 
 @dataclass
