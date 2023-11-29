@@ -34,7 +34,7 @@ PROCESS = "test process id"
 @pytest.fixture(scope="function")
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def m_sdk(_: PersistentStorage, __:Predictions) -> KaiSDK:
+async def m_sdk(_: PersistentStorage, __: Predictions) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()
@@ -48,7 +48,7 @@ async def m_sdk(_: PersistentStorage, __:Predictions) -> KaiSDK:
 @pytest.fixture(scope="function")
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-def m_trigger_runner(_: PersistentStorage, __:Predictions,m_sdk: KaiSDK) -> TriggerRunner:
+def m_trigger_runner(_: PersistentStorage, __: Predictions, m_sdk: KaiSDK) -> TriggerRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 

@@ -24,7 +24,7 @@ TEST_REQUEST_ID = "test-request-id"
 @pytest.fixture(scope="function")
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def m_sdk(_: PersistentStorage, __:Predictions) -> KaiSDK:
+async def m_sdk(_: PersistentStorage, __: Predictions) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()

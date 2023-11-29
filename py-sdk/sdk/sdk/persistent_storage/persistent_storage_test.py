@@ -22,7 +22,7 @@ METADATA = {
     "process": "test_process",
     "version": "v0.0.1",
     "workflow": "test_workflow",
-    "workflow-type": "test_workflow_type",
+    "workflow_type": "test_workflow_type",
     "product": "konstellation",
 }
 EXPECTED_OBJECT_INFO = ObjectInfo(
@@ -63,7 +63,7 @@ def m_object() -> urllib3.BaseHTTPResponse:
         "x-amz-meta-product": METADATA["product"],
         "x-amz-meta-version": METADATA["version"],
         "x-amz-meta-workflow": METADATA["workflow"],
-        "x-amz-meta-workflow-type": METADATA["workflow-type"],
+        "x-amz-meta-workflow-type": METADATA["workflow_type"],
         "x-amz-meta-process": METADATA["process"],
         "x-amz-version-id": "test-version",
     }
@@ -102,7 +102,7 @@ def test_save_ok(m_persistent_storage, m_object):
     v.set("metadata.product_id", METADATA["product"])
     v.set("metadata.version_tag", METADATA["version"])
     v.set("metadata.workflow_name", METADATA["workflow"])
-    v.set("metadata.workflow_type", METADATA["workflow-type"])
+    v.set("metadata.workflow_type", METADATA["workflow_type"])
     v.set("metadata.process_name", METADATA["process"])
     m_persistent_storage.minio_client.put_object.return_value = m_object
     payload = io.BytesIO(b"test-payload")
@@ -119,7 +119,7 @@ def test_save_no_ttl_ok(m_persistent_storage, m_object):
     v.set("metadata.product_id", METADATA["product"])
     v.set("metadata.version_tag", METADATA["version"])
     v.set("metadata.workflow_name", METADATA["workflow"])
-    v.set("metadata.workflow_type", METADATA["workflow-type"])
+    v.set("metadata.workflow_type", METADATA["workflow_type"])
     v.set("metadata.process_name", METADATA["process"])
     m_persistent_storage.minio_client.put_object.return_value = m_object
     payload = io.BytesIO(b"test-payload")

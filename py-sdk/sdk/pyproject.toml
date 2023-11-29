@@ -35,6 +35,7 @@ types-mock = "5.1.0.1"
 mypy = "1.5.1"
 types-protobuf = "4.24.0.1"
 loguru-mypy = "0.0.4"
+freezegun = "1.2.2"
 
 [build-system]
 requires = ["poetry-core"]

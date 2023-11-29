@@ -56,7 +56,7 @@ def m_runner(_: Mock) -> Runner:
 )
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_sdk_import_ok(_,__, centralized_config_mock):
+async def test_sdk_import_ok(_, __, centralized_config_mock):
     nc = NatsClient()
     js = nc.jetstream()
     request_msg = KaiNatsMessage()

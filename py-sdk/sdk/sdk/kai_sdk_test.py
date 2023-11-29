@@ -75,7 +75,7 @@ async def test_initialize_ok(_, __, ___):
 @patch.object(CentralizedConfig, "_init_kv_stores", side_effect=Exception)
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_initialize_ko(_,__,___):
+async def test_initialize_ko(_, __, ___):
     nc = NatsClient()
     js = nc.jetstream()
     v.set(NATS_OBJECT_STORE, None)
@@ -103,9 +103,7 @@ async def test_initialize_ko(_,__,___):
 )
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_nats_initialize_ok(
-    _, __, ___, ____
-):
+async def test_nats_initialize_ok(_, __, ___, ____):
     nc = NatsClient()
     js = nc.jetstream()
     v.set(NATS_OBJECT_STORE, "test_object_store")

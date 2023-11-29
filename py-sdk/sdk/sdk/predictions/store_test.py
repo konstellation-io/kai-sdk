@@ -4,16 +4,7 @@ import pytest
 from redis import Redis
 from vyper import v
 
-from sdk.predictions.exceptions import (
-    FailedToFindPredictionsError,
-    FailedToGetPredictionError,
-    FailedToInitializePredictionsStoreError,
-    FailedToParseResultError,
-    FailedToSavePredictionError,
-    NotFoundError,
-    MalformedEndpointError,
-    MissingRequiredFilterFieldError
-)
+from sdk.predictions.exceptions import FailedToInitializePredictionsStoreError, MalformedEndpointError
 from sdk.predictions.store import Predictions
 
 PREDICTIONS_ENDPOINT_KEY = "predictions.endpoint"
@@ -40,7 +31,7 @@ def m_store(m_redis):
 
 
 @patch.object(Redis, "__init__", return_value=None)
-def test_ok(m_redis_init, m_redis):
+def test_ok(m_redis_init):
     v.set(PREDICTIONS_ENDPOINT_KEY, PREDICTIONS_ENDPOINT)
     v.set(PREDICTIONS_USERNAME_KEY, PREDICTIONS_USERNAME)
     v.set(PREDICTIONS_PASSWORD_KEY, PREDICTIONS_PASSWORD)
@@ -48,8 +39,11 @@ def test_ok(m_redis_init, m_redis):
 
     store = Predictions()
 
-    m_redis_init.assert_called_once_with(host="localhost", port=6379, username="test_username", password="test_password")
+    m_redis_init.assert_called_once_with(
+        host="localhost", port=6379, username="test_username", password="test_password"
+    )
     assert store.client is not None
+
 
 def test_malformed_endpoint_ko():
     v.set(PREDICTIONS_ENDPOINT_KEY, "localhost")
@@ -61,6 +55,7 @@ def test_malformed_endpoint_ko():
         Predictions()
 
         assert error == MalformedEndpointError("localhost", "localhost")
+
 
 @patch.object(Redis, "__init__", side_effect=Exception)
 def test_initialization_ko(_):

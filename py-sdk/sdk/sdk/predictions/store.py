@@ -18,9 +18,9 @@ from sdk.predictions.exceptions import (
     FailedToInitializePredictionsStoreError,
     FailedToParseResultError,
     FailedToSavePredictionError,
+    MalformedEndpointError,
     MissingRequiredFilterFieldError,
     NotFoundError,
-    MalformedEndpointError,
 )
 from sdk.predictions.types import Filter, Prediction
 
@@ -174,7 +174,8 @@ class Predictions(PredictionsABC):
             self.logger.error("filter timestamp end_date is required")
             raise MissingRequiredFilterFieldError("end_date")
 
-    def _build_query(self, filter: Filter) -> str:
+    @staticmethod
+    def _build_query(filter: Filter) -> str:
         query = f"@product:{Metadata.get_product()} @timestamp:[0 inf]"
 
         if filter.version:
@@ -199,5 +200,6 @@ class Predictions(PredictionsABC):
 
         return query
 
-    def _get_key_with_product_prefix(self, key: str) -> str:
+    @staticmethod
+    def _get_key_with_product_prefix(key: str) -> str:
         return f"{Metadata.get_product()}:{key}"

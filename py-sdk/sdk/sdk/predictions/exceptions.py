@@ -8,10 +8,12 @@ class FailedToInitializePredictionsStoreError(Exception):
         message = "failed to initialize predictions store"
         super().__init__(f"{message}: {error}" if error else message)
 
+
 class MalformedEndpointError(Exception):
     def __init__(self, endpoint: str, error: Optional[Exception] = None):
         message = f"malformed endpoint {endpoint}"
         super().__init__(f"{message}: {error}" if error else message)
+
 
 class FailedToSavePredictionError(Exception):
     def __init__(self, key: str, error: Optional[Exception] = None):
