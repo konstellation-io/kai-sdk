@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/spf13/viper"
 )
 
 func (r *RedisPredictionStore) Find(ctx context.Context, filter *Filter) ([]Prediction, error) {
@@ -15,7 +18,7 @@ func (r *RedisPredictionStore) Find(ctx context.Context, filter *Filter) ([]Pred
 	}
 
 	// set prediciton index as config variable
-	result, err := r.client.Do(ctx, "FT.SEARCH", "predictionsIdx", r.buildQueryWithFilters(filter)).Result()
+	result, err := r.client.Do(ctx, "FT.SEARCH", viper.GetString(common.ConfigRedisIndexKey), r.buildQueryWithFilters(filter)).Result()
 	if err != nil {
 		return nil, err
 	}

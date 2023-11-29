@@ -33,4 +33,5 @@ const (
 	ConfigRedisEndpointKey                = "predictions.endpoint"
 	ConfigRedisUsernameKey                = "predictions.username"
 	ConfigRedisPasswordKey                = "predictions.password"
+	ConfigRedisIndexKey                   = "predictions.index"
 )

@@ -31,6 +31,7 @@ const (
 	_testRedisUser          = "test-user"
 	_testRedisPassword      = "test-password"
 	_testRedisAdminPassword = "testpassword"
+	_testRedisIndex         = "predictionsIdx"
 )
 
 func TestPredictionStoreSuite(t *testing.T) {
@@ -104,6 +105,7 @@ func (s *PredictionStoreSuite) initializeMetadataConfiguration() {
 	viper.Set(common.ConfigMetadataProcessIDKey, _testProcess)
 	viper.Set(common.ConfigRedisUsernameKey, _testRedisUser)
 	viper.Set(common.ConfigRedisPasswordKey, _testRedisPassword)
+	viper.Set(common.ConfigRedisIndexKey, _testRedisIndex)
 }
 
 func (s *PredictionStoreSuite) initializePredictionStore() {
@@ -145,7 +147,7 @@ func (s *PredictionStoreSuite) createRedisUser() {
 func (s *PredictionStoreSuite) createRedisPredictionIndex() {
 	err := s.redisClient.Do(context.Background(),
 		"FT.CREATE",
-		"predictionsIdx",
+		_testRedisIndex,
 		"ON",
 		"JSON",
 		"SCHEMA",
