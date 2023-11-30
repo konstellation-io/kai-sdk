@@ -47,8 +47,8 @@ def m_store(m_redis):
 @pytest.fixture
 def m_prediction():
     return Prediction(
-        creation_date=datetime.now(),
-        last_modified=datetime.now(),
+        creation_date=int(datetime.now().timestamp()),
+        last_modified=int(datetime.now().timestamp()),
         payload={"test": "test"},
         metadata={
             "version": "test_version",
@@ -57,6 +57,18 @@ def m_prediction():
             "process": "test_process",
             "request_id": "test_request_id",
         },
+    )
+
+
+@pytest.fixture
+def m_filter():
+    return Filter(
+        version="test_version",
+        workflow="test_workflow",
+        workflow_type="test_workflow_type",
+        process="test_process",
+        request_id="test_request_id",
+        creation_date=TimestampRange(start_date=datetime.now(), end_date=datetime.now()),
     )
 
 
@@ -98,43 +110,87 @@ def test_initialization_ko(_):
         Predictions()
 
 
+def test_save_ko(m_store):
+    m_store.client.json.return_value.set.side_effect = Exception
+
+    with pytest.raises(FailedToSavePredictionError):
+        m_store.save("test_id", {"test": "test"})
+
+
+def test_save_wrong_id(m_store):
+    with pytest.raises(FailedToSavePredictionError) as error:
+        m_store.save("", lambda x: x)
+
+        assert error == FailedToSavePredictionError("", EmptyIdError)
+
+
+def test_get_ko(m_store):
+    m_store.client.json.return_value.get.side_effect = Exception
+
+    with pytest.raises(FailedToGetPredictionError):
+        m_store.get("test_id")
+
+
+def test_get_not_found(m_store):
+    m_store.client.json.return_value.get.side_effect = None
+
+    with pytest.raises(FailedToGetPredictionError) as error:
+        m_store.get("test_id")
+
+        assert error == FailedToGetPredictionError("test_id", NotFoundError)
+
+
+def test_get_wrong_id_ko(m_store):
+    with pytest.raises(FailedToGetPredictionError) as error:
+        m_store.get("")
+
+        assert error == FailedToGetPredictionError("", EmptyIdError)
+
+
+def test_find_validate_filter_ko(m_store, m_filter):
+    m_store._validate_filter = Mock(side_effect=MissingRequiredFilterFieldError(""))
+
+    with pytest.raises(FailedToFindPredictionsError) as error:
+        m_store.find(m_filter)
+
+        assert error == FailedToFindPredictionsError(m_filter, MissingRequiredFilterFieldError)
+
+    assert m_store._validate_filter.called
+    assert not m_store.client.ft.return_value.search.called
+
+
+def test_find_missing_required_filter_field_ko(m_store):
+    with pytest.raises(FailedToFindPredictionsError) as error:
+        m_store.find({})
+
+        assert error == FailedToFindPredictionsError({}, MissingRequiredFilterFieldError)
+
+
 def test_update_ko(m_store):
     m_store.client.json.return_value.get.side_effect = Exception
 
-    with pytest.raises(FailedToSavePredictionError):
+    with pytest.raises(FailedToUpdatePredictionError):
         m_store.update("test_id", lambda x: x)
 
 
 def test_update_wrong_id(m_store):
-    with pytest.raises(FailedToSavePredictionError) as error:
+    with pytest.raises(FailedToUpdatePredictionError) as error:
         m_store.update("", lambda x: x)
 
-        assert error == FailedToSavePredictionError("", EmptyIdError())
+        assert error == FailedToUpdatePredictionError("", EmptyIdError)
 
 
-def test_update_failed_to_save_prediction(m_store):
-    expected_prediction = Prediction(
-        creation_date=datetime.now(),
-        last_modified=datetime.now(),
-        payload={"test": "test"},
-        metadata={
-            "version": "test_version",
-            "workflow": "test_workflow",
-            "workflow_type": "test_workflow_type",
-            "process": "test_process",
-            "request_id": "test_request_id",
-        },
-    )
-    m_store.client.json.return_value.get.return_value = asdict(expected_prediction)
+def test_update_failed_to_save_prediction(m_store, m_prediction):
+    m_store.client.json.return_value.get.return_value = asdict(m_prediction)
     m_store.client.json.return_value.set.side_effect = Exception
 
-    with pytest.raises(FailedToSavePredictionError):
+    with pytest.raises(FailedToUpdatePredictionError):
         m_store.update("test_id", lambda x: x)
 
 
 def test_validate_filter_ok(m_store):
     filter_ = Filter(
-        creation_date=TimestampRange(start_date=0, end_date=1),
+        creation_date=TimestampRange(start_date=datetime.now(), end_date=datetime.now()),
     )
     m_store._validate_filter(filter_)
 
@@ -145,7 +201,7 @@ def test_validate_filter_missing_required_filter_field_ko(m_store):
     with pytest.raises(MissingRequiredFilterFieldError):
         m_store._validate_filter(
             Filter(
-                creation_date=TimestampRange(start_date=None, end_date=1),
+                creation_date=TimestampRange(start_date=None, end_date=datetime.now()),
             )
         )
 

@@ -112,22 +112,23 @@ class Predictions(PredictionsABC):
 
             key = self._get_key_with_product_prefix(id)
             prediction = self.client.json().get(key)
+
+            if prediction is None:
+                self.logger.error(f"prediction {id} not found in the predictions store")
+                raise NotFoundError(id)
+
             prediction = Prediction(**prediction)
         except Exception as e:
             self.logger.error(f"failed to get prediction {id} from the predictions store: {e}")
             raise FailedToGetPredictionError(id, e)
 
-        if not prediction:
-            self.logger.error(f"prediction {id} not found in the predictions store")
-            raise NotFoundError(id)
-
         self.logger.info(f"successfully found prediction {id} from the predictions store")
         return prediction
 
     def find(self, filter: Filter) -> list[Prediction]:
-        self._validate_filter(filter)
-        index = v.get_string("predictions.index_key")
         try:
+            self._validate_filter(filter)
+            index = v.get_string("predictions.index_key")
             predictions = self.client.ft(index).search(query=self._build_query(filter))
             result = [Prediction(**ast.literal_eval(prediction["json"])) for prediction in predictions.docs]
             self.logger.info(f"successfully found predictions from the predictions store matching the filter {filter}")
@@ -166,7 +167,7 @@ class Predictions(PredictionsABC):
             self.client.json().set(name=key, path=Path.root_path(), obj=asdict(updated_prediction))
         except Exception as e:
             self.logger.error(f"failed to update prediction with {id} to the predictions store: {e}")
-            raise FailedToSavePredictionError(id, e)
+            raise FailedToUpdatePredictionError(id, e)
 
         self.logger.info(f"successfully updated prediction with {id} to the predictions store")
 
