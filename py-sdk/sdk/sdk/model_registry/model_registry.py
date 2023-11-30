@@ -181,7 +181,7 @@ class ModelRegistry(ModelRegistryABC):
                 include_user_meta=True,
                 prefix=self._get_model_path(""),
             )
-            self.logger.info(f"models successfully listed from model registry")
+            self.logger.info("models successfully listed from model registry")
 
             model_info_list = []
 

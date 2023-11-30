@@ -6,9 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
 	"net/http"
 	"testing"
+
+	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 

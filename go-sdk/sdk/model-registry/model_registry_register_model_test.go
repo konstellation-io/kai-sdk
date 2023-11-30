@@ -4,12 +4,13 @@ package modelregistry_test
 
 import (
 	"context"
+	"io"
+	"path"
+
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
 	"github.com/minio/minio-go/v7"
 	"github.com/spf13/viper"
-	"io"
-	"path"
 )
 
 func (s *SdkModelRegistryTestSuite) TestModelRegistry_RegisterModel_ExpectOK() {

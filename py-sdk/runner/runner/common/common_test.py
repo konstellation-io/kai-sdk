@@ -12,6 +12,7 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage
 from sdk.kai_sdk import KaiSDK
 from sdk.model_registry.model_registry import ModelRegistry
 from sdk.persistent_storage.persistent_storage import PersistentStorage
+from sdk.predictions.store import Predictions
 
 
 @pytest.fixture(scope="function")
@@ -32,11 +33,13 @@ def m_centralized_config() -> CentralizedConfig:
 
 
 @pytest.fixture(scope="function")
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
 @patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
 async def m_sdk(
-    persistent_storage_mock: PersistentStorage,
-    model_registry_mock: ModelRegistry,
+    _: ModelRegistry,
+    __: PersistentStorage,
+    ___: ModelRegistry,
     m_centralized_config: CentralizedConfig,
 ) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)

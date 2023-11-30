@@ -1,8 +1,9 @@
 metadata:
   product_id: Task process
-  workflow_name: Task workflow
-  process_name: Task process
   version_tag: Task version v1.0.0
+  workflow_name: Task workflow
+  workflow_type: training workflow
+  process_name: Task process
 
 nats:
   url: "nats://localhost:4222"
@@ -29,6 +30,12 @@ auth:
   client_secret: "kai_pwd"
   realm: "konstellation"
 
+predictions:
+  endpoint: localhost:6379
+  username: default
+  password: redispw
+  index_key: predictionsIdx
+  
 measurements:
   endpoint: "localhost:4317"
   insecure: true

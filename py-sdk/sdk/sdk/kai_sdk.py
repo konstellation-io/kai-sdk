@@ -19,6 +19,7 @@ from sdk.messaging.messaging import Messaging, MessagingABC
 from sdk.metadata.metadata import Metadata, MetadataABC
 from sdk.model_registry.model_registry import ModelRegistry, ModelRegistryABC
 from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
+from sdk.predictions.store import Predictions, PredictionsABC
 
 LOGGER_FORMAT = (
     "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
@@ -45,6 +46,7 @@ class KaiSDK:
     model_registry: ModelRegistryABC = field(init=False)
     measurements: MeasurementsABC = field(init=False)
     storage: Storage = field(init=False)
+    predictions: PredictionsABC = field(init=False)
 
     def __post_init__(self) -> None:
         if not self.logger:
@@ -58,6 +60,7 @@ class KaiSDK:
         self.metadata = Metadata()
         self.measurements = Measurements()
         self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
+        self.predictions = Predictions()
         self.model_registry = ModelRegistry()
 
     async def initialize(self) -> None:
@@ -100,3 +103,6 @@ class KaiSDK:
         self.request_msg = request_msg
         assert isinstance(self.messaging, Messaging)
         self.messaging.request_msg = request_msg
+        self.predictions.request_id = request_msg.request_id
+        origin = logger._core.extra["origin"]
+        logger.configure(extra={"metadata": {"request_id": request_msg.request_id}, "origin": origin})

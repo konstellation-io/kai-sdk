@@ -25,9 +25,10 @@ LOGGER_FORMAT = (
 
 MANDATORY_CONFIG_KEYS = [
     "metadata.product_id",
-    "metadata.workflow_name",
-    "metadata.process_name",
     "metadata.version_tag",
+    "metadata.workflow_name",
+    "metadata.workflow_type",
+    "metadata.process_name",
     "nats.url",
     "nats.stream",
     "nats.output",
@@ -44,6 +45,10 @@ MANDATORY_CONFIG_KEYS = [
     "auth.client",  # Client to be used to authenticate
     "auth.client_secret",  # Client's secret to be used
     "auth.realm",  # Realm
+    "predictions.endpoint",
+    "predictions.username",
+    "predictions.password",
+    "predictions.index_key",
     "measurements.endpoint",
     "measurements.insecure",
     "measurements.timeout",

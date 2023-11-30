@@ -33,7 +33,7 @@ class FailedToGetModelError(Exception):
 
 class FailedToListModelsError(Exception):
     def __init__(self, error: Optional[Exception] = None):
-        message = f"failed to list models from the model registry"
+        message = "failed to list models from the model registry"
         super().__init__(f"{message}: {error}" if error else message)
 
 

@@ -126,6 +126,7 @@ class PersistentStorage(PersistentStorageABC):
                 "product": Metadata.get_product(),
                 "version": Metadata.get_version(),
                 "workflow": Metadata.get_workflow(),
+                "workflow_type": Metadata.get_workflow_type(),
                 "process": Metadata.get_process(),
             }
 
@@ -296,4 +297,8 @@ class PersistentStorage(PersistentStorageABC):
 
     def _process_raw_metadata(self, raw_metadata: dict[str, str]) -> dict[str, str]:
         # minio replaces our metadata keys with x-amz-meta-<key>
-        return {k.replace("x-amz-meta-", ""): v for k, v in raw_metadata.items() if k.startswith("x-amz-meta-")}
+        return {
+            k.replace("x-amz-meta-", "").replace("-", "_"): v
+            for k, v in raw_metadata.items()
+            if k.startswith("x-amz-meta-")
+        }
