@@ -2,7 +2,7 @@ metadata:
   product_id: Metrics_product
   version_tag: v1.0.0
   workflow_name: Metrics_workflow
-  workflow_type: feedback_workflow
+  workflow_type: feedback
   process_name: Metrics_process
 
 nats:
