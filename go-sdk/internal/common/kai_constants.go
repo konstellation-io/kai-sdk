@@ -9,6 +9,7 @@ const (
 	ConfigRunnerSubscriberAckWaitTimeKey  = "runner.subscriber.ack_wait_time"
 	ConfigMetadataProductIDKey            = "metadata.product_id"
 	ConfigMetadataWorkflowIDKey           = "metadata.workflow_name"
+	ConfigMetadataWorkflowTypeKey         = "metadata.workflow_type"
 	ConfigMetadataProcessIDKey            = "metadata.process_name"
 	ConfigMetadataVersionIDKey            = "metadata.version_tag"
 	ConfigNatsURLKey                      = "nats.url"
@@ -30,6 +31,10 @@ const (
 	ConfigAuthClientKey                   = "auth.client"
 	ConfigAuthClientSecretKey             = "auth.client_secret" //nolint:gosec // False positive
 	ConfigAuthRealmKey                    = "auth.realm"
+	ConfigRedisEndpointKey                = "predictions.endpoint"
+	ConfigRedisUsernameKey                = "predictions.username"
+	ConfigRedisPasswordKey                = "predictions.password"
+	ConfigRedisIndexKey                   = "predictions.index"
 	ConfigModelFolderNameKey              = "model_registry.folder_name"
 	ConfigMeasurementsEndpointKey         = "measurements.endpoint"
 	ConfigMeasurementsInsecureKey         = "measurements.insecure"

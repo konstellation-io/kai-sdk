@@ -5,6 +5,7 @@ import (
 	"os"
 
 	meta "github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
 	"go.opentelemetry.io/otel/metric"
 
 	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
@@ -89,6 +90,14 @@ type measurements interface {
 	GetMetricsClient() metric.Meter
 }
 
+//go:generate mockery --name predictions --output ../mocks --filename predictions_mock.go --structname PredictionsMock
+type predictions interface {
+	Save(ctx context.Context, predictionID string, value prediction.Payload) error
+	Get(ctx context.Context, predictionID string) (*prediction.Prediction, error)
+	Find(ctx context.Context, filter *prediction.Filter) ([]prediction.Prediction, error)
+	Update(ctx context.Context, predictionID string, payloadFunc prediction.UpdatePayloadFunc) error
+}
+
 //go:generate mockery --name modelRegistry --output ../mocks --filename model_registry_mock.go --structname ModelRegistryMock
 type modelRegistry interface {
 	RegisterModel(model []byte, name, version, description, modelFormat string) error
@@ -111,10 +120,11 @@ type KaiSDK struct {
 	Logger            logr.Logger
 	Metadata          metadata
 	Messaging         messaging
-	Storage           Storage
 	ModelRegistry     modelRegistry
 	CentralizedConfig centralizedConfig
 	Measurements      measurements
+	Storage           Storage
+	Predictions       predictions
 }
 
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
@@ -144,6 +154,8 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		Persistent: persistentStg,
 	}
 
+	predictionStore := prediction.NewRedisPredictionStore("")
+
 	messagingInst := msg.New(logger, natsCli, jetstreamCli, nil)
 
 	modelRegistryInst, err := modelregistry.New(logger, metadata)
@@ -169,6 +181,7 @@ func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStre
 		ModelRegistry:     modelRegistryInst,
 		CentralizedConfig: centralizedConfigInst,
 		Measurements:      measurementsInst,
+		Predictions:       predictionStore,
 	}
 
 	return sdk
@@ -186,6 +199,7 @@ func ShallowCopyWithRequest(sdk *KaiSDK, requestMsg *kai.KaiNatsMessage) KaiSDK 
 	hSdk := *sdk
 	hSdk.requestMessage = requestMsg
 	hSdk.Logger = sdk.Logger.WithValues(LoggerRequestID, requestMsg.GetRequestId())
+	hSdk.Predictions = prediction.NewRedisPredictionStore(requestMsg.RequestId)
 	hSdk.Messaging = msg.New(hSdk.Logger, sdk.nats, sdk.jetstream, requestMsg)
 
 	return hSdk
