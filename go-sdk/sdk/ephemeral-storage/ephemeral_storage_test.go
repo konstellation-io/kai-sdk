@@ -44,7 +44,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_ExpectOK
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
 	// When
-	objectStore, err := ephemeralStorage.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, err := ephemeralStorage.New(s.logger, &s.jetstream)
 
 	// Then
 	s.NoError(err)
@@ -58,7 +58,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_EmptyOsN
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(&s.objectStore, nil)
 
 	// When
-	objectStore, osErr := ephemeralStorage.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, osErr := ephemeralStorage.New(s.logger, &s.jetstream)
 	_, getErr := objectStore.Get("key")
 
 	// Then
@@ -74,7 +74,7 @@ func (s *SdkObjectStoreTestSuite) TestObjectStore_InitializeObjectStore_ErrorOnO
 	s.jetstream.On("ObjectStore", natsObjectStoreValue).Return(nil, fmt.Errorf("not found"))
 
 	// When
-	objectStore, err := ephemeralStorage.NewEphemeralStorage(s.logger, &s.jetstream)
+	objectStore, err := ephemeralStorage.New(s.logger, &s.jetstream)
 
 	// Then
 	s.Error(err)

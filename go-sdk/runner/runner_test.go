@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner"
 )

@@ -4,17 +4,19 @@ import (
 	"context"
 	"os"
 
-	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
+	meta "github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
+	"go.opentelemetry.io/otel/metric"
 
-	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
-	pathutils "github.com/konstellation-io/kai-sdk/go-sdk/sdk/path-utils"
-
+	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
+	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
+	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
 
 	"github.com/go-logr/logr"
 	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
 	msg "github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
-	meta "github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -23,12 +25,6 @@ import (
 const (
 	LoggerRequestID = "request_id"
 )
-
-//go:generate mockery --name pathUtils --output ../mocks --filename path_utils_mock.go --structname PathUtilsMock
-type pathUtils interface {
-	GetBasePath() string
-	ComposePath(relativePath ...string) string
-}
 
 //go:generate mockery --name messaging --output ../mocks --filename messaging_mock.go --structname MessagingMock
 type messaging interface {
@@ -89,11 +85,27 @@ type centralizedConfig interface {
 	DeleteConfig(key string, scope msg.Scope) error
 }
 
-//nolint:godox // Task to be done.
-// TODO add metrics interface.
-
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock
-type measurements interface{}
+type measurements interface {
+	GetMetricsClient() metric.Meter
+}
+
+//go:generate mockery --name predictions --output ../mocks --filename predictions_mock.go --structname PredictionsMock
+type predictions interface {
+	Save(ctx context.Context, predictionID string, value prediction.Payload) error
+	Get(ctx context.Context, predictionID string) (*prediction.Prediction, error)
+	Find(ctx context.Context, filter *prediction.Filter) ([]prediction.Prediction, error)
+	Update(ctx context.Context, predictionID string, payloadFunc prediction.UpdatePayloadFunc) error
+}
+
+//go:generate mockery --name modelRegistry --output ../mocks --filename model_registry_mock.go --structname ModelRegistryMock
+type modelRegistry interface {
+	RegisterModel(model []byte, name, version, description, modelFormat string) error
+	GetModel(name string, version ...string) (*modelregistry.Model, error)
+	ListModels() ([]*modelregistry.ModelInfo, error)
+	ListModelVersions(name string) ([]*modelregistry.ModelInfo, error)
+	DeleteModel(name string) error
+}
 
 type KaiSDK struct {
 	// Metadata
@@ -106,54 +118,70 @@ type KaiSDK struct {
 
 	// Main methods
 	Logger            logr.Logger
-	PathUtils         pathUtils
 	Metadata          metadata
 	Messaging         messaging
+	ModelRegistry     modelRegistry
 	CentralizedConfig centralizedConfig
 	Measurements      measurements
 	Storage           Storage
+	Predictions       predictions
 }
 
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
-	metadata := meta.NewMetadata()
+	metadata := meta.New()
 
-	centralizedConfigInst, err := centralizedConfiguration.NewCentralizedConfiguration(logger, jetstreamCli)
+	centralizedConfigInst, err := centralizedconfiguration.New(logger, jetstreamCli)
 	if err != nil {
 		logger.WithName("[CENTRALIZED CONFIGURATION]").
 			Error(err, "Error initializing Centralized Configuration")
 		os.Exit(1)
 	}
 
-	ephemeralStorage, err := objectstore.NewEphemeralStorage(logger, jetstreamCli)
+	ephemeralStg, err := objectstore.New(logger, jetstreamCli)
 	if err != nil {
 		logger.WithName("[EPHEMERAL STORAGE]").Error(err, "Error initializing ephemeral storage")
 		os.Exit(1)
 	}
 
-	persistentStorage, err := persistentstorage.NewPersistentStorage(logger.WithName("[PERSISTENT STORAGE]"))
+	persistentStg, err := persistentstorage.New(logger, metadata)
 	if err != nil {
 		logger.WithName("[PERSISTENT STORAGE]").Error(err, "Error initializing persistent storage")
 		os.Exit(1)
 	}
 
 	storageManager := Storage{
-		Ephemeral:  ephemeralStorage,
-		Persistent: persistentStorage,
+		Ephemeral:  ephemeralStg,
+		Persistent: persistentStg,
 	}
 
-	messagingInst := msg.NewMessaging(logger.WithName("[MESSAGING]"), natsCli, jetstreamCli, nil)
+	predictionStore := prediction.NewRedisPredictionStore("")
+
+	messagingInst := msg.New(logger, natsCli, jetstreamCli, nil)
+
+	modelRegistryInst, err := modelregistry.New(logger, metadata)
+	if err != nil {
+		logger.WithName("[MODEL REGISTRY]").Error(err, "Error initializing model registry")
+		os.Exit(1)
+	}
+
+	measurementsInst, err := measurement.New(logger, metadata)
+	if err != nil {
+		logger.WithName("[MEASUREMENTS]").Error(err, "Error initializing measurements")
+		os.Exit(1)
+	}
 
 	sdk := KaiSDK{
 		ctx:               context.Background(),
 		nats:              natsCli,
 		jetstream:         jetstreamCli,
 		Logger:            logger,
-		PathUtils:         pathutils.NewPathUtils(logger),
 		Metadata:          metadata,
 		Messaging:         messagingInst,
-		CentralizedConfig: centralizedConfigInst,
-		Measurements:      nil,
 		Storage:           storageManager,
+		ModelRegistry:     modelRegistryInst,
+		CentralizedConfig: centralizedConfigInst,
+		Measurements:      measurementsInst,
+		Predictions:       predictionStore,
 	}
 
 	return sdk
@@ -171,7 +199,8 @@ func ShallowCopyWithRequest(sdk *KaiSDK, requestMsg *kai.KaiNatsMessage) KaiSDK 
 	hSdk := *sdk
 	hSdk.requestMessage = requestMsg
 	hSdk.Logger = sdk.Logger.WithValues(LoggerRequestID, requestMsg.GetRequestId())
-	hSdk.Messaging = msg.NewMessaging(hSdk.Logger, sdk.nats, sdk.jetstream, requestMsg)
+	hSdk.Predictions = prediction.NewRedisPredictionStore(requestMsg.RequestId)
+	hSdk.Messaging = msg.New(hSdk.Logger, sdk.nats, sdk.jetstream, requestMsg)
 
 	return hSdk
 }

@@ -1,9 +1,9 @@
 metadata:
   product_id: Exit process
-  workflow_name: Exit workflow
-  process_name: Exit process
   version_tag: Exit version v1.0.0
-  base_path: "/Some/Path"
+  workflow_name: Exit workflow
+  workflow_type: feedback workflow
+  process_name: Exit process
 
 nats:
   url: "nats://localhost:4222"
@@ -21,10 +21,26 @@ minio:
   bucket: "test-bucket"
 
 auth:
+  internal_folder: ".kai"
   endpoint: "http://auth.kai.local"
   client: "kai"
   client_secret: "kai_pwd"
   realm: "konstellation"
+
+predictions:
+  endpoint: localhost:6379
+  username: default
+  password: redispw
+  index_key: predictionsIdx
+  
+model_registry:
+  folder_name: ".models"
+
+measurements:
+  endpoint: "localhost:4317"
+  insecure: true
+  timeout: 5
+  metrics_interval: 10
 
 centralized_configuration:
   global:

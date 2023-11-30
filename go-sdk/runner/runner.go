@@ -51,7 +51,6 @@ func validateConfig(keys []string) {
 		common.ConfigMetadataWorkflowIDKey,
 		common.ConfigMetadataProcessIDKey,
 		common.ConfigMetadataVersionIDKey,
-		common.ConfigMetadataBasePathKey,
 		common.ConfigNatsURLKey,
 		common.ConfigNatsStreamKey,
 		common.ConfigNatsOutputKey,
@@ -68,6 +67,14 @@ func validateConfig(keys []string) {
 		common.ConfigAuthClientKey,
 		common.ConfigAuthClientSecretKey,
 		common.ConfigAuthRealmKey,
+		common.ConfigRedisUsernameKey,
+		common.ConfigRedisPasswordKey,
+		common.ConfigRedisEndpointKey,
+		common.ConfigRedisIndexKey,
+		common.ConfigMeasurementsEndpointKey,
+		common.ConfigMeasurementsInsecureKey,
+		common.ConfigMeasurementsTimeoutKey,
+		common.ConfigMeasurementsMetricsIntervalKey,
 	}
 
 	for _, key := range mandatoryConfigKeys {
@@ -110,18 +117,20 @@ func initializeConfiguration() {
 	validateConfig(keys)
 
 	// Set viper default values
-	viper.SetDefault(common.ConfigMetadataBasePathKey, "/")
 	viper.SetDefault(common.ConfigRunnerSubscriberAckWaitTimeKey, 22*time.Hour)
 	viper.SetDefault(common.ConfigRunnerLoggerLevelKey, "InfoLevel")
 	viper.SetDefault(common.ConfigRunnerLoggerEncodingKey, "json")
 	viper.SetDefault(common.ConfigRunnerLoggerOutputPathsKey, []string{"stdout"})
 	viper.SetDefault(common.ConfigRunnerLoggerErrorOutputPathsKey, []string{"stderr"})
+	viper.SetDefault(common.ConfigMinioInternalFolderKey, ".kai")
+	viper.SetDefault(common.ConfigModelFolderNameKey, ".models")
 }
 
 func getNatsConnection(logger logr.Logger) (*nats.Conn, error) {
 	nc, err := nats.Connect(viper.GetString(common.ConfigNatsURLKey))
 	if err != nil {
 		logger.Error(err, "Error connecting to NATS")
+
 		return nil, err
 	}
 

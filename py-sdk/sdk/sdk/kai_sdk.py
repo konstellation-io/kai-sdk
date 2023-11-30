@@ -14,21 +14,18 @@ from nats.js.client import JetStreamContext
 from sdk.centralized_config.centralized_config import CentralizedConfig, CentralizedConfigABC
 from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage, EphemeralStorageABC
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
+from sdk.measurements.measurements import Measurements, MeasurementsABC
 from sdk.messaging.messaging import Messaging, MessagingABC
 from sdk.metadata.metadata import Metadata, MetadataABC
-from sdk.path_utils.path_utils import PathUtils, PathUtilsABC
+from sdk.model_registry.model_registry import ModelRegistry, ModelRegistryABC
 from sdk.persistent_storage.persistent_storage import PersistentStorage, PersistentStorageABC
+from sdk.predictions.store import Predictions, PredictionsABC
 
 LOGGER_FORMAT = (
     "<green>{time:YYYY-MM-DDTHH:mm:ss.SSS}Z</green> "
     "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
     "<level>{message}</level> <level>{extra[metadata]}</level>"
 )
-
-
-@dataclass
-class MeasurementsABC(ABC):
-    pass
 
 
 @dataclass
@@ -46,13 +43,12 @@ class KaiSDK:
     metadata: MetadataABC = field(init=False)
     messaging: MessagingABC = field(init=False)
     centralized_config: CentralizedConfigABC = field(init=False)
-    path_utils: PathUtilsABC = field(init=False)
+    model_registry: ModelRegistryABC = field(init=False)
     measurements: MeasurementsABC = field(init=False)
     storage: Storage = field(init=False)
+    predictions: PredictionsABC = field(init=False)
 
     def __post_init__(self) -> None:
-        self.metadata = Metadata()
-
         if not self.logger:
             self._initialize_logger()
         else:
@@ -61,9 +57,11 @@ class KaiSDK:
 
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
-        self.path_utils = PathUtils()
-        self.measurements = MeasurementsABC()
+        self.metadata = Metadata()
+        self.measurements = Measurements()
         self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
+        self.predictions = Predictions()
+        self.model_registry = ModelRegistry()
 
     async def initialize(self) -> None:
         try:
@@ -96,7 +94,7 @@ class KaiSDK:
             diagnose=True,
             level="DEBUG",
         )
-        logger.configure(extra={"context": "", "metadata": "{}", "origin": "[SDK]"})
+        logger.configure(extra={"context": "", "metadata": {}, "origin": "[SDK]"})
 
         self.logger = logger.bind(context="[SDK]")
         self.logger.debug("logger initialized")
@@ -105,3 +103,6 @@ class KaiSDK:
         self.request_msg = request_msg
         assert isinstance(self.messaging, Messaging)
         self.messaging.request_msg = request_msg
+        self.predictions.request_id = request_msg.request_id
+        origin = logger._core.extra["origin"]
+        logger.configure(extra={"metadata": {"request_id": request_msg.request_id}, "origin": origin})

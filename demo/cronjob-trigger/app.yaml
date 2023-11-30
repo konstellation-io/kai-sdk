@@ -1,9 +1,9 @@
 metadata:
   product_id: Trigger product
-  workflow_name: Trigger workflow
-  process_name: Trigger process
   version_tag: Trigger version v1.0.0
-  base_path: "/Some/Path"
+  workflow_name: Trigger workflow
+  workflow_type: training workflow
+  process_name: Trigger process
 
 nats:
   url: "nats://localhost:4222"
@@ -19,10 +19,26 @@ minio:
   bucket: "test-bucket"
 
 auth:
+  internal_folder: ".kai"
   endpoint: "http://auth.kai.local"
   client: "kai"
   client_secret: "kai_pwd"
   realm: "konstellation"
+
+predictions:
+  endpoint: localhost:6379
+  username: default
+  password: redispw
+  index_key: predictionsIdx
+
+model_registry:
+  folder_name: ".models"
+
+measurements:
+  endpoint: "localhost:4317"
+  insecure: true
+  timeout: 5
+  metrics_interval: 10
 
 centralized_configuration:
   global:

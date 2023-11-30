@@ -16,29 +16,25 @@ const (
 
 func composeInitializer(initializer common.Initializer) common.Initializer {
 	return func(kaiSDK sdk.KaiSDK) {
-		logger := kaiSDK.Logger.WithName(_initializerLoggerName)
-
-		logger.V(1).Info("Initializing TaskRunner...")
+		kaiSDK.Logger.WithName(_initializerLoggerName).V(1).Info("Initializing TaskRunner...")
 		common.InitializeProcessConfiguration(kaiSDK)
 
 		if initializer != nil {
-			logger.V(3).Info("Executing user initializer...")
+			kaiSDK.Logger.WithName(_initializerLoggerName).V(3).Info("Executing user initializer...")
 			initializer(kaiSDK)
-			logger.V(3).Info("User initializer executed")
+			kaiSDK.Logger.WithName(_initializerLoggerName).V(3).Info("User initializer executed")
 		}
 
-		logger.V(1).Info("TaskRunner initialized")
+		kaiSDK.Logger.WithName(_initializerLoggerName).V(1).Info("TaskRunner initialized")
 	}
 }
 
 func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
-		logger := kaiSDK.Logger.WithName(_preprocessorLoggerName)
-
-		logger.V(1).Info("Preprocessing TaskRunner...")
+		kaiSDK.Logger.WithName(_preprocessorLoggerName).V(1).Info("Preprocessing TaskRunner...")
 
 		if preprocessor != nil {
-			logger.V(3).Info("Executing user preprocessor...")
+			kaiSDK.Logger.WithName(_preprocessorLoggerName).V(3).Info("Executing user preprocessor...")
 			return preprocessor(kaiSDK, response)
 		}
 
@@ -48,12 +44,10 @@ func composePreprocessor(preprocessor Preprocessor) Preprocessor {
 
 func composeHandler(handler Handler) Handler {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
-		logger := kaiSDK.Logger.WithName(_handlerLoggerName)
-
-		logger.V(1).Info("Handling TaskRunner...")
+		kaiSDK.Logger.WithName(_handlerLoggerName).V(1).Info("Handling TaskRunner...")
 
 		if handler != nil {
-			logger.V(3).Info("Executing user handler...")
+			kaiSDK.Logger.WithName(_handlerLoggerName).V(3).Info("Executing user handler...")
 			return handler(kaiSDK, response)
 		}
 
@@ -63,12 +57,10 @@ func composeHandler(handler Handler) Handler {
 
 func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 	return func(kaiSDK sdk.KaiSDK, response *anypb.Any) error {
-		logger := kaiSDK.Logger.WithName(_postprocessorLoggerName)
-
-		logger.V(1).Info("Postprocessing TaskRunner...")
+		kaiSDK.Logger.WithName(_postprocessorLoggerName).V(1).Info("Postprocessing TaskRunner...")
 
 		if postprocessor != nil {
-			logger.V(3).Info("Executing user postprocessor...")
+			kaiSDK.Logger.WithName(_postprocessorLoggerName).V(3).Info("Executing user postprocessor...")
 			return postprocessor(kaiSDK, response)
 		}
 
@@ -78,14 +70,12 @@ func composePostprocessor(postprocessor Postprocessor) Postprocessor {
 
 func composeFinalizer(finalizer common.Finalizer) common.Finalizer {
 	return func(kaiSDK sdk.KaiSDK) {
-		logger := kaiSDK.Logger.WithName(_finalizerLoggerName)
-
-		logger.V(1).Info("Finalizing TaskRunner...")
+		kaiSDK.Logger.WithName(_finalizerLoggerName).V(1).Info("Finalizing TaskRunner...")
 
 		if finalizer != nil {
-			logger.V(3).Info("Executing user finalizer...")
+			kaiSDK.Logger.WithName(_finalizerLoggerName).V(3).Info("Executing user finalizer...")
 			finalizer(kaiSDK)
-			logger.V(3).Info("User finalizer executed")
+			kaiSDK.Logger.WithName(_finalizerLoggerName).V(3).Info("User finalizer executed")
 		}
 	}
 }

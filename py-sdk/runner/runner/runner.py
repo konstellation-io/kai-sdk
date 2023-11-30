@@ -4,7 +4,6 @@ import ast
 import json
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime
 from functools import reduce
 
 import loguru
@@ -26,10 +25,10 @@ LOGGER_FORMAT = (
 
 MANDATORY_CONFIG_KEYS = [
     "metadata.product_id",
-    "metadata.workflow_name",
-    "metadata.process_name",
     "metadata.version_tag",
-    "metadata.base_path",
+    "metadata.workflow_name",
+    "metadata.workflow_type",
+    "metadata.process_name",
     "nats.url",
     "nats.stream",
     "nats.output",
@@ -46,6 +45,14 @@ MANDATORY_CONFIG_KEYS = [
     "auth.client",  # Client to be used to authenticate
     "auth.client_secret",  # Client's secret to be used
     "auth.realm",  # Realm
+    "predictions.endpoint",
+    "predictions.username",
+    "predictions.password",
+    "predictions.index_key",
+    "measurements.endpoint",
+    "measurements.insecure",
+    "measurements.timeout",
+    "measurements.metrics_interval",
 ]
 
 
@@ -55,24 +62,27 @@ def custom_sink(encoding: str, path: str):
 
         if encoding == "json":
             record = message.record
-            time = datetime.utcfromtimestamp(record["time"].timestamp()).isoformat(timespec="milliseconds") + "Z"
 
             filepath = record["file"].path
-            domain = filepath.split("/")
-            filepath = f"{domain[-2]}/{domain[-1]}"
-            filepath = filepath + ":" + str(record["line"])
+            if filepath:
+                domain = filepath.split("/")
+                if len(domain) > 1:
+                    filepath = f"{domain[-2]}/{domain[-1]}"
+                else:
+                    filepath = domain[0]
+                filepath = filepath + ":" + str(record["line"])
 
             metadata = {}
-            str_metadata = record["extra"]["metadata"]
-            for key, value in ast.literal_eval(str_metadata).items():
-                metadata[key] = value
+            if record["extra"]["metadata"]:
+                for key, value in record["extra"]["metadata"].items():
+                    metadata[key] = value
 
             serialized_log = {
-                "L": record["level"].name,
-                "T": time,
-                "N": record["extra"]["context"],
-                "C": filepath,
-                "M": record["message"],
+                "level": record["level"].name,
+                "ts": record["time"].timestamp(),
+                "logger": record["extra"]["context"],
+                "caller": filepath,
+                "msg": record["message"],
                 **metadata,
             }
             result = json.dumps(serialized_log)
@@ -154,7 +164,6 @@ class Runner:
 
         self._validate_config(v.all_settings())
 
-        v.set_default("metadata.base_path", "/")
         v.set_default("runner.subscriber.ack_wait_time", 22)
         v.set_default("runner.logger.level", "INFO")
         v.set_default("runner.logger.encoding", "json")
@@ -187,7 +196,7 @@ class Runner:
                 level="ERROR",
             )
 
-        logger.configure(extra={"context": "", "metadata": "{}", "origin": "[RUNNER]"})
+        logger.configure(extra={"context": "", "metadata": {}, "origin": "[RUNNER]"})
 
         self.logger = logger.bind(context="[RUNNER]")
         self.logger.info("logger initialized")

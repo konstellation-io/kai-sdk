@@ -37,10 +37,6 @@ func initializer(kaiSDK sdk.KaiSDK) {
 		"ephemeral-storage", kaiSDK.Metadata.GetEphemeralStorageName(),
 	)
 
-	kaiSDK.Logger.V(1).Info("PathUtils",
-		"getBasePath", kaiSDK.PathUtils.GetBasePath(),
-		"composeBasePath", kaiSDK.PathUtils.ComposePath("test"))
-
 	value1, _ := kaiSDK.CentralizedConfig.GetConfig("test1")
 	value2, _ := kaiSDK.CentralizedConfig.GetConfig("test2")
 	kaiSDK.Logger.Info("Config values from config.yaml", "test1", value1, "test2", value2)

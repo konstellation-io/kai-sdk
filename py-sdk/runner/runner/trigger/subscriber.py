@@ -67,7 +67,6 @@ class TriggerSubscriber:
             self.logger.debug("input subjects undefined, skipping subscription")
 
     async def _process_message(self, msg: Msg) -> None:
-        self.logger.info("new message received")
         try:
             request_msg = self._new_request_msg(msg.data)
             self.trigger_runner.sdk.set_request_msg(request_msg)
@@ -75,25 +74,27 @@ class TriggerSubscriber:
             await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e))
             return
 
-        self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
+        with self.logger.contextualize(metadata={"request_id": request_msg.request_id}):
+            self.logger.info("new message received")
+            self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
-        handler = getattr(self.trigger_runner, "response_handler", None)
-        if handler is None:
-            await self._process_runner_error(msg, UndefinedResponseHandlerError(msg.subject))
-            return
+            handler = getattr(self.trigger_runner, "response_handler", None)
+            if handler is None:
+                await self._process_runner_error(msg, UndefinedResponseHandlerError(msg.subject))
+                return
 
-        try:
-            await handler(self.trigger_runner.sdk, request_msg.payload)
-        except Exception as e:
-            from_node = request_msg.from_node
-            to_node = self.trigger_runner.sdk.metadata.get_process()
-            await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
-            return
+            try:
+                await handler(self.trigger_runner.sdk, request_msg.payload)
+            except Exception as e:
+                from_node = request_msg.from_node
+                to_node = self.trigger_runner.sdk.metadata.get_process()
+                await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
+                return
 
-        try:
-            await msg.ack()
-        except Exception as e:
-            self.logger.error(f"error acknowledging message: {e}")
+            try:
+                await msg.ack()
+            except Exception as e:
+                self.logger.error(f"error acknowledging message: {e}")
 
     async def _process_runner_error(self, msg: Msg, error: Exception) -> None:
         error_msg = str(error)

@@ -58,10 +58,6 @@ func initializer(kaiSDK sdk.KaiSDK) {
 		"kv_process", kaiSDK.Metadata.GetProcessCentralizedConfigurationName(),
 		"ephemeral_store", kaiSDK.Metadata.GetEphemeralStorageName(),
 	)
-
-	kaiSDK.Logger.V(1).Info("PathUtils",
-		"getBasePath", kaiSDK.PathUtils.GetBasePath(),
-		"composeBasePath", kaiSDK.PathUtils.ComposePath("test"))
 }
 
 func restServerRunner(tr *trigger.Runner, kaiSDK sdk.KaiSDK) {

@@ -5,25 +5,35 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"time"
+
+	"github.com/konstellation-io/kai-sdk/go-sdk/internal/storage"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 	"github.com/minio/minio-go/v7/pkg/lifecycle"
 
 	"github.com/go-logr/logr"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/auth"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
 	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/spf13/viper"
 )
 
+const (
+	_persistentStorageLoggerName = "[PERSISTENT STORAGE]"
+
+	_productMetadata  = "product"
+	_versionMetadata  = "version"
+	_workflowMetadata = "workflow"
+	_processMetadata  = "process"
+)
+
 type PersistentStorage struct {
-	logger                  logr.Logger
-	persistentStorage       *minio.Client
-	persistentStorageBucket string
-	metadata                *metadata.Metadata
+	logger        logr.Logger
+	storageClient *minio.Client
+	storageBucket string
+	metadata      *metadata.Metadata
 }
 
 type ObjectInfo struct {
@@ -45,51 +55,20 @@ func (o Object) GetBytes() []byte {
 	return o.data
 }
 
-func NewPersistentStorage(logger logr.Logger) (*PersistentStorage, error) {
+func New(logger logr.Logger, meta *metadata.Metadata) (*PersistentStorage, error) {
 	persistentStorageBucket := viper.GetString(common.ConfigMinioBucketKey)
 
-	storageManager, err := initPersistentStorage(logger)
+	storageClient, err := storage.New(logger).GetStorageClient()
 	if err != nil {
 		return nil, err
 	}
 
 	return &PersistentStorage{
-		logger:                  logger,
-		persistentStorage:       storageManager,
-		persistentStorageBucket: persistentStorageBucket,
-		metadata:                metadata.NewMetadata(),
+		logger:        logger,
+		storageClient: storageClient,
+		storageBucket: persistentStorageBucket,
+		metadata:      meta,
 	}, nil
-}
-
-func initPersistentStorage(logger logr.Logger) (*minio.Client, error) {
-	endpoint := viper.GetString(common.ConfigMinioEndpointKey)
-	useSSL := viper.GetBool(common.ConfigMinioUseSslKey)
-	url := ""
-
-	if useSSL {
-		url = fmt.Sprintf("%s://%s", "https", viper.GetString(common.ConfigMinioEndpointKey))
-	} else {
-		url = fmt.Sprintf("%s://%s", "http", viper.GetString(common.ConfigMinioEndpointKey))
-	}
-
-	minioCredentials, err := getClientCredentials(logger, url)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing persistent storage: %w", err)
-	}
-
-	// Initialize minio client object.
-	minioClient, err := minio.New(endpoint, &minio.Options{
-		Creds:        minioCredentials,
-		Secure:       useSSL,
-		BucketLookup: minio.BucketLookupPath,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error initializing persistent storage: %w", err)
-	}
-
-	logger.Info("Successfully initialized persistent storage")
-
-	return minioClient, nil
 }
 
 func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (*ObjectInfo, error) {
@@ -97,6 +76,10 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (*O
 
 	if key == "" {
 		return nil, errors.ErrEmptyKey
+	}
+
+	if strings.HasPrefix(key, viper.GetString(common.ConfigMinioInternalFolderKey)) {
+		return nil, errors.ErrInvalidKey
 	}
 
 	if len(payload) == 0 {
@@ -112,16 +95,16 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (*O
 
 	opts := minio.PutObjectOptions{
 		UserMetadata: map[string]string{
-			"product":  ps.metadata.GetProduct(),
-			"version":  ps.metadata.GetVersion(),
-			"workflow": ps.metadata.GetWorkflow(),
-			"process":  ps.metadata.GetProcess(),
+			_productMetadata:  ps.metadata.GetProduct(),
+			_versionMetadata:  ps.metadata.GetVersion(),
+			_workflowMetadata: ps.metadata.GetWorkflow(),
+			_processMetadata:  ps.metadata.GetProcess(),
 		},
 	}
 
-	info, err := ps.persistentStorage.PutObject(
+	info, err := ps.storageClient.PutObject(
 		ctx,
-		ps.persistentStorageBucket,
+		ps.storageBucket,
 		key,
 		reader,
 		int64(reader.Len()),
@@ -131,7 +114,9 @@ func (ps PersistentStorage) Save(key string, payload []byte, ttlDays ...int) (*O
 		return nil, fmt.Errorf("error storing object to the persistent storage: %w", err)
 	}
 
-	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully stored in persistent storage with version ID %s", key, info.VersionID))
+	ps.logger.WithName(_persistentStorageLoggerName).V(1).
+		Info(fmt.Sprintf("Object %s successfully stored in persistent storage with version ID %s",
+			key, info.VersionID))
 
 	obj := &ObjectInfo{
 		Key:       key,
@@ -147,6 +132,10 @@ func (ps PersistentStorage) Get(key string, version ...string) (*Object, error) 
 		return nil, errors.ErrEmptyKey
 	}
 
+	if strings.HasPrefix(key, viper.GetString(common.ConfigMinioInternalFolderKey)) {
+		return nil, errors.ErrInvalidKey
+	}
+
 	opts := minio.GetObjectOptions{}
 
 	if len(version) > 0 && version[0] != "" {
@@ -155,9 +144,9 @@ func (ps PersistentStorage) Get(key string, version ...string) (*Object, error) 
 		}
 	}
 
-	object, err := ps.persistentStorage.GetObject(
+	object, err := ps.storageClient.GetObject(
 		context.Background(),
-		ps.persistentStorageBucket,
+		ps.storageBucket,
 		key,
 		opts,
 	)
@@ -165,7 +154,8 @@ func (ps PersistentStorage) Get(key string, version ...string) (*Object, error) 
 		return nil, fmt.Errorf("error retrieving object from the persistent storage: %w", err)
 	}
 
-	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully retrieved from persistent storage", key))
+	ps.logger.WithName(_persistentStorageLoggerName).V(1).
+		Info(fmt.Sprintf("Object %s successfully retrieved from persistent storage", key))
 
 	defer object.Close()
 
@@ -194,20 +184,21 @@ func (ps PersistentStorage) Get(key string, version ...string) (*Object, error) 
 func (ps PersistentStorage) List() ([]*ObjectInfo, error) {
 	var objectList []*ObjectInfo
 
-	objects := ps.persistentStorage.ListObjects(
+	objects := ps.storageClient.ListObjects(
 		context.Background(),
-		ps.persistentStorageBucket,
+		ps.storageBucket,
 		minio.ListObjectsOptions{
 			WithMetadata: true,
 			Recursive:    true,
 		},
 	)
 
-	ps.logger.V(1).Info("Objects successfully retrieved from persistent storage")
+	ps.logger.WithName(_persistentStorageLoggerName).V(1).
+		Info("Objects successfully retrieved from persistent storage")
 
 	for object := range objects {
-		if object.Key != "" {
-			stats, err := ps.persistentStorage.StatObject(context.Background(), ps.persistentStorageBucket, object.Key, minio.StatObjectOptions{})
+		if object.Key != "" && !strings.HasPrefix(object.Key, viper.GetString(common.ConfigMinioInternalFolderKey)) {
+			stats, err := ps.storageClient.StatObject(context.Background(), ps.storageBucket, object.Key, minio.StatObjectOptions{})
 			if err != nil {
 				return nil, fmt.Errorf("error getting object stats from the persistent storage: %w", err)
 			}
@@ -233,9 +224,9 @@ func (ps PersistentStorage) ListVersions(key string) ([]*ObjectInfo, error) {
 		return nil, errors.ErrEmptyKey
 	}
 
-	objects := ps.persistentStorage.ListObjects(
+	objects := ps.storageClient.ListObjects(
 		context.Background(),
-		ps.persistentStorageBucket,
+		ps.storageBucket,
 		minio.ListObjectsOptions{
 			WithVersions: true,
 			WithMetadata: true,
@@ -244,11 +235,11 @@ func (ps PersistentStorage) ListVersions(key string) ([]*ObjectInfo, error) {
 		},
 	)
 
-	ps.logger.V(1).
+	ps.logger.WithName(_persistentStorageLoggerName).V(1).
 		Info(fmt.Sprintf("Object versions successfully retrieved for prefix %s from persistent storage", key))
 
 	for object := range objects {
-		if object.VersionID != "" {
+		if object.VersionID != "" && !strings.HasPrefix(object.Key, viper.GetString(common.ConfigMinioInternalFolderKey)) {
 			objectList = append(
 				objectList,
 				&ObjectInfo{
@@ -268,6 +259,10 @@ func (ps PersistentStorage) Delete(key string, version ...string) error {
 		return errors.ErrEmptyKey
 	}
 
+	if strings.HasPrefix(key, viper.GetString(common.ConfigMinioInternalFolderKey)) {
+		return errors.ErrInvalidKey
+	}
+
 	opts := minio.RemoveObjectOptions{
 		ForceDelete: true,
 	}
@@ -276,9 +271,9 @@ func (ps PersistentStorage) Delete(key string, version ...string) error {
 		opts.VersionID = version[0]
 	}
 
-	err := ps.persistentStorage.RemoveObject(
+	err := ps.storageClient.RemoveObject(
 		context.Background(),
-		ps.persistentStorageBucket,
+		ps.storageBucket,
 		key,
 		opts,
 	)
@@ -286,37 +281,15 @@ func (ps PersistentStorage) Delete(key string, version ...string) error {
 		return fmt.Errorf("error deleting object from the persistent storage: %w", err)
 	}
 
-	ps.logger.V(1).Info(fmt.Sprintf("Object %s successfully deleted from persistent storage", key))
+	ps.logger.WithName(_persistentStorageLoggerName).
+		V(1).Info(fmt.Sprintf("Object %s successfully deleted from persistent storage", key))
 
 	return nil
 }
 
-func getClientCredentials(logger logr.Logger, url string) (*credentials.Credentials, error) {
-	minioCreds, err := credentials.NewSTSClientGrants(
-		url,
-		func() (*credentials.ClientGrantsToken, error) {
-			authClient := auth.New(logger)
-			token, err := authClient.GetToken()
-			if err != nil {
-				return nil, err
-			}
-
-			return &credentials.ClientGrantsToken{
-				Token:  token.AccessToken,
-				Expiry: token.ExpiresIn,
-			}, nil
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return minioCreds, err
-}
-
 func (ps PersistentStorage) addLifecycleDeletionRule(key string, ttlDays []int, ctx context.Context) error {
 	if len(ttlDays) > 0 && ttlDays[0] > 0 {
-		lc, err := ps.persistentStorage.GetBucketLifecycle(ctx, ps.persistentStorageBucket)
+		lc, err := ps.storageClient.GetBucketLifecycle(ctx, ps.storageBucket)
 		if err != nil {
 			lc = lifecycle.NewConfiguration()
 		}
@@ -345,7 +318,7 @@ func (ps PersistentStorage) addLifecycleDeletionRule(key string, ttlDays []int, 
 			lc.Rules = append(lc.Rules, rule)
 		}
 
-		err = ps.persistentStorage.SetBucketLifecycle(ctx, ps.persistentStorageBucket, lc)
+		err = ps.storageClient.SetBucketLifecycle(ctx, ps.storageBucket, lc)
 		if err != nil {
 			return err
 		}

@@ -11,10 +11,11 @@ import (
 type Scope string
 
 const (
-	GlobalScope   Scope = "global"
-	ProductScope  Scope = "product"
-	WorkflowScope Scope = "workflow"
-	ProcessScope  Scope = "process"
+	GlobalScope          Scope = "global"
+	ProductScope         Scope = "product"
+	WorkflowScope        Scope = "workflow"
+	ProcessScope         Scope = "process"
+	_messagingLoggerName       = "[MESSAGING]"
 )
 
 type Messaging struct {
@@ -25,7 +26,7 @@ type Messaging struct {
 	messagingUtils messagingUtils
 }
 
-func NewMessaging(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext,
+func New(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext,
 	requestMessage *kai.KaiNatsMessage,
 ) *Messaging {
 	return &Messaging{

@@ -67,6 +67,7 @@ class PersistentStorage(PersistentStorageABC):
     logger: loguru.Logger = field(init=False)
     minio_client: Minio = field(init=False)
     minio_bucket_name: str = field(init=False)
+    kai_internal_folder: str = field(init=False)
 
     def __post_init__(self) -> None:
         origin = logger._core.extra["origin"]
@@ -85,6 +86,7 @@ class PersistentStorage(PersistentStorageABC):
                 credentials=creds,
                 secure=v.get_bool("minio.ssl"),
             )
+            self.kai_internal_folder = v.get_string("minio.internal_folder")
         except Exception as e:
             self.logger.error(f"failed to initialize persistent storage client: {e}")
             raise FailedToInitializePersistentStorageError(error=e)
@@ -99,6 +101,10 @@ class PersistentStorage(PersistentStorageABC):
 
     def save(self, key: str, payload: BinaryIO, ttl_days: Optional[int] = None) -> Optional[ObjectInfo]:
         try:
+            if key.startswith(self.kai_internal_folder):
+                self.logger.error(f"file {key} is reserved for internal use and cannot be saved")
+                return None
+
             if ttl_days is not None:
                 rule = Rule(
                     rule_id=f"ttl-{key}",
@@ -120,6 +126,7 @@ class PersistentStorage(PersistentStorageABC):
                 "product": Metadata.get_product(),
                 "version": Metadata.get_version(),
                 "workflow": Metadata.get_workflow(),
+                "workflow_type": Metadata.get_workflow_type(),
                 "process": Metadata.get_process(),
             }
 
@@ -143,6 +150,10 @@ class PersistentStorage(PersistentStorageABC):
     def get(self, key: str, version: Optional[str] = None) -> Optional[Object]:
         response = None
         try:
+            if key.startswith(self.kai_internal_folder):
+                self.logger.error(f"file {key} is reserved for internal use and cannot be saved")
+                return None
+
             exist = self._object_exist(key, version)
             if not exist:
                 self.logger.error(
@@ -186,7 +197,7 @@ class PersistentStorage(PersistentStorageABC):
 
             # Get stats for each object that is not a directory
             for obj in objects:
-                if not obj.is_dir:
+                if not obj.is_dir and not obj.object_name.startswith(self.kai_internal_folder):
                     stats = self.minio_client.stat_object(
                         self.minio_bucket_name, obj.object_name, version_id=obj.version_id
                     )
@@ -220,7 +231,7 @@ class PersistentStorage(PersistentStorageABC):
 
             # Get stats for each object
             for obj in objects:
-                if not obj.is_dir:
+                if not obj.is_dir and not obj.object_name.startswith(self.kai_internal_folder):
                     stats = self.minio_client.stat_object(
                         self.minio_bucket_name, obj.object_name, version_id=obj.version_id
                     )
@@ -242,6 +253,10 @@ class PersistentStorage(PersistentStorageABC):
 
     def delete(self, key: str, version: Optional[str] = None) -> bool:
         try:
+            if key.startswith(self.kai_internal_folder):
+                self.logger.error(f"file {key} is reserved for internal use and cannot be saved")
+                return False
+
             exist = self._object_exist(key, version)
             if not exist:
                 self.logger.error(
@@ -282,4 +297,8 @@ class PersistentStorage(PersistentStorageABC):
 
     def _process_raw_metadata(self, raw_metadata: dict[str, str]) -> dict[str, str]:
         # minio replaces our metadata keys with x-amz-meta-<key>
-        return {k.replace("x-amz-meta-", ""): v for k, v in raw_metadata.items() if k.startswith("x-amz-meta-")}
+        return {
+            k.replace("x-amz-meta-", "").replace("-", "_"): v
+            for k, v in raw_metadata.items()
+            if k.startswith("x-amz-meta-")
+        }

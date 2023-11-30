@@ -42,9 +42,8 @@ def compose_preprocessor(preprocessor: Preprocessor) -> Preprocessor:
     async def preprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
 
-        request_id = f"\u007b'request_id':{sdk.get_request_id()}\u007d"
         origin = logger._core.extra["origin"]
-        logger_ = sdk.logger.bind(context=f"{origin}.[PREPROCESSOR]", metadata=request_id)
+        logger_ = sdk.logger.bind(context=f"{origin}.[PREPROCESSOR]")
         logger_.info("preprocessing...")
 
         logger_.info("executing user preprocessor...")
@@ -60,9 +59,8 @@ def compose_handler(handler: Handler) -> Handler:
     async def handler_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
 
-        request_id = f"\u007b'request_id':{sdk.get_request_id()}\u007d"
         origin = logger._core.extra["origin"]
-        logger_ = sdk.logger.bind(context=f"{origin}.[HANDLER]", metadata=request_id)
+        logger_ = sdk.logger.bind(context=f"{origin}.[HANDLER]")
         logger_.info("handling...")
 
         logger_.info("executing user handler...")
@@ -78,9 +76,8 @@ def compose_postprocessor(postprocessor: Postprocessor) -> Postprocessor:
     async def postprocessor_func(sdk: KaiSDK, response: Any) -> None:
         assert sdk.logger is not None
 
-        request_id = f"\u007b'request_id':{sdk.get_request_id()}\u007d"
         origin = logger._core.extra["origin"]
-        logger_ = sdk.logger.bind(context=f"{origin}.[POSTPROCESSOR]", metadata=request_id)
+        logger_ = sdk.logger.bind(context=f"{origin}.[POSTPROCESSOR]")
         logger_.info("postprocessing...")
 
         logger_.info("executing user postprocessor...")

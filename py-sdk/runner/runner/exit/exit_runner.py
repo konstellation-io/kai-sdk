@@ -39,7 +39,7 @@ class ExitRunner:
     finalizer: Optional[Finalizer] = None
 
     def __post_init__(self) -> None:
-        logger.configure(extra={"context": "", "metadata": "{}", "origin": "[EXIT]"})
+        logger.configure(extra={"context": "", "metadata": {}, "origin": "[EXIT]"})
         self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=logger)
         self.subscriber = ExitSubscriber(self)
 

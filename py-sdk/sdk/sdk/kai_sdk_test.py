@@ -10,17 +10,24 @@ from sdk.centralized_config.exceptions import FailedToInitializeConfigError
 from sdk.ephemeral_storage.ephemeral_storage import EphemeralStorage
 from sdk.ephemeral_storage.exceptions import FailedToInitializeEphemeralStorageError
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
-from sdk.kai_sdk import KaiSDK, MeasurementsABC, Storage
+from sdk.kai_sdk import KaiSDK, Storage
+from sdk.measurements.measurements import Measurements
 from sdk.messaging.messaging import Messaging
 from sdk.metadata.metadata import Metadata
-from sdk.path_utils.path_utils import PathUtils
+from sdk.model_registry.model_registry import ModelRegistry
 from sdk.persistent_storage.persistent_storage import PersistentStorage
+from sdk.predictions.store import Predictions
 
 GLOBAL_BUCKET = "centralized_configuration.global.bucket"
 PRODUCT_BUCKET = "centralized_configuration.product.bucket"
 WORKFLOW_BUCKET = "centralized_configuration.workflow.bucket"
 PROCESS_BUCKET = "centralized_configuration.process.bucket"
 NATS_OBJECT_STORE = "nats.object_store"
+MEASUREMENTS_ENDPOINT = "measurements.endpoint"
+MEASUREMENTS_INSECURE = "measurements.insecure"
+MEASUREMENTS_TIMEOUT = "measurements.timeout"
+MEASUREMENTS_METRICS_INTERVAL = "measurements.metrics_interval"
+MEASUREMENTS_ENDPOINT_VALUE = "localhost:4317"
 
 
 @patch.object(
@@ -33,8 +40,10 @@ NATS_OBJECT_STORE = "nats.object_store"
         AsyncMock(spec=KeyValue),
     ),
 )
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_initialize_ok(persistent_storage_mock, centralized_config_initialize_mock):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_initialize_ok(_, __, ___, ____):
     nc = NatsClient()
     js = nc.jetstream()
     v.set(NATS_OBJECT_STORE, None)
@@ -42,6 +51,10 @@ async def test_initialize_ok(persistent_storage_mock, centralized_config_initial
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()
@@ -52,7 +65,7 @@ async def test_initialize_ok(persistent_storage_mock, centralized_config_initial
     assert isinstance(sdk.storage.ephemeral, EphemeralStorage)
     assert isinstance(sdk.storage.persistent, PersistentStorage)
     assert isinstance(sdk.centralized_config, CentralizedConfig)
-    assert isinstance(sdk.path_utils, PathUtils)
+    assert isinstance(sdk.model_registry, ModelRegistry)
     assert sdk.nc is not None
     assert sdk.js is not None
     assert getattr(sdk, "request_msg", None) is None
@@ -68,13 +81,16 @@ async def test_initialize_ok(persistent_storage_mock, centralized_config_initial
     assert isinstance(sdk.centralized_config.product_kv, KeyValue)
     assert isinstance(sdk.centralized_config.workflow_kv, KeyValue)
     assert isinstance(sdk.centralized_config.process_kv, KeyValue)
-    assert sdk.path_utils is not None
-    assert isinstance(sdk.measurements, MeasurementsABC)
+    assert isinstance(sdk.measurements, Measurements)
+    assert isinstance(sdk.predictions, Predictions)
+    assert sdk.predictions is not None
 
 
 @patch.object(CentralizedConfig, "_init_kv_stores", side_effect=Exception)
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_initialize_ko(persistent_storage_mock, centralized_config_initialize_mock):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_initialize_ko(_, __, ___, ____):
     nc = NatsClient()
     js = nc.jetstream()
     v.set(NATS_OBJECT_STORE, None)
@@ -82,6 +98,10 @@ async def test_initialize_ko(persistent_storage_mock, centralized_config_initial
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     with pytest.raises(SystemExit):
         with pytest.raises(FailedToInitializeConfigError):
@@ -100,10 +120,10 @@ async def test_initialize_ko(persistent_storage_mock, centralized_config_initial
         AsyncMock(spec=KeyValue),
     ),
 )
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_nats_initialize_ok(
-    persistent_storage_mock, centralized_config_initialize_mock, object_store_initialize_mock
-):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_nats_initialize_ok(_, __, ___, ____, _____):
     nc = NatsClient()
     js = nc.jetstream()
     v.set(NATS_OBJECT_STORE, "test_object_store")
@@ -111,6 +131,10 @@ async def test_nats_initialize_ok(
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()
@@ -130,10 +154,16 @@ async def test_nats_initialize_ok(
 
 
 @patch.object(EphemeralStorage, "_init_object_store", side_effect=Exception)
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_nats_initialize_ko(_, object_store_initialize_mock):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_nats_initialize_ko(_, __, ___, ____):
     nc = NatsClient()
     js = nc.jetstream()
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     with pytest.raises(SystemExit):
         with pytest.raises(FailedToInitializeEphemeralStorageError):
@@ -151,8 +181,10 @@ async def test_nats_initialize_ko(_, object_store_initialize_mock):
         AsyncMock(spec=KeyValue),
     ),
 )
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_get_request_id_ok(persistent_storage_mock, centralized_config_initialize_mock):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_get_request_id_ok(_, __, ___, ____):
     nc = NatsClient()
     js = nc.jetstream()
     request_msg = KaiNatsMessage(request_id="test_request_id")
@@ -161,6 +193,10 @@ async def test_get_request_id_ok(persistent_storage_mock, centralized_config_ini
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()
@@ -182,8 +218,10 @@ async def test_get_request_id_ok(persistent_storage_mock, centralized_config_ini
         AsyncMock(spec=KeyValue),
     ),
 )
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def test_set_request_msg_ok(persistent_storage_mock, centralized_config_initialize_mock):
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def test_set_request_msg_ok(_, __, ___, ____):
     nc = NatsClient()
     js = nc.jetstream()
     request_msg = KaiNatsMessage(request_id="test_request_id")
@@ -192,6 +230,10 @@ async def test_set_request_msg_ok(persistent_storage_mock, centralized_config_in
     v.set(PRODUCT_BUCKET, "test_product")
     v.set(WORKFLOW_BUCKET, "test_workflow")
     v.set(PROCESS_BUCKET, "test_process")
+    v.set(MEASUREMENTS_ENDPOINT, MEASUREMENTS_ENDPOINT_VALUE)
+    v.set(MEASUREMENTS_INSECURE, True)
+    v.set(MEASUREMENTS_TIMEOUT, 5)
+    v.set(MEASUREMENTS_METRICS_INTERVAL, 1)
 
     sdk = KaiSDK(nc=nc, js=js)
     await sdk.initialize()

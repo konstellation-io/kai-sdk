@@ -1,9 +1,9 @@
 metadata:
   product_id: Nats trigger process
-  workflow_name: Nats trigger workflow
-  process_name: Nats trigger process
   version_tag: Nats trigger version v1.0.0
-  base_path: "/Some/Path"
+  workflow_name: Nats trigger workflow
+  workflow_type: serving workflow
+  process_name: Nats trigger process
 
 nats:
   url: "nats://localhost:4222"
@@ -13,17 +13,33 @@ nats:
   output: nats-trigger-output
 
 minio:
+  internal_folder: ".kai"
   endpoint: "localhost:9000"
   client_user: "minio_user"
   client_password: "minio_password"
   ssl: false
   bucket: "test-bucket"
 
+model_registry:
+  folder_name: ".models"
+
 auth:
   endpoint: "http://auth.kai.local"
   client: "kai"
   client_secret: "kai_pwd"
   realm: "konstellation"
+
+predictions:
+  endpoint: localhost:6379
+  username: default
+  password: redispw
+  index_key: predictionsIdx
+  
+measurements:
+  endpoint: "localhost:4317"
+  insecure: true
+  timeout: 5
+  metrics_interval: 10
 
 centralized_configuration:
   global:

@@ -20,9 +20,10 @@ TTL_DAYS = 30
 EXPIRE_DATETIME = datetime.strptime("Sat, 18 Nov 2023 00:00:00 GMT", "%a, %d %b %Y %H:%M:%S %Z")
 METADATA = {
     "process": "test_process",
-    "product": "konstellation",
     "version": "v0.0.1",
     "workflow": "test_workflow",
+    "workflow_type": "test_workflow_type",
+    "product": "konstellation",
 }
 EXPECTED_OBJECT_INFO = ObjectInfo(
     key="test-key",
@@ -59,10 +60,11 @@ def m_object() -> urllib3.BaseHTTPResponse:
         "content-length": 12,
         "content-type": "application/octet-stream",
         "x-amz-expiration": 'expiry-date="Sat, 18 Nov 2023 00:00:00 GMT", rule-id="ttl-test.txt"',
-        "x-amz-meta-process": METADATA["process"],
         "x-amz-meta-product": METADATA["product"],
         "x-amz-meta-version": METADATA["version"],
         "x-amz-meta-workflow": METADATA["workflow"],
+        "x-amz-meta-workflow-type": METADATA["workflow_type"],
+        "x-amz-meta-process": METADATA["process"],
         "x-amz-version-id": "test-version",
     }
     object_.is_dir = False
@@ -82,6 +84,7 @@ def test_ok(_, __):
     v.set("minio.client_password", "test-secret-key")
     v.set("minio.ssl", False)
     v.set("minio.bucket", "test-minio-bucket")
+    v.set("minio.internal_folder", ".kai")
 
     persistent_storage = PersistentStorage()
 
@@ -89,18 +92,21 @@ def test_ok(_, __):
     assert persistent_storage.minio_bucket_name == "test-minio-bucket"
 
 
-def test_ko(m_persistent_storage):
+def test_ko():
     with pytest.raises(FailedToInitializePersistentStorageError):
-        PersistentStorage()
+        persistent_storage = PersistentStorage()
 
-        assert m_persistent_storage.minio_client is None
+        assert persistent_storage.minio_client is None
 
 
 def test_save_ok(m_persistent_storage, m_object):
     v.set("metadata.product_id", METADATA["product"])
-    v.set("metadata.workflow_name", METADATA["workflow"])
-    v.set("metadata.process_name", METADATA["process"])
     v.set("metadata.version_tag", METADATA["version"])
+    v.set("metadata.workflow_name", METADATA["workflow"])
+    v.set("metadata.workflow_type", METADATA["workflow_type"])
+    v.set("metadata.process_name", METADATA["process"])
+    v.set("minio.internal_folder", ".kai")
+
     m_persistent_storage.minio_client.put_object.return_value = m_object
     payload = io.BytesIO(b"test-payload")
 
@@ -112,11 +118,32 @@ def test_save_ok(m_persistent_storage, m_object):
     assert response == EXPECTED_OBJECT_INFO
 
 
-def test_save_no_ttl_ok(m_persistent_storage, m_object):
+def test_save_internal_folder_error_ko(m_persistent_storage, m_object):
     v.set("metadata.product_id", METADATA["product"])
     v.set("metadata.workflow_name", METADATA["workflow"])
     v.set("metadata.process_name", METADATA["process"])
     v.set("metadata.version_tag", METADATA["version"])
+    v.set("minio.internal_folder", ".kai")
+
+    m_persistent_storage.minio_client.put_object.return_value = m_object
+    payload = io.BytesIO(b"test-payload")
+
+    response = m_persistent_storage.save(".kai/test-key", payload, TTL_DAYS)
+
+    m_persistent_storage.minio_client.get_bucket_lifecycle.assert_not_called()
+    m_persistent_storage.minio_client.set_bucket_lifecycle.assert_not_called()
+    m_persistent_storage.minio_client.put_object.assert_not_called()
+    assert response is None
+
+
+def test_save_no_ttl_ok(m_persistent_storage, m_object):
+    v.set("metadata.product_id", METADATA["product"])
+    v.set("metadata.version_tag", METADATA["version"])
+    v.set("metadata.workflow_name", METADATA["workflow"])
+    v.set("metadata.workflow_type", METADATA["workflow_type"])
+    v.set("metadata.process_name", METADATA["process"])
+    v.set("minio.internal_folder", ".kai")
+
     m_persistent_storage.minio_client.put_object.return_value = m_object
     payload = io.BytesIO(b"test-payload")
 
@@ -175,6 +202,15 @@ def test_get_ko(_, m_persistent_storage):
     m_persistent_storage.minio_client.get_object.assert_called_once()
 
 
+def test_get_internal_folder_error_ko(m_persistent_storage, m_object):
+    m_persistent_storage.minio_client.get_object.return_value = m_object
+
+    payload = m_persistent_storage.get(".kai/test-key", "test-version")
+
+    m_persistent_storage.minio_client.get_object.assert_not_called()
+    assert payload is None
+
+
 @patch("sdk.persistent_storage.persistent_storage.PersistentStorage._object_exist", return_value=True)
 def test_delete_ok(_, m_persistent_storage):
     m_persistent_storage.minio_client.remove_object.return_value = None
@@ -182,6 +218,15 @@ def test_delete_ok(_, m_persistent_storage):
     m_persistent_storage.delete("test-key")
 
     m_persistent_storage.minio_client.remove_object.assert_called_once()
+
+
+@patch("sdk.persistent_storage.persistent_storage.PersistentStorage._object_exist", return_value=True)
+def test_delete_internal_folder_error_ko(_, m_persistent_storage):
+    m_persistent_storage.minio_client.remove_object.return_value = None
+
+    response = m_persistent_storage.delete(".kai/test-key")
+
+    assert response is False
 
 
 @patch("sdk.persistent_storage.persistent_storage.PersistentStorage._object_exist", return_value=False)
