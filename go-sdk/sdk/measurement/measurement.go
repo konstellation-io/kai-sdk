@@ -16,6 +16,8 @@ import (
 	sdkMetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -82,13 +84,14 @@ func initResource(meta *metadata.Metadata) (*resource.Resource, error) {
 	)
 }
 
-func initExporter(endpoint string, insecure bool, timeout int) (*otlpmetricgrpc.Exporter, error) {
-	if insecure {
+func initExporter(endpoint string, insec bool, timeout int) (*otlpmetricgrpc.Exporter, error) {
+	if insec {
 		return otlpmetricgrpc.New(
 			context.Background(),
 			otlpmetricgrpc.WithEndpoint(endpoint),
 			otlpmetricgrpc.WithTimeout(time.Duration(timeout)*time.Second),
 			otlpmetricgrpc.WithInsecure(),
+			otlpmetricgrpc.WithDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())),
 		)
 	}
 
