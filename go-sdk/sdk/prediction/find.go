@@ -18,7 +18,6 @@ func (r *RedisPredictionStore) Find(ctx context.Context, filter *Filter) ([]Pred
 		return nil, fmt.Errorf("invalid filter: %w", err)
 	}
 
-	// set prediction index as config variable
 	result, err := r.client.Do(ctx, "FT.SEARCH", viper.GetString(common.ConfigRedisIndexKey), r.buildQueryWithFilters(filter)).Result()
 	if err != nil {
 		return nil, err
