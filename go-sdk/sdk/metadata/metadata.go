@@ -20,6 +20,10 @@ func (md Metadata) GetWorkflow() string {
 	return viper.GetString(common.ConfigMetadataWorkflowIDKey)
 }
 
+func (md Metadata) GetWorkflowType() string {
+	return viper.GetString(common.ConfigMetadataWorkflowTypeKey)
+}
+
 func (md Metadata) GetProcess() string {
 	return viper.GetString(common.ConfigMetadataProcessIDKey)
 }

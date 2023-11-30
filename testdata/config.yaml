@@ -10,6 +10,7 @@ runner:
 metadata:
   product_id: Product ID
   workflow_name: Workflow ID
+  workflow_type: training
   process_name: Process ID
   version_tag: Version v1.0.0
 
@@ -60,3 +61,9 @@ centralized_configuration:
     config:
       test1: value1
       test2: value2
+
+predictions:
+  endpoint: localhost:6379
+  username: testuser
+  password: testpassword
+  index: predictionsIdx
