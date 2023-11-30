@@ -1,6 +1,7 @@
 package measurement
 
 import (
+	"crypto/tls"
 	"fmt"
 	"time"
 
@@ -17,7 +18,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 const (
@@ -91,7 +92,7 @@ func initExporter(endpoint string, insec bool, timeout int) (*otlpmetricgrpc.Exp
 			otlpmetricgrpc.WithEndpoint(endpoint),
 			otlpmetricgrpc.WithTimeout(time.Duration(timeout)*time.Second),
 			otlpmetricgrpc.WithInsecure(),
-			otlpmetricgrpc.WithDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())),
+			otlpmetricgrpc.WithDialOption(grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{}))),
 		)
 	}
 
