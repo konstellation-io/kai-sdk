@@ -1,9 +1,9 @@
 metadata:
-  product_id: Task process
-  version_tag: Task version v1.0.0
-  workflow_name: Task workflow
-  workflow_type: training workflow
-  process_name: Task process
+  product_id: Task_product
+  version_tag: v1.0.0
+  workflow_name: Task_workflow
+  workflow_type: training_workflow
+  process_name: Task_process
 
 nats:
   url: "nats://localhost:4222"
