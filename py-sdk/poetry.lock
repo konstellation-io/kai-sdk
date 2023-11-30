@@ -1535,8 +1535,11 @@ semver = "3.0.2"
 vyper-config = "1.1.1"
 
 [package.source]
-type = "directory"
-url = "sdk"
+type = "git"
+url = "https://github.com/konstellation-io/kai-sdk.git"
+reference = "py-sdk/v1.2.0"
+resolved_reference = "3af664afa37ca15a090e54a732166f0cd89cb433"
+subdirectory = "py-sdk/sdk"
 
 [[package]]
 name = "semver"
@@ -1831,4 +1834,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.5"
-content-hash = "69ebc288094ae280dfb610e41252408f73dc5e37f805e8648388477d5d290a96"
+content-hash = "bdb73d7a77e0ee844f2c686d9dd0afb750d552fd60cb3d2fa874bb2579bbdb0e"
