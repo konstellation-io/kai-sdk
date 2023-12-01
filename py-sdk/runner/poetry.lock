@@ -1537,8 +1537,8 @@ vyper-config = "1.1.1"
 [package.source]
 type = "git"
 url = "https://github.com/konstellation-io/kai-sdk.git"
-reference = "py-sdk/v1.2.0"
-resolved_reference = "3af664afa37ca15a090e54a732166f0cd89cb433"
+reference = "py-sdk/v1.3.1"
+resolved_reference = "24332552c337e6d81b0b576273e7372166dd5948"
 subdirectory = "py-sdk/sdk"
 
 [[package]]
@@ -1834,4 +1834,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.5"
-content-hash = "94878cc336bc5fe54b75bad83c97653c3124b50d008f1a5a709bb84eb4053804"
+content-hash = "24e276bf43e5ab31f1f4a4a03b5e6bce0208871d6582c34427d26382c36ac129"
