@@ -2,7 +2,7 @@ metadata:
   product_id: Nats_trigger_process
   version_tag: v1.0.0
   workflow_name: Nats_trigger_workflow
-  workflow_type: serving_workflow
+  workflow_type: serving
   process_name: Nats_trigger_process
 
 nats:

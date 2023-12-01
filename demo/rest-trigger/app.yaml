@@ -2,7 +2,7 @@ metadata:
   product_id: Rest_trigger_product
   version_tag: v1.0.0
   workflow_name: Rest_trigger_workflow
-  workflow_type: serving_workflow
+  workflow_type: serving
   process_name: Rest_trigger_process
 
 nats:

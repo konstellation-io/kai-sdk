@@ -2,7 +2,7 @@ metadata:
   product_id: Task_product
   version_tag: v1.0.0
   workflow_name: Task_workflow
-  workflow_type: training_workflow
+  workflow_type: training
   process_name: Task_process
 
 nats:

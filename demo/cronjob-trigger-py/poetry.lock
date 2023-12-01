@@ -1144,18 +1144,21 @@ description = "KAI Runner's implementation in Python"
 optional = false
 python-versions = "3.11.5"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 loguru = "0.7.0"
 nats-py = "2.6.0"
 protobuf = "4.23.4"
-sdk = {path = "../sdk", develop = true}
+sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", tag = "py-sdk/v1.2.0", subdirectory = "py-sdk/sdk"}
 vyper-config = "1.1.1"
 
 [package.source]
-type = "directory"
-url = "../../py-sdk/runner"
+type = "git"
+url = "https://github.com/konstellation-io/kai-sdk.git"
+reference = "py-sdk/v1.3.0"
+resolved_reference = "3bc72400f664fcf962d9edca2e05c62df3c7e7fe"
+subdirectory = "py-sdk/runner"
 
 [[package]]
 name = "sdk"
@@ -1164,7 +1167,7 @@ description = "KAI SDK's implementation in Python"
 optional = false
 python-versions = "3.11.5"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 grpcio = "1.59.3"
@@ -1180,8 +1183,11 @@ semver = "3.0.2"
 vyper-config = "1.1.1"
 
 [package.source]
-type = "directory"
-url = "../../py-sdk/sdk"
+type = "git"
+url = "https://github.com/konstellation-io/kai-sdk.git"
+reference = "py-sdk/v1.2.0"
+resolved_reference = "3af664afa37ca15a090e54a732166f0cd89cb433"
+subdirectory = "py-sdk/sdk"
 
 [[package]]
 name = "semver"
@@ -1454,4 +1460,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.5"
-content-hash = "4906ed7750db4020ff113bea9668225ebe6fb771143c296c2d0a9169b537eba3"
+content-hash = "f552911aae5798525f530c60cf3e8c7e946ec72b710f6060ad1c42ef1f1c871d"
