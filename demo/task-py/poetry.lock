@@ -1150,7 +1150,7 @@ develop = false
 loguru = "0.7.0"
 nats-py = "2.6.0"
 protobuf = "4.23.4"
-sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", tag = "py-sdk/v1.2.0", subdirectory = "py-sdk/sdk"}
+sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", tag = "py-sdk/v1.3.2", subdirectory = "py-sdk/sdk"}
 vyper-config = "1.1.1"
 
 [package.source]
@@ -1185,7 +1185,7 @@ vyper-config = "1.1.1"
 [package.source]
 type = "git"
 url = "https://github.com/konstellation-io/kai-sdk.git"
-reference = "py-sdk/v1.2.0"
+reference = "py-sdk/v1.3.2"
 resolved_reference = "3af664afa37ca15a090e54a732166f0cd89cb433"
 subdirectory = "py-sdk/sdk"
 
