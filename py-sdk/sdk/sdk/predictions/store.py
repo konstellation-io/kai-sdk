@@ -128,7 +128,7 @@ class Predictions(PredictionsABC):
     def find(self, filter: Filter) -> list[Prediction]:
         try:
             self._validate_filter(filter)
-            index = v.get_string("predictions.index_key")
+            index = v.get_string("predictions.index")
             predictions = self.client.ft(index).search(query=self._build_query(filter))
             result = [Prediction(**ast.literal_eval(prediction["json"])) for prediction in predictions.docs]
             self.logger.info(f"successfully found predictions from the predictions store matching the filter {filter}")
