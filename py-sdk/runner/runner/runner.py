@@ -48,7 +48,7 @@ MANDATORY_CONFIG_KEYS = [
     "predictions.endpoint",
     "predictions.username",
     "predictions.password",
-    "predictions.index_key",
+    "predictions.index",
     "measurements.endpoint",
     "measurements.insecure",
     "measurements.timeout",

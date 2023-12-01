@@ -24,11 +24,11 @@ from sdk.predictions.types import Filter, Prediction, TimestampRange
 PREDICTIONS_ENDPOINT_KEY = "predictions.endpoint"
 PREDICTIONS_USERNAME_KEY = "predictions.username"
 PREDICTIONS_PASSWORD_KEY = "predictions.password"
-PREDICTIONS_INDEX_KEY_KEY = "predictions.index_key"
+PREDICTIONS_INDEX_KEY = "predictions.index"
 PREDICTIONS_ENDPOINT = "localhost:6379"
 PREDICTIONS_USERNAME = "test_username"
 PREDICTIONS_PASSWORD = "test_password"
-PREDICTIONS_INDEX_KEY = "test_index_key"
+PREDICTIONS_INDEX_KEY = "test_index"
 
 
 @pytest.fixture
@@ -77,7 +77,7 @@ def test_ok(m_redis_init):
     v.set(PREDICTIONS_ENDPOINT_KEY, PREDICTIONS_ENDPOINT)
     v.set(PREDICTIONS_USERNAME_KEY, PREDICTIONS_USERNAME)
     v.set(PREDICTIONS_PASSWORD_KEY, PREDICTIONS_PASSWORD)
-    v.set(PREDICTIONS_INDEX_KEY_KEY, PREDICTIONS_INDEX_KEY)
+    v.set(PREDICTIONS_INDEX_KEY, PREDICTIONS_INDEX_KEY)
 
     store = Predictions()
 
@@ -91,7 +91,7 @@ def test_malformed_endpoint_ko():
     v.set(PREDICTIONS_ENDPOINT_KEY, "localhost")
     v.set(PREDICTIONS_USERNAME_KEY, PREDICTIONS_USERNAME)
     v.set(PREDICTIONS_PASSWORD_KEY, PREDICTIONS_PASSWORD)
-    v.set(PREDICTIONS_INDEX_KEY_KEY, PREDICTIONS_INDEX_KEY)
+    v.set(PREDICTIONS_INDEX_KEY, PREDICTIONS_INDEX_KEY)
 
     with pytest.raises(FailedToInitializePredictionsStoreError) as error:
         Predictions()
@@ -104,7 +104,7 @@ def test_initialization_ko(_):
     v.set(PREDICTIONS_ENDPOINT_KEY, PREDICTIONS_ENDPOINT)
     v.set(PREDICTIONS_USERNAME_KEY, PREDICTIONS_USERNAME)
     v.set(PREDICTIONS_PASSWORD_KEY, PREDICTIONS_PASSWORD)
-    v.set(PREDICTIONS_INDEX_KEY_KEY, PREDICTIONS_INDEX_KEY)
+    v.set(PREDICTIONS_INDEX_KEY, PREDICTIONS_INDEX_KEY)
 
     with pytest.raises(FailedToInitializePredictionsStoreError):
         Predictions()

@@ -4,7 +4,6 @@ import os
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import BinaryIO, Optional
 
 import loguru
@@ -15,7 +14,7 @@ from semver import Version
 from vyper import v
 
 from sdk.auth.authentication import Authentication
-from sdk.metadata.metadata import Metadata, MetadataABC
+from sdk.metadata.metadata import Metadata
 from sdk.model_registry.exceptions import (
     EmptyModelError,
     EmptyNameError,
