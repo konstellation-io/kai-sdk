@@ -101,7 +101,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 	meta := metadata.New()
 
 	counter, err := tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
-		"process-message",
+		"runner-process-message",
 		metric.WithDescription("How long it takes to process a message."),
 		metric.WithUnit("ms"),
 		//metric.WithExplicitBucketBoundaries(250, 500, 1000),
