@@ -1,16 +1,20 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/go-logr/logr"
-
+	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
@@ -93,6 +97,46 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 
 		return
 	}
+
+	meta := metadata.New()
+
+	counter, err := tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
+		"process-message",
+		metric.WithDescription("How long it takes to process a message."),
+		metric.WithUnit("ms"),
+		//metric.WithExplicitBucketBoundaries(250, 500, 1000),
+	)
+	if err != nil {
+		errMsg := fmt.Sprintf("Creating process-message duration metric: %s", err)
+		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
+	}
+	start := time.Now()
+	defer func() {
+		counter.Record(context.Background(), time.Since(start).Milliseconds(),
+			metric.WithAttributeSet(attribute.NewSet(
+				attribute.KeyValue{
+					Key:   "product",
+					Value: attribute.StringValue(meta.GetProduct()),
+				},
+				attribute.KeyValue{
+					Key:   "version",
+					Value: attribute.StringValue(meta.GetVersion()),
+				},
+				attribute.KeyValue{
+					Key:   "workflow",
+					Value: attribute.StringValue(meta.GetWorkflow()),
+				},
+				attribute.KeyValue{
+					Key:   "process",
+					Value: attribute.StringValue(meta.GetProcess()),
+				},
+				attribute.KeyValue{
+					Key:   "request-id",
+					Value: attribute.StringValue(requestMsg.RequestId),
+				},
+			)),
+		)
+	}()
 
 	tr.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
 		msg.Subject))
