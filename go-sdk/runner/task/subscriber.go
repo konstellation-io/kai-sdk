@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
 	"strings"
@@ -101,10 +102,10 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 	meta := metadata.New()
 
 	counter, err := tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
-		"runner-process-message",
+		"runner-process-message-test",
 		metric.WithDescription("How long it takes to process a message."),
 		metric.WithUnit("ms"),
-		//metric.WithExplicitBucketBoundaries(250, 500, 1000),
+		metric.WithExplicitBucketBoundaries(250, 500, 1000),
 	)
 	if err != nil {
 		errMsg := fmt.Sprintf("Creating process-message duration metric: %s", err)
@@ -112,6 +113,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 	}
 	start := time.Now()
 	defer func() {
+		tr.sdk.Logger.Info("Storing runner-process-message", "execution time", time.Since(start).Milliseconds())
 		counter.Record(context.Background(), time.Since(start).Milliseconds(),
 			metric.WithAttributeSet(attribute.NewSet(
 				attribute.KeyValue{
@@ -137,6 +139,8 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 			)),
 		)
 	}()
+
+	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 
 	tr.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
 		msg.Subject))
