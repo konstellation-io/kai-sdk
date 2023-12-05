@@ -101,7 +101,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 
 	meta := metadata.New()
 
-	counter, err := tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
+	histogram, err := tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
 		"runner-process-message-test",
 		metric.WithDescription("How long it takes to process a message."),
 		metric.WithUnit("ms"),
@@ -111,10 +111,11 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 		errMsg := fmt.Sprintf("Creating process-message duration metric: %s", err)
 		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
 	}
+
 	start := time.Now()
 	defer func() {
 		tr.sdk.Logger.Info("Storing runner-process-message", "execution time", time.Since(start).Milliseconds())
-		counter.Record(context.Background(), time.Since(start).Milliseconds(),
+		histogram.Record(context.Background(), time.Since(start).Milliseconds(),
 			metric.WithAttributeSet(attribute.NewSet(
 				attribute.KeyValue{
 					Key:   "product",
@@ -132,10 +133,10 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 					Key:   "process",
 					Value: attribute.StringValue(meta.GetProcess()),
 				},
-				attribute.KeyValue{
-					Key:   "request-id",
-					Value: attribute.StringValue(requestMsg.RequestId),
-				},
+				//attribute.KeyValue{
+				//	Key:   "request-id",
+				//	Value: attribute.StringValue(requestMsg.RequestId),
+				//},
 			)),
 		)
 	}()
