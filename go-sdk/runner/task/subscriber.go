@@ -3,7 +3,6 @@ package task
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"os"
 	"os/signal"
 	"strings"
@@ -11,7 +10,6 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"go.opentelemetry.io/otel/attribute"
@@ -35,6 +33,19 @@ func (tr *Runner) startSubscriber() {
 
 	if len(inputSubjects) == 0 {
 		tr.getLoggerWithName().Info("Undefined input subjects")
+		os.Exit(1)
+	}
+
+	var err error
+
+	tr.metrics, err = tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
+		"runner-process-message-test",
+		metric.WithDescription("How long it takes to process a message."),
+		metric.WithUnit("ms"),
+		metric.WithExplicitBucketBoundaries(250, 500, 1000),
+	)
+	if err != nil {
+		tr.getLoggerWithName().Error(err, "Error initializing metrics")
 		os.Exit(1)
 	}
 
@@ -99,49 +110,13 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 		return
 	}
 
-	meta := metadata.New()
-
-	histogram, err := tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
-		"runner-process-message-test",
-		metric.WithDescription("How long it takes to process a message."),
-		metric.WithUnit("ms"),
-		metric.WithExplicitBucketBoundaries(250, 500, 1000),
-	)
-	if err != nil {
-		errMsg := fmt.Sprintf("Creating process-message duration metric: %s", err)
-		tr.processRunnerError(msg, errMsg, requestMsg.RequestId)
-	}
-
 	start := time.Now()
 	defer func() {
 		tr.sdk.Logger.Info("Storing runner-process-message", "execution time", time.Since(start).Milliseconds())
-		histogram.Record(context.Background(), time.Since(start).Milliseconds(),
-			metric.WithAttributeSet(attribute.NewSet(
-				attribute.KeyValue{
-					Key:   "product",
-					Value: attribute.StringValue(meta.GetProduct()),
-				},
-				attribute.KeyValue{
-					Key:   "version",
-					Value: attribute.StringValue(meta.GetVersion()),
-				},
-				attribute.KeyValue{
-					Key:   "workflow",
-					Value: attribute.StringValue(meta.GetWorkflow()),
-				},
-				attribute.KeyValue{
-					Key:   "process",
-					Value: attribute.StringValue(meta.GetProcess()),
-				},
-				//attribute.KeyValue{
-				//	Key:   "request-id",
-				//	Value: attribute.StringValue(requestMsg.RequestId),
-				//},
-			)),
+		tr.metrics.Record(context.Background(), time.Since(start).Milliseconds(),
+			metric.WithAttributeSet(tr.getMetricAttributes(requestMsg.RequestId)),
 		)
 	}()
-
-	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 
 	tr.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
 		msg.Subject))
@@ -323,6 +298,31 @@ func (tr *Runner) getMaxMessageSize() (int64, error) {
 	}
 
 	return serverMaxSize, nil
+}
+
+func (tr *Runner) getMetricAttributes(requestID string) attribute.Set {
+	return attribute.NewSet(
+		attribute.KeyValue{
+			Key:   "product",
+			Value: attribute.StringValue(tr.sdk.Metadata.GetProduct()),
+		},
+		attribute.KeyValue{
+			Key:   "version",
+			Value: attribute.StringValue(tr.sdk.Metadata.GetVersion()),
+		},
+		attribute.KeyValue{
+			Key:   "workflow",
+			Value: attribute.StringValue(tr.sdk.Metadata.GetWorkflow()),
+		},
+		attribute.KeyValue{
+			Key:   "process",
+			Value: attribute.StringValue(tr.sdk.Metadata.GetProcess()),
+		},
+		attribute.KeyValue{
+			Key:   "request_id",
+			Value: attribute.StringValue(requestID),
+		},
+	)
 }
 
 func sizeInMB(size int64) string {
