@@ -112,8 +112,10 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 
 	start := time.Now()
 	defer func() {
-		tr.sdk.Logger.Info("Storing runner-process-message", "execution time", time.Since(start).Milliseconds())
-		tr.metrics.Record(context.Background(), time.Since(start).Milliseconds(),
+		executionTime := time.Since(start).Milliseconds()
+		tr.sdk.Logger.V(1).Info(fmt.Sprintf("%s execution time: %d", tr.sdk.Metadata.GetProcess(), executionTime))
+
+		tr.metrics.Record(context.Background(), executionTime,
 			metric.WithAttributeSet(tr.getMetricAttributes(requestMsg.RequestId)),
 		)
 	}()
