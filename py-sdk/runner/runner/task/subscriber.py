@@ -18,8 +18,13 @@ from sdk.messaging.messaging_utils import is_compressed, uncompress
 if TYPE_CHECKING:
     from runner.task.task_runner import TaskRunner
 
+import time
+
+from opentelemetry.util.types import Attributes
+
 from runner.task.exceptions import HandlerError, NewRequestMsgError, NotValidProtobuf
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
+from sdk.metadata.metadata import Metadata
 
 
 @dataclass
@@ -67,6 +72,15 @@ class TaskSubscriber:
             self.logger.error("input subjects undefined")
             await self.task_runner._shutdown_handler(asyncio.get_event_loop())
 
+    def get_attributes(self, request_id: str) -> Attributes:
+        return {
+            "product": Metadata.get_product(),
+            "version": Metadata.get_version(),
+            "workflow": Metadata.get_workflow(),
+            "process": Metadata.get_process(),
+            "request_id": request_id,
+        }
+
     async def _process_message(self, msg: Msg) -> None:
         try:
             request_msg = self._new_request_msg(msg.data)
@@ -76,6 +90,7 @@ class TaskSubscriber:
             return
 
         with self.logger.contextualize(metadata={"request_id": request_msg.request_id}):
+            start = time.time() * 1000
             self.logger.info("new message received")
             self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
@@ -115,6 +130,11 @@ class TaskSubscriber:
                 await msg.ack()
             except Exception as e:
                 self.logger.error(f"error acknowledging message: {e}")
+
+            end = time.time() * 1000
+            elapsed = end - start
+            self.logger.info(f"{Metadata.get_process()} execution time: {elapsed}")
+            self.task_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
 
     async def _process_runner_error(self, msg: Msg, error: Exception) -> None:
         error_msg = str(error)

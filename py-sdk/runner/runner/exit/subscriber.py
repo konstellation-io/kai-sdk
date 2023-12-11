@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import TYPE_CHECKING
@@ -10,10 +11,12 @@ from loguru import logger
 from nats.aio.msg import Msg
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
+from opentelemetry.util.types import Attributes
 from vyper import v
 
 from runner.common.common import Handler
 from sdk.messaging.messaging_utils import is_compressed, uncompress
+from sdk.metadata.metadata import Metadata
 
 if TYPE_CHECKING:
     from runner.exit.exit_runner import ExitRunner
@@ -67,6 +70,15 @@ class ExitSubscriber:
             self.logger.error("input subjects undefined")
             await self.exit_runner._shutdown_handler(asyncio.get_event_loop())
 
+    def get_attributes(self, request_id: str) -> Attributes:
+        return {
+            "product": Metadata.get_product(),
+            "version": Metadata.get_version(),
+            "workflow": Metadata.get_workflow(),
+            "process": Metadata.get_process(),
+            "request_id": request_id,
+        }
+
     async def _process_message(self, msg: Msg) -> None:
         try:
             request_msg = self._new_request_msg(msg.data)
@@ -76,6 +88,7 @@ class ExitSubscriber:
             return
 
         with self.logger.contextualize(metadata={"request_id": request_msg.request_id}):
+            start = time.time() * 1000
             self.logger.info("new message received")
             self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
@@ -115,6 +128,11 @@ class ExitSubscriber:
                 await msg.ack()
             except Exception as e:
                 self.logger.error(f"error acknowledging message: {e}")
+
+            end = time.time() * 1000
+            elapsed = end - start
+            self.logger.info(f"{Metadata.get_process()} execution time: {elapsed}")
+            self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
 
     async def _process_runner_error(self, msg: Msg, error: Exception) -> None:
         error_msg = str(error)
