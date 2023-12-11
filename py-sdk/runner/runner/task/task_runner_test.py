@@ -6,7 +6,7 @@ from nats.js.client import JetStreamContext
 from opentelemetry.metrics._internal.instrument import Histogram
 
 from runner.common.common import Finalizer, Handler, Initializer
-from runner.task.exceptions import UndefinedDefaultHandlerFunctionError
+from runner.task.exceptions import FailedToInitializeMetricsError, UndefinedDefaultHandlerFunctionError
 from runner.task.subscriber import TaskSubscriber
 from runner.task.task_runner import Postprocessor, Preprocessor, TaskRunner
 from sdk.kai_nats_msg_pb2 import KaiNatsMessage
@@ -64,6 +64,18 @@ def test_ok(_, __, ___, ____):
 
     assert runner.sdk is not None
     assert runner.subscriber is not None
+
+
+@patch.object(TaskRunner, "_init_metrics", side_effect=FailedToInitializeMetricsError)
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
+@patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+def test_initializing_metrics_ko(_, __, ___, ____):
+    nc = NatsClient()
+    js = nc.jetstream()
+
+    with pytest.raises(FailedToInitializeMetricsError):
+        TaskRunner(nc=nc, js=js)
 
 
 def test_with_initializer_ok(m_task_runner):
