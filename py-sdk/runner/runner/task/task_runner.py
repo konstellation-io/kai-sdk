@@ -10,9 +10,10 @@ import loguru
 from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
+from opentelemetry.metrics._internal.instrument import Histogram
 
 from runner.common.common import Finalizer, Handler, Initializer, Task
-from runner.task.exceptions import UndefinedDefaultHandlerFunctionError
+from runner.task.exceptions import FailedToInitializeMetricsError, UndefinedDefaultHandlerFunctionError
 from runner.task.helpers import (
     compose_finalizer,
     compose_handler,
@@ -37,11 +38,19 @@ class TaskRunner:
     preprocessor: Optional[Preprocessor] = None
     postprocessor: Optional[Postprocessor] = None
     finalizer: Optional[Finalizer] = None
+    metrics: Histogram = field(init=False)
 
     def __post_init__(self) -> None:
         logger.configure(extra={"context": "", "metadata": {}, "origin": "[TASK]"})
         self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=logger)
         self.subscriber = TaskSubscriber(self)
+        try:
+            self.metrics = self.sdk.measurements.get_metrics_client().create_histogram(
+                name="runner-process-message-time", unit="ms", description="How long it takes to process a message."
+            )
+        except Exception as e:
+            self.logger.error(f"error initializing metrics: {e}")
+            raise FailedToInitializeMetricsError(e)
 
     def with_initializer(self, initializer: Initializer) -> TaskRunner:
         self.initializer = compose_initializer(initializer)
