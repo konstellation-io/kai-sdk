@@ -1,13 +1,17 @@
 package exit
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/go-logr/logr"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -94,6 +98,16 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 
 		return
 	}
+
+	start := time.Now()
+	defer func() {
+		executionTime := time.Since(start).Milliseconds()
+		er.sdk.Logger.V(1).Info(fmt.Sprintf("%s execution time: %d", er.sdk.Metadata.GetProcess(), executionTime))
+
+		er.metrics.Record(context.Background(), executionTime,
+			metric.WithAttributeSet(er.getMetricAttributes(requestMsg.RequestId)),
+		)
+	}()
 
 	er.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
 		msg.Subject))
@@ -275,6 +289,31 @@ func (er *Runner) getMaxMessageSize() (int64, error) {
 	}
 
 	return serverMaxSize, nil
+}
+
+func (er *Runner) getMetricAttributes(requestID string) attribute.Set {
+	return attribute.NewSet(
+		attribute.KeyValue{
+			Key:   "product",
+			Value: attribute.StringValue(er.sdk.Metadata.GetProduct()),
+		},
+		attribute.KeyValue{
+			Key:   "version",
+			Value: attribute.StringValue(er.sdk.Metadata.GetVersion()),
+		},
+		attribute.KeyValue{
+			Key:   "workflow",
+			Value: attribute.StringValue(er.sdk.Metadata.GetWorkflow()),
+		},
+		attribute.KeyValue{
+			Key:   "process",
+			Value: attribute.StringValue(er.sdk.Metadata.GetProcess()),
+		},
+		attribute.KeyValue{
+			Key:   "request_id",
+			Value: attribute.StringValue(requestID),
+		},
+	)
 }
 
 func sizeInMB(size int64) string {
