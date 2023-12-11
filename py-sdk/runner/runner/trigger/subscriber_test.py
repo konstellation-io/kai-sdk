@@ -9,6 +9,7 @@ from nats.aio.msg import Msg
 from nats.js import JetStreamContext
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
+from opentelemetry.metrics._internal.instrument import Histogram
 from vyper import v
 
 from runner.trigger.exceptions import NewRequestMsgError
@@ -48,10 +49,13 @@ async def m_sdk(_: ModelRegistry, __: PersistentStorage, ___: Predictions) -> Ka
 
 
 @pytest.fixture(scope="function")
+@patch.object(TriggerRunner, "_init_metrics")
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
 @patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
-def m_trigger_runner(_: ModelRegistry, __: PersistentStorage, ___: Predictions, m_sdk: KaiSDK) -> TriggerRunner:
+def m_trigger_runner(
+    _: ModelRegistry, __: PersistentStorage, ___: Predictions, ____: Mock, m_sdk: KaiSDK
+) -> TriggerRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 
@@ -61,6 +65,7 @@ def m_trigger_runner(_: ModelRegistry, __: PersistentStorage, ___: Predictions, 
     trigger_runner.sdk = m_sdk
     trigger_runner.sdk.metadata = Mock(spec=Metadata)
     trigger_runner.sdk.metadata.get_process = Mock(return_value="test.process")
+    trigger_runner.metrics = Mock(spec=Histogram)
 
     return trigger_runner
 
@@ -222,6 +227,7 @@ async def test_process_message_ok(m_getattr, m_msg, m_trigger_subscriber):
     assert m_getattr.called
     assert m_handler.called
     assert m_msg.ack.called
+    assert m_trigger_subscriber.trigger_runner.metrics.record.called
 
 
 async def test_process_message_not_valid_protobuf_ko(m_msg, m_trigger_subscriber):

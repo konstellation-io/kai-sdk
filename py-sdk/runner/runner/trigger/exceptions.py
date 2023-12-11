@@ -29,3 +29,9 @@ class HandlerError(Exception):
     def __init__(self, node_from: str, node_to: str, error: Optional[Exception] = None):
         message = f"error in node {node_from} executing handler for node {node_to}"
         super().__init__(f"{message}: {error}" if error else message)
+
+
+class FailedToInitializeMetricsError(Exception):
+    def __init__(self, error: Optional[Exception] = None):
+        message = "error initializing metrics"
+        super().__init__(f"{message}: {error}" if error else message)

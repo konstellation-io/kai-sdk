@@ -37,7 +37,7 @@ func (tr *Runner) startSubscriber() {
 	var err error
 
 	tr.metrics, err = tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
-		"runner-process-message-test",
+		"runner-process-message-time",
 		metric.WithDescription("How long it takes to process a message."),
 		metric.WithUnit("ms"),
 		metric.WithExplicitBucketBoundaries(250, 500, 1000),
@@ -115,7 +115,7 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 	start := time.Now()
 	defer func() {
 		executionTime := time.Since(start).Milliseconds()
-		tr.sdk.Logger.V(1).Info(fmt.Sprintf("%s execution time: %d", tr.sdk.Metadata.GetProcess(), executionTime))
+		tr.sdk.Logger.V(1).Info(fmt.Sprintf("%s execution time: %d ms", tr.sdk.Metadata.GetProcess(), executionTime))
 
 		tr.metrics.Record(context.Background(), executionTime,
 			metric.WithAttributeSet(tr.getMetricAttributes(requestMsg.RequestId)),
