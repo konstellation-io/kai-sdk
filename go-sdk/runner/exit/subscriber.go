@@ -37,6 +37,19 @@ func (er *Runner) startSubscriber() {
 		os.Exit(1)
 	}
 
+	var err error
+
+	er.metrics, err = er.sdk.Measurements.GetMetricsClient().Int64Histogram(
+		"runner-process-message-time",
+		metric.WithDescription("How long it takes to process a message."),
+		metric.WithUnit("ms"),
+		metric.WithExplicitBucketBoundaries(250, 500, 1000),
+	)
+	if err != nil {
+		er.getLoggerWithName().Error(err, "Error initializing metrics")
+		os.Exit(1)
+	}
+
 	subscriptions := make([]*nats.Subscription, 0, len(inputSubjects))
 
 	for _, subject := range inputSubjects {

@@ -37,7 +37,7 @@ func (tr *Runner) startSubscriber() {
 	var err error
 
 	tr.metrics, err = tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
-		"runner-process-message-test",
+		"runner-process-message-time",
 		metric.WithDescription("How long it takes to process a message."),
 		metric.WithUnit("ms"),
 		metric.WithExplicitBucketBoundaries(250, 500, 1000),
