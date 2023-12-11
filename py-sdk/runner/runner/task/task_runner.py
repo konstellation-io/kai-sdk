@@ -44,6 +44,9 @@ class TaskRunner:
         logger.configure(extra={"context": "", "metadata": {}, "origin": "[TASK]"})
         self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=logger)
         self.subscriber = TaskSubscriber(self)
+        self._init_metrics()
+
+    def _init_metrics(self) -> None:
         try:
             self.metrics = self.sdk.measurements.get_metrics_client().create_histogram(
                 name="runner-process-message-time", unit="ms", description="How long it takes to process a message."

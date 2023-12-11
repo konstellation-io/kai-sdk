@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
+from opentelemetry.metrics._internal.instrument import Histogram
 
 from runner.common.common import Finalizer, Initializer
 from runner.trigger.exceptions import UndefinedRunnerFunctionError
@@ -32,10 +33,13 @@ async def m_sdk(_: ModelRegistry, __: PersistentStorage, ___: Predictions) -> Ka
 
 
 @pytest.fixture(scope="function")
+@patch.object(TriggerRunner, "_init_metrics")
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
 @patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
-def m_trigger_runner(_: ModelRegistry, __: PersistentStorage, ___: Predictions, m_sdk: KaiSDK) -> TriggerRunner:
+def m_trigger_runner(
+    _: ModelRegistry, __: PersistentStorage, ___: Predictions, ____: Mock, m_sdk: KaiSDK
+) -> TriggerRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 
@@ -45,6 +49,7 @@ def m_trigger_runner(_: ModelRegistry, __: PersistentStorage, ___: Predictions, 
     trigger_runner.sdk = m_sdk
     trigger_runner.sdk.metadata = Mock(spec=Metadata)
     trigger_runner.sdk.metadata.get_process = Mock(return_value="test.process")
+    trigger_runner.metrics = Mock(spec=Histogram)
 
     return trigger_runner
 
@@ -56,10 +61,11 @@ class MockAsyncio:
         self.gather = AsyncMock()
 
 
+@patch.object(TriggerRunner, "_init_metrics")
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
 @patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
-def test_ok(_, __, ___):
+def test_ok(_, __, ___, ____):
     nc = NatsClient()
     js = nc.jetstream()
 
