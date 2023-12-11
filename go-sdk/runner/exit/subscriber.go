@@ -115,7 +115,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 	start := time.Now()
 	defer func() {
 		executionTime := time.Since(start).Milliseconds()
-		er.sdk.Logger.V(1).Info(fmt.Sprintf("%s execution time: %d", er.sdk.Metadata.GetProcess(), executionTime))
+		er.sdk.Logger.V(1).Info(fmt.Sprintf("%s execution time: %d ms", er.sdk.Metadata.GetProcess(), executionTime))
 
 		er.metrics.Record(context.Background(), executionTime,
 			metric.WithAttributeSet(er.getMetricAttributes(requestMsg.RequestId)),

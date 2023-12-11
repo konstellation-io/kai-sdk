@@ -113,7 +113,7 @@ class TriggerSubscriber:
 
             end = time.time() * 1000
             elapsed = end - start
-            self.logger.info(f"{Metadata.get_process()} execution time: {elapsed}")
+            self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
             self.trigger_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
 
     async def _process_runner_error(self, msg: Msg, error: Exception) -> None:
