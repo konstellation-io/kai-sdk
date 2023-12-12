@@ -1,13 +1,17 @@
 package exit
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/go-logr/logr"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -30,6 +34,19 @@ func (er *Runner) startSubscriber() {
 
 	if len(inputSubjects) == 0 {
 		er.getLoggerWithName().Info("Undefined input subjects")
+		os.Exit(1)
+	}
+
+	var err error
+
+	er.metrics, err = er.sdk.Measurements.GetMetricsClient().Int64Histogram(
+		"runner-process-message-time",
+		metric.WithDescription("How long it takes to process a message."),
+		metric.WithUnit("ms"),
+		metric.WithExplicitBucketBoundaries(250, 500, 1000),
+	)
+	if err != nil {
+		er.getLoggerWithName().Error(err, "Error initializing metrics")
 		os.Exit(1)
 	}
 
@@ -94,6 +111,16 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 
 		return
 	}
+
+	start := time.Now()
+	defer func() {
+		executionTime := time.Since(start).Milliseconds()
+		er.sdk.Logger.V(1).Info(fmt.Sprintf("%s execution time: %d ms", er.sdk.Metadata.GetProcess(), executionTime))
+
+		er.metrics.Record(context.Background(), executionTime,
+			metric.WithAttributeSet(er.getMetricAttributes(requestMsg.RequestId)),
+		)
+	}()
 
 	er.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
 		msg.Subject))
@@ -275,6 +302,31 @@ func (er *Runner) getMaxMessageSize() (int64, error) {
 	}
 
 	return serverMaxSize, nil
+}
+
+func (er *Runner) getMetricAttributes(requestID string) attribute.Set {
+	return attribute.NewSet(
+		attribute.KeyValue{
+			Key:   "product",
+			Value: attribute.StringValue(er.sdk.Metadata.GetProduct()),
+		},
+		attribute.KeyValue{
+			Key:   "version",
+			Value: attribute.StringValue(er.sdk.Metadata.GetVersion()),
+		},
+		attribute.KeyValue{
+			Key:   "workflow",
+			Value: attribute.StringValue(er.sdk.Metadata.GetWorkflow()),
+		},
+		attribute.KeyValue{
+			Key:   "process",
+			Value: attribute.StringValue(er.sdk.Metadata.GetProcess()),
+		},
+		attribute.KeyValue{
+			Key:   "request_id",
+			Value: attribute.StringValue(requestID),
+		},
+	)
 }
 
 func sizeInMB(size int64) string {

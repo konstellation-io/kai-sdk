@@ -7,12 +7,8 @@ from google.protobuf.wrappers_pb2 import StringValue
 from runner.runner import Runner
 from sdk import kai_sdk as sdk
 from sdk.metadata.metadata import Metadata
-from sdk.predictions.types import (
-    Filter,
-    Payload,
-    TimestampRange,
-    UpdatePayloadFunc
-)
+from sdk.predictions.types import (Filter, Payload, TimestampRange,
+                                   UpdatePayloadFunc)
 
 
 async def initializer(kai_sdk: sdk.KaiSDK):

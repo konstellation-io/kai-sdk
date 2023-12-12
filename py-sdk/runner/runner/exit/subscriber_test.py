@@ -7,6 +7,7 @@ from nats.aio.msg import Msg
 from nats.js import JetStreamContext
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
+from opentelemetry.metrics._internal.instrument import Histogram
 from vyper import v
 
 from runner.exit.exceptions import NewRequestMsgError
@@ -46,10 +47,11 @@ async def m_sdk(_: ModelRegistry, __: PersistentStorage, ___: Predictions) -> Ka
 
 
 @pytest.fixture(scope="function")
+@patch.object(ExitRunner, "_init_metrics")
 @patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
 @patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
-def m_exit_runner(_: ModelRegistry, __: PersistentStorage, ___: Predictions, m_sdk: KaiSDK) -> ExitRunner:
+def m_exit_runner(_: ModelRegistry, __: PersistentStorage, ___: Predictions, ____: Mock, m_sdk: KaiSDK) -> ExitRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 
@@ -57,6 +59,7 @@ def m_exit_runner(_: ModelRegistry, __: PersistentStorage, ___: Predictions, m_s
     exit_runner.sdk = m_sdk
     exit_runner.sdk.metadata = Mock(spec=Metadata)
     exit_runner.sdk.metadata.get_process = Mock(return_value="test.process")
+    exit_runner.metrics = Mock(spec=Histogram)
 
     return exit_runner
 
@@ -207,6 +210,7 @@ async def test_process_message_ok(m_msg, m_exit_subscriber):
     assert m_exit_subscriber._get_response_handler.called
     assert m_handler.called
     assert m_msg.ack.called
+    assert m_exit_subscriber.exit_runner.metrics.record.called
 
 
 async def test_process_message_not_valid_protobuf_ko(m_msg, m_exit_subscriber):
