@@ -41,3 +41,8 @@ pytidy: ## Run black, isort and codespell
 .PHONY: mypy
 mypy: ## Run mypy
 	poetry --directory py-sdk run mypy --pretty --warn-redundant-casts --warn-unused-ignores --warn-unreachable --disallow-untyped-decorators --disallow-incomplete-defs --disallow-untyped-calls --check-untyped-defs --disallow-incomplete-defs --python-version 3.11 py-sdk --config-file py-sdk/pyproject.toml
+
+.PHONY: update
+update: ## Update all dependencies
+	./scripts/update_go_mod.sh
+	./scripts/update_poetries.sh
