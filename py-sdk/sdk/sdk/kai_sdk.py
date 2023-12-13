@@ -122,12 +122,12 @@ class KaiSDK:
             format=LOGGER_FORMAT,
             backtrace=True,
             diagnose=True,
-            level="DEBUG",
+            level="TRACE",
         )
         logger.configure(extra={"context": "", "metadata": {}, "origin": DEBUG_ORIGIN})
 
         self.logger = logger.bind(context=DEBUG_ORIGIN)
-        self.logger.debug("logger initialized")
+        self.logger.warning("no logger provided, default sdk logger initialized")
 
     def set_request_msg(self, request_msg: KaiNatsMessage) -> None:
         self.request_msg = request_msg
