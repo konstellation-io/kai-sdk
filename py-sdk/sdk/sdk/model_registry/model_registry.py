@@ -38,13 +38,13 @@ class ModelInfo:
 
 @dataclass
 class Model(ModelInfo):
-    model: bytes = field(init=True)
+    model: BinaryIO = field(init=True)
 
 
 @dataclass
 class ModelRegistryABC(ABC):
     @abstractmethod
-    def register_model(self, model: bytes, name: str, version: str, description: str, model_format: str) -> None:
+    def register_model(self, model: BinaryIO, name: str, version: str, description: str, model_format: str) -> None:
         pass
 
     @abstractmethod

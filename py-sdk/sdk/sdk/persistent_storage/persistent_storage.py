@@ -36,13 +36,13 @@ class ObjectInfo:
 
 @dataclass
 class Object(ObjectInfo):
-    data: bytes = field(init=True)
+    data: BinaryIO = field(init=True)
 
 
 @dataclass
 class PersistentStorageABC(ABC):
     @abstractmethod
-    def save(self, key: str, payload: bytes, ttl_days: Optional[int]) -> Optional[ObjectInfo]:
+    def save(self, key: str, payload: BinaryIO, ttl_days: Optional[int]) -> Optional[ObjectInfo]:
         pass
 
     @abstractmethod
