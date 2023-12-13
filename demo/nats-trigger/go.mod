@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.1
-	github.com/konstellation-io/kai-sdk/go-sdk v1.3.0
+	github.com/konstellation-io/kai-sdk/go-sdk v1.3.2
 	github.com/nats-io/nats.go v1.31.0
 )
 
