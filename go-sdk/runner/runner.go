@@ -48,9 +48,9 @@ func NewRunner() *Runner {
 func validateConfig(keys []string) {
 	var mandatoryConfigKeys = []string{
 		common.ConfigMetadataProductIDKey,
+		common.ConfigMetadataVersionIDKey,
 		common.ConfigMetadataWorkflowIDKey,
 		common.ConfigMetadataProcessIDKey,
-		common.ConfigMetadataVersionIDKey,
 		common.ConfigNatsURLKey,
 		common.ConfigNatsStreamKey,
 		common.ConfigNatsOutputKey,
