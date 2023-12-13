@@ -1,6 +1,8 @@
 package task
 
 import (
+	"strings"
+
 	"github.com/go-logr/logr"
 	"github.com/nats-io/nats.go"
 	"go.opentelemetry.io/otel/metric"
@@ -54,7 +56,7 @@ func (tr *Runner) WithHandler(handler Handler) *Runner {
 }
 
 func (tr *Runner) WithCustomHandler(subject string, handler Handler) *Runner {
-	tr.responseHandlers[subject] = composeHandler(handler)
+	tr.responseHandlers[strings.ToLower(subject)] = composeHandler(handler)
 	return tr
 }
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import BinaryIO, Optional
@@ -44,7 +43,7 @@ class Model(ModelInfo):
 @dataclass
 class ModelRegistryABC(ABC):
     @abstractmethod
-    def register_model(self, model: bytes, name: str, version: str, description: str, model_format: str) -> None:
+    def register_model(self, model: BinaryIO, name: str, version: str, description: str, model_format: str) -> None:
         pass
 
     @abstractmethod
