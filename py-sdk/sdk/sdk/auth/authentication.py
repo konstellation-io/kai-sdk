@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from sdk.auth.exceptions import FailedToGetTokenError
 
 from keycloak import KeycloakOpenID
 from vyper import v
@@ -36,18 +37,21 @@ class Authentication(AuthenticationABC):
         self.password = v.get_string("minio.client_password")
 
     def get_token(self) -> dict:
-        keycloak_openid = KeycloakOpenID(
-            server_url=self.auth_server_url,
-            client_id=self.auth_server_client_id,
-            client_secret_key=self.auth_server_client_secret,
-            realm_name=self.auth_server_realm_name,
-        )
+        try:
+            keycloak_openid = KeycloakOpenID(
+                server_url=self.auth_server_url,
+                client_id=self.auth_server_client_id,
+                client_secret_key=self.auth_server_client_secret,
+                realm_name=self.auth_server_realm_name,
+            )
 
-        access_token = keycloak_openid.token(
-            grant_type=self.grant_type,
-            username=self.username,
-            password=self.password,
-            scope=self.scope,
-        )
+            access_token = keycloak_openid.token(
+                grant_type=self.grant_type,
+                username=self.username,
+                password=self.password,
+                scope=self.scope,
+            )
 
-        return access_token
+            return access_token
+        except Exception as e:
+            raise FailedToGetTokenError(e)
