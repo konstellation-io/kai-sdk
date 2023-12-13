@@ -58,10 +58,29 @@ class KaiSDK:
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
         self.metadata = Metadata()
-        self.measurements = Measurements()
-        self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
+
+        try:
+            self.measurements = Measurements()
+        except Exception as e:
+            assert self.logger is not None
+            self.logger.error(f"error initializing measurements: {e}")
+            sys.exit(1)
+
+        try:
+            self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
+        except Exception as e:
+            assert self.logger is not None
+            self.logger.error(f"error initializing storage: {e}")
+            sys.exit(1)
+
         self.predictions = Predictions()
-        self.model_registry = ModelRegistry()
+
+        try:
+            self.model_registry = ModelRegistry()
+        except Exception as e:
+            assert self.logger is not None
+            self.logger.error(f"error initializing model registry: {e}")
+            sys.exit(1)
 
     async def initialize(self) -> None:
         try:
