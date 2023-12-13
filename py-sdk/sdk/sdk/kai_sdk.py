@@ -26,6 +26,7 @@ LOGGER_FORMAT = (
     "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
     "<level>{message}</level> <level>{extra[metadata]}</level>"
 )
+DEBUG_ORIGIN = "[SDK]"
 
 
 @dataclass
@@ -87,17 +88,27 @@ class KaiSDK:
             await self.storage.ephemeral.initialize()
         except Exception as e:
             assert self.logger is not None
-            self.logger.error(f"error initializing object store: {e}")
-            asyncio.get_event_loop().stop()
-            sys.exit(1)
+            origin = logger._core.extra["origin"]
+            if origin != DEBUG_ORIGIN:
+                self.logger.error(f"error initializing object store: {e}")
+                raise e
+            else:
+                self.logger.error(f"error initializing object store: {e}")
+                asyncio.get_event_loop().stop()
+                sys.exit(1)
 
         try:
             await self.centralized_config.initialize()
         except Exception as e:
             assert self.logger is not None
-            self.logger.error(f"error initializing centralized configuration: {e}")
-            asyncio.get_event_loop().stop()
-            sys.exit(1)
+            origin = logger._core.extra["origin"]
+            if origin != DEBUG_ORIGIN:
+                self.logger.error(f"error initializing centralized configuration: {e}")
+                raise e
+            else:
+                self.logger.error(f"error initializing centralized configuration: {e}")
+                asyncio.get_event_loop().stop()
+                sys.exit(1)
 
     def get_request_id(self) -> str | None:
         request_msg = getattr(self, "request_msg", None)
@@ -113,9 +124,9 @@ class KaiSDK:
             diagnose=True,
             level="DEBUG",
         )
-        logger.configure(extra={"context": "", "metadata": {}, "origin": "[SDK]"})
+        logger.configure(extra={"context": "", "metadata": {}, "origin": DEBUG_ORIGIN})
 
-        self.logger = logger.bind(context="[SDK]")
+        self.logger = logger.bind(context=DEBUG_ORIGIN)
         self.logger.debug("logger initialized")
 
     def set_request_msg(self, request_msg: KaiNatsMessage) -> None:

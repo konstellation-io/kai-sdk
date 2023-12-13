@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from sdk.auth.exceptions import FailedToGetTokenError
 
 from keycloak import KeycloakOpenID
 from vyper import v
+
+from sdk.auth.exceptions import FailedToGetTokenError
 
 
 @dataclass

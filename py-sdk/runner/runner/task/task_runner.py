@@ -122,8 +122,6 @@ class TaskRunner:
         if not self.finalizer:
             self.finalizer = compose_finalizer()
 
-        await self.initializer(self.sdk)
-
         loop = asyncio.get_event_loop()
         signals = (signal.SIGINT, signal.SIGTERM)
         for s in signals:
@@ -133,6 +131,7 @@ class TaskRunner:
             )
 
         try:
+            await self.initializer(self.sdk)
             await self.subscriber.start()
         except Exception as e:
             self.logger.error(f"error starting subscriber: {e}")
