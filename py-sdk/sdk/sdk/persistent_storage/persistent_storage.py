@@ -139,7 +139,7 @@ class PersistentStorage(PersistentStorageABC):
             )
             self.logger.info(f"file {key} successfully saved in persistent storage bucket {self.minio_bucket_name}")
 
-            expiry_date = self._get_expiry_date(obj.http_headers["x-amz-expiration"])
+            expiry_date = self._get_expiry_date(obj.http_headers.get("x-amz-expiration"))
 
             return ObjectInfo(key=obj.object_name, version=obj.version_id, metadata=metadata, expires=expiry_date)
         except Exception as e:

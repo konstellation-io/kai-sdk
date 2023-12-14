@@ -1,6 +1,8 @@
 package exit
 
 import (
+	"strings"
+
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 	"go.opentelemetry.io/otel/metric"
@@ -54,7 +56,7 @@ func (er *Runner) WithHandler(handler Handler) *Runner {
 }
 
 func (er *Runner) WithCustomHandler(subject string, handler Handler) *Runner {
-	er.responseHandlers[subject] = composeHandler(handler)
+	er.responseHandlers[strings.ToLower(subject)] = composeHandler(handler)
 	return er
 }
 

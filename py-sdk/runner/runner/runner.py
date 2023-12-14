@@ -169,6 +169,8 @@ class Runner:
         v.set_default("runner.logger.encoding", "json")
         v.set_default("runner.logger.output_paths", ["stdout"])
         v.set_default("runner.logger.error_output_paths", ["stderr"])
+        v.set_default("minio.internal_folder", ".kai")
+        v.set_default("model_registry.internal_folder", ".models")
 
     def initialize_logger(self) -> None:
         encoding = v.get_string("runner.logger.encoding")

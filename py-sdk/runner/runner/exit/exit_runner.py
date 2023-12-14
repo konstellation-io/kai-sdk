@@ -68,7 +68,7 @@ class ExitRunner:
         return self
 
     def with_custom_handler(self, subject: str, handler: Handler) -> ExitRunner:
-        self.response_handlers[subject] = compose_handler(handler)
+        self.response_handlers[subject.lower()] = compose_handler(handler)
         return self
 
     def with_postprocessor(self, postprocessor: Postprocessor) -> ExitRunner:
