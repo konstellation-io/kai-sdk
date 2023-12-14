@@ -99,6 +99,10 @@ class TaskSubscriber:
             to_node = self.task_runner.sdk.metadata.get_process()
 
             if handler is None:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.task_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(msg, Exception(f"no handler defined for {from_node}"))
                 return
 
@@ -106,6 +110,10 @@ class TaskSubscriber:
                 if self.task_runner.preprocessor is not None:
                     await self.task_runner.preprocessor(self.task_runner.sdk, request_msg.payload)
             except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.task_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(
                     msg, HandlerError(from_node, to_node, error=e, type="handler preprocessor")
                 )
@@ -114,6 +122,10 @@ class TaskSubscriber:
             try:
                 await handler(self.task_runner.sdk, request_msg.payload)
             except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.task_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
                 return
 
@@ -121,6 +133,10 @@ class TaskSubscriber:
                 if self.task_runner.postprocessor is not None:
                     await self.task_runner.postprocessor(self.task_runner.sdk, request_msg.payload)
             except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.task_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(
                     msg, HandlerError(from_node, to_node, error=e, type="handler postprocessor")
                 )
@@ -129,6 +145,10 @@ class TaskSubscriber:
             try:
                 await msg.ack()
             except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.task_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 self.logger.error(f"error acknowledging message: {e}")
 
             end = time.time() * 1000
