@@ -97,6 +97,10 @@ class ExitSubscriber:
             to_node = self.exit_runner.sdk.metadata.get_process()
 
             if handler is None:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(msg, Exception(f"no handler defined for {from_node}"))
                 return
 
@@ -104,6 +108,10 @@ class ExitSubscriber:
                 if self.exit_runner.preprocessor is not None:
                     await self.exit_runner.preprocessor(self.exit_runner.sdk, request_msg.payload)
             except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(
                     msg, HandlerError(from_node, to_node, error=e, type="handler preprocessor")
                 )
@@ -112,6 +120,10 @@ class ExitSubscriber:
             try:
                 await handler(self.exit_runner.sdk, request_msg.payload)
             except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
                 return
 
@@ -119,6 +131,10 @@ class ExitSubscriber:
                 if self.exit_runner.postprocessor is not None:
                     await self.exit_runner.postprocessor(self.exit_runner.sdk, request_msg.payload)
             except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(
                     msg, HandlerError(from_node, to_node, error=e, type="handler postprocessor")
                 )
@@ -127,6 +143,10 @@ class ExitSubscriber:
             try:
                 await msg.ack()
             except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 self.logger.error(f"error acknowledging message: {e}")
 
             end = time.time() * 1000
