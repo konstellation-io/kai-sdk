@@ -198,9 +198,7 @@ class PersistentStorage(PersistentStorageABC):
             # Get stats for each object that is not a directory
             for obj in objects:
                 if not obj.is_dir and not obj.object_name.startswith(self.kai_internal_folder):
-                    stats = self.minio_client.stat_object(
-                        self.minio_bucket_name, obj.object_name
-                    )
+                    stats = self.minio_client.stat_object(self.minio_bucket_name, obj.object_name)
 
                     expiry_date = self._get_expiry_date(stats.metadata.get("x-amz-expiration"))
 

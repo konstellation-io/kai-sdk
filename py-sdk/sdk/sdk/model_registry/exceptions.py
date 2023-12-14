@@ -53,6 +53,7 @@ class MissingBucketError(Exception):
     def __init__(self, bucket: str):
         super().__init__(f"bucket: {bucket} not found in the persistent storage")
 
+
 class ModelNotFoundError(Exception):
     def __init__(self, name: str, version: str, error: Optional[Exception] = None):
         message = f"model {name} with version {version} not found"

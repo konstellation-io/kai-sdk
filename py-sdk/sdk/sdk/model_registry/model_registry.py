@@ -140,7 +140,7 @@ class ModelRegistry(ModelRegistryABC):
     def get_model(self, name: str, version: Optional[str] = None) -> Optional[Model]:
         if name is None:
             raise EmptyNameError()
-        
+
         if version and not Version.is_valid(version):
             raise InvalidVersionError()
 
@@ -154,14 +154,12 @@ class ModelRegistry(ModelRegistryABC):
             if version:
                 response = self._get_model_version_from_list(name, version)
             else:
-                response = self.minio_client.get_object(
-                    self.minio_bucket_name, self._get_model_path(name)
-                )
+                response = self.minio_client.get_object(self.minio_bucket_name, self._get_model_path(name))
 
             self.logger.info(f"model {name} successfully retrieved from model registry")
 
             return Model(
-                name=name,
+                name=self._get_model_name(response.object_name),
                 version=response.headers.get("x-amz-Model_version"),
                 description=response.headers.get("x-amz-Model_description"),
                 format=response.headers.get("x-amz-Model_format"),
@@ -191,13 +189,11 @@ class ModelRegistry(ModelRegistryABC):
             # Get stats for each object that is not a directory
             for obj in objects:
                 if not obj.is_dir:
-                    stats = self.minio_client.stat_object(
-                        self.minio_bucket_name, obj.object_name
-                    )
+                    stats = self.minio_client.stat_object(self.minio_bucket_name, obj.object_name)
 
                     model_info_list.append(
                         ModelInfo(
-                            name=obj.object_name,
+                            name=self._get_model_name(obj.object_name),
                             version=stats.metadata.get("x-amz-Model_version"),
                             format=stats.metadata.get("x-amz-Model_format"),
                             description=stats.metadata.get("x-amz-Model_description"),
@@ -229,7 +225,7 @@ class ModelRegistry(ModelRegistryABC):
 
                     model_version_info_list.append(
                         ModelInfo(
-                            name=obj.object_name,
+                            name=self._get_model_name(obj.object_name),
                             version=stats.metadata.get("x-amz-Model_version"),
                             format=stats.metadata.get("x-amz-Model_format"),
                             description=stats.metadata.get("x-amz-Model_description"),
@@ -243,12 +239,13 @@ class ModelRegistry(ModelRegistryABC):
 
     def delete_model(self, name: str) -> bool:
         try:
-            exist = self._object_exist(name)
+            path = self._get_model_path(name)
+            exist = self._object_exist(path)
             if not exist:
                 self.logger.error(f"model {name} does not found in model registry")
                 return False
 
-            self.minio_client.remove_object(self.minio_bucket_name, self._get_model_name(name))
+            self.minio_client.remove_object(self.minio_bucket_name, self._get_model_path(name))
             self.logger.info(f"model {name} successfully deleted from the model registry")
             return True
         except Exception as e:
@@ -279,7 +276,7 @@ class ModelRegistry(ModelRegistryABC):
             self.minio_bucket_name,
             prefix=self._get_model_path(name),
             include_version=True,
-            recursive=False, # only first level
+            recursive=False,  # only first level
         )
         for obj in objects:
             if obj.version_id is not None and not obj.is_dir:
@@ -288,5 +285,5 @@ class ModelRegistry(ModelRegistryABC):
                 )
                 if stats.metadata.get("x-amz-Model_version") == version:
                     return stats
-        
+
         raise ModelNotFoundError(name, version)

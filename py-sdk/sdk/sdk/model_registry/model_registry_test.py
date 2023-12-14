@@ -13,6 +13,7 @@ from sdk.model_registry.exceptions import (
     FailedToInitializeModelRegistryError,
     FailedToSaveModelError,
     InvalidVersionError,
+    ModelNotFoundError,
 )
 from sdk.model_registry.model_registry import Model, ModelInfo, ModelRegistry, ModelRegistryABC
 
@@ -150,21 +151,43 @@ def test_register_model_invalid_version_ko(m_model_registry):
 
 
 @patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=True)
-def test_get_model_ok(_, m_model_registry, m_model):
+def test_get_model_no_version_ok(_, m_model_registry, m_model):
     m_model_registry.minio_client.get_object.return_value = m_model
 
-    response = m_model_registry.get_model("test-key", METADATA["Model_version"])
+    response = m_model_registry.get_model("test-key")
 
     m_model_registry.minio_client.get_object.assert_called_once()
     assert response == EXPECTED_MODEL
 
+@patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=True)
+@patch("sdk.model_registry.model_registry.ModelRegistry._get_model_version_from_list")
+def test_get_model_with_version_ok(get_model_from_list_mock, _, m_model_registry, m_model):
+    get_model_from_list_mock.return_value = m_model
 
-@patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=False)
-def test_get_model_not_found_ok(_, m_model_registry):
-    payload = m_model_registry.get_model("test-key", METADATA["Model_version"])
+    response = m_model_registry.get_model("test-key", METADATA["Model_version"])
 
     m_model_registry.minio_client.get_object.assert_not_called()
-    assert payload is None
+    get_model_from_list_mock.assert_called_once()
+    assert response == EXPECTED_MODEL
+
+
+@patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=False)
+def test_get_model_not_found_ko(_, m_model_registry):
+    with pytest.raises(FailedToGetModelError):
+        m_model_registry.get_model("test-key")
+
+    m_model_registry.minio_client.get_object.assert_not_called()
+
+@patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=True)
+@patch("sdk.model_registry.model_registry.ModelRegistry._get_model_version_from_list")
+def test_get_model_with_version_not_found_ko(get_model_from_list_mock, _, m_model_registry):
+    get_model_from_list_mock.side_effect = ModuleNotFoundError("test-key", METADATA["Model_version"])
+
+    with pytest.raises(FailedToGetModelError):
+        m_model_registry.get_model("test-key", METADATA["Model_version"])
+
+    m_model_registry.minio_client.get_object.assert_not_called()
+    get_model_from_list_mock.assert_called_once()
 
 
 @patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=True)
@@ -172,7 +195,7 @@ def test_get_model_ko(_, m_model_registry):
     m_model_registry.minio_client.get_object.side_effect = Exception
 
     with pytest.raises(FailedToGetModelError):
-        m_model_registry.get_model("test-key", METADATA["Model_version"])
+        m_model_registry.get_model("test-key")
 
     m_model_registry.minio_client.get_object.assert_called_once()
 
@@ -256,7 +279,7 @@ def test_delete_model_ko(_, m_model_registry):
 def test__object_exist_ok(m_model_registry):
     m_model_registry.minio_client.stat_object.return_value = None
 
-    exist = m_model_registry._object_exist("test-key", "test-version")
+    exist = m_model_registry._object_exist("test-key")
 
     m_model_registry.minio_client.stat_object.assert_called_once()
     assert exist
@@ -266,6 +289,30 @@ def test__object_exist_ko(m_model_registry):
     m_model_registry.minio_client.stat_object.side_effect = Exception
 
     with pytest.raises(Exception):
-        m_model_registry._object_exist("test-key", "test-version")
+        m_model_registry._object_exist("test-key")
 
         m_model_registry.minio_client.stat_object.assert_called_once()
+
+def test__get_model_version_from_list_ok(m_model_registry, m_model):
+    m_model_registry.minio_client.list_objects.return_value = [m_model]
+    m_model_registry.minio_client.stat_object.side_effect = [m_model]
+
+    response = m_model_registry._get_model_version_from_list("test-key", METADATA["Model_version"])
+
+    response_model = Model(
+        name=response.object_name,
+        version=response.headers.get("x-amz-Model_version"),
+        description=response.headers.get("x-amz-Model_description"),
+        format=response.headers.get("x-amz-Model_format"),
+        model=response.read(),
+    )
+    m_model_registry.minio_client.list_objects.assert_called_once()
+    assert response_model == EXPECTED_MODEL
+
+def test__get_model_version_from_list_ko(m_model_registry, m_model):
+    m_model_registry.minio_client.list_objects.return_value = []
+
+    with pytest.raises(ModelNotFoundError):
+        m_model_registry._get_model_version_from_list("test-key", "v1.0.0")
+
+    m_model_registry.minio_client.list_objects.assert_called_once()
