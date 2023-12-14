@@ -159,6 +159,7 @@ def test_get_model_no_version_ok(_, m_model_registry, m_model):
     m_model_registry.minio_client.get_object.assert_called_once()
     assert response == EXPECTED_MODEL
 
+
 @patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=True)
 @patch("sdk.model_registry.model_registry.ModelRegistry._get_model_version_from_list")
 def test_get_model_with_version_ok(get_model_from_list_mock, _, m_model_registry, m_model):
@@ -177,6 +178,7 @@ def test_get_model_not_found_ko(_, m_model_registry):
         m_model_registry.get_model("test-key")
 
     m_model_registry.minio_client.get_object.assert_not_called()
+
 
 @patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=True)
 @patch("sdk.model_registry.model_registry.ModelRegistry._get_model_version_from_list")
@@ -293,6 +295,7 @@ def test__object_exist_ko(m_model_registry):
 
         m_model_registry.minio_client.stat_object.assert_called_once()
 
+
 def test__get_model_version_from_list_ok(m_model_registry, m_model):
     m_model_registry.minio_client.list_objects.return_value = [m_model]
     m_model_registry.minio_client.stat_object.side_effect = [m_model]
@@ -308,6 +311,7 @@ def test__get_model_version_from_list_ok(m_model_registry, m_model):
     )
     m_model_registry.minio_client.list_objects.assert_called_once()
     assert response_model == EXPECTED_MODEL
+
 
 def test__get_model_version_from_list_ko(m_model_registry, m_model):
     m_model_registry.minio_client.list_objects.return_value = []
