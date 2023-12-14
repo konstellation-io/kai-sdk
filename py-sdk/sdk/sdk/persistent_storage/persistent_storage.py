@@ -191,7 +191,7 @@ class PersistentStorage(PersistentStorageABC):
                 recursive=True,
                 include_user_meta=True,
             )
-            self.logger.info(f"files successfully listed from persistent storage bucket {self.minio_bucket_name}")
+            self.logger.info(f"files successfully retrieved from persistent storage bucket {self.minio_bucket_name}")
 
             object_info_list = []
 
@@ -199,7 +199,7 @@ class PersistentStorage(PersistentStorageABC):
             for obj in objects:
                 if not obj.is_dir and not obj.object_name.startswith(self.kai_internal_folder):
                     stats = self.minio_client.stat_object(
-                        self.minio_bucket_name, obj.object_name, version_id=obj.version_id
+                        self.minio_bucket_name, obj.object_name
                     )
 
                     expiry_date = self._get_expiry_date(stats.metadata.get("x-amz-expiration"))
@@ -226,7 +226,7 @@ class PersistentStorage(PersistentStorageABC):
                 recursive=True,
                 include_user_meta=True,
             )
-            self.logger.info(f"files successfully listed from persistent storage bucket {self.minio_bucket_name}")
+            self.logger.info(f"files successfully retrieved from persistent storage bucket {self.minio_bucket_name}")
             object_info_list = []
 
             # Get stats for each object
