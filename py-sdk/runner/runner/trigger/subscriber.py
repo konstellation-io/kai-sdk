@@ -95,12 +95,20 @@ class TriggerSubscriber:
 
             handler = getattr(self.trigger_runner, "response_handler", None)
             if handler is None:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.trigger_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(msg, UndefinedResponseHandlerError(msg.subject))
                 return
 
             try:
                 await handler(self.trigger_runner.sdk, request_msg.payload)
             except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.trigger_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 from_node = request_msg.from_node
                 to_node = self.trigger_runner.sdk.metadata.get_process()
                 await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
@@ -109,6 +117,10 @@ class TriggerSubscriber:
             try:
                 await msg.ack()
             except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.trigger_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 self.logger.error(f"error acknowledging message: {e}")
 
             end = time.time() * 1000
