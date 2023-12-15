@@ -144,7 +144,7 @@ class ModelRegistry(ModelRegistryABC):
         if version and not Version.is_valid(version):
             raise InvalidVersionError()
 
-        response = None
+        object_ = None
         try:
             exist = self._object_exist(self._get_model_path(name))
             if not exist:
@@ -152,27 +152,27 @@ class ModelRegistry(ModelRegistryABC):
                 raise ModelNotFoundError(name, version)
 
             if version:
-                response = self._get_model_version_from_list(name, version)
+                object_, stats = self._get_model_version_from_list(name, version)
             else:
-                response = self.minio_client.get_object(self.minio_bucket_name, self._get_model_path(name))
+                object_ = self.minio_client.get_object(self.minio_bucket_name, self._get_model_path(name))
+                stats = self.minio_client.stat_object(self.minio_bucket_name, self._get_model_path(name))
 
             self.logger.info(f"model {name} successfully retrieved from model registry")
-
             return Model(
-                name=self._get_model_name(response.object_name),
-                version=response.headers.get("x-amz-Model_version"),
-                description=response.headers.get("x-amz-Model_description"),
-                format=response.headers.get("x-amz-Model_format"),
-                model=response.read(),
+                name=self._get_model_name(object_.object_name),
+                version=stats.metadata.get("x-amz-Model_version"),
+                format=stats.metadata.get("x-amz-Model_format"),
+                description=stats.metadata.get("x-amz-Model_description"),
+                model=object_.read(),
             )
         except Exception as e:
             error = FailedToGetModelError(name, version, e)
             self.logger.error(f"{error}")
             raise error
         finally:
-            if response:
-                response.close()
-                response.release_conn()
+            if object_ is not None:
+                object_.close()
+                object_.release_conn()
 
     def list_models(self) -> list[ModelInfo]:
         try:
@@ -271,7 +271,7 @@ class ModelRegistry(ModelRegistryABC):
         _, file_name = os.path.split(full_path)
         return file_name
 
-    def _get_model_version_from_list(self, name: str, version: str) -> ModelInfo:
+    def _get_model_version_from_list(self, name: str, version: str):
         objects = self.minio_client.list_objects(
             self.minio_bucket_name,
             prefix=self._get_model_path(name),
@@ -284,6 +284,11 @@ class ModelRegistry(ModelRegistryABC):
                     self.minio_bucket_name, obj.object_name, version_id=obj.version_id
                 )
                 if stats.metadata.get("x-amz-Model_version") == version:
-                    return stats
+                    return (
+                        self.minio_client.get_object(
+                            self.minio_bucket_name, obj.object_name, version_id=obj.version_id
+                        ),
+                        stats,
+                    )
 
         raise ModelNotFoundError(name, version)
