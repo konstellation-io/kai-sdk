@@ -318,6 +318,7 @@ func (mr *ModelRegistry) getModelVersionFromList(name, version string) (*Model, 
 			return nil, fmt.Errorf(_errorRetrievingModel, err)
 		}
 
+		// Check if the object is the one we are looking for and not a directory
 		if object.Key == mr.getModelPath(name) && stats.UserMetadata[_modelVersionMetadata] == version {
 			objectData, err := mr.storageClient.GetObject(
 				context.Background(),
