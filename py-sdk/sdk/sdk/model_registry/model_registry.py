@@ -146,7 +146,7 @@ class ModelRegistry(ModelRegistryABC):
 
         object_ = None
         try:
-            exist = self._object_exist(self._get_model_path(name))
+            exist = self._object_exist(name)
             if not exist:
                 self.logger.error(f"model {name} with version {version} not found in model registry")
                 raise ModelNotFoundError(name, version)
@@ -159,7 +159,7 @@ class ModelRegistry(ModelRegistryABC):
 
             self.logger.info(f"model {name} successfully retrieved from model registry")
             return Model(
-                name=self._get_model_name(object_.object_name),
+                name=self._get_model_name(stats.object_name),
                 version=stats.metadata.get("x-amz-Model_version"),
                 format=stats.metadata.get("x-amz-Model_format"),
                 description=stats.metadata.get("x-amz-Model_description"),
@@ -239,8 +239,7 @@ class ModelRegistry(ModelRegistryABC):
 
     def delete_model(self, name: str) -> bool:
         try:
-            path = self._get_model_path(name)
-            exist = self._object_exist(path)
+            exist = self._object_exist(name)
             if not exist:
                 self.logger.error(f"model {name} does not found in model registry")
                 return False
@@ -253,10 +252,10 @@ class ModelRegistry(ModelRegistryABC):
             self.logger.error(f"{error}")
             raise error
 
-    def _object_exist(self, key: str) -> bool:
+    def _object_exist(self, name: str) -> bool:
         # minio does not have a method to check if an object exists
         try:
-            self.minio_client.stat_object(bucket_name=self.minio_bucket_name, object_name=key)
+            self.minio_client.stat_object(bucket_name=self.minio_bucket_name, object_name=self._get_model_path(name))
             return True
         except Exception as error:
             if "code: NoSuchKey" in str(error):
