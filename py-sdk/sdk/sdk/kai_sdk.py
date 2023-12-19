@@ -26,6 +26,7 @@ LOGGER_FORMAT = (
     "<cyan>{level}</cyan> {extra[context]} <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
     "<level>{message}</level> <level>{extra[metadata]}</level>"
 )
+DEBUG_ORIGIN = "[SDK]"
 
 
 @dataclass
@@ -58,27 +59,56 @@ class KaiSDK:
         self.centralized_config = CentralizedConfig(js=self.js)
         self.messaging = Messaging(nc=self.nc, js=self.js)
         self.metadata = Metadata()
-        self.measurements = Measurements()
-        self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
+
+        try:
+            self.measurements = Measurements()
+        except Exception as e:
+            assert self.logger is not None
+            self.logger.error(f"error initializing measurements: {e}")
+            sys.exit(1)
+
+        try:
+            self.storage = Storage(PersistentStorage(), EphemeralStorage(js=self.js))
+        except Exception as e:
+            assert self.logger is not None
+            self.logger.error(f"error initializing storage: {e}")
+            sys.exit(1)
+
         self.predictions = Predictions()
-        self.model_registry = ModelRegistry()
+
+        try:
+            self.model_registry = ModelRegistry()
+        except Exception as e:
+            assert self.logger is not None
+            self.logger.error(f"error initializing model registry: {e}")
+            sys.exit(1)
 
     async def initialize(self) -> None:
         try:
             await self.storage.ephemeral.initialize()
         except Exception as e:
             assert self.logger is not None
-            self.logger.error(f"error initializing object store: {e}")
-            asyncio.get_event_loop().stop()
-            sys.exit(1)
+            origin = logger._core.extra["origin"]
+            if origin != DEBUG_ORIGIN:
+                self.logger.error(f"error initializing object store: {e}")
+                raise e
+            else:
+                self.logger.error(f"error initializing object store: {e}")
+                asyncio.get_event_loop().stop()
+                sys.exit(1)
 
         try:
             await self.centralized_config.initialize()
         except Exception as e:
             assert self.logger is not None
-            self.logger.error(f"error initializing centralized configuration: {e}")
-            asyncio.get_event_loop().stop()
-            sys.exit(1)
+            origin = logger._core.extra["origin"]
+            if origin != DEBUG_ORIGIN:
+                self.logger.error(f"error initializing centralized configuration: {e}")
+                raise e
+            else:
+                self.logger.error(f"error initializing centralized configuration: {e}")
+                asyncio.get_event_loop().stop()
+                sys.exit(1)
 
     def get_request_id(self) -> str | None:
         request_msg = getattr(self, "request_msg", None)
@@ -92,12 +122,12 @@ class KaiSDK:
             format=LOGGER_FORMAT,
             backtrace=True,
             diagnose=True,
-            level="DEBUG",
+            level="TRACE",
         )
-        logger.configure(extra={"context": "", "metadata": {}, "origin": "[SDK]"})
+        logger.configure(extra={"context": "", "metadata": {}, "origin": DEBUG_ORIGIN})
 
-        self.logger = logger.bind(context="[SDK]")
-        self.logger.debug("logger initialized")
+        self.logger = logger.bind(context=DEBUG_ORIGIN)
+        self.logger.warning("no logger provided, default sdk logger initialized")
 
     def set_request_msg(self, request_msg: KaiNatsMessage) -> None:
         self.request_msg = request_msg
