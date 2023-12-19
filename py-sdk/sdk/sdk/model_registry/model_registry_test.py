@@ -153,6 +153,7 @@ def test_register_model_invalid_version_ko(m_model_registry):
 @patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=True)
 def test_get_model_no_version_ok(_, m_model_registry, m_model):
     m_model_registry.minio_client.get_object.return_value = m_model
+    m_model_registry.minio_client.stat_object.return_value = m_model
 
     response = m_model_registry.get_model("test-key")
 
@@ -163,7 +164,7 @@ def test_get_model_no_version_ok(_, m_model_registry, m_model):
 @patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=True)
 @patch("sdk.model_registry.model_registry.ModelRegistry._get_model_version_from_list")
 def test_get_model_with_version_ok(get_model_from_list_mock, _, m_model_registry, m_model):
-    get_model_from_list_mock.return_value = m_model
+    get_model_from_list_mock.return_value = m_model, m_model
 
     response = m_model_registry.get_model("test-key", METADATA["Model_version"])
 
@@ -213,7 +214,7 @@ def test_get_model_invalid_version_ko(m_model_registry):
 
 def test_list_models_ok(m_model_registry, m_model):
     m_model_registry.minio_client.list_objects.return_value = [m_model]
-    m_model_registry.minio_client.stat_object.side_effect = [m_model]
+    m_model_registry.minio_client.stat_object.return_value = m_model
 
     response = m_model_registry.list_models()
 
@@ -233,7 +234,7 @@ def test_list_models_ko(m_model_registry):
 
 def test_list_model_versions_ok(m_model_registry, m_model):
     m_model_registry.minio_client.list_objects.return_value = [m_model]
-    m_model_registry.minio_client.stat_object.side_effect = [m_model]
+    m_model_registry.minio_client.stat_object.return_value = m_model
 
     objects = m_model_registry.list_model_versions("test-key")
 
@@ -298,19 +299,14 @@ def test__object_exist_ko(m_model_registry):
 
 def test__get_model_version_from_list_ok(m_model_registry, m_model):
     m_model_registry.minio_client.list_objects.return_value = [m_model]
-    m_model_registry.minio_client.stat_object.side_effect = [m_model]
+    m_model_registry.minio_client.get_object.return_value = m_model
+    m_model_registry.minio_client.stat_object.return_value = m_model
 
-    response = m_model_registry._get_model_version_from_list("test-key", METADATA["Model_version"])
+    object_, stats = m_model_registry._get_model_version_from_list("test-key", METADATA["Model_version"])
 
-    response_model = Model(
-        name=response.object_name,
-        version=response.headers.get("x-amz-Model_version"),
-        description=response.headers.get("x-amz-Model_description"),
-        format=response.headers.get("x-amz-Model_format"),
-        model=response.read(),
-    )
     m_model_registry.minio_client.list_objects.assert_called_once()
-    assert response_model == EXPECTED_MODEL
+    assert object_ == m_model
+    assert stats == m_model
 
 
 def test__get_model_version_from_list_ko(m_model_registry, m_model):
