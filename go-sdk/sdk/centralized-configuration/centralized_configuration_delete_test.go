@@ -10,7 +10,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 	// Given
 	s.workflowKv.On("Delete", "key1").Return(nil)
 
-	config, err := centralizedConfiguration.NewCentralizedConfigurationBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -32,7 +32,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 	// Given
 	s.processKv.On("Delete", "key1").Return(nil)
 
-	config, err := centralizedConfiguration.NewCentralizedConfigurationBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -57,7 +57,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 	s.workflowKv.On("Delete", "key1").Return(nats.ErrKeyNotFound)
 	s.processKv.On("Delete", "key1").Return(nats.ErrKeyNotFound)
 
-	config, err := centralizedConfiguration.NewCentralizedConfigurationBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,

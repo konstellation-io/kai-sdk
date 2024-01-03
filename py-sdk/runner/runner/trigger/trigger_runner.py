@@ -13,9 +13,10 @@ from google.protobuf import any_pb2
 from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
+from opentelemetry.metrics._internal.instrument import Histogram
 
 from runner.common.common import Finalizer, Initializer
-from runner.trigger.exceptions import UndefinedRunnerFunctionError
+from runner.trigger.exceptions import FailedToInitializeMetricsError, UndefinedRunnerFunctionError
 from runner.trigger.helpers import compose_finalizer, compose_initializer, compose_runner, get_response_handler
 from runner.trigger.subscriber import TriggerSubscriber
 from sdk.kai_sdk import KaiSDK
@@ -36,11 +37,22 @@ class TriggerRunner:
     subscriber: TriggerSubscriber = field(init=False)
     finalizer: Optional[Finalizer] = None
     tasks: list[threading.Thread] = field(init=False, default_factory=list)
+    metrics: Histogram = field(init=False)
 
     def __post_init__(self) -> None:
         logger.configure(extra={"context": "", "metadata": {}, "origin": "[TRIGGER]"})
         self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=logger)
         self.subscriber = TriggerSubscriber(self)
+        self._init_metrics()
+
+    def _init_metrics(self) -> None:
+        try:
+            self.metrics = self.sdk.measurements.get_metrics_client().create_histogram(
+                name="runner-process-message-time", unit="ms", description="How long it takes to process a message."
+            )
+        except Exception as e:
+            self.logger.error(f"error initializing metrics: {e}")
+            raise FailedToInitializeMetricsError(e)
 
     def with_initializer(self, initializer: Initializer) -> TriggerRunner:
         self.initializer = compose_initializer(initializer)
@@ -115,8 +127,6 @@ class TriggerRunner:
         if not self.finalizer:
             self.finalizer = compose_finalizer()
 
-        await self.initializer(self.sdk)
-
         loop = asyncio.get_event_loop()
         signals = (signal.SIGINT, signal.SIGTERM)
         for s in signals:
@@ -126,6 +136,7 @@ class TriggerRunner:
             )
 
         try:
+            await self.initializer(self.sdk)
             await self.subscriber.start()
             asyncio.create_task(self.runner(self, self.sdk))
         except Exception as e:

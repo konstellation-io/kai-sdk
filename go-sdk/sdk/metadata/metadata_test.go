@@ -40,7 +40,7 @@ func (s *SdkMetadataTestSuite) TestMetadata_GetMetadata_ExpectOK() {
 	viper.SetDefault(common.ConfigCcProcessBucketKey, "process-bucket")
 
 	// When
-	sdkMetadata := metadata.NewMetadata()
+	sdkMetadata := metadata.New()
 
 	productName := sdkMetadata.GetProduct()
 	workflowName := sdkMetadata.GetWorkflow()

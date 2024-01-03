@@ -8,7 +8,7 @@ import (
 type Metadata struct {
 }
 
-func NewMetadata() *Metadata {
+func New() *Metadata {
 	return &Metadata{}
 }
 
@@ -18,6 +18,10 @@ func (md Metadata) GetProduct() string {
 
 func (md Metadata) GetWorkflow() string {
 	return viper.GetString(common.ConfigMetadataWorkflowIDKey)
+}
+
+func (md Metadata) GetWorkflowType() string {
+	return viper.GetString(common.ConfigMetadataWorkflowTypeKey)
 }
 
 func (md Metadata) GetProcess() string {

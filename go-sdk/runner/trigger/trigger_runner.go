@@ -7,6 +7,7 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
 	"github.com/nats-io/nats.go"
+	"go.opentelemetry.io/otel/metric"
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
@@ -25,6 +26,7 @@ type Runner struct {
 	initializer      common.Initializer
 	runner           RunnerFunc
 	finalizer        common.Finalizer
+	metrics          metric.Int64Histogram
 }
 
 var wg sync.WaitGroup //nolint:gochecknoglobals // WaitGroup is used to wait for goroutines to finish

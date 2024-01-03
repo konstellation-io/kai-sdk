@@ -1,0 +1,11 @@
+# Use an official OpenTelemetry Collector image as the base image
+FROM otel/opentelemetry-collector-contrib:latest
+
+# Copy your configuration file to the container
+COPY otel-collector-config.yaml /etc/otel-collector-config.yaml
+
+# Set environment variable to use the provided configuration file
+ENV OTEL_CONFIG=/etc/otel-collector-config.yaml
+
+# Expose the default collector port
+EXPOSE 4317

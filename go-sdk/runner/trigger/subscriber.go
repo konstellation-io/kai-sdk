@@ -1,13 +1,17 @@
 package trigger
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/go-logr/logr"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/google/uuid"
 
@@ -29,6 +33,20 @@ func (tr *Runner) getLoggerWithName() logr.Logger {
 
 func (tr *Runner) startSubscriber() {
 	inputSubjects := viper.GetStringSlice(common.ConfigNatsInputsKey)
+
+	var err error
+
+	tr.metrics, err = tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
+		"runner-process-message-time",
+		metric.WithDescription("How long it takes to process a message."),
+		metric.WithUnit("ms"),
+		metric.WithExplicitBucketBoundaries(250, 500, 1000),
+	)
+	if err != nil {
+		tr.getLoggerWithName().Error(err, "Error initializing metrics")
+		os.Exit(1)
+	}
+
 	subscriptions := make([]*nats.Subscription, 0, len(inputSubjects))
 
 	for _, subject := range inputSubjects {
@@ -93,6 +111,16 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 
 		return
 	}
+
+	start := time.Now()
+	defer func() {
+		executionTime := time.Since(start).Milliseconds()
+		tr.sdk.Logger.V(1).Info(fmt.Sprintf("%s execution time: %d ms", tr.sdk.Metadata.GetProcess(), executionTime))
+
+		tr.metrics.Record(context.Background(), executionTime,
+			metric.WithAttributeSet(tr.getMetricAttributes(requestMsg.RequestId)),
+		)
+	}()
 
 	tr.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
 		msg.Subject))
@@ -241,6 +269,31 @@ func (tr *Runner) getMaxMessageSize() (int64, error) {
 	}
 
 	return serverMaxSize, nil
+}
+
+func (tr *Runner) getMetricAttributes(requestID string) attribute.Set {
+	return attribute.NewSet(
+		attribute.KeyValue{
+			Key:   "product",
+			Value: attribute.StringValue(tr.sdk.Metadata.GetProduct()),
+		},
+		attribute.KeyValue{
+			Key:   "version",
+			Value: attribute.StringValue(tr.sdk.Metadata.GetVersion()),
+		},
+		attribute.KeyValue{
+			Key:   "workflow",
+			Value: attribute.StringValue(tr.sdk.Metadata.GetWorkflow()),
+		},
+		attribute.KeyValue{
+			Key:   "process",
+			Value: attribute.StringValue(tr.sdk.Metadata.GetProcess()),
+		},
+		attribute.KeyValue{
+			Key:   "request_id",
+			Value: attribute.StringValue(requestID),
+		},
+	)
 }
 
 func sizeInMB(size int64) string {

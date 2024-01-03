@@ -11,12 +11,17 @@ keywords = ["python", "sdk", "kai", "aio"]
 
 [tool.poetry.dependencies]
 python = "3.11.5"
-nats-py = "2.3.0"
+nats-py = "2.6.0"
 protobuf = "4.23.4"
 loguru = "0.7.0"
 vyper-config = "1.1.1"
 minio = "7.2.0"
 python-keycloak = "3.7.0"
+redis = {extras = ["hiredis"], version = "5.0.1"}
+semver = "3.0.2"
+opentelemetry-sdk = "1.21.0"
+opentelemetry-exporter-otlp-proto-grpc = "1.21.0"
+grpcio = "1.59.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "23.7.0"
@@ -33,9 +38,10 @@ types-mock = "5.1.0.1"
 mypy = "1.5.1"
 types-protobuf = "4.24.0.1"
 loguru-mypy = "0.0.4"
+freezegun = "1.2.2"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]

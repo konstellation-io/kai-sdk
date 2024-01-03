@@ -1,8 +1,11 @@
 package task
 
 import (
+	"strings"
+
 	"github.com/go-logr/logr"
 	"github.com/nats-io/nats.go"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
@@ -25,6 +28,7 @@ type Runner struct {
 	preprocessor     Preprocessor
 	postprocessor    Postprocessor
 	finalizer        common.Finalizer
+	metrics          metric.Int64Histogram
 }
 
 func NewTaskRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
@@ -52,7 +56,7 @@ func (tr *Runner) WithHandler(handler Handler) *Runner {
 }
 
 func (tr *Runner) WithCustomHandler(subject string, handler Handler) *Runner {
-	tr.responseHandlers[subject] = composeHandler(handler)
+	tr.responseHandlers[strings.ToLower(subject)] = composeHandler(handler)
 	return tr
 }
 

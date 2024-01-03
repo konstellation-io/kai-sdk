@@ -7,6 +7,7 @@ from nats.aio.msg import Msg
 from nats.js import JetStreamContext
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
+from opentelemetry.metrics._internal.instrument import Histogram
 from vyper import v
 
 from runner.exit.exceptions import NewRequestMsgError
@@ -16,7 +17,9 @@ from sdk.kai_nats_msg_pb2 import KaiNatsMessage, MessageType
 from sdk.kai_sdk import KaiSDK
 from sdk.messaging.messaging_utils import compress
 from sdk.metadata.metadata import Metadata
+from sdk.model_registry.model_registry import ModelRegistry
 from sdk.persistent_storage.persistent_storage import PersistentStorage
+from sdk.predictions.store import Predictions
 
 NATS_INPUT = "nats.inputs"
 SUBJECT = "test.subject"
@@ -29,8 +32,10 @@ PROCESS = "test process id"
 
 
 @pytest.fixture(scope="function")
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-async def m_sdk(_: PersistentStorage) -> KaiSDK:
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+async def m_sdk(_: ModelRegistry, __: PersistentStorage, ___: Predictions) -> KaiSDK:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
     request_msg = KaiNatsMessage()
@@ -42,8 +47,11 @@ async def m_sdk(_: PersistentStorage) -> KaiSDK:
 
 
 @pytest.fixture(scope="function")
+@patch.object(ExitRunner, "_init_metrics")
+@patch.object(Predictions, "__new__", return_value=Mock(spec=Predictions))
 @patch.object(PersistentStorage, "__new__", return_value=Mock(spec=PersistentStorage))
-def m_exit_runner(_: PersistentStorage, m_sdk: KaiSDK) -> ExitRunner:
+@patch.object(ModelRegistry, "__new__", return_value=Mock(spec=ModelRegistry))
+def m_exit_runner(_: ModelRegistry, __: PersistentStorage, ___: Predictions, ____: Mock, m_sdk: KaiSDK) -> ExitRunner:
     nc = AsyncMock(spec=NatsClient)
     js = Mock(spec=JetStreamContext)
 
@@ -51,6 +59,7 @@ def m_exit_runner(_: PersistentStorage, m_sdk: KaiSDK) -> ExitRunner:
     exit_runner.sdk = m_sdk
     exit_runner.sdk.metadata = Mock(spec=Metadata)
     exit_runner.sdk.metadata.get_process = Mock(return_value="test.process")
+    exit_runner.metrics = Mock(spec=Histogram)
 
     return exit_runner
 
@@ -201,6 +210,7 @@ async def test_process_message_ok(m_msg, m_exit_subscriber):
     assert m_exit_subscriber._get_response_handler.called
     assert m_handler.called
     assert m_msg.ack.called
+    assert m_exit_subscriber.exit_runner.metrics.record.called
 
 
 async def test_process_message_not_valid_protobuf_ko(m_msg, m_exit_subscriber):

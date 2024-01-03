@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import TYPE_CHECKING
@@ -10,10 +11,12 @@ from loguru import logger
 from nats.aio.msg import Msg
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
+from opentelemetry.util.types import Attributes
 from vyper import v
 
 from runner.common.common import Handler
 from sdk.messaging.messaging_utils import is_compressed, uncompress
+from sdk.metadata.metadata import Metadata
 
 if TYPE_CHECKING:
     from runner.exit.exit_runner import ExitRunner
@@ -67,6 +70,15 @@ class ExitSubscriber:
             self.logger.error("input subjects undefined")
             await self.exit_runner._shutdown_handler(asyncio.get_event_loop())
 
+    def get_attributes(self, request_id: str) -> Attributes:
+        return {
+            "product": Metadata.get_product(),
+            "version": Metadata.get_version(),
+            "workflow": Metadata.get_workflow(),
+            "process": Metadata.get_process(),
+            "request_id": request_id,
+        }
+
     async def _process_message(self, msg: Msg) -> None:
         try:
             request_msg = self._new_request_msg(msg.data)
@@ -75,45 +87,72 @@ class ExitSubscriber:
             await self._process_runner_error(msg, NotValidProtobuf(msg.subject, error=e))
             return
 
-        self.logger.info("new message received")
-        self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
+        with self.logger.contextualize(metadata={"request_id": request_msg.request_id}):
+            start = time.time() * 1000
+            self.logger.info("new message received")
+            self.logger.info(f"processing message with request_id {request_msg.request_id} and subject {msg.subject}")
 
-        from_node = request_msg.from_node
-        handler = self._get_response_handler(from_node.lower())
-        to_node = self.exit_runner.sdk.metadata.get_process()
+            from_node = request_msg.from_node
+            handler = self._get_response_handler(from_node.lower())
+            to_node = self.exit_runner.sdk.metadata.get_process()
 
-        if handler is None:
-            await self._process_runner_error(msg, Exception(f"no handler defined for {from_node}"))
-            return
+            if handler is None:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
+                await self._process_runner_error(msg, Exception(f"no handler defined for {from_node}"))
+                return
 
-        try:
-            if self.exit_runner.preprocessor is not None:
-                await self.exit_runner.preprocessor(self.exit_runner.sdk, request_msg.payload)
-        except Exception as e:
-            await self._process_runner_error(
-                msg, HandlerError(from_node, to_node, error=e, type="handler preprocessor")
-            )
-            return
+            try:
+                if self.exit_runner.preprocessor is not None:
+                    await self.exit_runner.preprocessor(self.exit_runner.sdk, request_msg.payload)
+            except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
+                await self._process_runner_error(
+                    msg, HandlerError(from_node, to_node, error=e, type="handler preprocessor")
+                )
+                return
 
-        try:
-            await handler(self.exit_runner.sdk, request_msg.payload)
-        except Exception as e:
-            await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
-            return
+            try:
+                await handler(self.exit_runner.sdk, request_msg.payload)
+            except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
+                await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
+                return
 
-        try:
-            if self.exit_runner.postprocessor is not None:
-                await self.exit_runner.postprocessor(self.exit_runner.sdk, request_msg.payload)
-        except Exception as e:
-            await self._process_runner_error(
-                msg, HandlerError(from_node, to_node, error=e, type="handler postprocessor")
-            )
-            return
+            try:
+                if self.exit_runner.postprocessor is not None:
+                    await self.exit_runner.postprocessor(self.exit_runner.sdk, request_msg.payload)
+            except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
+                await self._process_runner_error(
+                    msg, HandlerError(from_node, to_node, error=e, type="handler postprocessor")
+                )
+                return
 
-        try:
-            await msg.ack()
-        except Exception as e:
-            self.logger.error(f"error acknowledging message: {e}")
+            try:
+                await msg.ack()
+            except Exception as e:
+                end = time.time() * 1000
+                elapsed = end - start
+                self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+                self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
+                self.logger.error(f"error acknowledging message: {e}")
+
+            end = time.time() * 1000
+            elapsed = end - start
+            self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
+            self.exit_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
 
     async def _process_runner_error(self, msg: Msg, error: Exception) -> None:
         error_msg = str(error)

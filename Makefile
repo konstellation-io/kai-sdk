@@ -20,12 +20,12 @@ gotidy: ## Run golangci-lint, goimports and gofmt
 	cd go-sdk && golangci-lint run ./... && goimports -w  . && gofmt -s -w -e -d . && cd -
 
 .PHONY: gotest
-gotest: ## Run tests
-	cd go-sdk && go test ./... -cover -coverpkg=./... -coverprofile=coverage-unit.out
+gotest: ## Run integration and unit tests
+	cd go-sdk && go test ./... -cover -coverpkg=./... --tags=unit,integration
 
 .PHONY: pytest
-pytest: ## Run tests
-	cd py-sdk && poetry run pytest sdk runner --cov --cov-report=term-missing --cov-report=xml:coverage-unit.out --cov-config=pyproject.toml --no-cov-on-fail
+pytest: ## Run unit tests
+	cd py-sdk && poetry run pytest sdk runner --cov --cov-report=term-missing
 
 .PHONY: pytidy
 pytidy: ## Run black, isort and codespell
@@ -41,3 +41,8 @@ pytidy: ## Run black, isort and codespell
 .PHONY: mypy
 mypy: ## Run mypy
 	poetry --directory py-sdk run mypy --pretty --warn-redundant-casts --warn-unused-ignores --warn-unreachable --disallow-untyped-decorators --disallow-incomplete-defs --disallow-untyped-calls --check-untyped-defs --disallow-incomplete-defs --python-version 3.11 py-sdk --config-file py-sdk/pyproject.toml
+
+.PHONY: update
+update: ## Update all dependencies
+	./scripts/update_go_mod.sh
+	./scripts/update_poetries.sh

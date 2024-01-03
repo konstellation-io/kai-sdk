@@ -1,8 +1,11 @@
 package exit
 
 import (
+	"strings"
+
 	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/go-logr/logr"
 	"github.com/nats-io/nats.go"
@@ -25,6 +28,7 @@ type Runner struct {
 	preprocessor     Preprocessor
 	postprocessor    Postprocessor
 	finalizer        common.Finalizer
+	metrics          metric.Int64Histogram
 }
 
 func NewExitRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
@@ -52,7 +56,7 @@ func (er *Runner) WithHandler(handler Handler) *Runner {
 }
 
 func (er *Runner) WithCustomHandler(subject string, handler Handler) *Runner {
-	er.responseHandlers[subject] = composeHandler(handler)
+	er.responseHandlers[strings.ToLower(subject)] = composeHandler(handler)
 	return er
 }
 

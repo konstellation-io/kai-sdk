@@ -25,9 +25,10 @@ LOGGER_FORMAT = (
 
 MANDATORY_CONFIG_KEYS = [
     "metadata.product_id",
-    "metadata.workflow_name",
-    "metadata.process_name",
     "metadata.version_tag",
+    "metadata.workflow_name",
+    "metadata.workflow_type",
+    "metadata.process_name",
     "nats.url",
     "nats.stream",
     "nats.output",
@@ -44,6 +45,14 @@ MANDATORY_CONFIG_KEYS = [
     "auth.client",  # Client to be used to authenticate
     "auth.client_secret",  # Client's secret to be used
     "auth.realm",  # Realm
+    "predictions.endpoint",
+    "predictions.username",
+    "predictions.password",
+    "predictions.index",
+    "measurements.endpoint",
+    "measurements.insecure",
+    "measurements.timeout",
+    "measurements.metrics_interval",
 ]
 
 
@@ -55,13 +64,18 @@ def custom_sink(encoding: str, path: str):
             record = message.record
 
             filepath = record["file"].path
-            domain = filepath.split("/")
-            filepath = f"{domain[-2]}/{domain[-1]}"
-            filepath = filepath + ":" + str(record["line"])
+            if filepath:
+                domain = filepath.split("/")
+                if len(domain) > 1:
+                    filepath = f"{domain[-2]}/{domain[-1]}"
+                else:
+                    filepath = domain[0]
+                filepath = filepath + ":" + str(record["line"])
 
             metadata = {}
-            for key, value in record["extra"]["metadata"].items():
-                metadata[key] = value
+            if record["extra"]["metadata"]:
+                for key, value in record["extra"]["metadata"].items():
+                    metadata[key] = value
 
             serialized_log = {
                 "level": record["level"].name,
@@ -155,11 +169,14 @@ class Runner:
         v.set_default("runner.logger.encoding", "json")
         v.set_default("runner.logger.output_paths", ["stdout"])
         v.set_default("runner.logger.error_output_paths", ["stderr"])
+        v.set_default("minio.internal_folder", ".kai")
+        v.set_default("model_registry.folder_name", ".models")
 
     def initialize_logger(self) -> None:
         encoding = v.get_string("runner.logger.encoding")
         output_paths = v.get("runner.logger.output_paths")
         error_output_paths = v.get("runner.logger.error_output_paths")
+        level = v.get_string("runner.logger.level")
 
         logger.remove()  # Remove the pre-configured handler
         for output_path in output_paths:
@@ -169,7 +186,8 @@ class Runner:
                 format=LOGGER_FORMAT,
                 backtrace=False,
                 diagnose=False,
-                level=v.get_string("runner.logger.level"),
+                level=level,
+                filter=lambda level: level["level"].name != "ERROR" and level["level"].name != "CRITICAL",
             )
 
         for error_output_path in error_output_paths:

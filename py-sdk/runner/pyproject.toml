@@ -11,11 +11,11 @@ keywords = ["python", "runner", "kai", "aio"]
 
 [tool.poetry.dependencies]
 python = "3.11.5"
-nats-py = "2.3.0"
+nats-py = "2.6.0"
 protobuf = "4.23.4"
 loguru = "0.7.0"
 vyper-config = "1.1.1"
-sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/sdk"}
+sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/sdk", tag="py-sdk/v1.3.12"}
 
 [tool.poetry.group.dev.dependencies]
 black = "23.7.0"
@@ -34,7 +34,7 @@ types-protobuf = "4.24.0.1"
 loguru-mypy = "0.0.4"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
