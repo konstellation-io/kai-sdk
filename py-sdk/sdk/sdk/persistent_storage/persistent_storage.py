@@ -36,7 +36,7 @@ class ObjectInfo:
 
 @dataclass
 class Object(ObjectInfo):
-    data: bytes = field(init=True)
+    data: BinaryIO = field(init=True)
 
 
 @dataclass

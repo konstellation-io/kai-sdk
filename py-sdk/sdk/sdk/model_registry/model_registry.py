@@ -38,7 +38,7 @@ class ModelInfo:
 
 @dataclass
 class Model(ModelInfo):
-    model: bytes = field(init=True)
+    model: BinaryIO = field(init=True)
 
 
 @dataclass
