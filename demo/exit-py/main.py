@@ -43,7 +43,9 @@ async def initializer(kai_sdk: sdk.KaiSDK):
     model_id = "some-model"
     model_value = io.BytesIO(b"some-value")
     model_version_id = "1.0.0"
-    kai_sdk.model_registry.register_model(model_value, model_id, model_version_id, "some-description", "any-format")
+    kai_sdk.model_registry.register_model(
+        model_value, model_id, model_version_id, "some-description", "any-format"
+    )
     logger.info(
         f"model registered! {model_id} {model_value.getvalue()!s} with version {model_version_id}"
     )
