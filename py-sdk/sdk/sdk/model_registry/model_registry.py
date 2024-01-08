@@ -274,6 +274,7 @@ class ModelRegistry(ModelRegistryABC):
         objects = self.minio_client.list_objects(
             self.minio_bucket_name,
             prefix=self._get_model_path(name),
+            include_user_meta=True,
             include_version=True,
             recursive=False,  # only first level
         )

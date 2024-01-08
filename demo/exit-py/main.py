@@ -40,6 +40,24 @@ async def initializer(kai_sdk: sdk.KaiSDK):
     logger.info(f"persistent storage value deleted! {object_id}")
     kai_sdk.storage.persistent.get("some-object", version_id)
 
+    model_id = "some-model"
+    model_value = io.BytesIO(b"some-value")
+    model_version_id = "some-version"
+    kai_sdk.model_registry.register_model(model_value, model_id, model_version_id, "some-description", "any-format")
+    logger.info(
+        f"model registered! {model_id} {model_value.getvalue()!s} with version {model_version_id}"
+    )
+    model, _ = kai_sdk.model_registry.get_model(model_id, model_version_id)
+    logger.info(f"model retrieved! {model!s}")
+    models = kai_sdk.model_registry.list_models()
+    logger.info(f"models listed! {models!s}")
+    kai_sdk.model_registry.delete_model(model_id, model_version_id)
+    logger.info(f"model deleted! {model_id}")
+    try:
+        kai_sdk.model_registry.get_model(model_id, model_version_id)
+    except sdk.KaiModelNotFoundError:
+        logger.info(f"model not found! {model_id}")
+
 
 async def handler(kai_sdk: sdk.KaiSDK, response: Any):
     logger = kai_sdk.logger.bind(context="[EXIT HANDLER]")
