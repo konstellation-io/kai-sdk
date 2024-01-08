@@ -24,11 +24,11 @@ async def initializer(kai_sdk: sdk.KaiSDK):
 
     object_id = "some-object"
     object_value = io.BytesIO(b"some-value")
-    version_id = kai_sdk.storage.persistent.save(object_id, object_value)
+    object_info = kai_sdk.storage.persistent.save(object_id, object_value)
     logger.info(
-        f"persistent storage value set! {object_id} {object_value.getvalue()!s} with version {version_id}"
+        f"persistent storage value set! {object_id} {object_value.getvalue()!s} with version {object_info.version}"
     )
-    obj, _ = kai_sdk.storage.persistent.get("some-object", version_id)
+    obj = kai_sdk.storage.persistent.get("some-object", object_info.version)
     logger.info(f"persistent storage value retrieved! {object_id} {obj!s}")
     objs = kai_sdk.storage.persistent.list()
     logger.info(f"persistent storage value listed! {objs!s}")
@@ -36,9 +36,31 @@ async def initializer(kai_sdk: sdk.KaiSDK):
     logger.info(
         f"persistent storage value listed for objects with prefix {object_id}! {objs!s}"
     )
-    kai_sdk.storage.persistent.delete(object_id, version_id)
+    kai_sdk.storage.persistent.delete(object_id, object_info.version)
     logger.info(f"persistent storage value deleted! {object_id}")
-    kai_sdk.storage.persistent.get("some-object", version_id)
+    kai_sdk.storage.persistent.get("some-object", object_info.version)
+
+    model_id = "some-model"
+    model_value = io.BytesIO(b"some-value")
+    model_version_id = "1.0.0"
+    kai_sdk.model_registry.register_model(
+        model_value, model_id, model_version_id, "some-description", "any-format"
+    )
+    logger.info(
+        f"model registered! {model_id} {model_value.getvalue()!s} with version {model_version_id}"
+    )
+    model = kai_sdk.model_registry.get_model(model_id, model_version_id)
+    logger.info(f"model retrieved! {model!s}")
+    models = kai_sdk.model_registry.list_models()
+    logger.info(f"models listed! {models!s}")
+    models = kai_sdk.model_registry.list_model_versions(model_id)
+    logger.info(f"models with version listed! {models!s}")
+    kai_sdk.model_registry.delete_model(model_id)
+    logger.info(f"model deleted! {model_id}")
+    try:
+        kai_sdk.model_registry.get_model(model_id, model_version_id)
+    except Exception as e:
+        logger.info(f"model not found! {model_id} {e!s}")
 
 
 async def handler(kai_sdk: sdk.KaiSDK, response: Any):
