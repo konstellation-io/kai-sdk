@@ -1554,7 +1554,7 @@ url = "runner"
 
 [[package]]
 name = "sdk"
-version = "0.3.0"
+version = "1.0.0"
 description = "KAI SDK's implementation in Python"
 optional = false
 python-versions = "3.11.5"
@@ -1871,4 +1871,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.5"
-content-hash = "2b7ebb1ac519abf37315bdab1b9aaf72c394469b1415f47c5433d621d2ded155"
+content-hash = "9eea174e6c86d26d6b2166e6fb1c29207b8327909076f355e9fd18a392544582"
