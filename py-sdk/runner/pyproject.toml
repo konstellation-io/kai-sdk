@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "runner"
-version = "0.4.0"
+version = "1.0.0"
 description = "KAI Runner's implementation in Python"
 authors = ["Intelygenz - AIO Team"]
 maintainers = ["Intelygenz - AIO Team"]
@@ -8,14 +8,13 @@ readme = "../README.md"
 repository = "https://github.com/konstellation-io/kai-sdk/py-sdk/runner"
 keywords = ["python", "runner", "kai", "aio"]
 
-
 [tool.poetry.dependencies]
 python = "3.11.5"
 nats-py = "2.6.0"
 protobuf = "4.23.4"
 loguru = "0.7.0"
 vyper-config = "1.1.1"
-sdk = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/sdk", tag="py-sdk/v1.3.12"}
+sdk = {path = "../sdk", develop = false}
 
 [tool.poetry.group.dev.dependencies]
 black = "23.7.0"
@@ -32,6 +31,7 @@ types-mock = "5.1.0.1"
 mypy = "1.5.1"
 types-protobuf = "4.24.0.1"
 loguru-mypy = "0.0.4"
+sdk = {path = "../sdk", develop = true}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
