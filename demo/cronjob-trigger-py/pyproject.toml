@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cronjob-trigger-py"
-version = "0.1.0"
+version = "1.0.0"
 description = "KAI SDK's demo in Python"
 authors = ["Intelygenz - AIO Team"]
 maintainers = ["Intelygenz - AIO Team"]
@@ -11,7 +11,7 @@ nats-py = "2.6.0"
 protobuf = "4.23.4"
 loguru = "0.7.0"
 vyper-config = "1.1.1"
-runner = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/runner", tag="py-sdk/v1.3.13"}
+runner = {git = "https://github.com/konstellation-io/kai-sdk.git", subdirectory = "py-sdk/runner", tag="py-sdk/v1.4.0"}
 
 [tool.poetry.group.dev.dependencies]
 ipdb = "0.13.13"
