@@ -55,7 +55,7 @@ def m_persistent_storage(minio_mock: Mock) -> PersistentStorageABC:
 def m_object() -> urllib3.BaseHTTPResponse:
     object_ = Mock(spec=urllib3.BaseHTTPResponse)
     object_.close.return_value = None
-    object_.read.return_value = b"test-payload"
+    object_.data = b"test-payload"
     object_.headers = {  # for object response from get method
         "content-length": 12,
         "content-type": "application/octet-stream",

@@ -57,7 +57,7 @@ def m_model_registry(minio_mock: Mock) -> ModelRegistryABC:
 def m_model() -> urllib3.BaseHTTPResponse:
     object_ = Mock(spec=urllib3.BaseHTTPResponse)
     object_.close.return_value = None
-    object_.read.return_value = b"test-payload"
+    object_.data = b"test-payload"
     object_.headers = {  # for object response from get method
         "content-length": 12,
         "content-type": "application/octet-stream",
@@ -65,9 +65,9 @@ def m_model() -> urllib3.BaseHTTPResponse:
         "x-amz-meta-version": METADATA["version"],
         "x-amz-meta-workflow": METADATA["workflow"],
         "x-amz-meta-process": METADATA["process"],
-        "x-amz-Model_version": METADATA["Model_version"],
-        "x-amz-Model_description": METADATA["Model_description"],
-        "x-amz-Model_format": METADATA["Model_format"],
+        "x-amz-meta-model_version": METADATA["Model_version"],
+        "x-amz-meta-model_description": METADATA["Model_description"],
+        "x-amz-meta-model_format": METADATA["Model_format"],
         "x-amz-version-id": "test-version",
     }
     object_.is_dir = False

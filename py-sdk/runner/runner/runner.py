@@ -176,6 +176,7 @@ class Runner:
         encoding = v.get_string("runner.logger.encoding")
         output_paths = v.get("runner.logger.output_paths")
         error_output_paths = v.get("runner.logger.error_output_paths")
+        level = v.get_string("runner.logger.level")
 
         logger.remove()  # Remove the pre-configured handler
         for output_path in output_paths:
@@ -185,7 +186,8 @@ class Runner:
                 format=LOGGER_FORMAT,
                 backtrace=False,
                 diagnose=False,
-                level=v.get_string("runner.logger.level"),
+                level=level,
+                filter=lambda level: level["level"].name != "ERROR" and level["level"].name != "CRITICAL",
             )
 
         for error_output_path in error_output_paths:

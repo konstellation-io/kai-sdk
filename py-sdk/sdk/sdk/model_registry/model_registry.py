@@ -38,7 +38,7 @@ class ModelInfo:
 
 @dataclass
 class Model(ModelInfo):
-    model: bytes = field(init=True)
+    model: BinaryIO = field(init=True)
 
 
 @dataclass
@@ -160,10 +160,10 @@ class ModelRegistry(ModelRegistryABC):
             self.logger.info(f"model {name} successfully retrieved from model registry")
             return Model(
                 name=self._get_model_name(stats.object_name),
-                version=stats.metadata.get("x-amz-Model_version"),
-                format=stats.metadata.get("x-amz-Model_format"),
-                description=stats.metadata.get("x-amz-Model_description"),
-                model=object_.read(),
+                version=stats.metadata.get("x-amz-meta-model_version"),
+                format=stats.metadata.get("x-amz-meta-model_format"),
+                description=stats.metadata.get("x-amz-meta-model_description"),
+                model=object_.data,
             )
         except Exception as e:
             error = FailedToGetModelError(name, version, e)
@@ -194,9 +194,9 @@ class ModelRegistry(ModelRegistryABC):
                     model_info_list.append(
                         ModelInfo(
                             name=self._get_model_name(obj.object_name),
-                            version=stats.metadata.get("x-amz-Model_version"),
-                            format=stats.metadata.get("x-amz-Model_format"),
-                            description=stats.metadata.get("x-amz-Model_description"),
+                            version=stats.metadata.get("x-amz-meta-model_version"),
+                            format=stats.metadata.get("x-amz-meta-model_format"),
+                            description=stats.metadata.get("x-amz-meta-model_description"),
                         )
                     )
             return model_info_list
@@ -226,12 +226,11 @@ class ModelRegistry(ModelRegistryABC):
                     model_version_info_list.append(
                         ModelInfo(
                             name=self._get_model_name(obj.object_name),
-                            version=stats.metadata.get("x-amz-Model_version"),
-                            format=stats.metadata.get("x-amz-Model_format"),
-                            description=stats.metadata.get("x-amz-Model_description"),
+                            version=stats.metadata.get("x-amz-meta-model_version"),
+                            format=stats.metadata.get("x-amz-meta-model_format"),
+                            description=stats.metadata.get("x-amz-meta-model_description"),
                         )
                     )
-
             return model_version_info_list
         except Exception as e:
             self.logger.error(FailedToListModelsError(e))
@@ -274,6 +273,7 @@ class ModelRegistry(ModelRegistryABC):
         objects = self.minio_client.list_objects(
             self.minio_bucket_name,
             prefix=self._get_model_path(name),
+            include_user_meta=True,
             include_version=True,
             recursive=False,  # only first level
         )
@@ -282,7 +282,7 @@ class ModelRegistry(ModelRegistryABC):
                 stats = self.minio_client.stat_object(
                     self.minio_bucket_name, obj.object_name, version_id=obj.version_id
                 )
-                if stats.metadata.get("x-amz-Model_version") == version:
+                if stats.metadata.get("x-amz-meta-model_version") == version:
                     return (
                         self.minio_client.get_object(
                             self.minio_bucket_name, obj.object_name, version_id=obj.version_id

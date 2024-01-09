@@ -36,7 +36,7 @@ class ObjectInfo:
 
 @dataclass
 class Object(ObjectInfo):
-    data: bytes = field(init=True)
+    data: BinaryIO = field(init=True)
 
 
 @dataclass
@@ -171,7 +171,7 @@ class PersistentStorage(PersistentStorageABC):
             return Object(
                 key=key,
                 version=response.headers.get("x-amz-version-id"),
-                data=response.read(),
+                data=response.data,
                 expires=expiry_date,
                 metadata=self._process_raw_metadata(response.headers),
             )
