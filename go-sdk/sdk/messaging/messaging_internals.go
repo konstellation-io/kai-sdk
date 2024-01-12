@@ -53,7 +53,7 @@ func (ms Messaging) publishAny(payload *anypb.Any, requestID string, msgType kai
 	ms.publishResponse(responseMsg, channel)
 }
 
-func (ms Messaging) publishError(requestID, errMsg string) {
+func (ms Messaging) publishError(requestID, errMsg string) { //nolint:unused // used in tests
 	responseMsg := &kai.KaiNatsMessage{
 		RequestId:   requestID,
 		Error:       errMsg,
