@@ -1,3 +1,5 @@
+//go:build unit
+
 package objectstore_test
 
 import (
