@@ -1,3 +1,5 @@
+//go:build unit
+
 package measurement_test
 
 import (

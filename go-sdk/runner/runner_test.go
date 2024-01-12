@@ -1,3 +1,5 @@
+//go:build unit
+
 package runner_test
 
 import (
