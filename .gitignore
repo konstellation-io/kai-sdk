@@ -15,6 +15,7 @@ coverage-integration.out
 
 build
 .venv
+dist
 
 # python
 __pycache__/
