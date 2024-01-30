@@ -15,7 +15,6 @@ from minio.lifecycleconfig import Expiration, LifecycleConfig, Rule
 from vyper import v
 
 from sdk.auth.authentication import Authentication
-from sdk.metadata.metadata import Metadata
 from sdk.persistent_storage.exceptions import (
     FailedToDeleteFileError,
     FailedToGetFileError,
@@ -30,7 +29,6 @@ from sdk.persistent_storage.exceptions import (
 class ObjectInfo:
     key: str = field(init=True)
     version: str = field(init=True)
-    metadata: dict[str, str] = field(init=True)
     expires: Optional[datetime] = field(init=True)
 
 
@@ -38,9 +36,9 @@ class ObjectInfo:
 class Object(ObjectInfo):
     data: bytes = field(init=True)
 
-    def as_string(self, encoding: str = 'utf-8') -> str:
+    def as_string(self, encoding: str = "utf-8") -> str:
         return self.data.decode(encoding)
-    
+
     def as_bytes(self) -> bytes:
         return self.data
 
@@ -128,26 +126,17 @@ class PersistentStorage(PersistentStorageABC):
                 # The lifecycle should always be added before saving the object to the bucket
                 self.minio_client.set_bucket_lifecycle(self.minio_bucket_name, conf)
 
-            metadata = {
-                "product": Metadata.get_product(),
-                "version": Metadata.get_version(),
-                "workflow": Metadata.get_workflow(),
-                "workflow_type": Metadata.get_workflow_type(),
-                "process": Metadata.get_process(),
-            }
-
             obj = self.minio_client.put_object(
                 self.minio_bucket_name,
                 key,
                 payload,
                 payload.getbuffer().nbytes,
-                metadata=metadata,
             )
             self.logger.info(f"file {key} successfully saved in persistent storage bucket {self.minio_bucket_name}")
 
             expiry_date = self._get_expiry_date(obj.http_headers.get("x-amz-expiration"))
 
-            return ObjectInfo(key=obj.object_name, version=obj.version_id, metadata=metadata, expires=expiry_date)
+            return ObjectInfo(key=obj.object_name, version=obj.version_id, expires=expiry_date)
         except Exception as e:
             error = FailedToSaveFileError(key, self.minio_bucket_name, e)
             self.logger.warning(f"{error}")
@@ -179,7 +168,6 @@ class PersistentStorage(PersistentStorageABC):
                 version=response.headers.get("x-amz-version-id"),
                 data=response.data,
                 expires=expiry_date,
-                metadata=self._process_raw_metadata(response.headers),
             )
         except Exception as e:
             error = FailedToGetFileError(key, version, self.minio_bucket_name, e)
@@ -213,7 +201,6 @@ class PersistentStorage(PersistentStorageABC):
                             key=obj.object_name,
                             version=stats.version_id,
                             expires=expiry_date,
-                            metadata=self._process_raw_metadata(stats.metadata),
                         )
                     )
             return object_info_list
@@ -246,7 +233,6 @@ class PersistentStorage(PersistentStorageABC):
                             key=obj.object_name,
                             version=stats.version_id,
                             expires=expiry_date,
-                            metadata=self._process_raw_metadata(stats.metadata),
                         )
                     )
 
@@ -298,11 +284,3 @@ class PersistentStorage(PersistentStorageABC):
             return datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %Z")
         else:
             return None
-
-    def _process_raw_metadata(self, raw_metadata: dict[str, str]) -> dict[str, str]:
-        # minio replaces our metadata keys with x-amz-meta-<key>
-        return {
-            k.replace("x-amz-meta-", "").replace("-", "_"): v
-            for k, v in raw_metadata.items()
-            if k.startswith("x-amz-meta-")
-        }
