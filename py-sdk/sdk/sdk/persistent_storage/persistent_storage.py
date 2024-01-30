@@ -36,7 +36,13 @@ class ObjectInfo:
 
 @dataclass
 class Object(ObjectInfo):
-    data: BinaryIO = field(init=True)
+    data: bytes = field(init=True)
+
+    def as_string(self, encoding: str = 'utf-8') -> str:
+        return self.data.decode(encoding)
+    
+    def as_bytes(self) -> bytes:
+        return self.data
 
 
 @dataclass
