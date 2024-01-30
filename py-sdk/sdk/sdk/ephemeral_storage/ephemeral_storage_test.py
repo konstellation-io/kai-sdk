@@ -197,11 +197,20 @@ async def test_get_failed_ko(m_ephemeral_storage):
 
 
 async def test_save_ok(m_ephemeral_storage):
+    m_ephemeral_storage.object_store.get.side_effect = ObjectNotFoundError
     result = await m_ephemeral_storage.save("test-key", b"any")
 
     assert m_ephemeral_storage.object_store.put.called
     assert m_ephemeral_storage.object_store.put.call_args == call("test-key", b"any")
     assert result is None
+
+
+async def test_save_overwrite_ok(m_ephemeral_storage, m_objects):
+    m_ephemeral_storage.object_store.get.return_value = m_objects[0]
+    await m_ephemeral_storage.save(KEY_140, b"any", overwrite=True)
+
+    assert m_ephemeral_storage.object_store.put.called
+    assert m_ephemeral_storage.object_store.put.call_args == call(KEY_140, b"any")
 
 
 async def test_save_undefined_ko(m_ephemeral_storage):
@@ -222,6 +231,15 @@ async def test_save_failed_ko(m_ephemeral_storage):
 
     with pytest.raises(FailedToSaveFileError):
         await m_ephemeral_storage.save("test-key", b"prueba")
+
+
+async def test_save_failed_object_already_exists_ko(m_ephemeral_storage):
+    m_ephemeral_storage.object_store.get.side_effect = b"object"
+
+    with pytest.raises(FailedToSaveFileError) as e:
+        await m_ephemeral_storage.save("test-key", b"prueba")
+
+        e.message == FailedToSaveFileError(key="test-key", error="file already exists")
 
 
 async def test_delete_ok(m_ephemeral_storage, m_objects, m_objects_results):

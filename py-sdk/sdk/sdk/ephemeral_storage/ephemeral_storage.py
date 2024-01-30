@@ -41,7 +41,7 @@ class EphemeralStorageABC(ABC):
         pass
 
     @abstractmethod
-    async def save(self, key: str, payload: bytes) -> None:
+    async def save(self, key: str, payload: bytes, overwrite: Optional[bool]) -> None:
         pass
 
     @abstractmethod
@@ -132,10 +132,18 @@ class EphemeralStorage(EphemeralStorageABC):
             self.logger.warning(f"failed to get file {key} from ephemeral storage {self.ephemeral_storage_name}: {e}")
             raise FailedToGetFileError(key=key, error=e)
 
-    async def save(self, key: str, payload: bytes) -> None:
+    async def save(self, key: str, payload: bytes, overwrite: Optional[bool] = False) -> None:
         if not self.object_store:
             self.logger.warning(UNDEFINED_OBJECT_STORE)
             raise UndefinedEphemeralStorageError
+
+        if not overwrite:
+            try:
+                await self.object_store.get(key)
+                self.logger.warning(f"file {key} already exists in ephemeral storage {self.ephemeral_storage_name}")
+                raise FailedToSaveFileError(key=key, error="file already exists")
+            except ObjectNotFoundError:
+                pass
 
         try:
             await self.object_store.put(key, payload)
