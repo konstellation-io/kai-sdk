@@ -73,4 +73,3 @@ func (ms Messaging) IsMessageOK() bool {
 func (ms Messaging) IsMessageError() bool {
 	return ms.requestMessage.MessageType == kai.MessageType_ERROR
 }
-
