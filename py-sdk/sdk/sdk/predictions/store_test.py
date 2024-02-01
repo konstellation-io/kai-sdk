@@ -9,6 +9,7 @@ from vyper import v
 from sdk.metadata.metadata import Metadata
 from sdk.predictions.exceptions import (
     EmptyIdError,
+    FailedToDeletePredictionError,
     FailedToFindPredictionsError,
     FailedToGetPredictionError,
     FailedToInitializePredictionsStoreError,
@@ -186,6 +187,20 @@ def test_update_failed_to_save_prediction(m_store, m_prediction):
 
     with pytest.raises(FailedToUpdatePredictionError):
         m_store.update("test_id", lambda x: x)
+
+
+def test_delete_ko(m_store):
+    m_store.client.json.return_value.delete.side_effect = Exception
+
+    with pytest.raises(FailedToDeletePredictionError):
+        m_store.delete("test_id")
+
+
+def test_delete_wrong_id(m_store):
+    with pytest.raises(FailedToDeletePredictionError) as error:
+        m_store.delete("")
+
+        assert error == FailedToDeletePredictionError("", EmptyIdError)
 
 
 def test_validate_filter_ok(m_store):

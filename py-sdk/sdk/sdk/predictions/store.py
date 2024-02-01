@@ -14,6 +14,7 @@ from vyper import v
 from sdk.metadata.metadata import Metadata
 from sdk.predictions.exceptions import (
     EmptyIdError,
+    FailedToDeletePredictionError,
     FailedToFindPredictionsError,
     FailedToGetPredictionError,
     FailedToInitializePredictionsStoreError,
@@ -42,6 +43,10 @@ class PredictionsABC(ABC):
 
     @abstractmethod
     def update(self, id: str, update_payload: UpdatePayloadFunc) -> None:
+        pass
+
+    @abstractmethod
+    def delete(self, id: str) -> None:
         pass
 
 
@@ -170,6 +175,20 @@ class Predictions(PredictionsABC):
             raise FailedToUpdatePredictionError(id, e)
 
         self.logger.info(f"successfully updated prediction with {id} to the predictions store")
+
+    def delete(self, id: str) -> None:
+        try:
+            if id == "" or id is None:
+                self.logger.error(f"{EmptyIdError()}")
+                raise EmptyIdError()
+
+            key = self._get_key_with_product_prefix(id)
+            self.client.json().delete(key)
+        except Exception as e:
+            self.logger.error(f"failed to delete prediction {id} from the predictions store: {e}")
+            raise FailedToDeletePredictionError(id, e)
+
+        self.logger.info(f"successfully deleted prediction {id} from the predictions store")
 
     def _validate_filter(self, filter: Filter) -> None:
         if filter.version is None:
