@@ -44,7 +44,9 @@ type messaging interface {
 type metadata interface {
 	GetProcess() string
 	GetWorkflow() string
+	GetWorkflowType() string
 	GetProduct() string
+	GetProcessType() string
 	GetVersion() string
 	GetEphemeralStorageName() string
 	GetGlobalCentralizedConfigurationName() string

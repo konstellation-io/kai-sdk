@@ -29,6 +29,7 @@ MANDATORY_CONFIG_KEYS = [
     "metadata.workflow_name",
     "metadata.workflow_type",
     "metadata.process_name",
+    "metadata.process_type",
     "nats.url",
     "nats.stream",
     "nats.output",
