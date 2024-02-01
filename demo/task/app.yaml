@@ -4,6 +4,7 @@ metadata:
   workflow_name: Task_workflow
   workflow_type: training
   process_name: Task_process
+  process_type: task
 
 nats:
   url: "nats://localhost:4222"

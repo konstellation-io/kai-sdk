@@ -8,12 +8,12 @@ runner:
       - stderr
 
 metadata:
+  version_tag: Version v1.0.0
   product_id: Product ID
   workflow_name: Workflow ID
   workflow_type: training
   process_name: Process ID
   process_type: trigger
-  version_tag: Version v1.0.0
 
 nats:
   url: "nats://localhost:4222"
