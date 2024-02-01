@@ -108,7 +108,6 @@ async def test_send_error(m_messaging):
     assert m_messaging._publish_error.call_args == call(err_msg="test_error", request_id="test_request_id")
 
 
-
 def test_get_error_message(m_messaging):
     m_messaging.request_msg.message_type = MessageType.ERROR
     m_messaging.request_msg.error = "test_error"
