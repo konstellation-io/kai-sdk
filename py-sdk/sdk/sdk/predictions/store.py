@@ -29,7 +29,7 @@ from sdk.predictions.types import Filter, Payload, Prediction, UpdatePayloadFunc
 @dataclass
 class PredictionsABC(ABC):
     @abstractmethod
-    def save(self, id: str, function: callable) -> None:
+    def save(self, id: str, payload: Payload) -> None:
         pass
 
     @abstractmethod
@@ -41,7 +41,7 @@ class PredictionsABC(ABC):
         pass
 
     @abstractmethod
-    def update(self, id: str, value: dict[str, str]) -> None:
+    def update(self, id: str, update_payload: UpdatePayloadFunc) -> None:
         pass
 
 
@@ -76,7 +76,7 @@ class Predictions(PredictionsABC):
 
         self.logger.info("successfully initialized predictions store")
 
-    def save(self, id: str, value: Payload) -> None:
+    def save(self, id: str, payload: Payload) -> None:
         try:
             if id == "" or id is None:
                 self.logger.error(f"{EmptyIdError()}")
@@ -87,7 +87,7 @@ class Predictions(PredictionsABC):
             prediction = Prediction(
                 creation_date=int(creation_timestamp),
                 last_modified=int(creation_timestamp),
-                payload=value,
+                payload=payload,
                 metadata={
                     "product": Metadata.get_product(),
                     "version": Metadata.get_version(),
@@ -140,7 +140,7 @@ class Predictions(PredictionsABC):
 
         return result
 
-    def update(self, id: str, update_function: UpdatePayloadFunc) -> None:
+    def update(self, id: str, update_payload: UpdatePayloadFunc) -> None:
         try:
             if id == "" or id is None:
                 self.logger.error(f"{EmptyIdError()}")
@@ -150,7 +150,7 @@ class Predictions(PredictionsABC):
             prediction = self.client.json().get(key)
 
             payload = prediction["payload"]
-            new_payload = update_function(payload)
+            new_payload = update_payload(payload)
             if new_payload is None:
                 self.logger.error(f"update function returned None for prediction {id}")
                 raise FailedToUpdatePredictionError(id)
