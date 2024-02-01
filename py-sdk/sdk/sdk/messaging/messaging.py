@@ -61,14 +61,6 @@ class MessagingABC(ABC):
         pass
 
     @abstractmethod
-    def is_message_early_reply(self) -> bool:
-        pass
-
-    @abstractmethod
-    def is_message_early_exit(self) -> bool:
-        pass
-
-    @abstractmethod
     def get_request_id(self, msg: Msg) -> (str, Exception):
         pass
 
@@ -231,9 +223,5 @@ def _message_type_converter(msg_type: MessageType.V) -> str:
         return "error"
     elif msg_type == MessageType.OK:
         return "ok"
-    elif msg_type == MessageType.EARLY_REPLY:
-        return "early reply"
-    elif msg_type == MessageType.EARLY_EXIT:
-        return "early exit"
     else:
         return "undefined"
