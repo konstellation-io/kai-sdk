@@ -4,6 +4,7 @@ metadata:
   workflow_name: Metrics_workflow
   workflow_type: feedback
   process_name: Metrics_process
+  process_type: task
 
 nats:
   url: "nats://localhost:4222"
