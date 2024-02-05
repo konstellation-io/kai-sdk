@@ -58,16 +58,17 @@ func (s *SdkMessagingTestSuite) TestMessaging_PublishError_ExpectOk() {
 		Return(&nats.PubAck{}, nil)
 	s.messagingUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
 
-	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
+	request := kai.KaiNatsMessage{RequestId: "123"}
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, &request, &s.messagingUtils)
 
 	// When
-	messagingInst.SendError("some-request", "some-error")
+	messagingInst.SendError("some-error")
 
 	// Then
 	s.NotNil(messagingInst)
 	s.jetstream.AssertCalled(s.T(),
 		"Publish", "test-parent",
-		getOutputMessage("some-request", nil, "some-error", "parent-node", kai.MessageType_ERROR))
+		getOutputMessage("123", nil, "some-error", "parent-node", kai.MessageType_ERROR))
 }
 
 func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectOk() {

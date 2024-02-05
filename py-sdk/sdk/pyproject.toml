@@ -1,16 +1,13 @@
 [tool.poetry]
 name = "sdk"
 version = "1.0.0"
-description = "KAI SDK's implementation in Python"
+description = "AIO SDK's implementation in Python"
 authors = ["Intelygenz - AIO Team"]
 maintainers = ["Intelygenz - AIO Team"]
-readme = "../README.md"
-repository = "https://github.com/konstellation-io/kai-sdk/py-sdk/sdk"
-keywords = ["python", "sdk", "kai", "aio"]
-
+keywords = ["python", "sdk", "aio"]
 
 [tool.poetry.dependencies]
-python = "3.11.5"
+python = "~3.11"
 nats-py = "2.6.0"
 protobuf = "4.23.4"
 loguru = "0.7.0"
@@ -38,7 +35,6 @@ types-mock = "5.1.0.1"
 mypy = "1.5.1"
 types-protobuf = "4.24.0.1"
 loguru-mypy = "0.0.4"
-freezegun = "1.2.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -47,7 +43,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 target-version = ["py311"]
 line-length = 120
-exclude = '/(.*_pb2.*\.py)|(.venv)|(__init__.py)/'
+exclude = '/(.*_pb2.*\.py)|(.venv)|(dist)|(__init__.py)/'
 
 [tool.isort]
 py_version=311
@@ -60,6 +56,7 @@ line_length = 120
 extend_skip = [
     "kai_nats_msg_pb2.py",
     ".venv",
+    "dist",
     "__init__.py",
 ]
 
@@ -67,9 +64,10 @@ extend_skip = [
 addopts = [
     "-vvv",
     "-s",
+    "-W ignore::DeprecationWarning",
 ]
 testpaths = [
-    "sdk/*_test.py",
+    "sdk/**/*_test.py",
 ]
 python_files = "*_test.py"
 python_classes = "Test*"
@@ -82,8 +80,7 @@ omit = [
     "*_test.py",
     "kai_nats_msg_pb2.py",
     ".venv",
-    "config.py",
-    "/**/*constants.py",
+    "dist",
     "/**/*__init__.py",
 ]
 relative_files = true
@@ -128,8 +125,7 @@ show_missing = true
 skip = [
     ".venv",
     "kai_nats_msg_pb2.py",
-    "config.py",
-    "constants.py",
+    "dist",
     "__init__.py",
 ]
 
@@ -138,8 +134,7 @@ python_version = 3.11
 exclude = [
     ".venv",
     "kai_nats_msg_pb2.py",
-    "config.py",
-    "constants.py",
+    "dist",
     "__init__.py",
 ]
 ignore_missing_imports = true

@@ -1,15 +1,28 @@
 [tool.poetry]
 name = "py-sdk"
 version = "1.0.0"
-description = "Poetry only for development purposes with Makefile"
+description = "AIO SDK's implementation in Python"
 authors = ["Intelygenz - AIO Team"]
 maintainers = ["Intelygenz - AIO Team"]
-readme = "README.md"
+keywords = ["python", "py-sdk", "aio"]
+packages = [
+    {include = "runner"},
+    {include = "sdk", from = "sdk"},
+]
 
 [tool.poetry.dependencies]
-python = "3.11.5"
-sdk = {path = "sdk", develop = false}
-runner = {path = "runner", develop = false}
+python = "~3.11"
+nats-py = "2.6.0"
+protobuf = "4.23.4"
+loguru = "0.7.0"
+vyper-config = "1.1.1"
+minio = "7.2.0"
+python-keycloak = "3.7.0"
+redis = {extras = ["hiredis"], version = "5.0.1"}
+semver = "3.0.2"
+opentelemetry-sdk = "1.21.0"
+opentelemetry-exporter-otlp-proto-grpc = "1.21.0"
+grpcio = "1.59.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "23.7.0"
@@ -26,8 +39,6 @@ types-mock = "5.1.0.1"
 mypy = "1.5.1"
 types-protobuf = "4.24.0.1"
 loguru-mypy = "0.0.4"
-sdk = {path = "sdk", develop = true}
-runner = {path = "runner", develop = true}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -36,7 +47,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 target-version = ["py311"]
 line-length = 120
-exclude = '/(.*_pb2.*\.py)|(.venv)|(__init__.py)/'
+exclude = '/(.*_pb2.*\.py)|(.venv)|(dist)|(__init__.py)/'
 
 [tool.isort]
 py_version=311
@@ -49,6 +60,7 @@ line_length = 120
 extend_skip = [
     "kai_nats_msg_pb2.py",
     ".venv",
+    "dist",
     "__init__.py",
 ]
 
@@ -59,8 +71,8 @@ addopts = [
     "-W ignore::DeprecationWarning",
 ]
 testpaths = [
-    "runners/**/*_test.py",
-    "sdk/**/*_test.py",
+    "sdk/sdk/**/*_test.py",
+    "runner/**/*_test.py",
 ]
 python_files = "*_test.py"
 python_classes = "Test*"
@@ -73,9 +85,8 @@ omit = [
     "*_test.py",
     "kai_nats_msg_pb2.py",
     ".venv",
-    "config.py",
-    "/**/*constants.py",
-    "__init__.py",
+    "dist",
+    "/**/*__init__.py",
 ]
 relative_files = true
 
@@ -119,8 +130,7 @@ show_missing = true
 skip = [
     ".venv",
     "kai_nats_msg_pb2.py",
-    "config.py",
-    "constants.py",
+    "dist",
     "__init__.py",
 ]
 
@@ -129,8 +139,7 @@ python_version = 3.11
 exclude = [
     ".venv",
     "kai_nats_msg_pb2.py",
-    "config.py",
-    "constants.py",
+    "dist",
     "__init__.py",
 ]
 ignore_missing_imports = true

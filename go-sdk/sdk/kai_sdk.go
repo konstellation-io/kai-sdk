@@ -31,15 +31,13 @@ type messaging interface {
 	SendOutput(response proto.Message, channelOpt ...string) error
 	SendOutputWithRequestID(response proto.Message, requestID string, channelOpt ...string) error
 	SendAny(response *anypb.Any, channelOpt ...string)
-	SendEarlyReply(response proto.Message, channelOpt ...string) error
-	SendEarlyExit(response proto.Message, channelOpt ...string) error
+	SendAnyWithRequestID(response *anypb.Any, requestID string, channelOpt ...string)
+	SendError(errorMessage string)
 	GetErrorMessage() string
 	GetRequestID(msg *nats.Msg) (string, error)
 
 	IsMessageOK() bool
 	IsMessageError() bool
-	IsMessageEarlyReply() bool
-	IsMessageEarlyExit() bool
 }
 
 //go:generate mockery --name metadata --output ../mocks --filename metadata_mock.go --structname MetadataMock
