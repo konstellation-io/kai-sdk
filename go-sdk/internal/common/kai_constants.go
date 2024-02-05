@@ -11,6 +11,7 @@ const (
 	ConfigMetadataWorkflowIDKey           = "metadata.workflow_name"
 	ConfigMetadataWorkflowTypeKey         = "metadata.workflow_type"
 	ConfigMetadataProcessIDKey            = "metadata.process_name"
+	ConfigMetadataProcessTypeKey          = "metadata.process_type"
 	ConfigMetadataVersionIDKey            = "metadata.version_tag"
 	ConfigNatsURLKey                      = "nats.url"
 	ConfigNatsStreamKey                   = "nats.stream"

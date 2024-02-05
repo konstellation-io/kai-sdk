@@ -33,6 +33,11 @@ class MetadataABC(ABC):
 
     @staticmethod
     @abstractmethod
+    def get_process_type() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
     def get_ephemeral_storage_name() -> str:
         pass
 
@@ -78,6 +83,10 @@ class Metadata(MetadataABC):
     @staticmethod
     def get_process() -> str:
         return v.get_string("metadata.process_name")
+
+    @staticmethod
+    def get_process_type() -> str:
+        return v.get_string("metadata.process_type")
 
     @staticmethod
     def get_ephemeral_storage_name() -> str:

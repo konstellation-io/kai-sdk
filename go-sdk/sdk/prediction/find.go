@@ -37,8 +37,6 @@ func (r *RedisPredictionStore) buildQueryWithFilters(filter *Filter) string {
 		r.getSearchNumericRangeFilter("creation_date", filter.CreationDate.StartDate, filter.CreationDate.EndDate),
 	}
 
-	fmt.Println(queryFilters)
-
 	if filter.Workflow != "" {
 		queryFilters = append(queryFilters, r.getSearchTagFilter("workflow", filter.Workflow))
 	}

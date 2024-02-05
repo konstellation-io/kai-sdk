@@ -181,6 +181,47 @@ func (_c *MetadataMock_GetProcessCentralizedConfigurationName_Call) RunAndReturn
 	return _c
 }
 
+// GetProcessType provides a mock function with given fields:
+func (_m *MetadataMock) GetProcessType() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// MetadataMock_GetProcessType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetProcessType'
+type MetadataMock_GetProcessType_Call struct {
+	*mock.Call
+}
+
+// GetProcessType is a helper method to define mock.On call
+func (_e *MetadataMock_Expecter) GetProcessType() *MetadataMock_GetProcessType_Call {
+	return &MetadataMock_GetProcessType_Call{Call: _e.mock.On("GetProcessType")}
+}
+
+func (_c *MetadataMock_GetProcessType_Call) Run(run func()) *MetadataMock_GetProcessType_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MetadataMock_GetProcessType_Call) Return(_a0 string) *MetadataMock_GetProcessType_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MetadataMock_GetProcessType_Call) RunAndReturn(run func() string) *MetadataMock_GetProcessType_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetProduct provides a mock function with given fields:
 func (_m *MetadataMock) GetProduct() string {
 	ret := _m.Called()
@@ -382,6 +423,47 @@ func (_c *MetadataMock_GetWorkflowCentralizedConfigurationName_Call) Return(_a0 
 }
 
 func (_c *MetadataMock_GetWorkflowCentralizedConfigurationName_Call) RunAndReturn(run func() string) *MetadataMock_GetWorkflowCentralizedConfigurationName_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetWorkflowType provides a mock function with given fields:
+func (_m *MetadataMock) GetWorkflowType() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// MetadataMock_GetWorkflowType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetWorkflowType'
+type MetadataMock_GetWorkflowType_Call struct {
+	*mock.Call
+}
+
+// GetWorkflowType is a helper method to define mock.On call
+func (_e *MetadataMock_Expecter) GetWorkflowType() *MetadataMock_GetWorkflowType_Call {
+	return &MetadataMock_GetWorkflowType_Call{Call: _e.mock.On("GetWorkflowType")}
+}
+
+func (_c *MetadataMock_GetWorkflowType_Call) Run(run func()) *MetadataMock_GetWorkflowType_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MetadataMock_GetWorkflowType_Call) Return(_a0 string) *MetadataMock_GetWorkflowType_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MetadataMock_GetWorkflowType_Call) RunAndReturn(run func() string) *MetadataMock_GetWorkflowType_Call {
 	_c.Call.Return(run)
 	return _c
 }
