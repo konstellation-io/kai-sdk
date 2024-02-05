@@ -45,7 +45,6 @@ func (s *PredictionStoreSuite) TestPredictionStore_Delete_InvalidPredictionID() 
 	// WHEN
 	err := s.predictionStore.Delete(ctx, predictionID)
 
-	fmt.Println(err)
 	// THEN
 	s.Assert().ErrorIs(err, prediction.ErrInvalidPredictionID)
 }
