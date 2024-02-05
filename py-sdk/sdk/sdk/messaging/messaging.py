@@ -49,14 +49,6 @@ class MessagingABC(ABC):
         pass
 
     @abstractmethod
-    async def send_early_reply(self, response: Message, chan: Optional[str]) -> None:
-        pass
-
-    @abstractmethod
-    async def send_early_exit(self, response: Message, chan: Optional[str]) -> None:
-        pass
-
-    @abstractmethod
     def get_error_message(self) -> str:
         pass
 
@@ -66,14 +58,6 @@ class MessagingABC(ABC):
 
     @abstractmethod
     def is_message_error(self) -> bool:
-        pass
-
-    @abstractmethod
-    def is_message_early_reply(self) -> bool:
-        pass
-
-    @abstractmethod
-    def is_message_early_exit(self) -> bool:
         pass
 
     @abstractmethod
@@ -108,14 +92,6 @@ class Messaging(MessagingABC):
     async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str] = None) -> None:
         await self._publish_any(payload=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
 
-    async def send_early_reply(self, response: Message, chan: Optional[str] = None) -> None:
-        request_id = self.request_msg.request_id if self.request_msg else None
-        await self._publish_msg(msg=response, msg_type=MessageType.EARLY_REPLY, chan=chan, request_id=request_id)
-
-    async def send_early_exit(self, response: Message, chan: Optional[str] = None) -> None:
-        request_id = self.request_msg.request_id if self.request_msg else None
-        await self._publish_msg(msg=response, msg_type=MessageType.EARLY_EXIT, chan=chan, request_id=request_id)
-
     async def send_error(self, error: str) -> None:
         request_id = self.request_msg.request_id if self.request_msg else None
         await self._publish_error(err_msg=error, request_id=request_id or "")
@@ -128,12 +104,6 @@ class Messaging(MessagingABC):
 
     def is_message_error(self) -> bool:
         return self.request_msg.message_type == MessageType.ERROR
-
-    def is_message_early_reply(self) -> bool:
-        return self.request_msg.message_type == MessageType.EARLY_REPLY
-
-    def is_message_early_exit(self) -> bool:
-        return self.request_msg.message_type == MessageType.EARLY_EXIT
 
     async def _publish_msg(
         self, msg: Message, msg_type: MessageType.V, request_id: Optional[str] = None, chan: Optional[str] = None
@@ -253,9 +223,5 @@ def _message_type_converter(msg_type: MessageType.V) -> str:
         return "error"
     elif msg_type == MessageType.OK:
         return "ok"
-    elif msg_type == MessageType.EARLY_REPLY:
-        return "early reply"
-    elif msg_type == MessageType.EARLY_EXIT:
-        return "early exit"
     else:
         return "undefined"

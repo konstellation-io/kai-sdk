@@ -51,6 +51,12 @@ class FailedToUpdatePredictionError(Exception):
         super().__init__(f"{message}: {error}" if error else message)
 
 
+class FailedToDeletePredictionError(Exception):
+    def __init__(self, key: str, error: Optional[Exception] = None):
+        message = f"failed to delete prediction {key} from the predictions store"
+        super().__init__(f"{message}: {error}" if error else message)
+
+
 class EmptyIdError(Exception):
     def __init__(self, error: Optional[Exception] = None):
         message = "id is empty"

@@ -18,24 +18,15 @@ from sdk.persistent_storage.persistent_storage import Object, ObjectInfo, Persis
 
 TTL_DAYS = 30
 EXPIRE_DATETIME = datetime.strptime("Sat, 18 Nov 2023 00:00:00 GMT", "%a, %d %b %Y %H:%M:%S %Z")
-METADATA = {
-    "process": "test_process",
-    "version": "v0.0.1",
-    "workflow": "test_workflow",
-    "workflow_type": "test_workflow_type",
-    "product": "konstellation",
-}
 EXPECTED_OBJECT_INFO = ObjectInfo(
     key="test-key",
     version="test-version",
-    metadata=METADATA,
     expires=EXPIRE_DATETIME,
 )
 
 EXPECTED_OBJECT = Object(
     key="test-key",
     version="test-version",
-    metadata=METADATA,
     expires=EXPIRE_DATETIME,
     data=b"test-payload",
 )
@@ -60,11 +51,6 @@ def m_object() -> urllib3.BaseHTTPResponse:
         "content-length": 12,
         "content-type": "application/octet-stream",
         "x-amz-expiration": 'expiry-date="Sat, 18 Nov 2023 00:00:00 GMT", rule-id="ttl-test.txt"',
-        "x-amz-meta-product": METADATA["product"],
-        "x-amz-meta-version": METADATA["version"],
-        "x-amz-meta-workflow": METADATA["workflow"],
-        "x-amz-meta-workflow-type": METADATA["workflow_type"],
-        "x-amz-meta-process": METADATA["process"],
         "x-amz-version-id": "test-version",
     }
     object_.is_dir = False
@@ -100,11 +86,6 @@ def test_ko():
 
 
 def test_save_ok(m_persistent_storage, m_object):
-    v.set("metadata.product_id", METADATA["product"])
-    v.set("metadata.version_tag", METADATA["version"])
-    v.set("metadata.workflow_name", METADATA["workflow"])
-    v.set("metadata.workflow_type", METADATA["workflow_type"])
-    v.set("metadata.process_name", METADATA["process"])
     v.set("minio.internal_folder", ".kai")
 
     m_persistent_storage.minio_client.put_object.return_value = m_object
@@ -119,10 +100,6 @@ def test_save_ok(m_persistent_storage, m_object):
 
 
 def test_save_internal_folder_error_ko(m_persistent_storage, m_object):
-    v.set("metadata.product_id", METADATA["product"])
-    v.set("metadata.workflow_name", METADATA["workflow"])
-    v.set("metadata.process_name", METADATA["process"])
-    v.set("metadata.version_tag", METADATA["version"])
     v.set("minio.internal_folder", ".kai")
 
     m_persistent_storage.minio_client.put_object.return_value = m_object
@@ -137,11 +114,6 @@ def test_save_internal_folder_error_ko(m_persistent_storage, m_object):
 
 
 def test_save_no_ttl_ok(m_persistent_storage, m_object):
-    v.set("metadata.product_id", METADATA["product"])
-    v.set("metadata.version_tag", METADATA["version"])
-    v.set("metadata.workflow_name", METADATA["workflow"])
-    v.set("metadata.workflow_type", METADATA["workflow_type"])
-    v.set("metadata.process_name", METADATA["process"])
     v.set("minio.internal_folder", ".kai")
 
     m_persistent_storage.minio_client.put_object.return_value = m_object
@@ -156,7 +128,6 @@ def test_save_no_ttl_ok(m_persistent_storage, m_object):
         "test-key",
         payload,
         payload.getbuffer().nbytes,
-        metadata=METADATA,
     )
 
     assert response == EXPECTED_OBJECT_INFO
@@ -322,9 +293,3 @@ def test__get_expiry_date_no_match_ok(m_persistent_storage, m_object):
     expiry_date = m_persistent_storage._get_expiry_date(m_object.metadata.get("x-amz-expiration"))
 
     assert expiry_date is None
-
-
-def test__process_raw_metadata_ok(m_persistent_storage, m_object):
-    metadata = m_persistent_storage._process_raw_metadata(m_object.metadata)
-
-    assert metadata == METADATA

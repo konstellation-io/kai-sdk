@@ -26,16 +26,12 @@ class _MessageTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._En
     UNDEFINED: _MessageType.ValueType  # 0
     OK: _MessageType.ValueType  # 1
     ERROR: _MessageType.ValueType  # 2
-    EARLY_REPLY: _MessageType.ValueType  # 3
-    EARLY_EXIT: _MessageType.ValueType  # 4
 
 class MessageType(_MessageType, metaclass=_MessageTypeEnumTypeWrapper): ...
 
 UNDEFINED: MessageType.ValueType  # 0
 OK: MessageType.ValueType  # 1
 ERROR: MessageType.ValueType  # 2
-EARLY_REPLY: MessageType.ValueType  # 3
-EARLY_EXIT: MessageType.ValueType  # 4
 global___MessageType = MessageType
 
 @typing_extensions.final

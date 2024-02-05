@@ -28,6 +28,10 @@ func (md Metadata) GetProcess() string {
 	return viper.GetString(common.ConfigMetadataProcessIDKey)
 }
 
+func (md Metadata) GetProcessType() string {
+	return viper.GetString(common.ConfigMetadataProcessTypeKey)
+}
+
 func (md Metadata) GetVersion() string {
 	return viper.GetString(common.ConfigMetadataVersionIDKey)
 }
