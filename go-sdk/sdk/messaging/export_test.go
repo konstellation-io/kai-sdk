@@ -19,7 +19,3 @@ func NewTestMessaging(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContex
 		messagingUtils,
 	}
 }
-
-func (ms Messaging) SendError(requestID, errorMessage string) {
-	ms.publishError(requestID, errorMessage)
-}
