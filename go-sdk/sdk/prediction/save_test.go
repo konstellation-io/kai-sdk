@@ -5,7 +5,6 @@ package prediction_test
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
 )
@@ -55,7 +54,6 @@ func (s *PredictionStoreSuite) TestPredictionStore_Save_InvalidPredictionID() {
 	// WHEN
 	err := s.predictionStore.Save(ctx, predictionID, prediction.Payload{"test": "test"})
 
-	fmt.Println(err)
 	// THEN
 	s.Assert().ErrorIs(err, prediction.ErrInvalidPredictionID)
 }

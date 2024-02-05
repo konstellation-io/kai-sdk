@@ -92,10 +92,11 @@ type measurements interface {
 
 //go:generate mockery --name predictions --output ../mocks --filename predictions_mock.go --structname PredictionsMock
 type predictions interface {
-	Save(ctx context.Context, predictionID string, value prediction.Payload) error
+	Save(ctx context.Context, predictionID string, payload prediction.Payload) error
 	Get(ctx context.Context, predictionID string) (*prediction.Prediction, error)
 	Find(ctx context.Context, filter *prediction.Filter) ([]prediction.Prediction, error)
-	Update(ctx context.Context, predictionID string, payloadFunc prediction.UpdatePayloadFunc) error
+	Update(ctx context.Context, predictionID string, updatePayload prediction.UpdatePayloadFunc) error
+	Delete(ctx context.Context, predictionID string) error
 }
 
 //go:generate mockery --name modelRegistry --output ../mocks --filename model_registry_mock.go --structname ModelRegistryMock
