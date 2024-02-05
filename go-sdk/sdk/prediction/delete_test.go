@@ -25,7 +25,7 @@ func (s *PredictionStoreSuite) TestPredictionStore_Delete_ExpectOK() {
 	s.Require().NoError(err)
 }
 
-func (s *PredictionStoreSuite) TestPredictionStore_Delete_FailsIfPayloadIsNil() {
+func (s *PredictionStoreSuite) TestPredictionStore_Delete_FailsIfPredictionNotFound() {
 	var (
 		ctx          = context.Background()
 		predictionID = "test-prediction"
