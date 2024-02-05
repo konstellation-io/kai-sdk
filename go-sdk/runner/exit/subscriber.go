@@ -129,6 +129,8 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 		er.elapsedTimeMetric.Record(context.Background(), executionTime,
 			metric.WithAttributeSet(er.getMetricAttributes(requestMsg.RequestId)),
 		)
+
+		er.numberOfMessagesMetric.Add(context.Background(), 1, metric.WithAttributeSet(er.getMetricAttributes(requestMsg.RequestId)))
 	}()
 
 	er.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
