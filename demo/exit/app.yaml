@@ -4,6 +4,7 @@ metadata:
   workflow_name: Exit_workflow
   workflow_type: feedback
   process_name: Exit_process
+  process_type: exit
 
 nats:
   url: "nats://localhost:4222"
