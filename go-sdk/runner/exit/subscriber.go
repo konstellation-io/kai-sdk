@@ -39,14 +39,23 @@ func (er *Runner) startSubscriber() {
 
 	var err error
 
-	er.metrics, err = er.sdk.Measurements.GetMetricsClient().Int64Histogram(
+	er.elapsedTimeMetric, err = er.sdk.Measurements.GetMetricsClient().Int64Histogram(
 		"runner-process-message-time",
 		metric.WithDescription("How long it takes to process a message."),
 		metric.WithUnit("ms"),
 		metric.WithExplicitBucketBoundaries(250, 500, 1000),
 	)
 	if err != nil {
-		er.getLoggerWithName().Error(err, "Error initializing metrics")
+		er.getLoggerWithName().Error(err, "Error initializing metric")
+		os.Exit(1)
+	}
+
+	er.numberOfMessagesMetric, err = er.sdk.Measurements.GetMetricsClient().Int64Counter(
+		"runner-processed-messages",
+		metric.WithDescription("Number of messages processed."),
+	)
+	if err != nil {
+		er.getLoggerWithName().Error(err, "Error initializing metric")
 		os.Exit(1)
 	}
 
@@ -117,7 +126,7 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 		executionTime := time.Since(start).Milliseconds()
 		er.sdk.Logger.V(1).Info(fmt.Sprintf("%s execution time: %d ms", er.sdk.Metadata.GetProcess(), executionTime))
 
-		er.metrics.Record(context.Background(), executionTime,
+		er.elapsedTimeMetric.Record(context.Background(), executionTime,
 			metric.WithAttributeSet(er.getMetricAttributes(requestMsg.RequestId)),
 		)
 	}()
