@@ -98,7 +98,12 @@ class TriggerSubscriber:
                 end = time.time() * 1000
                 elapsed = end - start
                 self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
-                self.trigger_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
+                self.trigger_runner.elapsed_time_metric.record(
+                    elapsed, attributes=self.get_attributes(request_msg.request_id)
+                )
+                self.trigger_runner.number_of_messages_metric.add(
+                    1, attributes=self.get_attributes(request_msg.request_id)
+                )
                 await self._process_runner_error(msg, UndefinedResponseHandlerError(msg.subject))
                 return
 
@@ -108,7 +113,12 @@ class TriggerSubscriber:
                 end = time.time() * 1000
                 elapsed = end - start
                 self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
-                self.trigger_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
+                self.trigger_runner.elapsed_time_metric.record(
+                    elapsed, attributes=self.get_attributes(request_msg.request_id)
+                )
+                self.trigger_runner.number_of_messages_metric.add(
+                    1, attributes=self.get_attributes(request_msg.request_id)
+                )
                 from_node = request_msg.from_node
                 to_node = self.trigger_runner.sdk.metadata.get_process()
                 await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
@@ -120,13 +130,21 @@ class TriggerSubscriber:
                 end = time.time() * 1000
                 elapsed = end - start
                 self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
-                self.trigger_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
+                self.trigger_runner.elapsed_time_metric.record(
+                    elapsed, attributes=self.get_attributes(request_msg.request_id)
+                )
+                self.trigger_runner.number_of_messages_metric.add(
+                    1, attributes=self.get_attributes(request_msg.request_id)
+                )
                 self.logger.error(f"error acknowledging message: {e}")
 
             end = time.time() * 1000
             elapsed = end - start
             self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
-            self.trigger_runner.metrics.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
+            self.trigger_runner.elapsed_time_metric.record(
+                elapsed, attributes=self.get_attributes(request_msg.request_id)
+            )
+            self.trigger_runner.number_of_messages_metric.add(1, attributes=self.get_attributes(request_msg.request_id))
 
     async def _process_runner_error(self, msg: Msg, error: Exception) -> None:
         error_msg = str(error)
