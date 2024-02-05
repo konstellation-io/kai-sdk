@@ -13,7 +13,7 @@ from google.protobuf import any_pb2
 from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
-from opentelemetry.metrics._internal.instrument import Histogram, Counter
+from opentelemetry.metrics._internal.instrument import Counter, Histogram
 
 from runner.common.common import Finalizer, Initializer
 from runner.trigger.exceptions import FailedToInitializeMetricsError, UndefinedRunnerFunctionError

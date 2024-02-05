@@ -10,7 +10,7 @@ import loguru
 from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
-from opentelemetry.metrics._internal.instrument import Histogram, Counter
+from opentelemetry.metrics._internal.instrument import Counter, Histogram
 
 from runner.common.common import Finalizer, Handler, Initializer, Task
 from runner.task.exceptions import FailedToInitializeMetricsError, UndefinedDefaultHandlerFunctionError
