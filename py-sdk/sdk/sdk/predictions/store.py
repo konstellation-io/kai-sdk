@@ -183,7 +183,11 @@ class Predictions(PredictionsABC):
                 raise EmptyIdError()
 
             key = self._get_key_with_product_prefix(id)
-            self.client.json().delete(key)
+            result = self.client.json().delete(key)
+
+            if result == 0:
+                self.logger.error(f"prediction {id} not found in the predictions store")
+                raise NotFoundError(id)
         except Exception as e:
             self.logger.error(f"failed to delete prediction {id} from the predictions store: {e}")
             raise FailedToDeletePredictionError(id, e)

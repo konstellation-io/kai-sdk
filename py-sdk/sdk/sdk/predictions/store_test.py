@@ -196,6 +196,15 @@ def test_delete_ko(m_store):
         m_store.delete("test_id")
 
 
+def test_delete_not_found(m_store):
+    m_store.client.json.return_value.delete.return_value = 0
+
+    with pytest.raises(FailedToDeletePredictionError) as error:
+        m_store.delete("test_id")
+
+        assert error == FailedToDeletePredictionError("test_id", NotFoundError)
+
+
 def test_delete_wrong_id(m_store):
     with pytest.raises(FailedToDeletePredictionError) as error:
         m_store.delete("")
