@@ -4,7 +4,6 @@ package prediction_test
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
 )
