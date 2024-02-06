@@ -158,8 +158,9 @@ class EphemeralStorage(EphemeralStorageABC):
             raise UndefinedEphemeralStorageError
 
         try:
-            info_ = await self.object_store.delete(key)
-            return info_.info.deleted if info_.info.deleted else False
+            await self.object_store.delete(key)
+            # NATS python has a bug not returning anything when deleting an object
+            # return info_.info.deleted if info_.info.deleted else False
         except ObjectNotFoundError as e:
             self.logger.debug(f"file {key} not found in ephemeral storage {self.ephemeral_storage_name}: {e}")
             return False
@@ -168,6 +169,8 @@ class EphemeralStorage(EphemeralStorageABC):
                 f"failed to delete file {key} from ephemeral storage {self.ephemeral_storage_name}: {e}"
             )
             raise FailedToDeleteFileError(key=key, error=e)
+        else:
+            return True
 
     async def purge(self, regexp: Optional[str] = None) -> None:
         if not self.object_store:
