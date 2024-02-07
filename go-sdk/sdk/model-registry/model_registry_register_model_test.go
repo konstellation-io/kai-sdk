@@ -26,8 +26,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_RegisterModel_ExpectOK() {
 		modelData,
 		modelName,
 		modelVersion,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 	s.Assert().NoError(err)
 
@@ -108,8 +108,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_RegisterModel_InvalidName_
 		modelData,
 		modelName,
 		modelVersion,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 
 	// THEN
@@ -130,8 +130,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_RegisterModel_InvalidVersi
 		modelData,
 		modelName,
 		modelVersion,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 
 	// THEN
@@ -152,8 +152,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_RegisterModel_InvalidModel
 		modelData,
 		modelName,
 		modelVersion,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 
 	// THEN
@@ -174,8 +174,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_RegisterModel_ModelAlready
 		modelData,
 		modelName,
 		modelVersion,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 	s.Assert().NoError(err)
 
@@ -184,8 +184,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_RegisterModel_ModelAlready
 		modelData,
 		modelName,
 		modelVersion,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 	s.Assert().Error(err)
 	s.Assert().ErrorIs(err, errors.ErrModelAlreadyExists)
@@ -203,8 +203,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_RegisterModel_NilModelPayl
 		nil,
 		modelName,
 		modelVersion,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 
 	// THEN

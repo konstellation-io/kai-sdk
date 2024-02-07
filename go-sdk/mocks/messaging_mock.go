@@ -296,9 +296,16 @@ func (_c *MessagingMock_SendAnyWithRequestID_Call) RunAndReturn(run func(*anypb.
 	return _c
 }
 
-// SendError provides a mock function with given fields: errorMessage
-func (_m *MessagingMock) SendError(errorMessage string) {
-	_m.Called(errorMessage)
+// SendError provides a mock function with given fields: errorMessage, channelOpt
+func (_m *MessagingMock) SendError(errorMessage string, channelOpt ...string) {
+	_va := make([]interface{}, len(channelOpt))
+	for _i := range channelOpt {
+		_va[_i] = channelOpt[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, errorMessage)
+	_ca = append(_ca, _va...)
+	_m.Called(_ca...)
 }
 
 // MessagingMock_SendError_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendError'
@@ -308,13 +315,21 @@ type MessagingMock_SendError_Call struct {
 
 // SendError is a helper method to define mock.On call
 //   - errorMessage string
-func (_e *MessagingMock_Expecter) SendError(errorMessage interface{}) *MessagingMock_SendError_Call {
-	return &MessagingMock_SendError_Call{Call: _e.mock.On("SendError", errorMessage)}
+//   - channelOpt ...string
+func (_e *MessagingMock_Expecter) SendError(errorMessage interface{}, channelOpt ...interface{}) *MessagingMock_SendError_Call {
+	return &MessagingMock_SendError_Call{Call: _e.mock.On("SendError",
+		append([]interface{}{errorMessage}, channelOpt...)...)}
 }
 
-func (_c *MessagingMock_SendError_Call) Run(run func(errorMessage string)) *MessagingMock_SendError_Call {
+func (_c *MessagingMock_SendError_Call) Run(run func(errorMessage string, channelOpt ...string)) *MessagingMock_SendError_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string))
+		variadicArgs := make([]string, len(args)-1)
+		for i, a := range args[1:] {
+			if a != nil {
+				variadicArgs[i] = a.(string)
+			}
+		}
+		run(args[0].(string), variadicArgs...)
 	})
 	return _c
 }
@@ -324,7 +339,7 @@ func (_c *MessagingMock_SendError_Call) Return() *MessagingMock_SendError_Call {
 	return _c
 }
 
-func (_c *MessagingMock_SendError_Call) RunAndReturn(run func(string)) *MessagingMock_SendError_Call {
+func (_c *MessagingMock_SendError_Call) RunAndReturn(run func(string, ...string)) *MessagingMock_SendError_Call {
 	_c.Call.Return(run)
 	return _c
 }

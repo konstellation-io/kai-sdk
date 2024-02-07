@@ -80,9 +80,9 @@ type persistentStorage interface {
 
 //go:generate mockery --name centralizedConfig --output ../mocks --filename centralized_config_mock.go --structname CentralizedConfigMock
 type centralizedConfig interface {
-	GetConfig(key string, scope ...msg.Scope) (string, error)
-	SetConfig(key, value string, scope ...msg.Scope) error
-	DeleteConfig(key string, scope msg.Scope) error
+	GetConfig(key string, scope ...centralizedconfiguration.Scope) (string, error)
+	SetConfig(key, value string, scope ...centralizedconfiguration.Scope) error
+	DeleteConfig(key string, scope centralizedconfiguration.Scope) error
 }
 
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock

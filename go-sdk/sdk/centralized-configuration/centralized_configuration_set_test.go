@@ -55,7 +55,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", centralizedConfiguration.ProductScope)
+	err = config.SetConfig("key1", "value1", centralizedconfiguration.ProductScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -84,7 +84,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", centralizedConfiguration.WorkflowScope)
+	err = config.SetConfig("key1", "value1", centralizedconfiguration.WorkflowScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -112,7 +112,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", centralizedConfiguration.ProcessScope)
+	err = config.SetConfig("key1", "value1", centralizedconfiguration.ProcessScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -141,7 +141,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", centralizedConfiguration.GlobalScope)
+	err = config.SetConfig("key1", "value1", centralizedconfiguration.GlobalScope)
 	s.Require().NoError(err)
 
 	// Then

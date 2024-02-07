@@ -16,8 +16,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_GetModel_ExpectOK() {
 		modelData,
 		modelName,
 		modelVersion,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 	s.Require().NoError(err)
 
@@ -47,8 +47,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_GetModelVersion_ExpectOK()
 		modelData1,
 		modelName,
 		modelVersion1,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 	s.Require().NoError(err)
 
@@ -56,8 +56,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_GetModelVersion_ExpectOK()
 		modelData2,
 		modelName,
 		modelVersion2,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 	s.Require().NoError(err)
 
@@ -110,8 +110,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_GetNonExistingModelVersion
 		modelData1,
 		modelName,
 		modelVersion1,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 	s.Require().NoError(err)
 

@@ -8,6 +8,7 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
+const _messagingLoggerName = "[MESSAGING]"
 
 type Messaging struct {
 	logger         logr.Logger

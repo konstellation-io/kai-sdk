@@ -201,7 +201,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", centralizedConfiguration.GlobalScope)
+	key1Value, err := config.GetConfig("key1", centralizedconfiguration.GlobalScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -224,7 +224,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", centralizedConfiguration.GlobalScope)
+	key1Value, err := config.GetConfig("key1", centralizedconfiguration.GlobalScope)
 
 	// Then
 	s.Error(err)
@@ -250,7 +250,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProductScope)
+	key1Value, err := config.GetConfig("key1", centralizedconfiguration.ProductScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -273,7 +273,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProductScope)
+	key1Value, err := config.GetConfig("key1", centralizedconfiguration.ProductScope)
 
 	// Then
 	s.Error(err)
@@ -299,7 +299,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", centralizedConfiguration.WorkflowScope)
+	key1Value, err := config.GetConfig("key1", centralizedconfiguration.WorkflowScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -322,7 +322,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", centralizedConfiguration.WorkflowScope)
+	key1Value, err := config.GetConfig("key1", centralizedconfiguration.WorkflowScope)
 
 	// Then
 	s.Error(err)
@@ -349,7 +349,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProcessScope)
+	key1Value, err := config.GetConfig("key1", centralizedconfiguration.ProcessScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -372,7 +372,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProcessScope)
+	key1Value, err := config.GetConfig("key1", centralizedconfiguration.ProcessScope)
 
 	// Then
 	s.Error(err)
@@ -395,7 +395,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProcessScope)
+	key1Value, err := config.GetConfig("key1", centralizedconfiguration.ProcessScope)
 
 	// Then
 	s.Error(err)

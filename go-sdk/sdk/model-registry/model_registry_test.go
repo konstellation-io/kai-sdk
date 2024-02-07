@@ -164,7 +164,7 @@ func (s *SdkModelRegistryTestSuite) registerNewModelVersion(data []byte, name, v
 		data,
 		name,
 		version,
-		description,
 		format,
+		description,
 	)
 }

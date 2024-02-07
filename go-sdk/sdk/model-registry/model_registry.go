@@ -79,7 +79,7 @@ func (mr *ModelRegistry) RegisterModel(model []byte, name, version, modelFormat 
 		return errors.ErrEmptyName
 	}
 
-	if len(version) == 0 {
+	if len(description) == 0 {
 		description = []string{""}
 	}
 
@@ -91,15 +91,8 @@ func (mr *ModelRegistry) RegisterModel(model []byte, name, version, modelFormat 
 		return errors.ErrEmptyModel
 	}
 
-	optsGet := minio.GetObjectOptions{}
-
-	object, err := mr.storageClient.GetObject(
-		context.Background(),
-		mr.storageBucket,
-		mr.getModelPath(name),
-		optsGet,
-	)
-	if err == nil && object != nil {
+	model_, err := mr.GetModel(name, version)
+	if err == nil && model_ != nil {
 		return errors.ErrModelAlreadyExists
 	}
 

@@ -238,13 +238,20 @@ func (_c *ModelRegistryMock_ListModels_Call) RunAndReturn(run func() ([]*modelre
 	return _c
 }
 
-// RegisterModel provides a mock function with given fields: model, name, version, description, modelFormat
-func (_m *ModelRegistryMock) RegisterModel(model []byte, name string, version string, description string, modelFormat string) error {
-	ret := _m.Called(model, name, version, description, modelFormat)
+// RegisterModel provides a mock function with given fields: model, name, version, modelFormat, description
+func (_m *ModelRegistryMock) RegisterModel(model []byte, name string, version string, modelFormat string, description ...string) error {
+	_va := make([]interface{}, len(description))
+	for _i := range description {
+		_va[_i] = description[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, model, name, version, modelFormat)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func([]byte, string, string, string, string) error); ok {
-		r0 = rf(model, name, version, description, modelFormat)
+	if rf, ok := ret.Get(0).(func([]byte, string, string, string, ...string) error); ok {
+		r0 = rf(model, name, version, modelFormat, description...)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -261,15 +268,22 @@ type ModelRegistryMock_RegisterModel_Call struct {
 //   - model []byte
 //   - name string
 //   - version string
-//   - description string
 //   - modelFormat string
-func (_e *ModelRegistryMock_Expecter) RegisterModel(model interface{}, name interface{}, version interface{}, description interface{}, modelFormat interface{}) *ModelRegistryMock_RegisterModel_Call {
-	return &ModelRegistryMock_RegisterModel_Call{Call: _e.mock.On("RegisterModel", model, name, version, description, modelFormat)}
+//   - description ...string
+func (_e *ModelRegistryMock_Expecter) RegisterModel(model interface{}, name interface{}, version interface{}, modelFormat interface{}, description ...interface{}) *ModelRegistryMock_RegisterModel_Call {
+	return &ModelRegistryMock_RegisterModel_Call{Call: _e.mock.On("RegisterModel",
+		append([]interface{}{model, name, version, modelFormat}, description...)...)}
 }
 
-func (_c *ModelRegistryMock_RegisterModel_Call) Run(run func(model []byte, name string, version string, description string, modelFormat string)) *ModelRegistryMock_RegisterModel_Call {
+func (_c *ModelRegistryMock_RegisterModel_Call) Run(run func(model []byte, name string, version string, modelFormat string, description ...string)) *ModelRegistryMock_RegisterModel_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].([]byte), args[1].(string), args[2].(string), args[3].(string), args[4].(string))
+		variadicArgs := make([]string, len(args)-4)
+		for i, a := range args[4:] {
+			if a != nil {
+				variadicArgs[i] = a.(string)
+			}
+		}
+		run(args[0].([]byte), args[1].(string), args[2].(string), args[3].(string), variadicArgs...)
 	})
 	return _c
 }
@@ -279,7 +293,7 @@ func (_c *ModelRegistryMock_RegisterModel_Call) Return(_a0 error) *ModelRegistry
 	return _c
 }
 
-func (_c *ModelRegistryMock_RegisterModel_Call) RunAndReturn(run func([]byte, string, string, string, string) error) *ModelRegistryMock_RegisterModel_Call {
+func (_c *ModelRegistryMock_RegisterModel_Call) RunAndReturn(run func([]byte, string, string, string, ...string) error) *ModelRegistryMock_RegisterModel_Call {
 	_c.Call.Return(run)
 	return _c
 }
