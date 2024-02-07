@@ -61,6 +61,7 @@ func (s *Storage) getClientCredentials(url string) (*credentials.Credentials, er
 		url,
 		func() (*credentials.ClientGrantsToken, error) {
 			authClient := auth.New(s.logger)
+
 			token, err := authClient.GetToken()
 			if err != nil {
 				return nil, err
