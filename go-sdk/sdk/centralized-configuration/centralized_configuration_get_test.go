@@ -8,7 +8,6 @@ import (
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
 	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 	"github.com/nats-io/nats.go"
 )
 
@@ -202,7 +201,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.GlobalScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.GlobalScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -225,7 +224,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.GlobalScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.GlobalScope)
 
 	// Then
 	s.Error(err)
@@ -251,7 +250,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.ProductScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProductScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -274,7 +273,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.ProductScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProductScope)
 
 	// Then
 	s.Error(err)
@@ -300,7 +299,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.WorkflowScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.WorkflowScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -323,7 +322,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.WorkflowScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.WorkflowScope)
 
 	// Then
 	s.Error(err)
@@ -350,7 +349,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.ProcessScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProcessScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -373,7 +372,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.ProcessScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProcessScope)
 
 	// Then
 	s.Error(err)
@@ -396,7 +395,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.ProcessScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProcessScope)
 
 	// Then
 	s.Error(err)

@@ -4,7 +4,6 @@ package centralizedconfiguration_test
 
 import (
 	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 	"github.com/nats-io/nats.go"
 )
 
@@ -22,7 +21,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 	s.Require().NoError(err)
 
 	// When
-	err = config.DeleteConfig("key1", messaging.WorkflowScope)
+	err = config.DeleteConfig("key1", centralizedConfiguration.WorkflowScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -44,7 +43,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 	s.Require().NoError(err)
 
 	// When
-	err = config.DeleteConfig("key1", messaging.ProcessScope)
+	err = config.DeleteConfig("key1", centralizedConfiguration.ProcessScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -69,13 +68,13 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_Dele
 	s.Require().NoError(err)
 
 	// When
-	err = config.DeleteConfig("key1", messaging.GlobalScope)
+	err = config.DeleteConfig("key1", centralizedConfiguration.GlobalScope)
 	s.Error(err)
-	err = config.DeleteConfig("key1", messaging.ProductScope)
+	err = config.DeleteConfig("key1", centralizedConfiguration.ProductScope)
 	s.Error(err)
-	err = config.DeleteConfig("key1", messaging.WorkflowScope)
+	err = config.DeleteConfig("key1", centralizedConfiguration.WorkflowScope)
 	s.Error(err)
-	err = config.DeleteConfig("key1", messaging.ProcessScope)
+	err = config.DeleteConfig("key1", centralizedConfiguration.ProcessScope)
 	s.Error(err)
 
 	// Then

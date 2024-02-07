@@ -6,7 +6,6 @@ import (
 	"errors"
 
 	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 )
 
 const notExist = "not exist"
@@ -56,7 +55,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", messaging.ProductScope)
+	err = config.SetConfig("key1", "value1", centralizedConfiguration.ProductScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -85,7 +84,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", messaging.WorkflowScope)
+	err = config.SetConfig("key1", "value1", centralizedConfiguration.WorkflowScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -113,7 +112,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", messaging.ProcessScope)
+	err = config.SetConfig("key1", "value1", centralizedConfiguration.ProcessScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -142,7 +141,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", messaging.GlobalScope)
+	err = config.SetConfig("key1", "value1", centralizedConfiguration.GlobalScope)
 	s.Require().NoError(err)
 
 	// Then

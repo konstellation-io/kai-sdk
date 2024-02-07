@@ -8,15 +8,6 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-type Scope string
-
-const (
-	GlobalScope          Scope = "global"
-	ProductScope         Scope = "product"
-	WorkflowScope        Scope = "workflow"
-	ProcessScope         Scope = "process"
-	_messagingLoggerName       = "[MESSAGING]"
-)
 
 type Messaging struct {
 	logger         logr.Logger
