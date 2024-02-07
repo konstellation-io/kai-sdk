@@ -59,6 +59,7 @@ class ModelNotFoundError(Exception):
         message = f"model {name} with version {version} not found"
         super().__init__(f"{message}: {error}" if error else message)
 
+
 class ModelAlreadyExistsError(Exception):
     def __init__(self, name: str, version: str, error: Optional[Exception] = None):
         message = f"model {name} with version {version} already exists"
