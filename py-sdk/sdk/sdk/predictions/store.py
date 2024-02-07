@@ -154,6 +154,10 @@ class Predictions(PredictionsABC):
             key = self._get_key_with_product_prefix(id)
             prediction = self.client.json().get(key)
 
+            if prediction is None:
+                self.logger.error(f"prediction {id} not found in the predictions store")
+                raise NotFoundError(id)
+
             payload = prediction["payload"]
             new_payload = update_payload(payload)
             if new_payload is None:

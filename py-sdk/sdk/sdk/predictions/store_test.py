@@ -173,6 +173,14 @@ def test_update_ko(m_store):
     with pytest.raises(FailedToUpdatePredictionError):
         m_store.update("test_id", lambda x: x)
 
+def test_update_prediction_not_found(m_store):
+    m_store.client.json.return_value.get.return_value = None
+
+    with pytest.raises(FailedToUpdatePredictionError) as error:
+        m_store.update("test_id", lambda x: x)
+
+        assert error == FailedToUpdatePredictionError("test_id", NotFoundError)
+
 
 def test_update_wrong_id(m_store):
     with pytest.raises(FailedToUpdatePredictionError) as error:
