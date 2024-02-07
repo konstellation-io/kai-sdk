@@ -25,6 +25,7 @@ from sdk.model_registry.exceptions import (
     InvalidVersionError,
     MissingBucketError,
     ModelNotFoundError,
+    ModelAlreadyExistsError,
 )
 
 
@@ -112,6 +113,11 @@ class ModelRegistry(ModelRegistryABC):
 
         if not model:
             raise EmptyModelError()
+        
+        exist = self._object_exist(name)
+        if exist:
+            self.logger.error(f"model {name} already exists in model registry")
+            raise ModelAlreadyExistsError(name, version)
 
         try:
             metadata = {

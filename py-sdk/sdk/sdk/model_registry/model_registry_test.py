@@ -166,6 +166,16 @@ def test_register_model_ko(m_model_registry):
 
     m_model_registry.minio_client.put_object.assert_called_once()
 
+@patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=True)
+def test_register_model_already_exists_ko(m_model_registry):
+    name = "test-key"
+    model = io.BytesIO(b"test-payload")
+
+    with pytest.raises(FailedToSaveModelError):
+        m_model_registry.register_model(
+            model, name, METADATA["Model_version"], METADATA["Model_description"], METADATA["Model_format"]
+        )
+
 
 def test_register_model_invalid_version_ko(m_model_registry):
     m_model_registry.minio_client.put_object.side_effect = Exception

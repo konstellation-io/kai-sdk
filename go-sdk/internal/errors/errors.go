@@ -13,6 +13,7 @@ var (
 	ErrEmptyModel                = errors.New("the model cannot be empty")
 	ErrModelNotFound             = errors.New("the given model does not exist")
 	ErrInvalidVersion            = errors.New("the given version is not valid, follow the semantic versioning specification")
+	ErrModelAlreadyExists        = errors.New("model already exists for the given name and version")
 	ErrEmptyKey                  = errors.New("the key cannot be empty")
 	ErrInvalidKey                = errors.New("the key is not valid")
 	ErrEmptyName                 = errors.New("the name cannot be empty")

@@ -161,6 +161,36 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_RegisterModel_InvalidModel
 	s.Assert().ErrorIs(err, errors.ErrEmptyModel)
 }
 
+func (s *SdkModelRegistryTestSuite) TestModelRegistry_RegisterModel_ModelAlreadyExists_ExpectError() {
+	// GIVEN
+	modelData := []byte("some-data")
+	modelName := "model.pt"
+	modelVersion := "v1.0.0"
+	modelDescription := "description"
+	modelFormat := "Pytorch"
+
+	// WHEN
+	err := s.modelRegistry.RegisterModel(
+		modelData,
+		modelName,
+		modelVersion,
+		modelDescription,
+		modelFormat,
+	)
+	s.Assert().NoError(err)
+
+	// THEN
+	err = s.modelRegistry.RegisterModel(
+		modelData,
+		modelName,
+		modelVersion,
+		modelDescription,
+		modelFormat,
+	)
+	s.Assert().Error(err)
+	s.Assert().ErrorIs(err, errors.ErrModelAlreadyExists)
+}
+
 func (s *SdkModelRegistryTestSuite) TestModelRegistry_RegisterModel_NilModelPayload_ExpectError() {
 	// GIVEN
 	modelName := "model.pt"

@@ -91,6 +91,18 @@ func (mr *ModelRegistry) RegisterModel(model []byte, name, version, modelFormat 
 		return errors.ErrEmptyModel
 	}
 
+	optsGet := minio.GetObjectOptions{}
+
+	object, err := mr.storageClient.GetObject(
+		context.Background(),
+		mr.storageBucket,
+		mr.getModelPath(name),
+		optsGet,
+	)
+	if err == nil && object != nil {
+		return errors.ErrModelAlreadyExists
+	}
+
 	reader := bytes.NewReader(model)
 
 	opts := minio.PutObjectOptions{
@@ -105,7 +117,7 @@ func (mr *ModelRegistry) RegisterModel(model []byte, name, version, modelFormat 
 		},
 	}
 
-	_, err := mr.storageClient.PutObject(
+	_, err = mr.storageClient.PutObject(
 		ctx,
 		mr.storageBucket,
 		mr.getModelPath(name),
