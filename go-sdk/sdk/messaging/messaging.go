@@ -45,8 +45,8 @@ func (ms Messaging) SendAnyWithRequestID(response *anypb.Any, requestID string, 
 	ms.publishAny(response, requestID, kai.MessageType_OK, ms.getOptionalString(channelOpt))
 }
 
-func (ms Messaging) SendError(errorMessage string) {
-	ms.publishError(ms.requestMessage.GetRequestId(), errorMessage)
+func (ms Messaging) SendError(errorMessage string, channelOpt ...string) {
+	ms.publishError(ms.requestMessage.GetRequestId(), errorMessage, ms.getOptionalString(channelOpt))
 }
 
 func (ms Messaging) GetErrorMessage() string {

@@ -71,6 +71,27 @@ func (s *SdkMessagingTestSuite) TestMessaging_PublishError_ExpectOk() {
 		getOutputMessage("123", nil, "some-error", "parent-node", kai.MessageType_ERROR))
 }
 
+func (s *SdkMessagingTestSuite) TestMessaging_PublishError_WithChannel_ExpectOk() {
+	// Given
+	viper.SetDefault(common.ConfigNatsOutputKey, "test-parent")
+	viper.SetDefault(common.ConfigMetadataProcessIDKey, "parent-node")
+	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
+		Return(&nats.PubAck{}, nil)
+	s.messagingUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
+
+	request := kai.KaiNatsMessage{RequestId: "123"}
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, &request, &s.messagingUtils)
+
+	// When
+	messagingInst.SendError("some-error", "some-channel")
+
+	// Then
+	s.NotNil(messagingInst)
+	s.jetstream.AssertCalled(s.T(),
+		"Publish", "test-parent.some-channel",
+		getOutputMessage("123", nil, "some-error", "parent-node", kai.MessageType_ERROR))
+}
+
 func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectOk() {
 	// Given
 	msg := &kai.KaiNatsMessage{
