@@ -72,11 +72,15 @@ func New(logger logr.Logger, meta *metadata.Metadata) (*ModelRegistry, error) {
 	}, nil
 }
 
-func (mr *ModelRegistry) RegisterModel(model []byte, name, version, description, modelFormat string) error {
+func (mr *ModelRegistry) RegisterModel(model []byte, name, version, modelFormat string, description ...string) error {
 	ctx := context.Background()
 
 	if name == "" {
 		return errors.ErrEmptyName
+	}
+
+	if len(version) == 0 {
+		description = []string{""}
 	}
 
 	if _, err := semver.NewVersion(version); err != nil {
@@ -96,7 +100,7 @@ func (mr *ModelRegistry) RegisterModel(model []byte, name, version, description,
 			_workflowMetadata:         mr.metadata.GetWorkflow(),
 			_processMetadata:          mr.metadata.GetProcess(),
 			_modelFormatMetadata:      modelFormat,
-			_modelDescriptionMetadata: description,
+			_modelDescriptionMetadata: description[0],
 			_modelVersionMetadata:     version,
 		},
 	}

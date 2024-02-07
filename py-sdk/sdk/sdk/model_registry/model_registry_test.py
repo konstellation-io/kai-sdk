@@ -118,10 +118,40 @@ def test_register_model_ok(m_model_registry, m_model):
     model = io.BytesIO(b"test-payload")
 
     m_model_registry.register_model(
-        model, name, METADATA["Model_version"], METADATA["Model_description"], METADATA["Model_format"]
+        model, name, METADATA["Model_version"], METADATA["Model_format"], METADATA["Model_description"]
     )
 
     m_model_registry.minio_client.put_object.assert_called_once()
+
+def test_register_model_without_description_ok(m_model_registry, m_model):
+    v.set("metadata.product_id", METADATA["product"])
+    v.set("metadata.workflow_name", METADATA["workflow"])
+    v.set("metadata.process_name", METADATA["process"])
+    v.set("metadata.version_tag", METADATA["version"])
+    m_model_registry.minio_client.put_object.return_value = m_model
+    name = "test-key"
+    model = io.BytesIO(b"test-payload")
+
+    m_model_registry.register_model(
+        model, name, METADATA["Model_version"], METADATA["Model_format"]
+    )
+
+    m_model_registry.minio_client.put_object.assert_called_once()
+    m_model_registry.minio_client.put_object.assert_called_with(
+        "test-minio-bucket",
+        ".kai/.model/test-key/v0.0.1",
+        model,
+        12,
+        metadata={
+            "product": METADATA["product"],
+            "workflow": METADATA["workflow"],
+            "process": METADATA["process"],
+            "version": METADATA["version"],
+            "model_version": METADATA["Model_version"],
+            "model_description": "",
+            "model_format": METADATA["Model_format"],
+        },
+    )
 
 
 def test_register_model_ko(m_model_registry):

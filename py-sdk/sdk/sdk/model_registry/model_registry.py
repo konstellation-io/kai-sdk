@@ -44,7 +44,7 @@ class Model(ModelInfo):
 @dataclass
 class ModelRegistryABC(ABC):
     @abstractmethod
-    def register_model(self, model: BinaryIO, name: str, version: str, description: str, model_format: str) -> None:
+    def register_model(self, model: BinaryIO, name: str, version: str, model_format: str, description: Optional[str]) -> None:
         pass
 
     @abstractmethod
@@ -103,7 +103,7 @@ class ModelRegistry(ModelRegistryABC):
 
         self.logger.debug(f"successfully initialized model registry with bucket {self.minio_bucket_name}!")
 
-    def register_model(self, model: BinaryIO, name: str, version: str, description: str, model_format: str) -> None:
+    def register_model(self, model: BinaryIO, name: str, version: str, model_format: str, description: Optional[str] = "") -> None:
         if name is None:
             raise EmptyNameError()
 
