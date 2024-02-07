@@ -32,7 +32,7 @@ type messaging interface {
 	SendOutputWithRequestID(response proto.Message, requestID string, channelOpt ...string) error
 	SendAny(response *anypb.Any, channelOpt ...string)
 	SendAnyWithRequestID(response *anypb.Any, requestID string, channelOpt ...string)
-	SendError(errorMessage string)
+	SendError(errorMessage string, channelOpt ...string)
 	GetErrorMessage() string
 	GetRequestID(msg *nats.Msg) (string, error)
 
@@ -101,7 +101,7 @@ type predictions interface {
 
 //go:generate mockery --name modelRegistry --output ../mocks --filename model_registry_mock.go --structname ModelRegistryMock
 type modelRegistry interface {
-	RegisterModel(model []byte, name, version, description, modelFormat string) error
+	RegisterModel(model []byte, name, version, modelFormat string, description ...string) error
 	GetModel(name string, version ...string) (*modelregistry.Model, error)
 	ListModels() ([]*modelregistry.ModelInfo, error)
 	ListModelVersions(name string) ([]*modelregistry.ModelInfo, error)
