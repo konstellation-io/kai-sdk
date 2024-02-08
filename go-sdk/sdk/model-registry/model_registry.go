@@ -79,8 +79,9 @@ func (mr *ModelRegistry) RegisterModel(model []byte, name, version, modelFormat 
 		return errors.ErrEmptyName
 	}
 
-	if len(description) == 0 {
-		description = []string{""}
+	modelDescription := ""
+	if len(description) > 0 {
+		modelDescription = description[0]
 	}
 
 	if _, err := semver.NewVersion(version); err != nil {
@@ -105,7 +106,7 @@ func (mr *ModelRegistry) RegisterModel(model []byte, name, version, modelFormat 
 			_workflowMetadata:         mr.metadata.GetWorkflow(),
 			_processMetadata:          mr.metadata.GetProcess(),
 			_modelFormatMetadata:      modelFormat,
-			_modelDescriptionMetadata: description[0],
+			_modelDescriptionMetadata: modelDescription,
 			_modelVersionMetadata:     version,
 		},
 	}
