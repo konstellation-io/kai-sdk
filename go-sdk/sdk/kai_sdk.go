@@ -8,7 +8,7 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
 	"go.opentelemetry.io/otel/metric"
 
-	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
 	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
@@ -80,9 +80,9 @@ type persistentStorage interface {
 
 //go:generate mockery --name centralizedConfig --output ../mocks --filename centralized_config_mock.go --structname CentralizedConfigMock
 type centralizedConfig interface {
-	GetConfig(key string, scope ...centralizedconfiguration.Scope) (string, error)
-	SetConfig(key, value string, scope ...centralizedconfiguration.Scope) error
-	DeleteConfig(key string, scope centralizedconfiguration.Scope) error
+	GetConfig(key string, scope ...centralizedConfiguration.Scope) (string, error)
+	SetConfig(key, value string, scope ...centralizedConfiguration.Scope) error
+	DeleteConfig(key string, scope centralizedConfiguration.Scope) error
 }
 
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock
@@ -131,7 +131,7 @@ type KaiSDK struct {
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
 	metadata := meta.New()
 
-	centralizedConfigInst, err := centralizedconfiguration.New(logger, jetstreamCli)
+	centralizedConfigInst, err := centralizedConfiguration.New(logger, jetstreamCli)
 	if err != nil {
 		logger.WithName("[CENTRALIZED CONFIGURATION]").
 			Error(err, "Error initializing Centralized Configuration")

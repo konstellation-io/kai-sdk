@@ -22,10 +22,10 @@ const (
 type Scope string
 
 const (
-	GlobalScope          Scope = "global"
-	ProductScope         Scope = "product"
-	WorkflowScope        Scope = "workflow"
-	ProcessScope         Scope = "process"
+	GlobalScope   Scope = "global"
+	ProductScope  Scope = "product"
+	WorkflowScope Scope = "workflow"
+	ProcessScope  Scope = "process"
 )
 
 type CentralizedConfiguration struct {

@@ -5,7 +5,7 @@ package centralizedconfiguration_test
 import (
 	"errors"
 
-	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 )
 
 const notExist = "not exist"
@@ -17,7 +17,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(1), nil)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -45,7 +45,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -55,7 +55,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", centralizedconfiguration.ProductScope)
+	err = config.SetConfig("key1", "value1", centralizedConfiguration.ProductScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -74,7 +74,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(1), nil)
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -84,7 +84,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", centralizedconfiguration.WorkflowScope)
+	err = config.SetConfig("key1", "value1", centralizedConfiguration.WorkflowScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -102,7 +102,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.productKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(1), nil)
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -112,7 +112,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", centralizedconfiguration.ProcessScope)
+	err = config.SetConfig("key1", "value1", centralizedConfiguration.ProcessScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -131,7 +131,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -141,7 +141,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.Require().NoError(err)
 
 	// When
-	err = config.SetConfig("key1", "value1", centralizedconfiguration.GlobalScope)
+	err = config.SetConfig("key1", "value1", centralizedConfiguration.GlobalScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -160,7 +160,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_SetC
 	s.workflowKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 	s.processKv.On("PutString", "key1", "value1").Return(uint64(0), errors.New(notExist))
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,

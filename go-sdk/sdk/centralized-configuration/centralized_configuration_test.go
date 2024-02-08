@@ -8,7 +8,7 @@ import (
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
 
-	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
@@ -76,7 +76,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfig_InitializeC
 	s.jetstream.On(keyValue, processBucketVal).Return(&s.processKv, nil)
 
 	// When
-	conf, err := centralizedconfiguration.New(s.logger, &s.jetstream)
+	conf, err := centralizedConfiguration.New(s.logger, &s.jetstream)
 
 	// Then
 	s.NoError(err)
@@ -95,7 +95,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_Global
 	s.jetstream.On(keyValue, wrongWorkflowBucketVal).Return(&s.workflowKv, nil)
 	s.jetstream.On(keyValue, wrongProcessBucketVal).Return(&s.processKv, nil)
 	// When
-	config, err := centralizedconfiguration.New(s.logger, &s.jetstream)
+	config, err := centralizedConfiguration.New(s.logger, &s.jetstream)
 
 	// Then
 	s.Error(err)
@@ -114,7 +114,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_Produc
 	s.jetstream.On(keyValue, wrongWorkflowBucketVal).Return(&s.workflowKv, nil)
 	s.jetstream.On(keyValue, wrongProcessBucketVal).Return(&s.processKv, nil)
 	// When
-	config, err := centralizedconfiguration.New(s.logger, &s.jetstream)
+	config, err := centralizedConfiguration.New(s.logger, &s.jetstream)
 
 	// Then
 	s.Error(err)
@@ -134,7 +134,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_Workfl
 	s.jetstream.On(keyValue, wrongProcessBucketVal).Return(&s.processKv, nil)
 
 	// When
-	config, err := centralizedconfiguration.New(s.logger, &s.jetstream)
+	config, err := centralizedConfiguration.New(s.logger, &s.jetstream)
 
 	// Then
 	s.Error(err)
@@ -154,7 +154,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestInitializeConfigScopes_Proces
 	s.jetstream.On(keyValue, wrongProcessBucketVal).Return(nil, errors.New(notExistMessage))
 
 	// When
-	config, err := centralizedconfiguration.New(s.logger, &s.jetstream)
+	config, err := centralizedConfiguration.New(s.logger, &s.jetstream)
 
 	// Then
 	s.Error(err)
@@ -165,7 +165,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestDeleteConfigOnProductScope_Ex
 	// Given
 	s.productKv.On("Delete", "key1").Return(nil)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -175,7 +175,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestDeleteConfigOnProductScope_Ex
 	s.Require().NoError(err)
 
 	// When
-	err = config.DeleteConfig("key1", centralizedconfiguration.ProductScope)
+	err = config.DeleteConfig("key1", centralizedConfiguration.ProductScope)
 	s.Require().NoError(err)
 
 	// Then
