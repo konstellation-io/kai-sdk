@@ -26,7 +26,6 @@ const (
 	ProductScope         Scope = "product"
 	WorkflowScope        Scope = "workflow"
 	ProcessScope         Scope = "process"
-	_messagingLoggerName       = "[centralizedconfiguration]"
 )
 
 type CentralizedConfiguration struct {
