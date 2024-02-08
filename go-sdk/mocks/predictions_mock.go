@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	prediction "github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
+	prediction "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/prediction"
 	mock "github.com/stretchr/testify/mock"
 )
 

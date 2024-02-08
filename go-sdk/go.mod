@@ -1,4 +1,4 @@
-module github.com/konstellation-io/kai-sdk/go-sdk
+module github.com/konstellation-io/kai-sdk/go-sdk/v2
 
 go 1.20
 

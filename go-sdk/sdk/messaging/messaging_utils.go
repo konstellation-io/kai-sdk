@@ -3,7 +3,7 @@ package messaging
 import (
 	"fmt"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"

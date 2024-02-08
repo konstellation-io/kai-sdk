@@ -5,12 +5,12 @@ package objectstore_test
 import (
 	"fmt"
 
-	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
+	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/ephemeral-storage"
 
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
 )
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_SaveObjectStoreNotInitialized_ExpectError() {

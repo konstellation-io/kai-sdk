@@ -2,7 +2,7 @@
 
 package modelregistry_test
 
-import "github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+import "github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
 
 func (s *SdkModelRegistryTestSuite) TestModelRegistry_GetModel_ExpectOK() {
 	// GIVEN

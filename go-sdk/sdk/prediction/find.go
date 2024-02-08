@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 	"github.com/spf13/viper"
 )
 

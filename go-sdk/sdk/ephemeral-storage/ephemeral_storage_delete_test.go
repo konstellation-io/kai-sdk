@@ -5,13 +5,13 @@ package objectstore_test
 import (
 	"fmt"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 
-	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
+	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/ephemeral-storage"
 
 	"github.com/spf13/viper"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
 )
 
 const (

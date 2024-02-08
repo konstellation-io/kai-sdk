@@ -8,14 +8,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/storage"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/storage"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/metadata"
 	"github.com/minio/minio-go/v7/pkg/lifecycle"
 
 	"github.com/go-logr/logr"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
 	"github.com/minio/minio-go/v7"
 	"github.com/spf13/viper"
 )

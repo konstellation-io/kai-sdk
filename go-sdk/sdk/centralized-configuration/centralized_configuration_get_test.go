@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
-	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/mocks"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/centralized-configuration"
 	"github.com/nats-io/nats.go"
 )
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	ephemeralStorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
+	ephemeralStorage "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/ephemeral-storage"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
@@ -14,8 +14,8 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
-	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/mocks"
 )
 
 //go:generate mockery --dir $GOPATH/pkg/mod/github.com/nats-io/nats.go@v1.31.0 --output ../../mocks --name JetStreamContext --structname JetStreamContextMock --filename jetstream_context_mock.go
