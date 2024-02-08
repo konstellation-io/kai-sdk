@@ -53,14 +53,14 @@ func (ms Messaging) publishAny(payload *anypb.Any, requestID string, msgType kai
 	ms.publishResponse(responseMsg, channel)
 }
 
-func (ms Messaging) publishError(requestID, errMsg string) {
+func (ms Messaging) publishError(requestID, errMsg, channel string) {
 	responseMsg := &kai.KaiNatsMessage{
 		RequestId:   requestID,
 		Error:       errMsg,
 		FromNode:    viper.GetString(common.ConfigMetadataProcessIDKey),
 		MessageType: kai.MessageType_ERROR,
 	}
-	ms.publishResponse(responseMsg, "")
+	ms.publishResponse(responseMsg, channel)
 }
 
 func (ms Messaging) newResponseMsg(payload *anypb.Any, requestID string,

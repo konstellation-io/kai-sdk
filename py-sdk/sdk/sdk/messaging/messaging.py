@@ -45,7 +45,7 @@ class MessagingABC(ABC):
         pass
 
     @abstractmethod
-    async def send_error(self, error: str) -> None:
+    async def send_error(self, error: str, chan: Optional[str]) -> None:
         pass
 
     @abstractmethod
@@ -92,9 +92,9 @@ class Messaging(MessagingABC):
     async def send_any_with_request_id(self, response: Any, request_id: str, chan: Optional[str] = None) -> None:
         await self._publish_any(payload=response, msg_type=MessageType.OK, request_id=request_id, chan=chan)
 
-    async def send_error(self, error: str) -> None:
+    async def send_error(self, error: str, chan: Optional[str] = None) -> None:
         request_id = self.request_msg.request_id if self.request_msg else None
-        await self._publish_error(err_msg=error, request_id=request_id or "")
+        await self._publish_error(err_msg=error, chan=chan, request_id=request_id)
 
     def get_error_message(self) -> str:
         return self.request_msg.error if self.is_message_error() else ""
@@ -130,14 +130,14 @@ class Messaging(MessagingABC):
         response_msg = self._new_response_msg(payload, request_id, msg_type)
         await self._publish_response(response_msg, chan)
 
-    async def _publish_error(self, request_id: str, err_msg: str) -> None:
+    async def _publish_error(self, err_msg: str, request_id: str, chan: Optional[str] = None) -> None:
         response_msg = KaiNatsMessage(
             request_id=request_id,
             error=err_msg,
             from_node=v.get_string("metadata.process_name"),
             message_type=MessageType.ERROR,
         )
-        await self._publish_response(response_msg)
+        await self._publish_response(response_msg, chan)
 
     def _new_response_msg(self, payload: Any, request_id: str, msg_type: MessageType.V) -> KaiNatsMessage:
         self.logger.info(

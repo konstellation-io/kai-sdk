@@ -8,7 +8,7 @@ import (
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
 	"go.opentelemetry.io/otel/metric"
 
-	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
 	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
 	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
@@ -32,7 +32,7 @@ type messaging interface {
 	SendOutputWithRequestID(response proto.Message, requestID string, channelOpt ...string) error
 	SendAny(response *anypb.Any, channelOpt ...string)
 	SendAnyWithRequestID(response *anypb.Any, requestID string, channelOpt ...string)
-	SendError(errorMessage string)
+	SendError(errorMessage string, channelOpt ...string)
 	GetErrorMessage() string
 	GetRequestID(msg *nats.Msg) (string, error)
 
@@ -80,9 +80,9 @@ type persistentStorage interface {
 
 //go:generate mockery --name centralizedConfig --output ../mocks --filename centralized_config_mock.go --structname CentralizedConfigMock
 type centralizedConfig interface {
-	GetConfig(key string, scope ...msg.Scope) (string, error)
-	SetConfig(key, value string, scope ...msg.Scope) error
-	DeleteConfig(key string, scope msg.Scope) error
+	GetConfig(key string, scope ...centralizedConfiguration.Scope) (string, error)
+	SetConfig(key, value string, scope ...centralizedConfiguration.Scope) error
+	DeleteConfig(key string, scope centralizedConfiguration.Scope) error
 }
 
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock
@@ -101,7 +101,7 @@ type predictions interface {
 
 //go:generate mockery --name modelRegistry --output ../mocks --filename model_registry_mock.go --structname ModelRegistryMock
 type modelRegistry interface {
-	RegisterModel(model []byte, name, version, description, modelFormat string) error
+	RegisterModel(model []byte, name, version, modelFormat string, description ...string) error
 	GetModel(name string, version ...string) (*modelregistry.Model, error)
 	ListModels() ([]*modelregistry.ModelInfo, error)
 	ListModelVersions(name string) ([]*modelregistry.ModelInfo, error)
@@ -131,7 +131,7 @@ type KaiSDK struct {
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
 	metadata := meta.New()
 
-	centralizedConfigInst, err := centralizedconfiguration.New(logger, jetstreamCli)
+	centralizedConfigInst, err := centralizedConfiguration.New(logger, jetstreamCli)
 	if err != nil {
 		logger.WithName("[CENTRALIZED CONFIGURATION]").
 			Error(err, "Error initializing Centralized Configuration")

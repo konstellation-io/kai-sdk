@@ -16,7 +16,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
 )
 
 const (
@@ -176,7 +175,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestDeleteConfigOnProductScope_Ex
 	s.Require().NoError(err)
 
 	// When
-	err = config.DeleteConfig("key1", messaging.ProductScope)
+	err = config.DeleteConfig("key1", centralizedConfiguration.ProductScope)
 	s.Require().NoError(err)
 
 	// Then

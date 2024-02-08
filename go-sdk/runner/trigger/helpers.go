@@ -58,6 +58,7 @@ func composeRunner(userRunner RunnerFunc) RunnerFunc {
 		runner.responseChannels.Range(func(key, value interface{}) bool {
 			close(value.(chan *anypb.Any))
 			kaiSDK.Logger.WithName(_runnerLoggerName).V(1).Info(fmt.Sprintf("Channel closed for request id %s", key))
+
 			return true
 		})
 

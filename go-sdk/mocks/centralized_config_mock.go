@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	messaging "github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
+	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -21,11 +21,11 @@ func (_m *CentralizedConfigMock) EXPECT() *CentralizedConfigMock_Expecter {
 }
 
 // DeleteConfig provides a mock function with given fields: key, scope
-func (_m *CentralizedConfigMock) DeleteConfig(key string, scope messaging.Scope) error {
+func (_m *CentralizedConfigMock) DeleteConfig(key string, scope centralizedconfiguration.Scope) error {
 	ret := _m.Called(key, scope)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, messaging.Scope) error); ok {
+	if rf, ok := ret.Get(0).(func(string, centralizedconfiguration.Scope) error); ok {
 		r0 = rf(key, scope)
 	} else {
 		r0 = ret.Error(0)
@@ -41,14 +41,14 @@ type CentralizedConfigMock_DeleteConfig_Call struct {
 
 // DeleteConfig is a helper method to define mock.On call
 //   - key string
-//   - scope messaging.Scope
+//   - scope centralizedconfiguration.Scope
 func (_e *CentralizedConfigMock_Expecter) DeleteConfig(key interface{}, scope interface{}) *CentralizedConfigMock_DeleteConfig_Call {
 	return &CentralizedConfigMock_DeleteConfig_Call{Call: _e.mock.On("DeleteConfig", key, scope)}
 }
 
-func (_c *CentralizedConfigMock_DeleteConfig_Call) Run(run func(key string, scope messaging.Scope)) *CentralizedConfigMock_DeleteConfig_Call {
+func (_c *CentralizedConfigMock_DeleteConfig_Call) Run(run func(key string, scope centralizedconfiguration.Scope)) *CentralizedConfigMock_DeleteConfig_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].(messaging.Scope))
+		run(args[0].(string), args[1].(centralizedconfiguration.Scope))
 	})
 	return _c
 }
@@ -58,13 +58,13 @@ func (_c *CentralizedConfigMock_DeleteConfig_Call) Return(_a0 error) *Centralize
 	return _c
 }
 
-func (_c *CentralizedConfigMock_DeleteConfig_Call) RunAndReturn(run func(string, messaging.Scope) error) *CentralizedConfigMock_DeleteConfig_Call {
+func (_c *CentralizedConfigMock_DeleteConfig_Call) RunAndReturn(run func(string, centralizedconfiguration.Scope) error) *CentralizedConfigMock_DeleteConfig_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetConfig provides a mock function with given fields: key, scope
-func (_m *CentralizedConfigMock) GetConfig(key string, scope ...messaging.Scope) (string, error) {
+func (_m *CentralizedConfigMock) GetConfig(key string, scope ...centralizedconfiguration.Scope) (string, error) {
 	_va := make([]interface{}, len(scope))
 	for _i := range scope {
 		_va[_i] = scope[_i]
@@ -76,16 +76,16 @@ func (_m *CentralizedConfigMock) GetConfig(key string, scope ...messaging.Scope)
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, ...messaging.Scope) (string, error)); ok {
+	if rf, ok := ret.Get(0).(func(string, ...centralizedconfiguration.Scope) (string, error)); ok {
 		return rf(key, scope...)
 	}
-	if rf, ok := ret.Get(0).(func(string, ...messaging.Scope) string); ok {
+	if rf, ok := ret.Get(0).(func(string, ...centralizedconfiguration.Scope) string); ok {
 		r0 = rf(key, scope...)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(string, ...messaging.Scope) error); ok {
+	if rf, ok := ret.Get(1).(func(string, ...centralizedconfiguration.Scope) error); ok {
 		r1 = rf(key, scope...)
 	} else {
 		r1 = ret.Error(1)
@@ -101,18 +101,18 @@ type CentralizedConfigMock_GetConfig_Call struct {
 
 // GetConfig is a helper method to define mock.On call
 //   - key string
-//   - scope ...messaging.Scope
+//   - scope ...centralizedconfiguration.Scope
 func (_e *CentralizedConfigMock_Expecter) GetConfig(key interface{}, scope ...interface{}) *CentralizedConfigMock_GetConfig_Call {
 	return &CentralizedConfigMock_GetConfig_Call{Call: _e.mock.On("GetConfig",
 		append([]interface{}{key}, scope...)...)}
 }
 
-func (_c *CentralizedConfigMock_GetConfig_Call) Run(run func(key string, scope ...messaging.Scope)) *CentralizedConfigMock_GetConfig_Call {
+func (_c *CentralizedConfigMock_GetConfig_Call) Run(run func(key string, scope ...centralizedconfiguration.Scope)) *CentralizedConfigMock_GetConfig_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		variadicArgs := make([]messaging.Scope, len(args)-1)
+		variadicArgs := make([]centralizedconfiguration.Scope, len(args)-1)
 		for i, a := range args[1:] {
 			if a != nil {
-				variadicArgs[i] = a.(messaging.Scope)
+				variadicArgs[i] = a.(centralizedconfiguration.Scope)
 			}
 		}
 		run(args[0].(string), variadicArgs...)
@@ -125,13 +125,13 @@ func (_c *CentralizedConfigMock_GetConfig_Call) Return(_a0 string, _a1 error) *C
 	return _c
 }
 
-func (_c *CentralizedConfigMock_GetConfig_Call) RunAndReturn(run func(string, ...messaging.Scope) (string, error)) *CentralizedConfigMock_GetConfig_Call {
+func (_c *CentralizedConfigMock_GetConfig_Call) RunAndReturn(run func(string, ...centralizedconfiguration.Scope) (string, error)) *CentralizedConfigMock_GetConfig_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SetConfig provides a mock function with given fields: key, value, scope
-func (_m *CentralizedConfigMock) SetConfig(key string, value string, scope ...messaging.Scope) error {
+func (_m *CentralizedConfigMock) SetConfig(key string, value string, scope ...centralizedconfiguration.Scope) error {
 	_va := make([]interface{}, len(scope))
 	for _i := range scope {
 		_va[_i] = scope[_i]
@@ -142,7 +142,7 @@ func (_m *CentralizedConfigMock) SetConfig(key string, value string, scope ...me
 	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string, ...messaging.Scope) error); ok {
+	if rf, ok := ret.Get(0).(func(string, string, ...centralizedconfiguration.Scope) error); ok {
 		r0 = rf(key, value, scope...)
 	} else {
 		r0 = ret.Error(0)
@@ -159,18 +159,18 @@ type CentralizedConfigMock_SetConfig_Call struct {
 // SetConfig is a helper method to define mock.On call
 //   - key string
 //   - value string
-//   - scope ...messaging.Scope
+//   - scope ...centralizedconfiguration.Scope
 func (_e *CentralizedConfigMock_Expecter) SetConfig(key interface{}, value interface{}, scope ...interface{}) *CentralizedConfigMock_SetConfig_Call {
 	return &CentralizedConfigMock_SetConfig_Call{Call: _e.mock.On("SetConfig",
 		append([]interface{}{key, value}, scope...)...)}
 }
 
-func (_c *CentralizedConfigMock_SetConfig_Call) Run(run func(key string, value string, scope ...messaging.Scope)) *CentralizedConfigMock_SetConfig_Call {
+func (_c *CentralizedConfigMock_SetConfig_Call) Run(run func(key string, value string, scope ...centralizedconfiguration.Scope)) *CentralizedConfigMock_SetConfig_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		variadicArgs := make([]messaging.Scope, len(args)-2)
+		variadicArgs := make([]centralizedconfiguration.Scope, len(args)-2)
 		for i, a := range args[2:] {
 			if a != nil {
-				variadicArgs[i] = a.(messaging.Scope)
+				variadicArgs[i] = a.(centralizedconfiguration.Scope)
 			}
 		}
 		run(args[0].(string), args[1].(string), variadicArgs...)
@@ -183,7 +183,7 @@ func (_c *CentralizedConfigMock_SetConfig_Call) Return(_a0 error) *CentralizedCo
 	return _c
 }
 
-func (_c *CentralizedConfigMock_SetConfig_Call) RunAndReturn(run func(string, string, ...messaging.Scope) error) *CentralizedConfigMock_SetConfig_Call {
+func (_c *CentralizedConfigMock_SetConfig_Call) RunAndReturn(run func(string, string, ...centralizedconfiguration.Scope) error) *CentralizedConfigMock_SetConfig_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -7,8 +7,7 @@ import (
 	"fmt"
 
 	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
-	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
 	"github.com/nats-io/nats.go"
 )
 
@@ -49,7 +48,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.productKv.On("Get", "key3").Return(nil, nats.ErrKeyNotFound)
 	s.workflowKv.On("Get", "key3").Return(nil, nats.ErrKeyNotFound)
 	s.processKv.On("Get", "key3").Return(processResponse, nil)
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -87,7 +86,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.workflowKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 	s.processKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -101,7 +100,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 
 	// Then
 	s.Require().Error(err)
-	s.Assert().ErrorIs(err, centralizedconfiguration.ErrKeyNotFound)
+	s.Assert().ErrorIs(err, centralizedConfiguration.ErrKeyNotFound)
 	s.NotNil(config)
 	s.Empty(key1Value)
 	s.globalKv.AssertNumberOfCalls(s.T(), "Get", 1)
@@ -117,7 +116,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.workflowKv.On("Get", "key1").Return(nil, errors.New("unexpected error"))
 	s.processKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -131,7 +130,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 
 	// Then
 	s.Require().Error(err)
-	s.Assert().NotErrorIs(err, centralizedconfiguration.ErrKeyNotFound)
+	s.Assert().NotErrorIs(err, centralizedConfiguration.ErrKeyNotFound)
 	s.NotNil(config)
 	s.Empty(key1Value)
 	s.globalKv.AssertNumberOfCalls(s.T(), "Get", 0)
@@ -160,7 +159,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetO
 	s.workflowKv.On("Get", "key2").Return(workflowResponse, nil)
 	s.processKv.On("Get", "key2").Return(processResponse, nil)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -192,7 +191,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 
 	s.globalKv.On("Get", "key1").Return(globalResponse, nil)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -202,7 +201,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.GlobalScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.GlobalScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -215,7 +214,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	// Given
 	s.globalKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -225,7 +224,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.GlobalScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.GlobalScope)
 
 	// Then
 	s.Error(err)
@@ -241,7 +240,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 
 	s.productKv.On("Get", "key1").Return(productResponse, nil)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -251,7 +250,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.ProductScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProductScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -264,7 +263,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	// Given
 	s.productKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -274,7 +273,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.ProductScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProductScope)
 
 	// Then
 	s.Error(err)
@@ -290,7 +289,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 
 	s.workflowKv.On("Get", "key1").Return(workflowResponse, nil)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -300,7 +299,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.WorkflowScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.WorkflowScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -313,7 +312,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	// Given
 	s.workflowKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -323,11 +322,11 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.WorkflowScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.WorkflowScope)
 
 	// Then
 	s.Error(err)
-	s.Assert().ErrorIs(err, centralizedconfiguration.ErrKeyNotFound)
+	s.Assert().ErrorIs(err, centralizedConfiguration.ErrKeyNotFound)
 	s.NotNil(config)
 	s.Empty(key1Value)
 	s.workflowKv.AssertNumberOfCalls(s.T(), "Get", 1)
@@ -340,7 +339,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 
 	s.processKv.On("Get", "key1").Return(processResponse, nil)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -350,7 +349,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.ProcessScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProcessScope)
 	s.Require().NoError(err)
 
 	// Then
@@ -363,7 +362,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	// Given
 	s.processKv.On("Get", "key1").Return(nil, nats.ErrKeyNotFound)
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -373,7 +372,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetN
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.ProcessScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProcessScope)
 
 	// Then
 	s.Error(err)
@@ -386,7 +385,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	// Given
 	s.processKv.On("Get", "key1").Return(nil, fmt.Errorf("unexpected error"))
 
-	config, err := centralizedconfiguration.NewBuilder(
+	config, err := centralizedConfiguration.NewBuilder(
 		s.logger,
 		&s.globalKv,
 		&s.productKv,
@@ -396,7 +395,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestCentralizedConfiguration_GetC
 	s.Require().NoError(err)
 
 	// When
-	key1Value, err := config.GetConfig("key1", messaging.ProcessScope)
+	key1Value, err := config.GetConfig("key1", centralizedConfiguration.ProcessScope)
 
 	// Then
 	s.Error(err)
