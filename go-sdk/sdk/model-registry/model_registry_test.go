@@ -9,11 +9,11 @@ import (
 	"net/http"
 	"testing"
 
-	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
+	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/model-registry"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/metadata"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 
 	"github.com/go-logr/logr/testr"
 	"github.com/minio/minio-go/v7"

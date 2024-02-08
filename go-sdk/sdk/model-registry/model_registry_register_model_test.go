@@ -7,8 +7,8 @@ import (
 	"io"
 	"path"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
 	"github.com/minio/minio-go/v7"
 	"github.com/spf13/viper"
 )

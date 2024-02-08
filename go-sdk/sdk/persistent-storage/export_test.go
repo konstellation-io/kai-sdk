@@ -5,8 +5,8 @@ package persistentstorage
 import (
 	"fmt"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/metadata"
 
 	"github.com/go-logr/logr"
 	"github.com/minio/minio-go/v7"

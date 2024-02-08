@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/prediction"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 
 	"github.com/go-logr/logr"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 
-	utilErrors "github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	utilErrors "github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
 )
 
 var ErrKeyNotFound = errors.New("config not found in any key-value store for key")

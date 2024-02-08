@@ -10,9 +10,9 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
-	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/mocks"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/runner/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk"
 )
 
 type RunnerCommonTestSuite struct {

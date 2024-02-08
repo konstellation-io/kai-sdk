@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/metadata"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 )

@@ -6,7 +6,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/prediction"
 )
 
 func (s *PredictionStoreSuite) TestPredictionStore_Find_ExpectOK() {

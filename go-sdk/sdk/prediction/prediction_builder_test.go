@@ -5,7 +5,7 @@ package prediction_test
 import (
 	"time"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/prediction"
 )
 
 type predictionBuilder struct {

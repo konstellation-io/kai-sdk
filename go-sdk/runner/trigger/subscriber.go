@@ -19,10 +19,10 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/v2/protos"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk"
 )
 
 const _subscriberLoggerName = "[SUBSCRIBER]"

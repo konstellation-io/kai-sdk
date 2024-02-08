@@ -5,7 +5,7 @@ package centralizedconfiguration_test
 import (
 	"errors"
 
-	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/centralized-configuration"
 )
 
 const notExist = "not exist"
