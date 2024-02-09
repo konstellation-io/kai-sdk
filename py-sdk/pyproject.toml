@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "kai-py-sdk"
+name = "kai-sdk"
 version = "1.0.0"
 description = "KAI SDK's implementation in Python"
 authors = ["Intelygenz - KAI Team"]
