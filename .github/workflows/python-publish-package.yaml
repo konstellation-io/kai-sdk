@@ -27,8 +27,11 @@ jobs:
         working-directory: ./py-sdk
       - name: Add API TOKEN to Poetry
         run: |
-          python -m poetry config __token__ ${{ secrets.PYPI_TOKEN }}
+          python -m poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
         working-directory: ./py-sdk
+      - name: Bump package version
+        run: |
+          .ci/tools/bump_version.sh
       - name: Build package
         run: |
           python -m poetry build

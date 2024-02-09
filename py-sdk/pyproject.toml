@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "py-sdk"
+name = "kai-runner"
 version = "1.0.0"
-description = "AIO SDK's implementation in Python"
-authors = ["Intelygenz - AIO Team"]
-maintainers = ["Intelygenz - AIO Team"]
-keywords = ["python", "py-sdk", "aio"]
+description = "KAI SDK's implementation in Python"
+authors = ["Intelygenz - KAI Team"]
+maintainers = ["Intelygenz - KAI Team"]
+keywords = ["python", "runner", "kai"]
 packages = [
     {include = "runner"},
     {include = "sdk", from = "sdk"},
