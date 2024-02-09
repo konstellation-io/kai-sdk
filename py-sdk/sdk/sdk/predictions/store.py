@@ -14,6 +14,7 @@ from vyper import v
 from sdk.metadata.metadata import Metadata
 from sdk.predictions.exceptions import (
     EmptyIdError,
+    FailedToDeletePredictionError,
     FailedToFindPredictionsError,
     FailedToGetPredictionError,
     FailedToInitializePredictionsStoreError,
@@ -29,7 +30,7 @@ from sdk.predictions.types import Filter, Payload, Prediction, UpdatePayloadFunc
 @dataclass
 class PredictionsABC(ABC):
     @abstractmethod
-    def save(self, id: str, function: callable) -> None:
+    def save(self, id: str, payload: Payload) -> None:
         pass
 
     @abstractmethod
@@ -41,7 +42,11 @@ class PredictionsABC(ABC):
         pass
 
     @abstractmethod
-    def update(self, id: str, value: dict[str, str]) -> None:
+    def update(self, id: str, update_payload: UpdatePayloadFunc) -> None:
+        pass
+
+    @abstractmethod
+    def delete(self, id: str) -> None:
         pass
 
 
@@ -76,7 +81,7 @@ class Predictions(PredictionsABC):
 
         self.logger.info("successfully initialized predictions store")
 
-    def save(self, id: str, value: Payload) -> None:
+    def save(self, id: str, payload: Payload) -> None:
         try:
             if id == "" or id is None:
                 self.logger.error(f"{EmptyIdError()}")
@@ -87,7 +92,7 @@ class Predictions(PredictionsABC):
             prediction = Prediction(
                 creation_date=int(creation_timestamp),
                 last_modified=int(creation_timestamp),
-                payload=value,
+                payload=payload,
                 metadata={
                     "product": Metadata.get_product(),
                     "version": Metadata.get_version(),
@@ -140,7 +145,7 @@ class Predictions(PredictionsABC):
 
         return result
 
-    def update(self, id: str, update_function: UpdatePayloadFunc) -> None:
+    def update(self, id: str, update_payload: UpdatePayloadFunc) -> None:
         try:
             if id == "" or id is None:
                 self.logger.error(f"{EmptyIdError()}")
@@ -149,8 +154,12 @@ class Predictions(PredictionsABC):
             key = self._get_key_with_product_prefix(id)
             prediction = self.client.json().get(key)
 
+            if prediction is None:
+                self.logger.error(f"prediction {id} not found in the predictions store")
+                raise NotFoundError(id)
+
             payload = prediction["payload"]
-            new_payload = update_function(payload)
+            new_payload = update_payload(payload)
             if new_payload is None:
                 self.logger.error(f"update function returned None for prediction {id}")
                 raise FailedToUpdatePredictionError(id)
@@ -170,6 +179,24 @@ class Predictions(PredictionsABC):
             raise FailedToUpdatePredictionError(id, e)
 
         self.logger.info(f"successfully updated prediction with {id} to the predictions store")
+
+    def delete(self, id: str) -> None:
+        try:
+            if id == "" or id is None:
+                self.logger.error(f"{EmptyIdError()}")
+                raise EmptyIdError()
+
+            key = self._get_key_with_product_prefix(id)
+            result = self.client.json().delete(key)
+
+            if result == 0:
+                self.logger.error(f"prediction {id} not found in the predictions store")
+                raise NotFoundError(id)
+        except Exception as e:
+            self.logger.error(f"failed to delete prediction {id} from the predictions store: {e}")
+            raise FailedToDeletePredictionError(id, e)
+
+        self.logger.info(f"successfully deleted prediction {id} from the predictions store")
 
     def _validate_filter(self, filter: Filter) -> None:
         if filter.version is None:

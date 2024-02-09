@@ -3,8 +3,8 @@ package exit
 import (
 	"strings"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/runner/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk"
 	"go.opentelemetry.io/otel/metric"
 
 	"github.com/go-logr/logr"
@@ -20,15 +20,16 @@ type Handler common.Handler
 type Postprocessor common.Handler
 
 type Runner struct {
-	sdk              sdk.KaiSDK
-	nats             *nats.Conn
-	jetstream        nats.JetStreamContext
-	responseHandlers map[string]Handler
-	initializer      common.Initializer
-	preprocessor     Preprocessor
-	postprocessor    Postprocessor
-	finalizer        common.Finalizer
-	metrics          metric.Int64Histogram
+	sdk                    sdk.KaiSDK
+	nats                   *nats.Conn
+	jetstream              nats.JetStreamContext
+	responseHandlers       map[string]Handler
+	initializer            common.Initializer
+	preprocessor           Preprocessor
+	postprocessor          Postprocessor
+	finalizer              common.Finalizer
+	elapsedTimeMetric      metric.Int64Histogram
+	numberOfMessagesMetric metric.Int64Counter
 }
 
 func NewExitRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {

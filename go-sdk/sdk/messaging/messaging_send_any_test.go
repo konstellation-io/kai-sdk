@@ -1,9 +1,11 @@
+//go:build unit
+
 package messaging_test
 
 import (
 	"fmt"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/nats-io/nats.go"
@@ -11,8 +13,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/v2/protos"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/messaging"
 )
 
 const (

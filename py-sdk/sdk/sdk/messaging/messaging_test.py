@@ -105,30 +105,17 @@ async def test_send_error(m_messaging):
     await m_messaging.send_error(error="test_error")
 
     assert m_messaging._publish_error.called
-    assert m_messaging._publish_error.call_args == call(err_msg="test_error", request_id="test_request_id")
+    assert m_messaging._publish_error.call_args == call(err_msg="test_error", chan=None, request_id="test_request_id")
 
 
-async def test_send_early_reply(m_messaging):
-    m_messaging._publish_msg = AsyncMock()
-    response = Mock(spec=Message)
+async def test_send_error_with_channel(m_messaging):
+    m_messaging._publish_error = AsyncMock()
 
-    await m_messaging.send_early_reply(response=response, chan=TEST_CHANNEL)
+    await m_messaging.send_error(error="test_error", chan=TEST_CHANNEL)
 
-    assert m_messaging._publish_msg.called
-    assert m_messaging._publish_msg.call_args == call(
-        msg=response, msg_type=MessageType.EARLY_REPLY, chan=TEST_CHANNEL, request_id="test_request_id"
-    )
-
-
-async def test_send_early_exit(m_messaging):
-    m_messaging._publish_msg = AsyncMock()
-    response = Mock(spec=Message)
-
-    await m_messaging.send_early_exit(response=response, chan=TEST_CHANNEL)
-
-    assert m_messaging._publish_msg.called
-    assert m_messaging._publish_msg.call_args == call(
-        msg=response, msg_type=MessageType.EARLY_EXIT, chan=TEST_CHANNEL, request_id="test_request_id"
+    assert m_messaging._publish_error.called
+    assert m_messaging._publish_error.call_args == call(
+        err_msg="test_error", chan=TEST_CHANNEL, request_id="test_request_id"
     )
 
 
@@ -146,8 +133,6 @@ def test_get_error_message(m_messaging):
     [
         (MessageType.OK, "is_message_ok", True),
         (MessageType.ERROR, "is_message_error", True),
-        (MessageType.EARLY_REPLY, "is_message_early_reply", True),
-        (MessageType.EARLY_EXIT, "is_message_early_exit", True),
     ],
 )
 def test_is_message_ok(m_messaging, message_type, function, expected_result):
@@ -217,7 +202,8 @@ async def test__publish_error_ok(m_messaging):
             error="test_error",
             from_node="test_process_id",
             message_type=MessageType.ERROR,
-        )
+        ),
+        None,
     )
 
 
@@ -329,8 +315,6 @@ async def test__prepare_output_message_too_large_ko(m_messaging):
 def test_message_type_converter_ok():
     assert _message_type_converter(MessageType.OK) == "ok"
     assert _message_type_converter(MessageType.ERROR) == "error"
-    assert _message_type_converter(MessageType.EARLY_REPLY) == "early reply"
-    assert _message_type_converter(MessageType.EARLY_EXIT) == "early exit"
     assert _message_type_converter(MessageType.UNDEFINED) == "undefined"
 
 

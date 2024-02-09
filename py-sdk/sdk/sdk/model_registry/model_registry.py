@@ -24,6 +24,7 @@ from sdk.model_registry.exceptions import (
     FailedToSaveModelError,
     InvalidVersionError,
     MissingBucketError,
+    ModelAlreadyExistsError,
     ModelNotFoundError,
 )
 
@@ -38,13 +39,15 @@ class ModelInfo:
 
 @dataclass
 class Model(ModelInfo):
-    model: BinaryIO = field(init=True)
+    model: bytes = field(init=True)
 
 
 @dataclass
 class ModelRegistryABC(ABC):
     @abstractmethod
-    def register_model(self, model: BinaryIO, name: str, version: str, description: str, model_format: str) -> None:
+    def register_model(
+        self, model: BinaryIO, name: str, version: str, model_format: str, description: Optional[str]
+    ) -> None:
         pass
 
     @abstractmethod
@@ -103,7 +106,9 @@ class ModelRegistry(ModelRegistryABC):
 
         self.logger.debug(f"successfully initialized model registry with bucket {self.minio_bucket_name}!")
 
-    def register_model(self, model: BinaryIO, name: str, version: str, description: str, model_format: str) -> None:
+    def register_model(
+        self, model: BinaryIO, name: str, version: str, model_format: str, description: Optional[str] = ""
+    ) -> None:
         if name is None:
             raise EmptyNameError()
 
@@ -112,6 +117,11 @@ class ModelRegistry(ModelRegistryABC):
 
         if not model:
             raise EmptyModelError()
+
+        exist = self._object_exist(name)
+        if exist:
+            self.logger.error(f"model {name} already exists in model registry")
+            raise ModelAlreadyExistsError(name, version)
 
         try:
             metadata = {

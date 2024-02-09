@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 	"github.com/spf13/viper"
 )
 
@@ -36,8 +36,6 @@ func (r *RedisPredictionStore) buildQueryWithFilters(filter *Filter) string {
 		r.getSearchTagFilter("product", r.metadata.GetProduct()),
 		r.getSearchNumericRangeFilter("creation_date", filter.CreationDate.StartDate, filter.CreationDate.EndDate),
 	}
-
-	fmt.Println(queryFilters)
 
 	if filter.Workflow != "" {
 		queryFilters = append(queryFilters, r.getSearchTagFilter("workflow", filter.Workflow))

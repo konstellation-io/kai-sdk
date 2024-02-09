@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/metadata"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 
 	"github.com/go-logr/logr/testr"
-	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
+	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/persistent-storage"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/spf13/viper"

@@ -9,10 +9,10 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/go-logr/logr"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/storage"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/storage"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/metadata"
 	"github.com/minio/minio-go/v7"
 	"github.com/spf13/viper"
 )
@@ -72,11 +72,16 @@ func New(logger logr.Logger, meta *metadata.Metadata) (*ModelRegistry, error) {
 	}, nil
 }
 
-func (mr *ModelRegistry) RegisterModel(model []byte, name, version, description, modelFormat string) error {
+func (mr *ModelRegistry) RegisterModel(model []byte, name, version, modelFormat string, description ...string) error {
 	ctx := context.Background()
 
 	if name == "" {
 		return errors.ErrEmptyName
+	}
+
+	modelDescription := ""
+	if len(description) > 0 {
+		modelDescription = description[0]
 	}
 
 	if _, err := semver.NewVersion(version); err != nil {
@@ -85,6 +90,11 @@ func (mr *ModelRegistry) RegisterModel(model []byte, name, version, description,
 
 	if len(model) == 0 {
 		return errors.ErrEmptyModel
+	}
+
+	model_, err := mr.GetModel(name, version)
+	if err == nil && model_ != nil {
+		return errors.ErrModelAlreadyExists
 	}
 
 	reader := bytes.NewReader(model)
@@ -96,12 +106,12 @@ func (mr *ModelRegistry) RegisterModel(model []byte, name, version, description,
 			_workflowMetadata:         mr.metadata.GetWorkflow(),
 			_processMetadata:          mr.metadata.GetProcess(),
 			_modelFormatMetadata:      modelFormat,
-			_modelDescriptionMetadata: description,
+			_modelDescriptionMetadata: modelDescription,
 			_modelVersionMetadata:     version,
 		},
 	}
 
-	_, err := mr.storageClient.PutObject(
+	_, err = mr.storageClient.PutObject(
 		ctx,
 		mr.storageBucket,
 		mr.getModelPath(name),

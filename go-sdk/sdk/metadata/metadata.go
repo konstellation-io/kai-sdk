@@ -1,7 +1,7 @@
 package metadata
 
 import (
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 	"github.com/spf13/viper"
 )
 
@@ -26,6 +26,10 @@ func (md Metadata) GetWorkflowType() string {
 
 func (md Metadata) GetProcess() string {
 	return viper.GetString(common.ConfigMetadataProcessIDKey)
+}
+
+func (md Metadata) GetProcessType() string {
+	return viper.GetString(common.ConfigMetadataProcessTypeKey)
 }
 
 func (md Metadata) GetVersion() string {

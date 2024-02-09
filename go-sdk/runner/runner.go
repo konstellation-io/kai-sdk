@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
-	"github.com/konstellation-io/kai-sdk/go-sdk/runner/exit"
-	"github.com/konstellation-io/kai-sdk/go-sdk/runner/task"
-	"github.com/konstellation-io/kai-sdk/go-sdk/runner/trigger"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/runner/exit"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/runner/task"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/runner/trigger"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -50,7 +50,9 @@ func validateConfig(keys []string) {
 		common.ConfigMetadataProductIDKey,
 		common.ConfigMetadataVersionIDKey,
 		common.ConfigMetadataWorkflowIDKey,
+		common.ConfigMetadataWorkflowTypeKey,
 		common.ConfigMetadataProcessIDKey,
+		common.ConfigMetadataProcessTypeKey,
 		common.ConfigNatsURLKey,
 		common.ConfigNatsStreamKey,
 		common.ConfigNatsOutputKey,

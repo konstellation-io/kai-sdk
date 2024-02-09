@@ -13,6 +13,7 @@ from sdk.model_registry.exceptions import (
     FailedToInitializeModelRegistryError,
     FailedToSaveModelError,
     InvalidVersionError,
+    ModelAlreadyExistsError,
     ModelNotFoundError,
 )
 from sdk.model_registry.model_registry import Model, ModelInfo, ModelRegistry, ModelRegistryABC
@@ -108,7 +109,8 @@ def test_ko(m_model_registry):
         assert m_model_registry.minio_client is None
 
 
-def test_register_model_ok(m_model_registry, m_model):
+@patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=False)
+def test_register_model_ok(_, m_model_registry, m_model):
     v.set("metadata.product_id", METADATA["product"])
     v.set("metadata.workflow_name", METADATA["workflow"])
     v.set("metadata.process_name", METADATA["process"])
@@ -118,13 +120,44 @@ def test_register_model_ok(m_model_registry, m_model):
     model = io.BytesIO(b"test-payload")
 
     m_model_registry.register_model(
-        model, name, METADATA["Model_version"], METADATA["Model_description"], METADATA["Model_format"]
+        model, name, METADATA["Model_version"], METADATA["Model_format"], METADATA["Model_description"]
     )
 
     m_model_registry.minio_client.put_object.assert_called_once()
 
 
-def test_register_model_ko(m_model_registry):
+@patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=False)
+def test_register_model_without_description_ok(_, m_model_registry, m_model):
+    v.set("metadata.product_id", METADATA["product"])
+    v.set("metadata.workflow_name", METADATA["workflow"])
+    v.set("metadata.process_name", METADATA["process"])
+    v.set("metadata.version_tag", METADATA["version"])
+    m_model_registry.minio_client.put_object.return_value = m_model
+    name = "test-key"
+    model = io.BytesIO(b"test-payload")
+
+    m_model_registry.register_model(model, name, METADATA["Model_version"], METADATA["Model_format"])
+
+    m_model_registry.minio_client.put_object.assert_called_once()
+    m_model_registry.minio_client.put_object.assert_called_with(
+        bucket_name="test-minio-bucket",
+        object_name=".kai/.model/test-key",
+        data=model,
+        length=12,
+        metadata={
+            "product": METADATA["product"],
+            "version": METADATA["version"],
+            "workflow": METADATA["workflow"],
+            "process": METADATA["process"],
+            "Model_version": METADATA["Model_version"],
+            "Model_description": "",
+            "Model_format": METADATA["Model_format"],
+        },
+    )
+
+
+@patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=False)
+def test_register_model_ko(_, m_model_registry):
     m_model_registry.minio_client.put_object.side_effect = Exception
     name = "test-key"
     model = io.BytesIO(b"test-payload")
@@ -135,6 +168,17 @@ def test_register_model_ko(m_model_registry):
         )
 
     m_model_registry.minio_client.put_object.assert_called_once()
+
+
+@patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=True)
+def test_register_model_already_exists_ko(_, m_model_registry):
+    name = "test-key"
+    model = io.BytesIO(b"test-payload")
+
+    with pytest.raises(ModelAlreadyExistsError):
+        m_model_registry.register_model(
+            model, name, METADATA["Model_version"], METADATA["Model_description"], METADATA["Model_format"]
+        )
 
 
 def test_register_model_invalid_version_ko(m_model_registry):

@@ -1,20 +1,21 @@
+//go:build unit
+
 package centralizedconfiguration_test
 
 import (
 	"errors"
 	"testing"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 
-	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/centralized-configuration"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/mocks"
 )
 
 const (
@@ -174,7 +175,7 @@ func (s *SdkCentralizedConfigurationTestSuite) TestDeleteConfigOnProductScope_Ex
 	s.Require().NoError(err)
 
 	// When
-	err = config.DeleteConfig("key1", messaging.ProductScope)
+	err = config.DeleteConfig("key1", centralizedConfiguration.ProductScope)
 	s.Require().NoError(err)
 
 	// Then

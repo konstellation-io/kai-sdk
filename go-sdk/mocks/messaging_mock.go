@@ -117,88 +117,6 @@ func (_c *MessagingMock_GetRequestID_Call) RunAndReturn(run func(*nats.Msg) (str
 	return _c
 }
 
-// IsMessageEarlyExit provides a mock function with given fields:
-func (_m *MessagingMock) IsMessageEarlyExit() bool {
-	ret := _m.Called()
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
-// MessagingMock_IsMessageEarlyExit_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsMessageEarlyExit'
-type MessagingMock_IsMessageEarlyExit_Call struct {
-	*mock.Call
-}
-
-// IsMessageEarlyExit is a helper method to define mock.On call
-func (_e *MessagingMock_Expecter) IsMessageEarlyExit() *MessagingMock_IsMessageEarlyExit_Call {
-	return &MessagingMock_IsMessageEarlyExit_Call{Call: _e.mock.On("IsMessageEarlyExit")}
-}
-
-func (_c *MessagingMock_IsMessageEarlyExit_Call) Run(run func()) *MessagingMock_IsMessageEarlyExit_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *MessagingMock_IsMessageEarlyExit_Call) Return(_a0 bool) *MessagingMock_IsMessageEarlyExit_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *MessagingMock_IsMessageEarlyExit_Call) RunAndReturn(run func() bool) *MessagingMock_IsMessageEarlyExit_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// IsMessageEarlyReply provides a mock function with given fields:
-func (_m *MessagingMock) IsMessageEarlyReply() bool {
-	ret := _m.Called()
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
-// MessagingMock_IsMessageEarlyReply_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsMessageEarlyReply'
-type MessagingMock_IsMessageEarlyReply_Call struct {
-	*mock.Call
-}
-
-// IsMessageEarlyReply is a helper method to define mock.On call
-func (_e *MessagingMock_Expecter) IsMessageEarlyReply() *MessagingMock_IsMessageEarlyReply_Call {
-	return &MessagingMock_IsMessageEarlyReply_Call{Call: _e.mock.On("IsMessageEarlyReply")}
-}
-
-func (_c *MessagingMock_IsMessageEarlyReply_Call) Run(run func()) *MessagingMock_IsMessageEarlyReply_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *MessagingMock_IsMessageEarlyReply_Call) Return(_a0 bool) *MessagingMock_IsMessageEarlyReply_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *MessagingMock_IsMessageEarlyReply_Call) RunAndReturn(run func() bool) *MessagingMock_IsMessageEarlyReply_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // IsMessageError provides a mock function with given fields:
 func (_m *MessagingMock) IsMessageError() bool {
 	ret := _m.Called()
@@ -329,98 +247,81 @@ func (_c *MessagingMock_SendAny_Call) RunAndReturn(run func(*anypb.Any, ...strin
 	return _c
 }
 
-// SendEarlyExit provides a mock function with given fields: response, channelOpt
-func (_m *MessagingMock) SendEarlyExit(response protoreflect.ProtoMessage, channelOpt ...string) error {
+// SendAnyWithRequestID provides a mock function with given fields: response, requestID, channelOpt
+func (_m *MessagingMock) SendAnyWithRequestID(response *anypb.Any, requestID string, channelOpt ...string) {
 	_va := make([]interface{}, len(channelOpt))
 	for _i := range channelOpt {
 		_va[_i] = channelOpt[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, response)
+	_ca = append(_ca, response, requestID)
 	_ca = append(_ca, _va...)
-	ret := _m.Called(_ca...)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(protoreflect.ProtoMessage, ...string) error); ok {
-		r0 = rf(response, channelOpt...)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
+	_m.Called(_ca...)
 }
 
-// MessagingMock_SendEarlyExit_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendEarlyExit'
-type MessagingMock_SendEarlyExit_Call struct {
+// MessagingMock_SendAnyWithRequestID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendAnyWithRequestID'
+type MessagingMock_SendAnyWithRequestID_Call struct {
 	*mock.Call
 }
 
-// SendEarlyExit is a helper method to define mock.On call
-//   - response protoreflect.ProtoMessage
+// SendAnyWithRequestID is a helper method to define mock.On call
+//   - response *anypb.Any
+//   - requestID string
 //   - channelOpt ...string
-func (_e *MessagingMock_Expecter) SendEarlyExit(response interface{}, channelOpt ...interface{}) *MessagingMock_SendEarlyExit_Call {
-	return &MessagingMock_SendEarlyExit_Call{Call: _e.mock.On("SendEarlyExit",
-		append([]interface{}{response}, channelOpt...)...)}
+func (_e *MessagingMock_Expecter) SendAnyWithRequestID(response interface{}, requestID interface{}, channelOpt ...interface{}) *MessagingMock_SendAnyWithRequestID_Call {
+	return &MessagingMock_SendAnyWithRequestID_Call{Call: _e.mock.On("SendAnyWithRequestID",
+		append([]interface{}{response, requestID}, channelOpt...)...)}
 }
 
-func (_c *MessagingMock_SendEarlyExit_Call) Run(run func(response protoreflect.ProtoMessage, channelOpt ...string)) *MessagingMock_SendEarlyExit_Call {
+func (_c *MessagingMock_SendAnyWithRequestID_Call) Run(run func(response *anypb.Any, requestID string, channelOpt ...string)) *MessagingMock_SendAnyWithRequestID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		variadicArgs := make([]string, len(args)-1)
-		for i, a := range args[1:] {
+		variadicArgs := make([]string, len(args)-2)
+		for i, a := range args[2:] {
 			if a != nil {
 				variadicArgs[i] = a.(string)
 			}
 		}
-		run(args[0].(protoreflect.ProtoMessage), variadicArgs...)
+		run(args[0].(*anypb.Any), args[1].(string), variadicArgs...)
 	})
 	return _c
 }
 
-func (_c *MessagingMock_SendEarlyExit_Call) Return(_a0 error) *MessagingMock_SendEarlyExit_Call {
-	_c.Call.Return(_a0)
+func (_c *MessagingMock_SendAnyWithRequestID_Call) Return() *MessagingMock_SendAnyWithRequestID_Call {
+	_c.Call.Return()
 	return _c
 }
 
-func (_c *MessagingMock_SendEarlyExit_Call) RunAndReturn(run func(protoreflect.ProtoMessage, ...string) error) *MessagingMock_SendEarlyExit_Call {
+func (_c *MessagingMock_SendAnyWithRequestID_Call) RunAndReturn(run func(*anypb.Any, string, ...string)) *MessagingMock_SendAnyWithRequestID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// SendEarlyReply provides a mock function with given fields: response, channelOpt
-func (_m *MessagingMock) SendEarlyReply(response protoreflect.ProtoMessage, channelOpt ...string) error {
+// SendError provides a mock function with given fields: errorMessage, channelOpt
+func (_m *MessagingMock) SendError(errorMessage string, channelOpt ...string) {
 	_va := make([]interface{}, len(channelOpt))
 	for _i := range channelOpt {
 		_va[_i] = channelOpt[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, response)
+	_ca = append(_ca, errorMessage)
 	_ca = append(_ca, _va...)
-	ret := _m.Called(_ca...)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(protoreflect.ProtoMessage, ...string) error); ok {
-		r0 = rf(response, channelOpt...)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
+	_m.Called(_ca...)
 }
 
-// MessagingMock_SendEarlyReply_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendEarlyReply'
-type MessagingMock_SendEarlyReply_Call struct {
+// MessagingMock_SendError_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendError'
+type MessagingMock_SendError_Call struct {
 	*mock.Call
 }
 
-// SendEarlyReply is a helper method to define mock.On call
-//   - response protoreflect.ProtoMessage
+// SendError is a helper method to define mock.On call
+//   - errorMessage string
 //   - channelOpt ...string
-func (_e *MessagingMock_Expecter) SendEarlyReply(response interface{}, channelOpt ...interface{}) *MessagingMock_SendEarlyReply_Call {
-	return &MessagingMock_SendEarlyReply_Call{Call: _e.mock.On("SendEarlyReply",
-		append([]interface{}{response}, channelOpt...)...)}
+func (_e *MessagingMock_Expecter) SendError(errorMessage interface{}, channelOpt ...interface{}) *MessagingMock_SendError_Call {
+	return &MessagingMock_SendError_Call{Call: _e.mock.On("SendError",
+		append([]interface{}{errorMessage}, channelOpt...)...)}
 }
 
-func (_c *MessagingMock_SendEarlyReply_Call) Run(run func(response protoreflect.ProtoMessage, channelOpt ...string)) *MessagingMock_SendEarlyReply_Call {
+func (_c *MessagingMock_SendError_Call) Run(run func(errorMessage string, channelOpt ...string)) *MessagingMock_SendError_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		variadicArgs := make([]string, len(args)-1)
 		for i, a := range args[1:] {
@@ -428,17 +329,17 @@ func (_c *MessagingMock_SendEarlyReply_Call) Run(run func(response protoreflect.
 				variadicArgs[i] = a.(string)
 			}
 		}
-		run(args[0].(protoreflect.ProtoMessage), variadicArgs...)
+		run(args[0].(string), variadicArgs...)
 	})
 	return _c
 }
 
-func (_c *MessagingMock_SendEarlyReply_Call) Return(_a0 error) *MessagingMock_SendEarlyReply_Call {
-	_c.Call.Return(_a0)
+func (_c *MessagingMock_SendError_Call) Return() *MessagingMock_SendError_Call {
+	_c.Call.Return()
 	return _c
 }
 
-func (_c *MessagingMock_SendEarlyReply_Call) RunAndReturn(run func(protoreflect.ProtoMessage, ...string) error) *MessagingMock_SendEarlyReply_Call {
+func (_c *MessagingMock_SendError_Call) RunAndReturn(run func(string, ...string)) *MessagingMock_SendError_Call {
 	_c.Call.Return(run)
 	return _c
 }

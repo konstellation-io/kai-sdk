@@ -1,8 +1,10 @@
+//go:build unit
+
 package messaging_test
 
 import (
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/v2/protos"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/messaging"
 )
 
 const (
@@ -108,68 +110,4 @@ func (s *SdkMessagingTestSuite) TestMessaging_IsMessageError_MessageNotError_Exp
 	// Then
 	s.NotNil(objectStore)
 	s.False(isError)
-}
-
-func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyReply_MessageEarlyReply_ExpectTrue() {
-	// Given
-	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   requestIDValue,
-		MessageType: kai.MessageType_EARLY_REPLY,
-	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
-
-	// When
-	isEarlyReply := objectStore.IsMessageEarlyReply()
-
-	// Then
-	s.NotNil(objectStore)
-	s.True(isEarlyReply)
-}
-
-func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyReply_MessageNotEarlyReply_ExpectFalse() {
-	// Given
-	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   requestIDValue,
-		MessageType: kai.MessageType_OK,
-	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
-
-	// When
-	isEarlyReply := objectStore.IsMessageEarlyReply()
-
-	// Then
-	s.NotNil(objectStore)
-	s.False(isEarlyReply)
-}
-
-func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyExit_MessageEarlyExit_ExpectTrue() {
-	// Given
-	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   requestIDValue,
-		MessageType: kai.MessageType_EARLY_EXIT,
-	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
-
-	// When
-	isEarlyExit := objectStore.IsMessageEarlyExit()
-
-	// Then
-	s.NotNil(objectStore)
-	s.True(isEarlyExit)
-}
-
-func (s *SdkMessagingTestSuite) TestMessaging_IsMessageEarlyExit_MessageNotEarlyExit_ExpectFalse() {
-	// Given
-	kaiMessage := &kai.KaiNatsMessage{
-		RequestId:   requestIDValue,
-		MessageType: kai.MessageType_OK,
-	}
-	objectStore := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, kaiMessage, &s.messagingUtils)
-
-	// When
-	isEarlyExit := objectStore.IsMessageEarlyExit()
-
-	// Then
-	s.NotNil(objectStore)
-	s.False(isEarlyExit)
 }

@@ -1,3 +1,5 @@
+//go:build unit
+
 package messaging_test
 
 import (
@@ -8,8 +10,8 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
 
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/v2/protos"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/messaging"
 )
 
 func (s *SdkMessagingTestSuite) TestMessaging_SendOutput_ExpectOk() {

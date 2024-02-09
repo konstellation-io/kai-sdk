@@ -3,8 +3,6 @@
 echo "Updating py-sdk"
 cd py-sdk/sdk
 poetry update
-cd ../runner
-poetry update
 cd ..
 poetry update
 

@@ -10,72 +10,77 @@ import loguru
 from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
-from opentelemetry.metrics._internal.instrument import Histogram
+from opentelemetry.metrics._internal.instrument import Counter, Histogram
 
 from runner.common.common import Finalizer, Handler, Initializer, Task
-from runner.task.exceptions import FailedToInitializeMetricsError, UndefinedDefaultHandlerFunctionError
-from runner.task.helpers import (
+from runner.exit.exceptions import FailedToInitializeMetricsError, UndefinedDefaultHandlerFunctionError
+from runner.exit.helpers import (
     compose_finalizer,
     compose_handler,
     compose_initializer,
     compose_postprocessor,
     compose_preprocessor,
 )
-from runner.task.subscriber import TaskSubscriber
+from runner.exit.subscriber import ExitSubscriber
 from sdk.kai_sdk import KaiSDK
 
 Preprocessor = Postprocessor = Task
 
 
 @dataclass
-class TaskRunner:
+class ExitRunner:
     sdk: KaiSDK = field(init=False)
     nc: NatsClient
     js: JetStreamContext
-    logger: loguru.Logger = logger.bind(context="[TASK]")
+    logger: loguru.Logger = logger.bind(context="[EXIT]")
     response_handlers: dict[str, Handler] = field(default_factory=dict)
     initializer: Optional[Initializer] = None
     preprocessor: Optional[Preprocessor] = None
     postprocessor: Optional[Postprocessor] = None
     finalizer: Optional[Finalizer] = None
-    metrics: Histogram = field(init=False)
+    elapsed_time_metric: Histogram = field(init=False)
+    number_of_messages_metric: Counter = field(init=False)
 
     def __post_init__(self) -> None:
-        logger.configure(extra={"context": "", "metadata": {}, "origin": "[TASK]"})
+        logger.configure(extra={"context": "", "metadata": {}, "origin": "[EXIT]"})
         self.sdk = KaiSDK(nc=self.nc, js=self.js, logger=logger)
-        self.subscriber = TaskSubscriber(self)
+        self.subscriber = ExitSubscriber(self)
         self._init_metrics()
 
     def _init_metrics(self) -> None:
         try:
-            self.metrics = self.sdk.measurements.get_metrics_client().create_histogram(
+            self.elapsed_time_metric = self.sdk.measurements.get_metrics_client().create_histogram(
                 name="runner-process-message-time", unit="ms", description="How long it takes to process a message."
+            )
+
+            self.number_of_messages_metric = self.sdk.measurements.get_metrics_client().create_counter(
+                name="runner-number-of-messages", description="Number of messages processed."
             )
         except Exception as e:
             self.logger.error(f"error initializing metrics: {e}")
             raise FailedToInitializeMetricsError(e)
 
-    def with_initializer(self, initializer: Initializer) -> TaskRunner:
+    def with_initializer(self, initializer: Initializer) -> ExitRunner:
         self.initializer = compose_initializer(initializer)
         return self
 
-    def with_preprocessor(self, preprocessor: Preprocessor) -> TaskRunner:
+    def with_preprocessor(self, preprocessor: Preprocessor) -> ExitRunner:
         self.preprocessor = compose_preprocessor(preprocessor)
         return self
 
-    def with_handler(self, handler: Handler) -> TaskRunner:
+    def with_handler(self, handler: Handler) -> ExitRunner:
         self.response_handlers["default"] = compose_handler(handler)
         return self
 
-    def with_custom_handler(self, subject: str, handler: Handler) -> TaskRunner:
+    def with_custom_handler(self, subject: str, handler: Handler) -> ExitRunner:
         self.response_handlers[subject.lower()] = compose_handler(handler)
         return self
 
-    def with_postprocessor(self, postprocessor: Postprocessor) -> TaskRunner:
+    def with_postprocessor(self, postprocessor: Postprocessor) -> ExitRunner:
         self.postprocessor = compose_postprocessor(postprocessor)
         return self
 
-    def with_finalizer(self, finalizer: Finalizer) -> TaskRunner:
+    def with_finalizer(self, finalizer: Finalizer) -> ExitRunner:
         self.finalizer = compose_finalizer(finalizer)
         return self
 
@@ -95,7 +100,7 @@ class TaskRunner:
 
         if signal:
             await self.finalizer(self.sdk)
-        self.logger.info("successfully shutdown task runner")
+        self.logger.info("successfully shutdown exit runner")
 
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
 

@@ -1,14 +1,16 @@
+//go:build unit
+
 package objectstore_test
 
 import (
 	"fmt"
 
-	objectStore2 "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
+	objectStore2 "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/ephemeral-storage"
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
 )
 
 func (s *SdkObjectStoreTestSuite) TestObjectStore_PurgeObjectStoreNotInitialized_ExpectError() {

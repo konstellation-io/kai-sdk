@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/auth"
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/auth"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/spf13/viper"
@@ -61,6 +61,7 @@ func (s *Storage) getClientCredentials(url string) (*credentials.Credentials, er
 		url,
 		func() (*credentials.ClientGrantsToken, error) {
 			authClient := auth.New(s.logger)
+
 			token, err := authClient.GetToken()
 			if err != nil {
 				return nil, err

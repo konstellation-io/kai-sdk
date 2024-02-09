@@ -3,7 +3,7 @@ package messaging
 import (
 	"fmt"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
 	"github.com/nats-io/nats.go"
 
 	"github.com/google/uuid"
@@ -11,8 +11,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/v2/protos"
 )
 
 const (
@@ -53,14 +53,14 @@ func (ms Messaging) publishAny(payload *anypb.Any, requestID string, msgType kai
 	ms.publishResponse(responseMsg, channel)
 }
 
-func (ms Messaging) publishError(requestID, errMsg string) {
+func (ms Messaging) publishError(requestID, errMsg, channel string) {
 	responseMsg := &kai.KaiNatsMessage{
 		RequestId:   requestID,
 		Error:       errMsg,
 		FromNode:    viper.GetString(common.ConfigMetadataProcessIDKey),
 		MessageType: kai.MessageType_ERROR,
 	}
-	ms.publishResponse(responseMsg, "")
+	ms.publishResponse(responseMsg, channel)
 }
 
 func (ms Messaging) newResponseMsg(payload *anypb.Any, requestID string,

@@ -1,3 +1,5 @@
+//go:build unit
+
 package messaging_test
 
 import (
@@ -5,7 +7,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
@@ -16,9 +18,9 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/mocks"
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/mocks"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/v2/protos"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/messaging"
 )
 
 type SdkMessagingTestSuite struct {
@@ -56,16 +58,38 @@ func (s *SdkMessagingTestSuite) TestMessaging_PublishError_ExpectOk() {
 		Return(&nats.PubAck{}, nil)
 	s.messagingUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
 
-	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, nil, &s.messagingUtils)
+	request := kai.KaiNatsMessage{RequestId: "123"}
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, &request, &s.messagingUtils)
 
 	// When
-	messagingInst.SendError("some-request", "some-error")
+	messagingInst.SendError("some-error")
 
 	// Then
 	s.NotNil(messagingInst)
 	s.jetstream.AssertCalled(s.T(),
 		"Publish", "test-parent",
-		getOutputMessage("some-request", nil, "some-error", "parent-node", kai.MessageType_ERROR))
+		getOutputMessage("123", nil, "some-error", "parent-node", kai.MessageType_ERROR))
+}
+
+func (s *SdkMessagingTestSuite) TestMessaging_PublishError_WithChannel_ExpectOk() {
+	// Given
+	viper.SetDefault(common.ConfigNatsOutputKey, "test-parent")
+	viper.SetDefault(common.ConfigMetadataProcessIDKey, "parent-node")
+	s.jetstream.On("Publish", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8")).
+		Return(&nats.PubAck{}, nil)
+	s.messagingUtils.On("GetMaxMessageSize").Return(int64(2048), nil)
+
+	request := kai.KaiNatsMessage{RequestId: "123"}
+	messagingInst := messaging.NewTestMessaging(s.logger, nil, &s.jetstream, &request, &s.messagingUtils)
+
+	// When
+	messagingInst.SendError("some-error", "some-channel")
+
+	// Then
+	s.NotNil(messagingInst)
+	s.jetstream.AssertCalled(s.T(),
+		"Publish", "test-parent.some-channel",
+		getOutputMessage("123", nil, "some-error", "parent-node", kai.MessageType_ERROR))
 }
 
 func (s *SdkMessagingTestSuite) TestMessaging_GetRequestID_ExpectOk() {

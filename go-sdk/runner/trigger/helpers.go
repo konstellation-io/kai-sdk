@@ -9,8 +9,8 @@ import (
 
 	"google.golang.org/protobuf/types/known/anypb"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/runner/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk"
 )
 
 const (
@@ -58,6 +58,7 @@ func composeRunner(userRunner RunnerFunc) RunnerFunc {
 		runner.responseChannels.Range(func(key, value interface{}) bool {
 			close(value.(chan *anypb.Any))
 			kaiSDK.Logger.WithName(_runnerLoggerName).V(1).Info(fmt.Sprintf("Channel closed for request id %s", key))
+
 			return true
 		})
 

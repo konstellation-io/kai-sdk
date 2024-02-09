@@ -1,17 +1,19 @@
+//go:build unit
+
 package measurement_test
 
 import (
 	"testing"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/common"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testr"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/measurement"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/metadata"
 )
 
 type SdkMeasurementTestSuite struct {

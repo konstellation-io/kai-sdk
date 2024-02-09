@@ -4,19 +4,19 @@ import (
 	"context"
 	"os"
 
-	meta "github.com/konstellation-io/kai-sdk/go-sdk/sdk/metadata"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/prediction"
+	meta "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/metadata"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/prediction"
 	"go.opentelemetry.io/otel/metric"
 
-	centralizedconfiguration "github.com/konstellation-io/kai-sdk/go-sdk/sdk/centralized-configuration"
-	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/sdk/ephemeral-storage"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk/measurement"
-	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/sdk/model-registry"
-	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
+	centralizedConfiguration "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/centralized-configuration"
+	objectstore "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/ephemeral-storage"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/measurement"
+	modelregistry "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/model-registry"
+	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/persistent-storage"
 
 	"github.com/go-logr/logr"
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
-	msg "github.com/konstellation-io/kai-sdk/go-sdk/sdk/messaging"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/v2/protos"
+	msg "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/messaging"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -31,22 +31,22 @@ type messaging interface {
 	SendOutput(response proto.Message, channelOpt ...string) error
 	SendOutputWithRequestID(response proto.Message, requestID string, channelOpt ...string) error
 	SendAny(response *anypb.Any, channelOpt ...string)
-	SendEarlyReply(response proto.Message, channelOpt ...string) error
-	SendEarlyExit(response proto.Message, channelOpt ...string) error
+	SendAnyWithRequestID(response *anypb.Any, requestID string, channelOpt ...string)
+	SendError(errorMessage string, channelOpt ...string)
 	GetErrorMessage() string
 	GetRequestID(msg *nats.Msg) (string, error)
 
 	IsMessageOK() bool
 	IsMessageError() bool
-	IsMessageEarlyReply() bool
-	IsMessageEarlyExit() bool
 }
 
 //go:generate mockery --name metadata --output ../mocks --filename metadata_mock.go --structname MetadataMock
 type metadata interface {
 	GetProcess() string
 	GetWorkflow() string
+	GetWorkflowType() string
 	GetProduct() string
+	GetProcessType() string
 	GetVersion() string
 	GetEphemeralStorageName() string
 	GetGlobalCentralizedConfigurationName() string
@@ -80,9 +80,9 @@ type persistentStorage interface {
 
 //go:generate mockery --name centralizedConfig --output ../mocks --filename centralized_config_mock.go --structname CentralizedConfigMock
 type centralizedConfig interface {
-	GetConfig(key string, scope ...msg.Scope) (string, error)
-	SetConfig(key, value string, scope ...msg.Scope) error
-	DeleteConfig(key string, scope msg.Scope) error
+	GetConfig(key string, scope ...centralizedConfiguration.Scope) (string, error)
+	SetConfig(key, value string, scope ...centralizedConfiguration.Scope) error
+	DeleteConfig(key string, scope centralizedConfiguration.Scope) error
 }
 
 //go:generate mockery --name measurements --output ../mocks --filename measurements_mock.go --structname MeasurementsMock
@@ -92,15 +92,16 @@ type measurements interface {
 
 //go:generate mockery --name predictions --output ../mocks --filename predictions_mock.go --structname PredictionsMock
 type predictions interface {
-	Save(ctx context.Context, predictionID string, value prediction.Payload) error
+	Save(ctx context.Context, predictionID string, payload prediction.Payload) error
 	Get(ctx context.Context, predictionID string) (*prediction.Prediction, error)
 	Find(ctx context.Context, filter *prediction.Filter) ([]prediction.Prediction, error)
-	Update(ctx context.Context, predictionID string, payloadFunc prediction.UpdatePayloadFunc) error
+	Update(ctx context.Context, predictionID string, updatePayload prediction.UpdatePayloadFunc) error
+	Delete(ctx context.Context, predictionID string) error
 }
 
 //go:generate mockery --name modelRegistry --output ../mocks --filename model_registry_mock.go --structname ModelRegistryMock
 type modelRegistry interface {
-	RegisterModel(model []byte, name, version, description, modelFormat string) error
+	RegisterModel(model []byte, name, version, modelFormat string, description ...string) error
 	GetModel(name string, version ...string) (*modelregistry.Model, error)
 	ListModels() ([]*modelregistry.ModelInfo, error)
 	ListModelVersions(name string) ([]*modelregistry.ModelInfo, error)
@@ -130,7 +131,7 @@ type KaiSDK struct {
 func NewKaiSDK(logger logr.Logger, natsCli *nats.Conn, jetstreamCli nats.JetStreamContext) KaiSDK {
 	metadata := meta.New()
 
-	centralizedConfigInst, err := centralizedconfiguration.New(logger, jetstreamCli)
+	centralizedConfigInst, err := centralizedConfiguration.New(logger, jetstreamCli)
 	if err != nil {
 		logger.WithName("[CENTRALIZED CONFIGURATION]").
 			Error(err, "Error initializing Centralized Configuration")

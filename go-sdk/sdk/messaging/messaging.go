@@ -2,21 +2,13 @@ package messaging
 
 import (
 	"github.com/go-logr/logr"
-	kai "github.com/konstellation-io/kai-sdk/go-sdk/protos"
+	kai "github.com/konstellation-io/kai-sdk/go-sdk/v2/protos"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-type Scope string
-
-const (
-	GlobalScope          Scope = "global"
-	ProductScope         Scope = "product"
-	WorkflowScope        Scope = "workflow"
-	ProcessScope         Scope = "process"
-	_messagingLoggerName       = "[MESSAGING]"
-)
+const _messagingLoggerName = "[MESSAGING]"
 
 type Messaging struct {
 	logger         logr.Logger
@@ -54,18 +46,8 @@ func (ms Messaging) SendAnyWithRequestID(response *anypb.Any, requestID string, 
 	ms.publishAny(response, requestID, kai.MessageType_OK, ms.getOptionalString(channelOpt))
 }
 
-// TODO remove this.
-//
-//nolint:godox // Task to be done.
-func (ms Messaging) SendEarlyReply(response proto.Message, channelOpt ...string) error {
-	return ms.publishMsg(response, ms.requestMessage.GetRequestId(), kai.MessageType_EARLY_REPLY, ms.getOptionalString(channelOpt))
-}
-
-// TODO remove this.
-//
-//nolint:godox // Task to be done.
-func (ms Messaging) SendEarlyExit(response proto.Message, channelOpt ...string) error {
-	return ms.publishMsg(response, ms.requestMessage.GetRequestId(), kai.MessageType_EARLY_EXIT, ms.getOptionalString(channelOpt))
+func (ms Messaging) SendError(errorMessage string, channelOpt ...string) {
+	ms.publishError(ms.requestMessage.GetRequestId(), errorMessage, ms.getOptionalString(channelOpt))
 }
 
 func (ms Messaging) GetErrorMessage() string {
@@ -82,18 +64,4 @@ func (ms Messaging) IsMessageOK() bool {
 
 func (ms Messaging) IsMessageError() bool {
 	return ms.requestMessage.MessageType == kai.MessageType_ERROR
-}
-
-// TODO remove this.
-//
-//nolint:godox // Task to be done.
-func (ms Messaging) IsMessageEarlyReply() bool {
-	return ms.requestMessage.MessageType == kai.MessageType_EARLY_REPLY
-}
-
-// TODO remove this.
-//
-//nolint:godox // Task to be done.
-func (ms Messaging) IsMessageEarlyExit() bool {
-	return ms.requestMessage.MessageType == kai.MessageType_EARLY_EXIT
 }

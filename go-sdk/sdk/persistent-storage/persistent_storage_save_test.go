@@ -3,7 +3,7 @@
 package persistentstorage_test
 
 import (
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
 )
 
 func (s *SdkPersistentStorageTestSuite) TestPersistentStorage_SaveObject_ExpectOK() {

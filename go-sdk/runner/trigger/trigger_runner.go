@@ -4,8 +4,8 @@ import (
 	"sync"
 
 	"github.com/go-logr/logr"
-	"github.com/konstellation-io/kai-sdk/go-sdk/runner/common"
-	"github.com/konstellation-io/kai-sdk/go-sdk/sdk"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/runner/common"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk"
 	"github.com/nats-io/nats.go"
 	"go.opentelemetry.io/otel/metric"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -18,15 +18,16 @@ type RunnerFunc func(tr *Runner, sdk sdk.KaiSDK)
 type ResponseHandler func(sdk sdk.KaiSDK, response *anypb.Any) error
 
 type Runner struct {
-	sdk              sdk.KaiSDK
-	nats             *nats.Conn
-	jetstream        nats.JetStreamContext
-	responseHandler  ResponseHandler
-	responseChannels sync.Map
-	initializer      common.Initializer
-	runner           RunnerFunc
-	finalizer        common.Finalizer
-	metrics          metric.Int64Histogram
+	sdk                    sdk.KaiSDK
+	nats                   *nats.Conn
+	jetstream              nats.JetStreamContext
+	responseHandler        ResponseHandler
+	responseChannels       sync.Map
+	initializer            common.Initializer
+	runner                 RunnerFunc
+	finalizer              common.Finalizer
+	elapsedTimeMetric      metric.Int64Histogram
+	numberOfMessagesMetric metric.Int64Counter
 }
 
 var wg sync.WaitGroup //nolint:gochecknoglobals // WaitGroup is used to wait for goroutines to finish

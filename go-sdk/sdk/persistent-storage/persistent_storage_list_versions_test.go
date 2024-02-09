@@ -6,9 +6,9 @@ import (
 	"bytes"
 	"context"
 
-	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/sdk/persistent-storage"
+	persistentstorage "github.com/konstellation-io/kai-sdk/go-sdk/v2/sdk/persistent-storage"
 
-	"github.com/konstellation-io/kai-sdk/go-sdk/internal/errors"
+	"github.com/konstellation-io/kai-sdk/go-sdk/v2/internal/errors"
 	"github.com/minio/minio-go/v7"
 )
 

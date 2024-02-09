@@ -14,8 +14,8 @@ func (s *SdkModelRegistryTestSuite) TestModelRegistry_ListModels_ExpectOK() {
 		modelData,
 		modelName,
 		modelVersion,
-		modelDescription,
 		modelFormat,
+		modelDescription,
 	)
 	s.Require().NoError(err)
 
