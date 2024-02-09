@@ -118,8 +118,11 @@ class ModelRegistry(ModelRegistryABC):
         if not model:
             raise EmptyModelError()
 
-        exist = self._object_exist(name)
-        if exist:
+        try:
+            self.get_model(name, version)
+        except FailedToGetModelError:
+            pass
+        else:
             self.logger.error(f"model {name} already exists in model registry")
             raise ModelAlreadyExistsError(name, version)
 
