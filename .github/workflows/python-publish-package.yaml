@@ -29,6 +29,9 @@ jobs:
         run: |
           python -m poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
         working-directory: ./py-sdk
+      - name: Bump package version
+        run: |
+          .ci/tools/bump_version.sh
       - name: Build package
         run: |
           python -m poetry build
@@ -37,6 +40,4 @@ jobs:
         run: |
           python -m poetry publish
         working-directory: ./py-sdk
-
-          yname: Upload Python Package
 
