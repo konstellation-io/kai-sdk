@@ -27,7 +27,7 @@ jobs:
         working-directory: ./py-sdk
       - name: Add API TOKEN to Poetry
         run: |
-          python -m poetry config __token__ ${{ secrets.PYPI_TOKEN }}
+          python -m poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
         working-directory: ./py-sdk
       - name: Build package
         run: |
@@ -37,4 +37,6 @@ jobs:
         run: |
           python -m poetry publish
         working-directory: ./py-sdk
+
+          yname: Upload Python Package
 
