@@ -49,7 +49,7 @@ jobs:
             changes: ${{ needs.check-folder-changes.outputs.go-sdk }}
           - component: py-sdk
             changes: ${{ needs.check-folder-changes.outputs.py-sdk }}
-          
+
     steps:
       - name: Checkout code
         if: matrix.changes == 'true'
@@ -138,3 +138,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets[matrix.sonar_token_secret] }}
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs:
+      - unit-tests
+      - sonarcloud
+    if: github.ref_name == 'main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: "19"
+      - name: Run semantic release
+        run: |
+          npm install
+          npx multi-semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
