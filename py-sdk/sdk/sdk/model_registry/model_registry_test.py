@@ -170,8 +170,8 @@ def test_register_model_ko(_, m_model_registry):
     m_model_registry.minio_client.put_object.assert_called_once()
 
 
-@patch("sdk.model_registry.model_registry.ModelRegistry._object_exist", return_value=True)
-def test_register_model_already_exists_ko(_, m_model_registry):
+@patch("sdk.model_registry.model_registry.ModelRegistry.get_model", return_value=EXPECTED_MODEL)
+def test_register_model_already_exists_ko(_, m_model_registry, m_model):
     name = "test-key"
     model = io.BytesIO(b"test-payload")
 
