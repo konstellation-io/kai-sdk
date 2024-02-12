@@ -2,8 +2,8 @@
   "name": "konstellation-runtimes",
   "private": true,
   "workspaces": [
-    "go-sdk/*",
-    "py-sdk/*"
+    "go-sdk/",
+    "py-sdk/"
   ],
   "release": {
     "branches": [
