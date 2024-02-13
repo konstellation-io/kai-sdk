@@ -1,6 +1,6 @@
 FROM python:3.11.5-slim-bullseye
 
-LABEL maintainer="Intelygenz - AIO Team"
+LABEL maintainer="Intelygenz - KAI Team"
 
 ARG USER=kai
 ARG UID=1001
