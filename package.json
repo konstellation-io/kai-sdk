@@ -1,0 +1,24 @@
+{
+  "name": "konstellation-runtimes",
+  "private": true,
+  "workspaces": [
+    "go-sdk/",
+    "py-sdk/"
+  ],
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/github"
+    ]
+  },
+  "multi-release": {
+    "tagFormat": "${name}/v${version}"
+  },
+  "dependencies": {
+    "@qiwi/multi-semantic-release": "^7.1.1"
+  }
+}
