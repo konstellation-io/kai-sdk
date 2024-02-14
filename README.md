@@ -11,7 +11,7 @@ This repository contains all available languages SDKs and Runners for the [KAI](
 
 [go-sdk-coverage]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_go-sdk&metric=coverage
 [go-sdk-coverage-link]: https://sonarcloud.io/dashboard?id=konstellation-io_go-sdk
-[go-sdk-bugs]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_kre_py&metric=bugs
+[go-sdk-bugs]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_go-sdk&metric=bugs
 [go-sdk-bugs-link]: https://sonarcloud.io/dashboard?id=konstellation-io_go-sdk
 [go-sdk-loc]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_go-sdk&metric=ncloc
 [go-sdk-loc-link]: https://sonarcloud.io/dashboard?id=konstellation-io_go-sdk
@@ -19,7 +19,7 @@ This repository contains all available languages SDKs and Runners for the [KAI](
 [go-sdk-mr-link]: https://sonarcloud.io/dashboard?id=konstellation-io_go-sdk
 [py-sdk-coverage]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_py-sdk&metric=coverage
 [py-sdk-coverage-link]: https://sonarcloud.io/dashboard?id=konstellation-io_py-sdk
-[py-sdk-bugs]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_kre_py&metric=bugs
+[py-sdk-bugs]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_py-sdk&metric=bugs
 [py-sdk-bugs-link]: https://sonarcloud.io/dashboard?id=konstellation-io_py-sdk
 [py-sdk-loc]: https://sonarcloud.io/api/project_badges/measure?project=konstellation-io_py-sdk&metric=ncloc
 [py-sdk-loc-link]: https://sonarcloud.io/dashboard?id=konstellation-io_py-sdk
