@@ -30,8 +30,15 @@ This repository contains all available languages SDKs and Runners for the [KAI](
 
 All components receive and send a `KaiNatsMessage` protobuf.
 To generate the protobuf code, the `protoc` compiler must be installed.
-Use the following command to generate the code:
+
+### Installation
+
+- `wget https://github.com/protocolbuffers/protobuf/releases/download/v23.4/protoc-23.4-linux-x86_64.zip`
+- `unzip -o protoc-23.4-linux-x86_64.zip -d /usr/local bin/protoc`
+- `unzip -o protoc-23.4-linux-x86_64.zip -d /usr/local 'include/*'`
+
+### Regenerating protos
 
 ```
-make build
+make protos
 ```

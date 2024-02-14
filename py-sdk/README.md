@@ -15,8 +15,6 @@ When a new message is published in the input subject of a node, it passes it dow
 
 ## Development
 
-- Build the proto files with `make protos`
-
 - Install the dependencies with `poetry install --group dev`
 
 If you don't have poetry installed (you must have python 3.11 installed in your system):
@@ -25,13 +23,16 @@ If you don't have poetry installed (you must have python 3.11 installed in your 
 
 ## Tests
 
-Just run `make pytest` from the root folder
+Execute the test running in the root folder:
 
+``` sh
+make pytest
+```
 
-## Proto
+## Linter
 
-### Python
+Execute the linter running in the root folder:
 
-- `wget https://github.com/protocolbuffers/protobuf/releases/download/v23.4/protoc-23.4-linux-x86_64.zip`
-- `unzip -o protoc-23.4-linux-x86_64.zip -d /usr/local bin/protoc`
-- `unzip -o protoc-23.4-linux-x86_64.zip -d /usr/local 'include/*'`
+``` sh
+make pytidy
+```

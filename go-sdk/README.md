@@ -23,7 +23,7 @@ After that, the node ACKs the message manually.                                 
 
 ## Run Tests
 
-Execute the test running in the root folder:
+Execute the tests running in the root folder:
 
 ``` sh
 make gotest
@@ -31,8 +31,16 @@ make gotest
 
 ## Run Linter
 
-Execute the test running in the root folder:
+Execute the linter running in the root folder:
 
 ``` sh
 make gotidy
+```
+
+### Update mocks
+
+Update the mocks running in the root folder:
+
+``` sh
+make generate_mocks
 ```
