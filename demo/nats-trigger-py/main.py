@@ -3,10 +3,10 @@ import uuid
 from datetime import timedelta
 
 from google.protobuf.wrappers_pb2 import StringValue
-from nats.aio.client import Client as NatsClient
-from nats.aio.msg import Msg
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
+from nats.kai.client import Client as NatsClient
+from nats.kai.msg import Msg
 from runner.runner import Runner
 from runner.trigger import trigger_runner
 from sdk import kai_sdk as sdk

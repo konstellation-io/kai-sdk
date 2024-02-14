@@ -2,8 +2,8 @@
 name = "metrics-py"
 version = "1.0.0"
 description = "KAI SDK's demo in Python"
-authors = ["Intelygenz - AIO Team"]
-maintainers = ["Intelygenz - AIO Team"]
+authors = ["Intelygenz - KAI Team"]
+maintainers = ["Intelygenz - KAI Team"]
 
 [tool.poetry.dependencies]
 python = "~3.11"
@@ -11,12 +11,7 @@ nats-py = "2.6.0"
 protobuf = "4.23.4"
 loguru = "0.7.0"
 vyper-config = "1.1.1"
-py-sdk = {source = "aio-sdk", version = "1.0.0"}
-
-[[tool.poetry.source]]
-name = "aio-sdk"
-url = ""
-priority = "supplemental"
+kai-runner = "2.0.1"
 
 [tool.poetry.group.dev.dependencies]
 ipdb = "0.13.13"
