@@ -54,7 +54,7 @@ class ExitRunner:
             )
 
             self.number_of_messages_metric = self.sdk.measurements.get_metrics_client().create_counter(
-                name="runner-number-of-messages", description="Number of messages processed."
+                name="runner-processed-messages", description="Number of messages processed."
             )
         except Exception as e:
             self.logger.error(f"error initializing metrics: {e}")
