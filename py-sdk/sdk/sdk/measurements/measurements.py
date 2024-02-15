@@ -10,17 +10,11 @@ from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExp
 from opentelemetry.metrics import Meter, get_meter, set_meter_provider
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.sdk.metrics.view import ExplicitBucketHistogramAggregation, View
 from opentelemetry.sdk.resources import Resource
 from vyper import v
 
 from sdk.measurements.exceptions import FailedToInitializeMeasurementsError
 from sdk.metadata.metadata import Metadata
-
-hist_view_250_500_1000 = View(
-    instrument_name="runner-process-message-time",
-    aggregation=ExplicitBucketHistogramAggregation([250, 500, 1000]),
-)
 
 
 @dataclass
@@ -70,6 +64,6 @@ class Measurements(MeasurementsABC):
                 compression=Compression(Compression.Gzip),
             ),
         )
-        provider = MeterProvider(resource=resource, metric_readers=[reader], views=[hist_view_250_500_1000])
+        provider = MeterProvider(resource=resource, metric_readers=[reader])
         set_meter_provider(provider)
         self.metricsClient = get_meter(__name__)
