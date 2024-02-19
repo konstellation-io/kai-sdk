@@ -28,8 +28,7 @@ type Runner struct {
 	preprocessor           Preprocessor
 	postprocessor          Postprocessor
 	finalizer              common.Finalizer
-	elapsedTimeMetric      metric.Int64Histogram
-	numberOfMessagesMetric metric.Int64Counter
+	messagesMetric         metric.Int64Histogram
 }
 
 func NewTaskRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {

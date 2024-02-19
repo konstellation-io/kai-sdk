@@ -36,20 +36,10 @@ func (tr *Runner) startSubscriber() {
 
 	var err error
 
-	tr.elapsedTimeMetric, err = tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
-		"runner-process-message-time",
-		metric.WithDescription("How long it takes to process a message."),
+	tr.messagesMetric, err = tr.sdk.Measurements.GetMetricsClient().Int64Histogram(
+		"runner-process-message-metric",
+		metric.WithDescription("How long it takes to process a message and times called."),
 		metric.WithUnit("ms"),
-		metric.WithExplicitBucketBoundaries(250, 500, 1000),
-	)
-	if err != nil {
-		tr.getLoggerWithName().Error(err, "Error initializing metric")
-		os.Exit(1)
-	}
-
-	tr.numberOfMessagesMetric, err = tr.sdk.Measurements.GetMetricsClient().Int64Counter(
-		"runner-processed-messages",
-		metric.WithDescription("Number of messages processed."),
 	)
 	if err != nil {
 		tr.getLoggerWithName().Error(err, "Error initializing metric")
@@ -126,11 +116,9 @@ func (tr *Runner) processMessage(msg *nats.Msg) {
 		executionTime := time.Since(start).Milliseconds()
 		tr.sdk.Logger.V(1).Info(fmt.Sprintf("%s execution time: %d ms", tr.sdk.Metadata.GetProcess(), executionTime))
 
-		tr.elapsedTimeMetric.Record(context.Background(), executionTime,
+		tr.messagesMetric.Record(context.Background(), executionTime,
 			metric.WithAttributeSet(tr.getMetricAttributes(requestMsg.RequestId)),
 		)
-
-		tr.numberOfMessagesMetric.Add(context.Background(), 1, metric.WithAttributeSet(tr.getMetricAttributes(requestMsg.RequestId)))
 	}()
 
 	tr.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",

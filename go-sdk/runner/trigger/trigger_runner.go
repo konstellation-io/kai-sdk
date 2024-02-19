@@ -26,8 +26,7 @@ type Runner struct {
 	initializer            common.Initializer
 	runner                 RunnerFunc
 	finalizer              common.Finalizer
-	elapsedTimeMetric      metric.Int64Histogram
-	numberOfMessagesMetric metric.Int64Counter
+	messagesMetric         metric.Int64Histogram
 }
 
 var wg sync.WaitGroup //nolint:gochecknoglobals // WaitGroup is used to wait for goroutines to finish
