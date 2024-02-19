@@ -20,15 +20,15 @@ type Handler common.Handler
 type Postprocessor common.Handler
 
 type Runner struct {
-	sdk                    sdk.KaiSDK
-	nats                   *nats.Conn
-	jetstream              nats.JetStreamContext
-	responseHandlers       map[string]Handler
-	initializer            common.Initializer
-	preprocessor           Preprocessor
-	postprocessor          Postprocessor
-	finalizer              common.Finalizer
-	messagesMetric         metric.Int64Histogram
+	sdk              sdk.KaiSDK
+	nats             *nats.Conn
+	jetstream        nats.JetStreamContext
+	responseHandlers map[string]Handler
+	initializer      common.Initializer
+	preprocessor     Preprocessor
+	postprocessor    Postprocessor
+	finalizer        common.Finalizer
+	messagesMetric   metric.Int64Histogram
 }
 
 func NewTaskRunner(logger logr.Logger, ns *nats.Conn, js nats.JetStreamContext) *Runner {
