@@ -1,6 +1,6 @@
 module github.com/konstellation-io/kai-sdk/go-sdk/v2
 
-go 1.20
+go 1.22
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
