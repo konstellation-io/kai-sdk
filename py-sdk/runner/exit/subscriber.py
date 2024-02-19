@@ -100,12 +100,7 @@ class ExitSubscriber:
                 end = time.time() * 1000
                 elapsed = end - start
                 self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
-                self.exit_runner.elapsed_time_metric.record(
-                    elapsed, attributes=self.get_attributes(request_msg.request_id)
-                )
-                self.exit_runner.number_of_messages_metric.add(
-                    1, attributes=self.get_attributes(request_msg.request_id)
-                )
+                self.exit_runner.messages_metric.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(msg, Exception(f"no handler defined for {from_node}"))
                 return
 
@@ -116,12 +111,7 @@ class ExitSubscriber:
                 end = time.time() * 1000
                 elapsed = end - start
                 self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
-                self.exit_runner.elapsed_time_metric.record(
-                    elapsed, attributes=self.get_attributes(request_msg.request_id)
-                )
-                self.exit_runner.number_of_messages_metric.add(
-                    1, attributes=self.get_attributes(request_msg.request_id)
-                )
+                self.exit_runner.messages_metric.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(
                     msg, HandlerError(from_node, to_node, error=e, type="handler preprocessor")
                 )
@@ -133,12 +123,7 @@ class ExitSubscriber:
                 end = time.time() * 1000
                 elapsed = end - start
                 self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
-                self.exit_runner.elapsed_time_metric.record(
-                    elapsed, attributes=self.get_attributes(request_msg.request_id)
-                )
-                self.exit_runner.number_of_messages_metric.add(
-                    1, attributes=self.get_attributes(request_msg.request_id)
-                )
+                self.exit_runner.messages_metric.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(msg, HandlerError(from_node, to_node, error=e))
                 return
 
@@ -149,12 +134,7 @@ class ExitSubscriber:
                 end = time.time() * 1000
                 elapsed = end - start
                 self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
-                self.exit_runner.elapsed_time_metric.record(
-                    elapsed, attributes=self.get_attributes(request_msg.request_id)
-                )
-                self.exit_runner.number_of_messages_metric.add(
-                    1, attributes=self.get_attributes(request_msg.request_id)
-                )
+                self.exit_runner.messages_metric.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 await self._process_runner_error(
                     msg, HandlerError(from_node, to_node, error=e, type="handler postprocessor")
                 )
@@ -166,19 +146,13 @@ class ExitSubscriber:
                 end = time.time() * 1000
                 elapsed = end - start
                 self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
-                self.exit_runner.elapsed_time_metric.record(
-                    elapsed, attributes=self.get_attributes(request_msg.request_id)
-                )
-                self.exit_runner.number_of_messages_metric.add(
-                    1, attributes=self.get_attributes(request_msg.request_id)
-                )
+                self.exit_runner.messages_metric.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
                 self.logger.error(f"error acknowledging message: {e}")
 
             end = time.time() * 1000
             elapsed = end - start
             self.logger.info(f"{Metadata.get_process()} execution time: {elapsed} ms")
-            self.exit_runner.elapsed_time_metric.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
-            self.exit_runner.number_of_messages_metric.add(1, attributes=self.get_attributes(request_msg.request_id))
+            self.exit_runner.messages_metric.record(elapsed, attributes=self.get_attributes(request_msg.request_id))
 
     async def _process_runner_error(self, msg: Msg, error: Exception) -> None:
         error_msg = str(error)

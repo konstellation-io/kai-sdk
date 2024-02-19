@@ -39,19 +39,10 @@ func (er *Runner) startSubscriber() {
 
 	var err error
 
-	er.elapsedTimeMetric, err = er.sdk.Measurements.GetMetricsClient().Int64Histogram(
-		"runner-process-message-time",
-		metric.WithDescription("How long it takes to process a message."),
+	er.messagesMetric, err = er.sdk.Measurements.GetMetricsClient().Int64Histogram(
+		"runner-process-message-metric",
+		metric.WithDescription("How long it takes to process a message and times called."),
 		metric.WithUnit("ms"),
-	)
-	if err != nil {
-		er.getLoggerWithName().Error(err, "Error initializing metric")
-		os.Exit(1)
-	}
-
-	er.numberOfMessagesMetric, err = er.sdk.Measurements.GetMetricsClient().Int64Counter(
-		"runner-processed-messages",
-		metric.WithDescription("Number of messages processed."),
 	)
 	if err != nil {
 		er.getLoggerWithName().Error(err, "Error initializing metric")
@@ -125,11 +116,9 @@ func (er *Runner) processMessage(msg *nats.Msg) {
 		executionTime := time.Since(start).Milliseconds()
 		er.sdk.Logger.V(1).Info(fmt.Sprintf("%s execution time: %d ms", er.sdk.Metadata.GetProcess(), executionTime))
 
-		er.elapsedTimeMetric.Record(context.Background(), executionTime,
+		er.messagesMetric.Record(context.Background(), executionTime,
 			metric.WithAttributeSet(er.getMetricAttributes(requestMsg.RequestId)),
 		)
-
-		er.numberOfMessagesMetric.Add(context.Background(), 1, metric.WithAttributeSet(er.getMetricAttributes(requestMsg.RequestId)))
 	}()
 
 	er.getLoggerWithName().Info(fmt.Sprintf("New message received with subject %s",
