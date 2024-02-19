@@ -43,7 +43,6 @@ func (er *Runner) startSubscriber() {
 		"runner-process-message-time",
 		metric.WithDescription("How long it takes to process a message."),
 		metric.WithUnit("ms"),
-		metric.WithExplicitBucketBoundaries(250, 500, 1000),
 	)
 	if err != nil {
 		er.getLoggerWithName().Error(err, "Error initializing metric")
