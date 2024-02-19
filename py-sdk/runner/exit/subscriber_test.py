@@ -7,7 +7,7 @@ from nats.aio.msg import Msg
 from nats.js import JetStreamContext
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
-from opentelemetry.metrics._internal.instrument import Counter, Histogram
+from opentelemetry.metrics._internal.instrument import Histogram
 from vyper import v
 
 from runner.exit.exceptions import NewRequestMsgError
@@ -59,8 +59,7 @@ def m_exit_runner(_: ModelRegistry, __: PersistentStorage, ___: Predictions, ___
     exit_runner.sdk = m_sdk
     exit_runner.sdk.metadata = Mock(spec=Metadata)
     exit_runner.sdk.metadata.get_process = Mock(return_value="test.process")
-    exit_runner.elapsed_time_metric = Mock(spec=Histogram)
-    exit_runner.number_of_messages_metric = Mock(spec=Counter)
+    exit_runner.messages_metric = Mock(spec=Histogram)
 
     return exit_runner
 
@@ -211,8 +210,7 @@ async def test_process_message_ok(m_msg, m_exit_subscriber):
     assert m_exit_subscriber._get_response_handler.called
     assert m_handler.called
     assert m_msg.ack.called
-    assert m_exit_subscriber.exit_runner.elapsed_time_metric.record.called
-    assert m_exit_subscriber.exit_runner.number_of_messages_metric.add.called
+    assert m_exit_subscriber.exit_runner.messages_metric.record.called
 
 
 async def test_process_message_not_valid_protobuf_ko(m_msg, m_exit_subscriber):
