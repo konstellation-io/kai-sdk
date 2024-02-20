@@ -18,16 +18,15 @@ type RunnerFunc func(tr *Runner, sdk sdk.KaiSDK)
 type ResponseHandler func(sdk sdk.KaiSDK, response *anypb.Any) error
 
 type Runner struct {
-	sdk                    sdk.KaiSDK
-	nats                   *nats.Conn
-	jetstream              nats.JetStreamContext
-	responseHandler        ResponseHandler
-	responseChannels       sync.Map
-	initializer            common.Initializer
-	runner                 RunnerFunc
-	finalizer              common.Finalizer
-	elapsedTimeMetric      metric.Int64Histogram
-	numberOfMessagesMetric metric.Int64Counter
+	sdk              sdk.KaiSDK
+	nats             *nats.Conn
+	jetstream        nats.JetStreamContext
+	responseHandler  ResponseHandler
+	responseChannels sync.Map
+	initializer      common.Initializer
+	runner           RunnerFunc
+	finalizer        common.Finalizer
+	messagesMetric   metric.Int64Histogram
 }
 
 var wg sync.WaitGroup //nolint:gochecknoglobals // WaitGroup is used to wait for goroutines to finish
