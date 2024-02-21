@@ -10,7 +10,7 @@ import loguru
 from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
-from opentelemetry.metrics._internal.instrument import Histogram
+from opentelemetry.metrics._internal.instrument import Histogram, ObservableGauge, Counter, Observation
 
 from runner.common.common import Finalizer, Handler, Initializer, Task
 from runner.task.exceptions import FailedToInitializeMetricsError, UndefinedDefaultHandlerFunctionError
@@ -39,6 +39,7 @@ class TaskRunner:
     postprocessor: Optional[Postprocessor] = None
     finalizer: Optional[Finalizer] = None
     messages_metric: Histogram = field(init=False)
+    test_metric_counter: Counter = field(init=False)
 
     def __post_init__(self) -> None:
         logger.configure(extra={"context": "", "metadata": {}, "origin": "[TASK]"})
@@ -53,6 +54,13 @@ class TaskRunner:
                 unit="ms",
                 description="How long it takes to process a message and times called.",
             )
+
+            self.test_metric_counter = self.sdk.measurements.get_metrics_client().create_counter(
+                name="runner-test-counter",
+                unit="",
+                description="Test counter",
+            )
+
         except Exception as e:
             self.logger.error(f"error initializing metrics: {e}")
             raise FailedToInitializeMetricsError(e)

@@ -14,6 +14,7 @@ from loguru import logger
 from nats.aio.client import Client as NatsClient
 from nats.js.client import JetStreamContext
 from opentelemetry.metrics._internal.instrument import Histogram
+from opentelemetry.metrics import Meter
 
 from runner.common.common import Finalizer, Initializer
 from runner.trigger.exceptions import FailedToInitializeMetricsError, UndefinedRunnerFunctionError
@@ -47,6 +48,8 @@ class TriggerRunner:
 
     def _init_metrics(self) -> None:
         try:
+            metrics_client: Meter = self.sdk.measurements.get_metrics_client()
+            metrics_client.create_histogram()
             self.messages_metric = self.sdk.measurements.get_metrics_client().create_histogram(
                 name="runner-process-message-metric",
                 unit="ms",
