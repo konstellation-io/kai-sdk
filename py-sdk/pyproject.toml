@@ -20,8 +20,8 @@ minio = "7.2.0"
 python-keycloak = "3.7.0"
 redis = {extras = ["hiredis"], version = "5.0.1"}
 semver = "3.0.2"
-opentelemetry-sdk = "1.21.0"
-opentelemetry-exporter-otlp-proto-grpc = "1.21.0"
+opentelemetry-sdk = "1.23.0"
+opentelemetry-exporter-otlp-proto-grpc = "1.23.0"
 grpcio = "1.59.3"
 
 [tool.poetry.group.dev.dependencies]
